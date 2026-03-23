@@ -131,16 +131,16 @@ If any of these are missing, the receiving agent should document the gap before 
 
 The receiving agent should classify the task as one of the following:
 
-### A. Local task
+#### A. Local task
 Only affects one owned area and no shared contract.
 
-### B. Integration task
+#### B. Integration task
 Affects one owned area but depends on an existing contract with another area.
 
-### C. Contract-change task
+#### C. Contract-change task
 Changes or creates a shared contract and therefore requires alignment before implementation.
 
-### D. Cross-boundary task
+#### D. Cross-boundary task
 Requires coordinated frontend and backend changes with explicit sequencing or parallelization.
 
 ### 5.3 Contract Check
@@ -371,9 +371,9 @@ Before completion:
 This document defines the collaboration model.
 
 Related documents:
-- `shared/repo-boundaries.md` defines ownership and change boundaries
-- `shared/contract-first-policy.md` defines how contracts are proposed, changed, and reviewed
-- domain-specific agent docs define execution behavior within each domain
-- task packet templates define task intake structure
-- handoff templates define downstream transfer format
-- definition-of-done docs define quality bars for completion
+- `docs/agent/shared/repo-boundaries.md` defines ownership and change boundaries
+- `docs/agent/shared/contract-first-policy.md` defines how contracts are proposed, changed, and reviewed
+- Domain-specific agent docs (`docs/agent/frontend/`, `docs/agent/backend/`) define execution behavior within each domain
+- Task packet templates (`docs/agent/frontend/task-packet-template.md`, `docs/agent/backend/task-packet-template.md`) define task intake structure
+- Handoff templates (`docs/agent/frontend/handoff-template.md`, `docs/agent/backend/handoff-template.md`) define downstream transfer format
+- Definition-of-done docs (`docs/agent/frontend/definition-of-done.md`, `docs/agent/backend/definition-of-done.md`) define quality bars for completion
