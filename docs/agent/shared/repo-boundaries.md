@@ -91,27 +91,33 @@ Replace the placeholder paths below with your actual repository paths.
 
 | Path | Primary owner | Secondary owner | Non-owner edits allowed | Notes |
 |---|---|---|---|---|
-| `apps/edge-extension/**` | Frontend | Backend (consumer) | Only thin integration glue, generated client updates, or tests directly required by an approved contract | UI semantics remain frontend-owned |
-| `apps/api-server/**` | Backend | Frontend (consumer) | Only generated stubs, test fixtures, or integration wiring directly required by an approved contract | Domain logic and server semantics remain backend-owned |
-| `docs/contracts/**` | Shared steward / Frontend + Backend | N/A | Yes, but requires contract-aware review | Source of truth for request/response schemas and interface contracts |
-| `packages/shared-types/**` | Shared steward | Frontend + Backend | Yes, with caution | Only neutral transport-safe shared types; no domain leakage |
-| `packages/ui-tokens/**` | Frontend | Backend (consumer) | Usually no | Backend should not change UI primitives unless explicitly scoped |
+| `apps/edge-extension/**` | Frontend | Backend (consumer) | Only thin integration glue, generated client updates, or tests directly required by an approved contract | Includes app-level config such as manifest, package, build, and test configuration |
+| `apps/api-server/**` | Backend | Frontend (consumer) | Only generated stubs, test fixtures, or integration wiring directly required by an approved contract | Includes service-level config, package metadata, build, and runtime configuration |
+| `docs/contracts/**` | Shared steward / Frontend + Backend | N/A | Yes, but requires contract-aware review | Human-readable contract docs and contract decision records |
+| `packages/api-contract/**` | Shared steward / Frontend + Backend | N/A | Yes, but requires contract-aware review | Executable contract package, schema definitions, and contract-related source artifacts |
+| `packages/api-contract/generated/**` | Derived from contract source owner | N/A | Regenerate only | Do not hand-edit unless the repository explicitly allows it |
+| `packages/shared-types/**` | Shared steward | Frontend + Backend | Yes, with caution | Shared transport-safe types and package-level configuration |
+| `packages/ui-tokens/**` | Frontend | Backend (consumer) | Usually no | Design tokens and package-level configuration; not a general shared-logic area |
 | `packages/telemetry/**` | Shared steward / Backend | Frontend | Yes, but schema changes require review by all impacted domains | Event names and field meanings are contract surfaces |
 | `tests/e2e/**` | Joint | Joint | Yes | E2E tests may be edited by either domain when scoped to the task |
-| `packages/api-contract/generated/**` | Derived from source owner | N/A | Regenerate only | Do not hand-edit unless the repo explicitly allows it |
 
-### 4.1 Default rule for unlisted paths
+### 4.1 Path precedence rule
+More specific path rules take precedence over broader parent path rules.
+
+For example, `packages/api-contract/generated/**` overrides `packages/api-contract/**` for generated files.
+
+### 4.2 Default rule for unlisted paths
 If a path is not listed here, the agent must not assume ownership.
 Treat it as:
 - unknown ownership
 - requiring clarification
 - or owned by the closest clearly defined parent boundary
 
-### 4.2 Generated files
+### 4.3 Generated files
 Generated artifacts inherit ownership from the source definitions that produce them.
 Do not treat generated directories as independent ownership zones.
 
-### 4.3 File moves and renames
+### 4.4 File moves and renames
 Moving or renaming files across boundaries is a boundary change, not a cosmetic edit.
 It requires owner awareness and justification.
 
@@ -212,7 +218,7 @@ Do not hand-edit generated files unless the repository explicitly documents that
 ## 8. Rules for Shared Zones
 
 ### 8.1 Contracts and schemas
-Anything under `docs/contracts` is a formal contract surface.
+Anything under `docs/contracts` or `packages/api-contract` is a formal contract surface.
 Changes here must specify:
 - change type: additive / modifying / breaking
 - affected consumers
