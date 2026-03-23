@@ -1,0 +1,12 @@
+{
+  "name": "@ai-drive/edge-extension",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "echo 'TODO: setup dev server'",
+    "build": "echo 'TODO: setup build'",
+    "lint": "echo 'TODO: setup lint'",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'TODO: setup tests'"
+  }
+}

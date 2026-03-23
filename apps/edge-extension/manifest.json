@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "AI Drive",
+  "version": "0.1.0",
+  "description": "AI-powered cloud drive",
+  "chrome_url_overrides": {
+    "newtab": "pages/newtab/index.html"
+  },
+  "action": {
+    "default_popup": "pages/popup/index.html"
+  },
+  "permissions": ["storage"]
+}
