@@ -1,11 +1,13 @@
-# Task Packet Template
+# Frontend Task Packet Template
 
-> Use this template for every scoped implementation task assigned to an agent.
-> A task packet is required before execution.
-> The assigned agent must follow:
+> Use this template for every task assigned to the Frontend Agent.
+>
+> Required governing documents:
 > - `docs/agent/AGENTS.md`
-> - its role-specific agent file
-> - this task packet
+> - `docs/agent/shared/operating-model.md`
+> - `docs/agent/shared/contract-first-policy.md`
+> - `docs/agent/shared/repo-boundaries.md`
+> - `docs/agent/frontend/frontend-agent.md`
 >
 > If this task packet conflicts with approved ADRs or official contracts,
 > ADRs and contracts take precedence unless explicitly approved otherwise.
@@ -18,13 +20,13 @@
 `<e.g. FE-001>`
 
 ### Title
-`<short, implementation-focused title>`
+`<short implementation-focused title>`
 
 ### Assigned Agent
-`<Frontend Agent | Backend Agent | Other>`
+`Frontend Agent`
 
 ### Status
-`<Draft | Ready | In Progress | Blocked | Done | Partial>`
+`<Draft | Ready | In Progress | Blocked | Partial | Done>`
 
 ### Priority
 `<P0 | P1 | P2 | P3>`
@@ -42,178 +44,204 @@
 
 ## 2. Objective
 
-Describe the concrete outcome the agent must achieve.
-
-**Format guidance**
-- Write the target state, not a vague wish
-- Make it implementation-scoped
-- Keep it testable
+Describe the exact frontend outcome the agent must deliver.
 
 **Template**
-> Implement `<feature/change>` so that `<user/system outcome>` is possible in `<surface/module>`.
+> Implement `<feature/change>` in `<surface/module>` so that `<user-visible outcome>` is supported.
+
+**Good examples**
+- Implement the Recent Files section in the New Tab page so that signed-in users can see their latest uploaded files.
+- Implement upload error handling in the New Tab upload box so that failed uploads surface a retry path and clear user feedback.
 
 ---
 
 ## 3. Why This Task Exists
 
-Explain the product or engineering reason for doing this task now.
+Explain why this task matters now.
 
 Include:
-- why it matters
-- what workflow or risk it unblocks
-- how it connects to the current milestone
+- the user or product need
+- the workflow or milestone it supports
+- the problem or risk it reduces
+- why this should be done now rather than later
+
+Keep this section brief but concrete.
 
 ---
 
 ## 4. In Scope
 
-List exactly what is included.
+List only the items the Frontend Agent should implement in this task.
 
-Use short bullets such as:
-- Add `<component/page/state>`
-- Integrate with `<endpoint/contract>`
-- Handle `<loading/error/empty states>`
-- Add `<tests/telemetry>` if required
+Examples:
+- Add `<component or section>`
+- Integrate with `<approved endpoint>`
+- Implement loading / empty / error states
+- Add minimal tests for `<behavior>`
+- Reuse existing layout / primitives where possible
 
-Be precise. 
-If something is not listed here, the agent should assume it is out of scope.
+If an item is not listed here, the agent should assume it is **out of scope**.
 
 ---
 
 ## 5. Out of Scope
 
-List what must not be included in this task, even if it seems related.
+List explicitly what the agent must **not** do in this task, even if related.
 
 Examples:
 - No visual redesign
-- No backend contract changes
+- No backend endpoint changes
+- No OpenAPI changes
 - No drag-and-drop upload
 - No pagination
-- No telemetry
-- No auth refresh redesign
+- No telemetry changes
+- No auth flow redesign
+- No refactor of unrelated components
 
 This section is mandatory.
 
 ---
 
-## 6. User / System Outcome
+## 6. User Outcome
 
-Describe what should be true after the task is completed.
+Describe what will be true for the user once this task is complete.
 
-### User-visible outcome
-`<what the user can do or see>`
+### Before
+`<what the user cannot currently do / what is broken or missing>`
 
-### System outcome
-`<what the codebase or integration now supports>`
+### After
+`<what the user can now do / what now works>`
+
+Focus on user-visible product impact.
 
 ---
 
-## 7. Surfaces / Modules Affected
+## 7. Frontend Surface / Module
 
-List the product surfaces or code modules affected.
+List the exact frontend surfaces affected.
 
 Examples:
 - New Tab page
 - popup
 - options page
-- file list section
+- file list panel
 - upload box
 - search bar
-- API client adapter
-- shared UI primitives
+- AI answer panel
+- empty state component
+- client-side API adapter
 
 ---
 
 ## 8. Source of Truth
 
-List the exact documents and files the agent must follow.
+List the exact documents and implementation files the Frontend Agent must follow.
+
+### Shared agent governance
+- `docs/agent/AGENTS.md`
+- `docs/agent/shared/operating-model.md`
+- `docs/agent/shared/contract-first-policy.md`
+- `docs/agent/shared/repo-boundaries.md`
+
+### Frontend agent rules
+- `docs/agent/frontend/frontend-agent.md`
 
 ### Product
 - `docs/product/prd.md`
-- `<additional product doc if any>`
+- `<other relevant product docs if any>`
 
 ### Architecture
 - `docs/architecture/system-overview.md`
 - `docs/architecture/frontend-architecture.md`
-- `<relevant ADRs>`
+- `<relevant ADRs if any>`
 
 ### Contracts
 - `docs/contracts/openapi.yaml`
 - `docs/contracts/error-model.md`
-- `<other contract docs if needed>`
+- `<other contract docs if relevant>`
 
 ### Existing implementation references
-- `<relevant file paths>`
-- `<relevant file paths>`
+- `<relevant file path>`
+- `<relevant file path>`
 
 ### Previous handoff
-- `<link/path to latest related handoff, if any>`
+- `<path to related handoff, if any>`
 
-If any required source is missing, note it explicitly in section 16 (Dependencies / Blockers).
+If any required source is missing, note it in section 17 (Dependencies / Blockers).
 
 ---
 
 ## 9. Allowed Paths
 
-The agent may only modify these paths unless explicitly approved otherwise.
+The Frontend Agent may only modify these paths for this task unless explicitly approved otherwise.
 
 ```txt
-<fill in allowed paths here>
+<fill in allowed paths>
 
 Example:
 
 apps/edge-extension/**
 packages/api-contract/generated/**
-packages/shared-types/** # only if explicitly needed
+packages/shared-types/** # only if explicitly required
+docs/agent/frontend/tasks/**
 ```
+
+Keep this section narrow.
+Only include paths the agent truly needs.
 
 ---
 
 ## 10. Blocked Paths
 
-The agent must not modify these paths for this task.
+The Frontend Agent must not modify these paths in this task.
 
 ```txt
-<fill in blocked paths here>
+<fill in blocked paths>
 
 Example:
 
 apps/api-server/**
 infra/**
 docs/contracts/openapi.yaml
+docs/contracts/error-model.md
+docs/architecture/backend-architecture.md
+docs/agent/backend/**
 ```
+
+This section is mandatory.
 
 ---
 
-## 11. Contracts and Data Assumptions
+## 11. Contract and Data Constraints
 
-Document the exact API or type assumptions the agent is allowed to rely on.
+Document exactly what API and type assumptions are allowed.
 
-### Endpoints / contracts involved
-- `<method> <path>`
-- `<method> <path>`
+### Endpoints involved
+- `<METHOD> <PATH>`
+- `<METHOD> <PATH>`
 
 ### Request shape assumptions
-`<brief notes or linked schema>`
+`<brief schema notes or reference to generated types>`
 
 ### Response shape assumptions
-`<brief notes or linked schema>`
+`<brief schema notes or reference to generated types>`
 
-### Error handling assumptions
-`<documented errors only>`
+### Error model assumptions
+`<documented error states only>`
 
-### Forbidden assumptions
+### Explicit frontend rules
 - Do not invent undocumented fields
-- Do not assume undocumented status codes
-- Do not assume hidden backend fallback behavior
+- Do not invent undocumented status codes
+- Do not guess fallback backend behavior
+- Do not silently widen payload assumptions
 
 If the contract is incomplete, state exactly what is missing.
 
 ---
 
-## 12. UX / Behavior Requirements
+## 12. UI / UX Requirements
 
-Describe the behavior the agent must implement.
+Describe how the frontend should behave.
 
 ### Required states
 - initial
@@ -224,41 +252,67 @@ Describe the behavior the agent must implement.
 - disabled state if relevant
 
 ### Interaction requirements
-- `<e.g. clicking Upload opens file picker>`
-- `<e.g. failed request shows retry affordance>`
-- `<e.g. empty result shows helpful message>`
+- `<e.g. clicking Upload opens the file picker>`
+- `<e.g. failed fetch shows retry UI>`
+- `<e.g. empty file list shows helpful message>`
+- `<e.g. loading state prevents duplicate submission>`
 
 ### Accessibility requirements
-- Use real buttons for clickable actions
+- Use real buttons for actions
 - Inputs must be labeled or clearly associated
 - Primary flow must be keyboard accessible
-- Avoid color-only status communication
+- Do not rely on color alone for important state communication
 
 ### Copy requirements
-- `<use existing product copy>` or
-- `<follow concise default copy style>`
+- `<use existing product copy if defined>`
+- otherwise use concise default product language
+
+### Visual constraints
+- Preserve current layout unless explicitly requested otherwise
+- Reuse existing component patterns where possible
+- Do not introduce a new styling system
 
 ---
 
-## 13. Non-Functional Requirements
+## 13. Non-Functional Constraints
 
-Document any important engineering constraints.
+Document important engineering constraints for this task.
 
 Examples:
 - Must not introduce new dependencies
-- Must preserve existing layout structure
-- Must keep first render lightweight
-- Must not block UI on telemetry success
+- Must reuse existing API client layer
+- Must preserve first-render performance on New Tab
+- Must avoid duplicate requests from unstable effects
 - Must not log sensitive file content
 - Must follow current styling conventions
+- Must not introduce a new global store unless explicitly approved
 
-Only include relevant constraints.
+Only include constraints relevant to this task.
 
 ---
 
-## 14. Validation Plan
+## 14. Testing Expectations
 
-List the commands and checks the agent must run before completing the task.
+List the expected testing scope for this task.
+
+### Required test coverage
+- `<unit test for helper/state transition if relevant>`
+- `<component test for user interaction if relevant>`
+- `<smoke coverage for primary path if relevant>`
+
+### Not required
+- `<optional: note what test types are intentionally excluded>`
+
+### Testing notes
+- `<special setup or limitations, if any>`
+
+This section should match the actual risk level of the task.
+
+---
+
+## 15. Validation Plan
+
+List the commands and checks the Frontend Agent must run before completion.
 
 ### Required commands
 ```bash
@@ -267,7 +321,7 @@ List the commands and checks the agent must run before completing the task.
 <command 3>
 ```
 
-Typical frontend example:
+Typical example:
 ```bash
 pnpm lint
 pnpm typecheck
@@ -285,7 +339,7 @@ pnpm build --filter edge-extension
 - `<criterion>`
 - `<criterion>`
 
-The agent must report validation truthfully as:
+The Frontend Agent must report validation truthfully as:
 - pass
 - fail
 - not run
@@ -293,54 +347,59 @@ The agent must report validation truthfully as:
 
 ---
 
-## 15. Deliverables
+## 16. Deliverables
 
-List the outputs expected from the agent.
+List what the Frontend Agent is expected to produce.
 
 Examples:
 - implementation code
-- tests
 - updated UI states
-- small documentation note
+- tests
+- small documentation note if needed
 - handoff note
+
+If documentation updates are not required, say so.
 
 ---
 
-## 16. Dependencies / Blockers
+## 17. Dependencies / Blockers
 
-List any required dependencies, prerequisites, or known blockers.
+List prerequisites, dependencies, or known blockers.
 
 Examples:
 - Backend endpoint must already exist
 - Generated API client must be up to date
-- Shared type needs confirmation
-- Product copy not finalized
-- Telemetry schema missing
+- Product copy is still pending
+- Shared type definition needs confirmation
+- Auth behavior is not finalized
+- Empty state copy not finalized
 
-If there are no blockers, explicitly write:
+If there are no blockers, write:
 
 > None at task start.
 
 ---
 
-## 17. Risks / Watchouts
+## 18. Risks / Watchouts
 
-List the main ways this task could go wrong.
+List the main ways this task could fail or regress.
 
 Examples:
-- Contract mismatch with backend
-- Hidden auth state issue
-- Layout regression on small screens
-- Duplicate network requests from effect dependencies
-- Missing empty/error state handling
+- API contract mismatch
+- stale generated types
+- duplicate network requests
+- auth edge case not handled
+- empty/error state omitted
+- layout breakage in compact view
+- introducing a hidden dependency on backend behavior
 
-The agent should pay extra attention to these during implementation and handoff.
+The Frontend Agent should pay extra attention to these during implementation and handoff.
 
 ---
 
-## 18. Handoff Requirements
+## 19. Handoff Requirements
 
-At the end of the task, the agent must provide a handoff containing all of the following:
+At task completion, the Frontend Agent must provide all of the following.
 
 ### Required sections
 - Summary
@@ -353,18 +412,21 @@ At the end of the task, the agent must provide a handoff containing all of the f
 ### Required truthfulness rules
 - Do not claim commands passed if they were not run
 - Do not hide blockers
-- Do not mark the task done if only the happy path works
+- Do not mark the task Done if only the happy path works
 - Clearly distinguish complete vs partial completion
+
+For the handoff structure, follow:
+> `docs/agent/frontend/handoff-template.md`
 
 ---
 
-## 19. Definition of Done for This Task
+## 20. Definition of Done for This Task
 
 A task is complete only if all relevant items below are true.
 
 ### Functional
-- [ ] Requested behavior is implemented
-- [ ] In-scope states are handled
+- [ ] Requested frontend behavior is implemented
+- [ ] In-scope UI states are handled
 - [ ] Out-of-scope items were not added
 
 ### Technical
@@ -375,7 +437,12 @@ A task is complete only if all relevant items below are true.
 ### Quality
 - [ ] No obvious regression introduced
 - [ ] Code is readable and maintainable
-- [ ] Tests were added or updated if behavior changed
+- [ ] Tests were added or updated when behavior changed
+
+### UX
+- [ ] Loading / empty / error states are covered where relevant
+- [ ] Accessibility basics are preserved
+- [ ] Copy and interactions align with current product direction
 
 ### Handoff
 - [ ] Handoff note is complete
@@ -383,25 +450,49 @@ A task is complete only if all relevant items below are true.
 
 If any required item is unchecked, status should be `Partial` or `Blocked`, not `Done`.
 
+For detailed completion standards, also follow:
+> `docs/agent/frontend/definition-of-done.md`
+
 ---
 
-## 20. Execution Notes for the Agent
+## 21. Task-Specific Execution Notes
 
-Use this section for any task-specific instructions.
+Use this section for any additional task-specific instructions.
 
 Examples:
-- Reuse existing file card component if possible
-- Do not change global navigation structure
-- Keep API wiring inside existing client layer
-- Prefer local state over adding a new global store
-- Use mock data only if live contract is unavailable and task explicitly allows it
+- Reuse the existing file card component
+- Do not change the New Tab top navigation
+- Keep API wiring inside the existing client abstraction
+- Prefer local state over creating a new shared store
+- Use mock data only if live contract wiring is explicitly allowed
+- Preserve current empty state illustration behavior
+
+Keep this section specific and actionable.
 
 ---
 
-## 21. Final Task Packet — Ready-to-Execute Summary
+## 22. Ready-to-Execute Summary
 
-Provide a short plain-language summary that the assigned agent can act on immediately.
+Write a short instruction the Frontend Agent can act on immediately.
 
 **Template**
+> Implement `<feature>` in `<surface>` using `<approved docs/contracts>`, stay within `<allowed paths>`, do not do `<major exclusions>`, run the required validation steps, and finish with a complete handoff.
 
-> Implement `<feature>` in `<surface>` using `<approved contract/doc references>`, stay within `<allowed paths>`, do not do `<major exclusions>`, and complete validation plus handoff before marking the task done.
+---
+
+## 23. Execution Record (To Be Filled After Work Starts)
+
+### Actual Status
+`<In Progress | Blocked | Partial | Done>`
+
+### Actual Files Changed
+- `<file>`
+- `<file>`
+
+### Validation Results
+- `<command/check>`: pass | fail | not run | blocked
+
+### Notes
+- `<implementation note>`
+- `<unexpected issue>`
+- `<follow-up recommendation>`
