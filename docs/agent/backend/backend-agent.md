@@ -1,4 +1,7 @@
 
+
+> This file must remain semantically aligned with `backend-agent.zh-CN.md`.
+> If one version changes responsibilities, constraints, or completion standards, the other version must be updated in the same change whenever possible.
 ## 1. Purpose
 
 This document defines the role, responsibilities, operating rules, and execution standards for the backend agent in this repository.
