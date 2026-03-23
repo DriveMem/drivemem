@@ -94,6 +94,20 @@ These documents define:
 - backend handoff expectations
 - backend completion criteria
 
+### Orchestrator docs
+- `docs/agent/orchestrator/product-orchestrator-agent.md`
+- `docs/agent/orchestrator/intake-template.md`
+- `docs/agent/orchestrator/decomposition-template.md`
+- `docs/agent/orchestrator/planning-handoff-template.md`
+- `docs/agent/orchestrator/execution-state-template.md`
+
+These documents define:
+- orchestrator role and planning rules
+- product intake structure
+- task decomposition format
+- planning handoff to domain agents
+- execution state tracking
+
 ---
 
 ## Core Working Principles
