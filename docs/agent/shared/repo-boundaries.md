@@ -91,14 +91,14 @@ Replace the placeholder paths below with your actual repository paths.
 
 | Path | Primary owner | Secondary owner | Non-owner edits allowed | Notes |
 |---|---|---|---|---|
-| `<frontend-root>/**` | Frontend | Backend (consumer) | Only thin integration glue, generated client updates, or tests directly required by an approved contract | UI semantics remain frontend-owned |
-| `<backend-root>/**` | Backend | Frontend (consumer) | Only generated stubs, test fixtures, or integration wiring directly required by an approved contract | Domain logic and server semantics remain backend-owned |
-| `<contract-root>/**` | Shared steward / Frontend + Backend | N/A | Yes, but requires contract-aware review | Source of truth for request/response schemas and interface contracts |
-| `<shared-types-root>/**` | Shared steward | Frontend + Backend | Yes, with caution | Only neutral transport-safe shared types; no domain leakage |
-| `<shared-ui-root>/**` | Frontend | Backend (consumer) | Usually no | Backend should not change UI primitives unless explicitly scoped |
-| `<telemetry-root>/**` | Shared steward / Backend | Frontend | Yes, but schema changes require review by all impacted domains | Event names and field meanings are contract surfaces |
-| `<e2e-root>/**` | Joint | Joint | Yes | E2E tests may be edited by either domain when scoped to the task |
-| `<generated-root>/**` | Derived from source owner | N/A | Regenerate only | Do not hand-edit unless the repo explicitly allows it |
+| `apps/edge-extension/**` | Frontend | Backend (consumer) | Only thin integration glue, generated client updates, or tests directly required by an approved contract | UI semantics remain frontend-owned |
+| `apps/api-server/**` | Backend | Frontend (consumer) | Only generated stubs, test fixtures, or integration wiring directly required by an approved contract | Domain logic and server semantics remain backend-owned |
+| `docs/contracts/**` | Shared steward / Frontend + Backend | N/A | Yes, but requires contract-aware review | Source of truth for request/response schemas and interface contracts |
+| `packages/shared-types/**` | Shared steward | Frontend + Backend | Yes, with caution | Only neutral transport-safe shared types; no domain leakage |
+| `packages/ui-tokens/**` | Frontend | Backend (consumer) | Usually no | Backend should not change UI primitives unless explicitly scoped |
+| `packages/telemetry/**` | Shared steward / Backend | Frontend | Yes, but schema changes require review by all impacted domains | Event names and field meanings are contract surfaces |
+| `tests/e2e/**` | Joint | Joint | Yes | E2E tests may be edited by either domain when scoped to the task |
+| `packages/api-contract/generated/**` | Derived from source owner | N/A | Regenerate only | Do not hand-edit unless the repo explicitly allows it |
 
 ### 4.1 Default rule for unlisted paths
 If a path is not listed here, the agent must not assume ownership.
@@ -212,7 +212,7 @@ Do not hand-edit generated files unless the repository explicitly documents that
 ## 8. Rules for Shared Zones
 
 ### 8.1 Contracts and schemas
-Anything under `<contract-root>` is a formal contract surface.
+Anything under `docs/contracts` is a formal contract surface.
 Changes here must specify:
 - change type: additive / modifying / breaking
 - affected consumers
