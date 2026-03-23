@@ -1,407 +1,561 @@
-# Task Packet Template
 
-> Use this template for every scoped implementation task assigned to an agent.
-> A task packet is required before execution.
-> The assigned agent must follow:
-> - `docs/agent/AGENTS.md`
-> - its role-specific agent file
-> - this task packet
->
-> If this task packet conflicts with approved ADRs or official contracts,
-> ADRs and contracts take precedence unless explicitly approved otherwise.
+## Purpose
 
----
+Use this template to define backend work before implementation starts.
 
-## 1. Task Metadata
+A backend task packet should make the work:
+- explicit
+- scoped
+- contract-aware
+- reviewable
+- verifiable
+- safe for downstream consumers
 
-### Task ID
-`<e.g. FE-001>`
-
-### Title
-`<short, implementation-focused title>`
-
-### Assigned Agent
-`<Frontend Agent | Backend Agent | Other>`
-
-### Status
-`<Draft | Ready | In Progress | Blocked | Done | Partial>`
-
-### Priority
-`<P0 | P1 | P2 | P3>`
-
-### Owner / Requester
-`<human owner or role>`
-
-### Created Date
-`<YYYY-MM-DD>`
-
-### Last Updated
-`<YYYY-MM-DD>`
+A good task packet should let a backend agent begin work without inventing hidden semantics.
 
 ---
 
-## 2. Objective
+## Task Metadata
 
-Describe the concrete outcome the agent must achieve.
-
-**Format guidance**
-- Write the target state, not a vague wish
-- Make it implementation-scoped
-- Keep it testable
-
-**Template**
-> Implement `<feature/change>` so that `<user/system outcome>` is possible in `<surface/module>`.
+- **Task title**:
+- **Task / ticket ID**:
+- **Owner / requester**:
+- **Primary backend owner**:
+- **Related agents / teams**:
+- **Priority**:
+  - [ ] P0
+  - [ ] P1
+  - [ ] P2
+  - [ ] P3
+- **Status**:
+  - [ ] Draft
+  - [ ] Ready for implementation
+  - [ ] Blocked
+  - [ ] In progress
+  - [ ] Ready for review
+  - [ ] Done
+- **Target milestone / release**:
+- **Related docs / links**:
 
 ---
 
-## 3. Why This Task Exists
+## 1. Problem Statement
 
-Explain the product or engineering reason for doing this task now.
+Describe the problem this task is solving.
 
 Include:
-- why it matters
-- what workflow or risk it unblocks
-- how it connects to the current milestone
+- what is broken, missing, or changing
+- why backend work is needed
+- who is affected
+- why this work matters now
+
+Keep this section concrete and implementation-relevant.
 
 ---
 
-## 4. In Scope
+## 2. Goal
 
-List exactly what is included.
+Describe the intended backend outcome.
 
-Use short bullets such as:
-- Add `<component/page/state>`
-- Integrate with `<endpoint/contract>`
-- Handle `<loading/error/empty states>`
-- Add `<tests/telemetry>` if required
-
-Be precise. 
-If something is not listed here, the agent should assume it is out of scope.
+This should answer:
+- what capability should exist after this task
+- what backend behavior should change
+- what downstream consumer should now be able to rely on
 
 ---
 
-## 5. Out of Scope
+## 3. Scope
 
-List what must not be included in this task, even if it seems related.
+### In scope
+List the backend work that must be completed in this task.
+
+- 
+- 
+- 
+
+### Out of scope
+List what this task must not silently include.
+
+- 
+- 
+- 
+
+### Non-goals
+List changes that may sound related but are not part of this task.
+
+- 
+- 
+- 
+
+---
+
+## 4. Current State
+
+Describe the current backend behavior relevant to this task.
+
+Include as applicable:
+- existing endpoints / handlers / jobs
+- current schema or persistence shape
+- current auth / permission behavior
+- existing contract behavior
+- known limitations
+- existing workarounds or technical debt relevant to the task
+
+---
+
+## 5. Desired End State
+
+Describe the expected backend behavior after this task is complete.
+
+Include as applicable:
+- endpoint / handler / job behavior
+- response semantics
+- validation behavior
+- state transitions
+- persistence changes
+- operational behavior
+- expected downstream consumer experience
+
+Be explicit about behavior, not just code changes.
+
+---
+
+## 6. Consumer Impact
+
+Identify who consumes the backend behavior.
+
+### Known consumers
+- [ ] Frontend
+- [ ] Another backend service
+- [ ] Internal tool / automation
+- [ ] Analytics / telemetry pipeline
+- [ ] Batch job / queue worker
+- [ ] Admin workflow
+- [ ] External / partner integration
+- [ ] Other:
+
+### Consumer notes
+- 
+- 
+- 
+
+### Consumer risk if semantics are wrong
+- 
+- 
+- 
+
+---
+
+## 7. Contract Impact
+
+Classify the contract effect of this task.
+
+### Contract classification
+- [ ] No shared contract impact
+- [ ] Uses existing contract as-is
+- [ ] Clarifies existing contract
+- [ ] Additive contract change
+- [ ] Modifying contract change
+- [ ] Breaking contract change
+- [ ] New contract
+
+### Contract source of truth
+- schema / interface / doc:
+- version / reference:
+- owner / steward:
+
+### Contract details
+Document the relevant contract semantics:
+
+#### Request shape
+- 
+- 
+- 
+
+#### Response shape
+- 
+- 
+- 
+
+#### Required / optional / nullable fields
+- 
+- 
+- 
+
+#### Status / state semantics
+- 
+- 
+- 
+
+#### Error semantics
+- 
+- 
+- 
+
+#### Retry / idempotency expectations
+- 
+- 
+- 
+
+#### Ordering / filtering / pagination semantics if applicable
+- 
+- 
+- 
+
+### Open contract questions
+- 
+- 
+- 
+
+If any contract-impacting detail is unknown, do not leave it implicit.
+
+---
+
+## 8. Data / Persistence Impact
+
+Indicate whether this task changes stored data behavior.
+
+### Data impact classification
+- [ ] No data impact
+- [ ] Read-path only
+- [ ] Write-path behavior change
+- [ ] Schema change
+- [ ] Migration required
+- [ ] Backfill required
+- [ ] Data interpretation change
+- [ ] Index / performance-sensitive persistence change
+
+### Details
+- affected tables / collections / entities:
+- migration needed:
+- backward compatibility expectations:
+- rollback or forward-fix strategy:
+- impact on existing records:
+- concurrency / stale-write concerns:
+
+### Open data questions
+- 
+- 
+- 
+
+---
+
+## 9. Auth / Permission / Safety Impact
+
+Mark all that apply.
+
+- [ ] No auth / safety impact
+- [ ] Authentication behavior affected
+- [ ] Authorization behavior affected
+- [ ] Entitlement / billing gating affected
+- [ ] Destructive action involved
+- [ ] Admin-only behavior involved
+- [ ] Privacy-sensitive data involved
+- [ ] Export / delete / mutation flow involved
+- [ ] Security-sensitive payload involved
+
+### Details
+- current behavior:
+- intended behavior:
+- failure mode if implemented incorrectly:
+- reviewer / approver needed:
+
+If this section is relevant, be explicit. Do not assume safe defaults without stating them.
+
+---
+
+## 10. Operational / Reliability Considerations
+
+List runtime concerns relevant to this task.
+
+Mark all that apply:
+- [ ] No special runtime risk
+- [ ] Dependency failure risk
+- [ ] Timeout / retry risk
+- [ ] Duplicate request risk
+- [ ] Eventual consistency
+- [ ] Queue / async processing
+- [ ] Partial failure handling
+- [ ] Rate limiting / throttling
+- [ ] Performance-sensitive path
+- [ ] High-cardinality logging or telemetry concern
+- [ ] Observability requirement
+- [ ] Rollout sequencing concern
+
+### Details
+- 
+- 
+- 
+
+### Fallback / degradation expectations
+- 
+- 
+- 
+
+---
+
+## 11. Repository Scope
+
+List the expected repository areas involved.
+
+### Expected owned paths
+- ``
+- ``
+- ``
+
+### Expected shared paths
+- ``
+- ``
+- ``
+
+### Cross-boundary edits expected?
+- [ ] No
+- [ ] Yes, minimal and justified
+- [ ] Unknown yet
+
+If yes, explain:
+- why a local-only change is insufficient
+- what foreign-owned files may need touching
+- what review is expected
+
+---
+
+## 12. Acceptance Criteria
+
+List concrete acceptance criteria.
+
+Each item should be testable.
+
+- [ ]
+- [ ]
+- [ ]
+- [ ]
+
+Good acceptance criteria describe observable behavior, not vague intent.
 
 Examples:
-- No visual redesign
-- No backend contract changes
-- No drag-and-drop upload
-- No pagination
-- No telemetry
-- No auth refresh redesign
-
-This section is mandatory.
-
----
-
-## 6. User / System Outcome
-
-Describe what should be true after the task is completed.
-
-### User-visible outcome
-`<what the user can do or see>`
-
-### System outcome
-`<what the codebase or integration now supports>`
-
----
-
-## 7. Surfaces / Modules Affected
-
-List the product surfaces or code modules affected.
-
-Examples:
-- New Tab page
-- popup
-- options page
-- file list section
-- upload box
-- search bar
-- API client adapter
-- shared UI primitives
-
----
-
-## 8. Source of Truth
-
-List the exact documents and files the agent must follow.
-
-### Product
-- `docs/product/prd.md`
-- `<additional product doc if any>`
-
-### Architecture
-- `docs/architecture/system-overview.md`
-- `docs/architecture/frontend-architecture.md`
-- `<relevant ADRs>`
-
-### Contracts
-- `docs/contracts/openapi.yaml`
-- `docs/contracts/error-model.md`
-- `<other contract docs if needed>`
-
-### Existing implementation references
-- `<relevant file paths>`
-- `<relevant file paths>`
-
-### Previous handoff
-- `<link/path to latest related handoff, if any>`
-
-If any required source is missing, note it explicitly in section 16 (Dependencies / Blockers).
-
----
-
-## 9. Allowed Paths
-
-The agent may only modify these paths unless explicitly approved otherwise.
-
-```txt
-<fill in allowed paths here>
-
-Example:
-
-apps/edge-extension/**
-packages/api-contract/generated/**
-packages/shared-types/** # only if explicitly needed
-```
-
----
-
-## 10. Blocked Paths
-
-The agent must not modify these paths for this task.
-
-```txt
-<fill in blocked paths here>
-
-Example:
-
-apps/api-server/**
-infra/**
-docs/contracts/openapi.yaml
-```
-
----
-
-## 11. Contracts and Data Assumptions
-
-Document the exact API or type assumptions the agent is allowed to rely on.
-
-### Endpoints / contracts involved
-- `<method> <path>`
-- `<method> <path>`
-
-### Request shape assumptions
-`<brief notes or linked schema>`
-
-### Response shape assumptions
-`<brief notes or linked schema>`
-
-### Error handling assumptions
-`<documented errors only>`
-
-### Forbidden assumptions
-- Do not invent undocumented fields
-- Do not assume undocumented status codes
-- Do not assume hidden backend fallback behavior
-
-If the contract is incomplete, state exactly what is missing.
-
----
-
-## 12. UX / Behavior Requirements
-
-Describe the behavior the agent must implement.
-
-### Required states
-- initial
-- loading
-- empty
-- error
-- success feedback
-- disabled state if relevant
-
-### Interaction requirements
-- `<e.g. clicking Upload opens file picker>`
-- `<e.g. failed request shows retry affordance>`
-- `<e.g. empty result shows helpful message>`
-
-### Accessibility requirements
-- Use real buttons for clickable actions
-- Inputs must be labeled or clearly associated
-- Primary flow must be keyboard accessible
-- Avoid color-only status communication
-
-### Copy requirements
-- `<use existing product copy>` or
-- `<follow concise default copy style>`
+- [ ] Endpoint returns `processing`, `ready`, and `failed` states with documented semantics
+- [ ] Invalid input returns structured validation error
+- [ ] Duplicate submission does not create duplicate records
+- [ ] Existing consumers continue to work without modification
 
 ---
 
 ## 13. Non-Functional Requirements
 
-Document any important engineering constraints.
+Include only what matters for this task.
+
+- performance expectations:
+- latency expectations:
+- throughput expectations:
+- security requirements:
+- observability requirements:
+- audit / compliance requirements:
+- backward compatibility requirements:
+- rollout / feature flag requirements:
+
+If none, write:
+> None.
+
+---
+
+## 14. Dependencies
+
+List dependencies that affect execution.
+
+### Upstream dependencies
+- 
+- 
+- 
+
+### Downstream dependencies
+- 
+- 
+- 
+
+### External dependencies
+- 
+- 
+- 
+
+### Blocking decisions
+- 
+- 
+- 
+
+---
+
+## 15. Implementation Notes
+
+Use this section for constraints or guidance that matter to the backend agent.
 
 Examples:
-- Must not introduce new dependencies
-- Must preserve existing layout structure
-- Must keep first render lightweight
-- Must not block UI on telemetry success
-- Must not log sensitive file content
-- Must follow current styling conventions
+- preserve existing response field names
+- extend instead of replacing current contract
+- do not change auth behavior outside this endpoint
+- prefer additive migration strategy
+- keep compatibility with current queue payload format
 
-Only include relevant constraints.
-
----
-
-## 14. Validation Plan
-
-List the commands and checks the agent must run before completing the task.
-
-### Required commands
-```bash
-<command 1>
-<command 2>
-<command 3>
-```
-
-Typical frontend example:
-```bash
-pnpm lint
-pnpm typecheck
-pnpm test --filter edge-extension
-pnpm build --filter edge-extension
-```
-
-### Manual verification steps
-- `<step>`
-- `<step>`
-- `<step>`
-
-### Success criteria
-- `<criterion>`
-- `<criterion>`
-- `<criterion>`
-
-The agent must report validation truthfully as:
-- pass
-- fail
-- not run
-- blocked
+### Notes
+- 
+- 
+- 
 
 ---
 
-## 15. Deliverables
+## 16. Verification Plan
 
-List the outputs expected from the agent.
+Define how this task will be verified before work starts.
+
+### Required verification
+- [ ] Unit tests
+- [ ] Integration tests
+- [ ] Contract tests
+- [ ] Migration tests
+- [ ] Manual endpoint validation
+- [ ] Error-path validation
+- [ ] Auth / permission validation
+- [ ] Retry / idempotency validation
+- [ ] Logging / metrics / trace inspection
+- [ ] Staging / preview verification
+- [ ] End-to-end verification with consumer
+- [ ] Other:
+
+### Required scenarios
+- happy path:
+- invalid input:
+- unauthorized / forbidden:
+- dependency failure:
+- duplicate request / retry:
+- empty / missing data:
+- partial failure if applicable:
+- migration / old-data compatibility if applicable:
+
+### Verification evidence expected
+- 
+- 
+- 
+
+A task should not be marked ready unless the verification bar is visible here.
+
+---
+
+## 17. Handoff Expectations
+
+If this task is not fully self-contained, specify what handoff will be needed.
+
+### Expected next owner
+- [ ] Frontend
+- [ ] Backend
+- [ ] QA
+- [ ] Reviewer
+- [ ] Release owner
+- [ ] Data / analytics owner
+- [ ] Security / privacy reviewer
+- [ ] Other:
+
+### Handoff must include
+- [ ] files changed
+- [ ] contract semantics
+- [ ] migration notes
+- [ ] risks
+- [ ] verification performed
+- [ ] verification not performed
+- [ ] exact next step for receiver
+
+### Expected handoff trigger
+- 
+- 
+- 
+
+---
+
+## 18. Risks
+
+List real risks only.
+
+For each risk include:
+- **Risk**:
+- **Impact area**:
+- **Likelihood**:
+- **Mitigation / fallback**:
+- **Owner**:
 
 Examples:
-- implementation code
-- tests
-- updated UI states
-- small documentation note
-- handoff note
+- contract ambiguity
+- migration safety
+- stale consumer assumptions
+- auth regression
+- duplicate side effects on retry
+- insufficient observability on failure path
+- rollout mismatch between producer and consumer
 
 ---
 
-## 16. Dependencies / Blockers
+## 19. Open Questions
 
-List any required dependencies, prerequisites, or known blockers.
+List only unresolved questions.
 
-Examples:
-- Backend endpoint must already exist
-- Generated API client must be up to date
-- Shared type needs confirmation
-- Product copy not finalized
-- Telemetry schema missing
+- **Question**:
+  - why it matters:
+  - current assumption:
+  - owner to resolve:
 
-If there are no blockers, explicitly write:
+- **Question**:
+  - why it matters:
+  - current assumption:
+  - owner to resolve:
 
-> None at task start.
-
----
-
-## 17. Risks / Watchouts
-
-List the main ways this task could go wrong.
-
-Examples:
-- Contract mismatch with backend
-- Hidden auth state issue
-- Layout regression on small screens
-- Duplicate network requests from effect dependencies
-- Missing empty/error state handling
-
-The agent should pay extra attention to these during implementation and handoff.
+If none:
+> None.
 
 ---
 
-## 18. Handoff Requirements
+## 20. Definition of Done for This Task
 
-At the end of the task, the agent must provide a handoff containing all of the following:
+This task is done when all of the following are true:
 
-### Required sections
-- Summary
-- Files Changed
-- Validation
-- Known Issues / Risks
-- Dependencies
-- Next Best Action
+- [ ] Scoped backend implementation is complete
+- [ ] Acceptance criteria are met
+- [ ] Contract expectations are implemented or explicitly updated
+- [ ] Data / migration impact is handled safely
+- [ ] Auth / safety impact is verified if applicable
+- [ ] Verification has been completed to the required level
+- [ ] Risks and open questions are documented
+- [ ] Required handoff or completion note is prepared
+- [ ] No hidden blocker remains
 
-### Required truthfulness rules
-- Do not claim commands passed if they were not run
-- Do not hide blockers
-- Do not mark the task done if only the happy path works
-- Clearly distinguish complete vs partial completion
-
----
-
-## 19. Definition of Done for This Task
-
-A task is complete only if all relevant items below are true.
-
-### Functional
-- [ ] Requested behavior is implemented
-- [ ] In-scope states are handled
-- [ ] Out-of-scope items were not added
-
-### Technical
-- [ ] Changes stay within allowed paths
-- [ ] No undocumented contract assumptions were introduced
-- [ ] Required validation commands were run or honestly reported
-
-### Quality
-- [ ] No obvious regression introduced
-- [ ] Code is readable and maintainable
-- [ ] Tests were added or updated if behavior changed
-
-### Handoff
-- [ ] Handoff note is complete
-- [ ] Remaining blockers or dependencies are explicit
-
-If any required item is unchecked, status should be `Partial` or `Blocked`, not `Done`.
+Add any task-specific done conditions below:
+- 
+- 
+- 
 
 ---
 
-## 20. Execution Notes for the Agent
+## 21. Packet Quality Checklist
 
-Use this section for any task-specific instructions.
+Before marking this packet as ready for implementation, confirm:
 
-Examples:
-- Reuse existing file card component if possible
-- Do not change global navigation structure
-- Keep API wiring inside existing client layer
-- Prefer local state over adding a new global store
-- Use mock data only if live contract is unavailable and task explicitly allows it
-
+- [ ] The problem and goal are clear
+- [ ] Scope and non-goals are explicit
+- [ ] Consumer impact is identified
+- [ ] Contract impact is classified
+- [ ] Data / migration impact is classified
+- [ ] Auth / safety impact is explicit
+- [ ] Acceptance criteria are testable
+- [ ] Verification plan is defined
+- [ ] Risks and open questions are visible
+- [ ] The backend agent can start without inventing hidden semantics
 ---
 
-## 21. Final Task Packet — Ready-to-Execute Summary
+## 22. Relationship to Other Docs
 
-Provide a short plain-language summary that the assigned agent can act on immediately.
+This template defines the task intake structure for backend work.
 
-**Template**
-
-> Implement `<feature>` in `<surface>` using `<approved contract/doc references>`, stay within `<allowed paths>`, do not do `<major exclusions>`, and complete validation plus handoff before marking the task done.
+Related documents:
+- `docs/agent/backend/backend-agent.md` defines backend agent execution rules
+- `docs/agent/backend/handoff-template.md` defines downstream transfer structure
+- `docs/agent/backend/definition-of-done.md` defines completion quality bar
+- `docs/agent/shared/operating-model.md` defines collaboration flow and handoff model
+- `docs/agent/shared/contract-first-policy.md` defines contract lifecycle rules
+- `docs/agent/shared/repo-boundaries.md` defines ownership and cross-boundary edit rules
