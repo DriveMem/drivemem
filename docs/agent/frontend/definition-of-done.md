@@ -347,10 +347,10 @@ Frontend work should not be marked “fully done” when:
 - release owner signoff is still required for rollout-sensitive behavior
 
 In such cases, use the most accurate completion level:
-- ready for integration
-- ready for verification
-- partial completion
-- production-complete
+- Ready for integration
+- Ready for verification
+- Partial completion
+- Production-complete
 
 Do not overstate completion.
 
