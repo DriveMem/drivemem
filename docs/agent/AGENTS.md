@@ -1,64 +1,48 @@
-# Agent Operating Rules
+# AGENTS.md — Agent Harness Overview
 
 ## Directory Structure
 
 ```
 docs/agent/
-├── AGENTS.md                      # This file — agent harness overview
-├── frontend-agent.md              # Frontend Agent formal spec (English)
-├── frontend-agent.zh-CN.md        # Frontend Agent explanation (Chinese)
-├── backend-agent.md               # Backend Agent formal spec (English)
-├── backend-agent.zh-CN.md         # Backend Agent explanation (Chinese)
-├── task-packet-template.md        # Task packet template for all agents
-├── handoff-template.md            # Handoff output template
-├── definition-of-done.md          # Shared Definition of Done checklist
-└── tasks/                         # Active and completed task packets
+├── AGENTS.md                          # This file
+├── shared/
+│   ├── operating-model.md             # How the multi-agent system works
+│   ├── contract-first-policy.md       # Contract-first integration rules
+│   └── repo-boundaries.md             # Directory ownership and cross-boundary rules
+├── frontend/
+│   ├── frontend-agent.md              # Frontend Agent formal spec
+│   ├── frontend-agent.zh-CN.md        # Frontend Agent Chinese explanation
+│   ├── task-packet-template.md        # Task packet template (frontend)
+│   ├── handoff-template.md            # Handoff template (frontend)
+│   ├── definition-of-done.md          # DoD checklist (frontend)
+│   └── tasks/                         # Frontend task packets
+└── backend/
+    ├── backend-agent.md               # Backend Agent formal spec
+    ├── backend-agent.zh-CN.md         # Backend Agent Chinese explanation
+    ├── task-packet-template.md        # Task packet template (backend)
+    ├── handoff-template.md            # Handoff template (backend)
+    ├── definition-of-done.md          # DoD checklist (backend)
+    └── tasks/                         # Backend task packets
 ```
 
-## Agents
+## Quick Reference
 
-### Frontend Agent
-- **Spec:** `frontend-agent.md`
-- **Role:** Edge extension frontend implementation
-- **Scope:** `apps/edge-extension/**`, UI components, frontend state, API client consumption
-- **Contract relationship:** Consumer (reads contracts, does not define them)
+| Agent | Spec | Scope | Contract Role |
+|-------|------|-------|---------------|
+| Frontend | `frontend/frontend-agent.md` | `apps/edge-extension/**` | Consumer |
+| Backend | `backend/backend-agent.md` | `apps/api-server/**` | Publisher |
 
-### Backend Agent
-- **Spec:** `backend-agent.md`
-- **Role:** API server, storage, auth, AI services, database
-- **Scope:** `apps/api-server/**`, database, infra (when authorized)
-- **Contract relationship:** Publisher (defines and maintains OpenAPI contracts)
+## Shared Policies
 
-## Collaboration Model
+All agents must follow the shared policies in `shared/`:
+- **Operating Model** — task lifecycle, collaboration rules, conflict resolution
+- **Contract-First Policy** — how frontend and backend integrate through contracts
+- **Repo Boundaries** — who owns what directories, cross-boundary rules
 
-Agents collaborate through **documented artifacts only**:
-- OpenAPI contract (`docs/contracts/openapi.yaml`)
-- Error model (`docs/contracts/error-model.md`)
-- Generated client/types (`packages/api-contract/generated/`)
-- Shared types (`packages/shared-types/`)
-- Handoff notes
+## Getting Started
 
-Agents do **not** collaborate through assumptions, verbal agreements, or undocumented behavior.
-
-## Conflict Resolution
-
-When sources conflict, follow this priority:
-1. Approved ADR
-2. OpenAPI / contract docs
-3. Architecture docs (frontend or backend)
-4. Task packet
-5. Existing implementation
-
-## Task Workflow
-
-1. A task packet is created using `task-packet-template.md`
-2. The assigned agent reads its spec + task packet + relevant docs
-3. The agent implements within allowed paths
-4. The agent validates using the specified commands
-5. The agent produces a handoff using `handoff-template.md`
-6. The task is assessed against `definition-of-done.md`
-
-## Tasks Directory
-
-Active and completed task packets live in `docs/agent/tasks/`.
-Naming convention: `<TASK-ID>-<short-title>.md` (e.g., `FE-001-file-list-ui.md`)
+1. Read `AGENTS.md` (this file)
+2. Read your role-specific agent spec
+3. Read the shared policies
+4. Receive a task packet
+5. Execute, validate, hand off
