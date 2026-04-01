@@ -11,6 +11,10 @@ export const s3Client = new S3Client({
   ...(config.S3_ENDPOINT && {
     endpoint: config.S3_ENDPOINT,
     forcePathStyle: true,
+  },
+  ...(config.S3_ENDPOINT && {
+    endpoint: config.S3_ENDPOINT,
+    forcePathStyle: true,
   }),
 });
 
