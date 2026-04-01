@@ -75,10 +75,10 @@ for agent_id in "${!AGENT_PATHS[@]}"; do
     "$(date -Iseconds)" "$last_ts" "$status" "$current_task" "$agent_id")
 
   if write_kv "heartbeat:$agent_id" "$payload"; then
-    ((updated++))
+    ((updated++)) || true
     echo "[sync-heartbeat] $agent_id → $status (task: ${current_task:-none})"
   else
-    ((errors++))
+    ((errors++)) || true
   fi
 done
 
