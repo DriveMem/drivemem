@@ -1,8 +1,8 @@
 import type { Agent, Task, MemoryEntry } from './types';
 import { mockAgents, mockTasks, mockMemoryEntries } from './mock';
 
-const API_BASE = '/api';
-const USE_MOCK = true; // TODO: 切换为 false 或用环境变量控制
+const API_BASE = 'https://monitor-worker.ai-drive-monitor.workers.dev/api';
+const USE_MOCK = false;
 
 export async function fetchAgents(): Promise<Agent[]> {
   if (USE_MOCK) return mockAgents;
