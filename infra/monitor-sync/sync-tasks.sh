@@ -5,7 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-source "$SCRIPT_DIR/.env" 2>/dev/null || true
+set -a; source "$SCRIPT_DIR/.env" 2>/dev/null || true; set +a
 
 CACHE_DIR="$SCRIPT_DIR/.sync-cache"
 mkdir -p "$CACHE_DIR"
@@ -26,7 +26,7 @@ declare -A AGENT_PATHS=(
 
 upload_to_r2() {
   local local_file="$1" r2_key="$2" ct="${3:-application/json}"
-  if ! wrangler r2 object put "$BUCKET/$r2_key" --file="$local_file" --content-type="$ct" 2>/dev/null; then
+  if ! wrangler r2 object put --remote "$BUCKET/$r2_key" --file="$local_file" --content-type="$ct" 2>/dev/null; then
     echo "[sync-tasks] WARN: failed to upload $r2_key" >&2
     return 1
   fi
@@ -66,12 +66,12 @@ for agent_id in "${!AGENT_PATHS[@]}"; do
         r2_key="agents/$agent_id/tasks/$status/$(basename "$f")"
         if upload_to_r2 "$f" "$r2_key"; then
           update_hash "$f"
-          ((uploaded++))
+          ((uploaded++)) || true
         else
-          ((errors++))
+          ((errors++)) || true
         fi
       else
-        ((skipped++))
+        ((skipped++)) || true
       fi
     done
   done

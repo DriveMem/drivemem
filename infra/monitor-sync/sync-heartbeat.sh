@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-source "$SCRIPT_DIR/.env" 2>/dev/null || true
+set -a; source "$SCRIPT_DIR/.env" 2>/dev/null || true; set +a
 
 : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN not set}"
 : "${CLOUDFLARE_ACCOUNT_ID:=41ccba169bc859c3f529c09f72882c5d}"

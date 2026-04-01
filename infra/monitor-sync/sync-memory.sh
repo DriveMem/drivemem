@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-source "$SCRIPT_DIR/.env" 2>/dev/null || true
+set -a; source "$SCRIPT_DIR/.env" 2>/dev/null || true; set +a
 
 CACHE_DIR="$SCRIPT_DIR/.sync-cache"
 mkdir -p "$CACHE_DIR"
@@ -26,7 +26,7 @@ declare -A AGENT_PATHS=(
 
 upload_to_r2() {
   local local_file="$1" r2_key="$2"
-  if ! wrangler r2 object put "$BUCKET/$r2_key" --file="$local_file" --content-type="text/markdown" 2>/dev/null; then
+  if ! wrangler r2 object put --remote "$BUCKET/$r2_key" --file="$local_file" --content-type="text/markdown" 2>/dev/null; then
     echo "[sync-memory] WARN: failed to upload $r2_key" >&2
     return 1
   fi
@@ -57,18 +57,18 @@ for agent_id in "${!AGENT_PATHS[@]}"; do
   mem_dir="$ws/memory"
   [ -d "$mem_dir" ] || continue
 
-  for f in "$mem_dir"/${TODAY}-*.md "$mem_dir"/${YESTERDAY}-*.md; do
+  for f in "$mem_dir"/${TODAY}*.md "$mem_dir"/${YESTERDAY}*.md; do
     [ -f "$f" ] || continue
     if hash_changed "$f"; then
       r2_key="memory/$agent_id/$(basename "$f")"
       if upload_to_r2 "$f" "$r2_key"; then
         update_hash "$f"
-        ((uploaded++))
+        ((uploaded++)) || true
       else
-        ((errors++))
+        ((errors++)) || true
       fi
     else
-      ((skipped++))
+      ((skipped++)) || true
     fi
   done
 done
