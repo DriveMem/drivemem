@@ -1,5 +1,9 @@
-export function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
+export function relativeTime(iso: string | null | undefined): string {
+  if (!iso) return 'unknown';
+  const time = new Date(iso).getTime();
+  if (isNaN(time)) return 'unknown';
+  const diff = Date.now() - time;
+  if (diff < 0) return 'just now';
   const minutes = Math.floor(diff / 60000);
   if (minutes < 1) return 'just now';
   if (minutes < 60) return `${minutes}m ago`;
