@@ -196,4 +196,19 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       .where(eq(files.id, id)).returning();
     return reply.send(updated);
   });
+
+  // POST /:id/retry-parse — retry failed file parsing
+  fastify.post('/:id/retry-parse', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = request.user!.id;
+
+    const [file] = await db.select().from(files).where(and(eq(files.id, id), eq(files.userId, userId)));
+    if (!file) throw new AppError(ErrorCodes.NOT_FOUND, 'File not found', 404);
+    if (file.status !== 'failed') throw new AppError(ErrorCodes.VALIDATION_ERROR, 'Only failed files can be retried', 400);
+
+    await db.update(files).set({ status: 'parsing', errorMessage: null, updatedAt: new Date() }).where(eq(files.id, id));
+    await fileParseQueue.add('parse', { fileId: file.id, userId, s3Key: file.s3Key, mimeType: file.mimeType });
+
+    return reply.send({ fileId: file.id, status: 'parsing' });
+  });
 }
