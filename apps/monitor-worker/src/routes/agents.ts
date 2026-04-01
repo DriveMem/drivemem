@@ -26,11 +26,21 @@ agents.get('/:id/tasks', async (c) => {
   const id = c.req.param('id');
   if (!VALID_IDS.has(id)) return c.json({ error: 'Invalid agent ID' }, 400);
   const status = c.req.query('status');
-  if (!status || !VALID_STATUSES.has(status)) {
-    return c.json({ error: 'Invalid or missing status parameter' }, 400);
+  if (status && !VALID_STATUSES.has(status)) {
+    return c.json({ error: 'Invalid status parameter' }, 400);
   }
-  const tasks = await listTaskFiles(c.env.MONITOR_DATA, id, status as TaskStatus);
-  return c.json({ tasks });
+  if (status) {
+    const tasks = await listTaskFiles(c.env.MONITOR_DATA, id, status as TaskStatus);
+    return c.json({ tasks });
+  }
+  // No status filter: return all statuses
+  const [queue, active, blocked, done] = await Promise.all([
+    listTaskFiles(c.env.MONITOR_DATA, id, 'queue'),
+    listTaskFiles(c.env.MONITOR_DATA, id, 'active'),
+    listTaskFiles(c.env.MONITOR_DATA, id, 'blocked'),
+    listTaskFiles(c.env.MONITOR_DATA, id, 'done'),
+  ]);
+  return c.json({ tasks: { queue, active, blocked, done } });
 });
 
 export default agents;
