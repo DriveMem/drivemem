@@ -79,6 +79,14 @@ export async function deleteByFileId(fileId: string): Promise<void> {
   });
 }
 
+export async function deleteByUserId(userId: string): Promise<void> {
+  await qdrant.delete(COLLECTION_NAME, {
+    filter: {
+      must: [{ key: 'user_id', match: { value: userId } }],
+    },
+  });
+}
+
 export async function searchSimilar(params: {
   userId: string;
   query: number[];
