@@ -1,7 +1,7 @@
 import type { Agent, Task, MemoryEntry } from './types';
 import { mockAgents, mockTasks, mockMemoryEntries } from './mock';
 
-const API_BASE = 'https://monitor-worker.ai-drive-monitor.workers.dev/api';
+const API_BASE = import.meta.env.PUBLIC_API_BASE || 'https://monitor-worker.ai-drive-monitor.workers.dev/api';
 const USE_MOCK = false;
 
 export async function fetchAgents(): Promise<Agent[]> {

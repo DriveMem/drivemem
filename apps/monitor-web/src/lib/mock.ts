@@ -1,6 +1,7 @@
 import type { Agent, Task, MemoryEntry } from './types';
 
-export const mockAgents: Agent[] = [
+// Mock data uses partial shapes — type assertions are intentional
+export const mockAgents = [
   {
     id: 'main',
     name: '牛马',
@@ -61,9 +62,9 @@ export const mockAgents: Agent[] = [
     tasks: { queue: 0, active: 1, blocked: 1, done: 0 },
     currentTask: 'Cloudflare 基础设施配置',
   },
-];
+] as Agent[];
 
-export const mockTasks: Record<string, Task[]> = {
+export const mockTasks = {
   'ad-master': [
     {
       id: 'arch-design',
@@ -183,7 +184,7 @@ export const mockTasks: Record<string, Task[]> = {
   ],
   'main': [],
   'ad-manager': [],
-};
+} as unknown as Record<string, Task[]>;
 
 // Memory mock data
 export const mockMemoryEntries: Record<string, MemoryEntry[]> = {

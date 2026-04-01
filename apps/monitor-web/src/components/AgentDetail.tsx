@@ -60,8 +60,8 @@ export default function AgentDetail({ agentId }: Props) {
             </div>
 
             <div className="text-sm text-tertiary space-y-1">
-              <p title={new Date(agent.lastHeartbeat).toLocaleString('zh-CN')}>
-                Last heartbeat: {relativeTime(agent.lastHeartbeat)}
+              <p title={agent.lastHeartbeat ? new Date(agent.lastHeartbeat).toLocaleString('zh-CN') : 'N/A'}>
+                Last heartbeat: {agent.lastHeartbeat ? relativeTime(agent.lastHeartbeat) : 'N/A'}
               </p>
               {agent.currentTask && (
                 <p className="text-secondary break-words mt-2 px-3 py-1.5 bg-brand-50 rounded-lg text-brand-600 text-sm inline-block">
