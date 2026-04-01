@@ -2,7 +2,7 @@ const colorMap: Record<string, { active: string; zero: string }> = {
   blue:  { active: 'text-brand-600', zero: 'text-neutral-200' },
   red:   { active: 'text-red-500', zero: 'text-neutral-200' },
   gray:  { active: 'text-secondary', zero: 'text-neutral-200' },
-  green: { active: 'text-emerald-500', zero: 'text-neutral-200' },
+  green: { active: 'text-neutral-400', zero: 'text-neutral-200' },
 };
 
 interface Props {
