@@ -1,0 +1,16 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import AgentDetail from '@/components/AgentDetail';
+import { AGENTS } from '@/lib/constants';
+
+export function getStaticPaths() {
+  return AGENTS.map((a) => ({ params: { id: a.id } }));
+}
+
+const { id } = Astro.params;
+const agent = AGENTS.find((a) => a.id === id);
+---
+
+<Layout title={`${agent?.emoji ?? ''} ${agent?.name ?? id} · 龙虾监控站`}>
+  <AgentDetail agentId={id!} client:load />
+</Layout>
