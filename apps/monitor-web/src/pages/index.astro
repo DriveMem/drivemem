@@ -1,0 +1,19 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import AgentCard from '@/components/AgentCard';
+import { AGENTS } from '@/lib/constants';
+---
+
+<Layout title="Dashboard · AI Drive Monitor">
+  <h1 class="text-2xl font-semibold mb-6">Dashboard</h1>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {AGENTS.map((agent) => (
+      <AgentCard
+        id={agent.id}
+        name={agent.name}
+        emoji={agent.emoji}
+        status="unknown"
+      />
+    ))}
+  </div>
+</Layout>
