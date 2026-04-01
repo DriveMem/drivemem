@@ -20,10 +20,12 @@ await app.register(errorHandler);
 import authPlugin from './plugins/auth.js';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
+import conversationRoutes from './routes/conversations.js';
 
 await app.register(authPlugin);
 await app.register(authRoutes, { prefix: '/api/auth' });
 await app.register(userRoutes, { prefix: '/api/users' });
+await app.register(conversationRoutes, { prefix: '/api/conversations' });
 
 app.get('/health', async () => ({
   status: 'ok',
