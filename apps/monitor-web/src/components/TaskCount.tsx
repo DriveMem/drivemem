@@ -28,12 +28,15 @@ export default function TaskCount({ label, count, color }: Props) {
   }
 
   const textColor = count > 0 ? c.active : c.zero;
-  const isDone = label === 'Done';
-  const doneColor = count > 0 ? '!text-neutral-400' : c.zero;
 
   return (
     <div className="flex flex-col items-center min-w-[44px] py-2 px-1 rounded-lg bg-page/60">
-      <span className={`text-xl font-semibold tabular-nums leading-none ${isDone ? doneColor : textColor}`}>{count}</span>
+      <span
+        className="text-xl font-semibold tabular-nums leading-none"
+        style={label === 'Done' && count > 0 ? { color: '#a3a3a3' } : undefined}
+      >
+        <span className={label === 'Done' && count > 0 ? '' : textColor}>{count}</span>
+      </span>
       <span className="text-[10px] text-tertiary uppercase tracking-wider mt-1.5">{label}</span>
     </div>
   );
