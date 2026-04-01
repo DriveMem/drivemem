@@ -41,3 +41,14 @@ export async function headObject(s3Key: string): Promise<boolean> {
 export async function deleteObject(s3Key: string): Promise<void> {
   await s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: s3Key }));
 }
+
+export async function getObject(key: string): Promise<Buffer> {
+  const command = new GetObjectCommand({ Bucket: bucket, Key: key });
+  const response = await s3Client.send(command);
+  const stream = response.Body as NodeJS.ReadableStream;
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+}
