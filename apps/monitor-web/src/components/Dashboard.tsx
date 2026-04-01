@@ -1,58 +1,47 @@
-import { useState, useEffect, useCallback } from 'react';
 import AgentCard from './AgentCard';
+import RefreshIndicator from './RefreshIndicator';
 import { fetchAgents } from '@/lib/api';
+import { usePolling } from '@/lib/usePolling';
 import { formatTime } from '@/lib/utils';
-import type { Agent } from '@/lib/types';
 
 export default function Dashboard() {
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [loading, setLoading] = useState(true);
+  const { data: agents, loading, lastUpdated, refresh, isRefreshing } = usePolling({
+    fetcher: fetchAgents,
+    interval: 30000,
+  });
 
-  const refresh = useCallback(async () => {
-    try {
-      const data = await fetchAgents();
-      setAgents(data);
-      setLastUpdated(new Date());
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    refresh();
-    const interval = setInterval(refresh, 30000);
-    return () => clearInterval(interval);
-  }, [refresh]);
-
-  const onlineCount = agents.filter(a => a.status === 'online' || a.status === 'busy').length;
-  const activeTaskCount = agents.reduce((sum, a) => sum + a.tasks.active, 0);
+  const list = agents ?? [];
+  const onlineCount = list.filter(a => a.status === 'online' || a.status === 'busy').length;
+  const activeTaskCount = list.reduce((sum, a) => sum + a.tasks.active, 0);
 
   return (
     <div>
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">龙虾系统监控站</h1>
-          <p className="text-sm text-tertiary mt-1">
-            {onlineCount} agents online · {activeTaskCount} tasks active · Last updated {formatTime(lastUpdated)}
+      <div className="flex items-start justify-between gap-4 mb-6 sm:mb-8">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">龙虾系统监控站</h1>
+          <p className="text-xs sm:text-sm text-tertiary mt-1 break-words">
+            {onlineCount} agents online · {activeTaskCount} tasks active
+            {lastUpdated && <span className="hidden sm:inline"> · Updated {formatTime(lastUpdated)}</span>}
           </p>
         </div>
-        <button
-          onClick={refresh}
-          disabled={loading}
-          className="text-xs text-tertiary hover:text-secondary border border-gray-200 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
-        >
-          ↻ Refresh
-        </button>
+        <RefreshIndicator lastUpdated={lastUpdated} isRefreshing={isRefreshing} onRefresh={refresh} />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {agents.map(agent => (
-          <AgentCard key={agent.id} {...agent} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-40 bg-gray-100 rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {list.map(agent => (
+            <AgentCard key={agent.id} {...agent} />
+          ))}
+        </div>
+      )}
 
-      <p className="text-center text-xs text-tertiary mt-8">数据每 30 秒自动更新</p>
+      <p className="text-center text-xs text-tertiary mt-6 sm:mt-8">数据每 30 秒自动更新</p>
     </div>
   );
 }

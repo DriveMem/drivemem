@@ -8,11 +8,11 @@ export default function AgentCard({ id, name, emoji, status, lastHeartbeat, task
   return (
     <a
       href={`/agent/${id}`}
-      className={`group block rounded-xl border border-gray-100 bg-card p-5 transition-all duration-200 hover:shadow-sm hover:border-gray-200 ${isOffline ? 'opacity-60' : ''}`}
+      className={`group block rounded-xl border border-gray-100 bg-card p-4 sm:p-5 transition-all duration-200 hover:shadow-sm hover:border-gray-200 ${isOffline ? 'opacity-60' : ''}`}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="text-3xl shrink-0">{emoji}</span>
+          <span className="text-2xl sm:text-3xl shrink-0">{emoji}</span>
           <div className="min-w-0">
             <h3 className="font-medium text-[15px] text-primary">{name}</h3>
             {currentTask && (
@@ -23,7 +23,7 @@ export default function AgentCard({ id, name, emoji, status, lastHeartbeat, task
         <StatusBadge status={status} />
       </div>
 
-      <div className="mt-4 flex gap-3">
+      <div className="mt-3 sm:mt-4 grid grid-cols-4 gap-2 sm:flex sm:gap-3">
         <TaskCount label="Active" count={tasks.active} color="blue" />
         <TaskCount label="Blocked" count={tasks.blocked} color="red" />
         <TaskCount label="Queue" count={tasks.queue} color="gray" />

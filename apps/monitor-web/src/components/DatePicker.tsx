@@ -23,12 +23,12 @@ export default function DatePicker({ value, onChange }: Props) {
     <div className="flex items-center gap-3">
       <button
         onClick={() => onChange(shiftDate(value, -1))}
-        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-secondary hover:text-primary hover:border-gray-300 transition-colors text-sm"
+        className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg border border-gray-200 text-secondary hover:text-primary hover:border-gray-300 transition-colors text-sm"
         aria-label="前一天"
       >
         ←
       </button>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
         <span className="text-sm text-secondary font-medium">
           {formatDateChinese(value)}
         </span>
@@ -36,12 +36,12 @@ export default function DatePicker({ value, onChange }: Props) {
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="border border-gray-200 rounded-lg px-2.5 py-1 text-sm bg-card text-secondary hover:border-gray-300 transition-colors cursor-pointer"
+          className="border border-gray-200 rounded-lg px-2.5 py-1.5 sm:py-1 text-sm bg-card text-secondary hover:border-gray-300 transition-colors cursor-pointer"
         />
       </div>
       <button
         onClick={() => onChange(shiftDate(value, 1))}
-        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-secondary hover:text-primary hover:border-gray-300 transition-colors text-sm"
+        className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg border border-gray-200 text-secondary hover:text-primary hover:border-gray-300 transition-colors text-sm"
         aria-label="后一天"
       >
         →

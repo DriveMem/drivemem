@@ -20,16 +20,16 @@ const { title = 'AI Drive Monitor' } = Astro.props;
   </head>
   <body class="bg-page text-primary font-sans min-h-screen flex flex-col">
     <header class="border-b border-gray-200 bg-card">
-      <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-        <a href="/" class="text-lg font-semibold tracking-tight">🦞 龙虾监控站</a>
-        <div class="flex items-center gap-6 text-sm text-secondary">
+      <nav class="max-w-6xl mx-auto px-4 sm:px-6 h-12 sm:h-14 flex items-center justify-between">
+        <a href="/" class="text-base sm:text-lg font-semibold tracking-tight">🦞 龙虾监控站</a>
+        <div class="flex items-center gap-4 sm:gap-6 text-sm text-secondary">
           <a href="/" class="hover:text-primary transition-colors">Dashboard</a>
           <a href={`/memory/${new Date().toISOString().slice(0, 10)}`} class="hover:text-primary transition-colors">Memory</a>
         </div>
       </nav>
     </header>
 
-    <main class="flex-1 max-w-6xl mx-auto px-6 py-8 w-full">
+    <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 w-full">
       <slot />
     </main>
 
