@@ -12,7 +12,7 @@ export const users = pgTable('users', {
   storageUsed: bigint('storage_used', { mode: 'number' }).notNull().default(0),
   storageLimit: bigint('storage_limit', { mode: 'number' }).notNull().default(5_368_709_120), // 5 GB
   dailyChatCount: integer('daily_chat_count').notNull().default(0),
-  dailyChatLimit: integer('daily_chat_limit').notNull().default(50),
+  dailyChatLimit: integer('daily_chat_limit').notNull().default(20), // 产品 Spec: 20次/天
   lastChatResetAt: timestamp('last_chat_reset_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -20,6 +20,15 @@ export const users = pgTable('users', {
 
 // --- File status enum ---
 export const fileStatusEnum = pgEnum('file_status', ['uploading', 'parsing', 'indexed', 'failed']);
+
+// --- Folders ---
+export const folders = pgTable('folders', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  parentId: uuid('parent_id'),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
 
 // --- Files ---
 export const files = pgTable('files', {
@@ -30,21 +39,12 @@ export const files = pgTable('files', {
   size: bigint('size', { mode: 'number' }).notNull(),
   status: fileStatusEnum('status').notNull().default('uploading'),
   errorMessage: text('error_message'),
-  folderId: uuid('folder_id'),
+  folderId: uuid('folder_id').references(() => folders.id, { onDelete: 'set null' }),
   chunkCount: integer('chunk_count').notNull().default(0),
-  userId: uuid('user_id').notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   s3Key: text('s3_key').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-});
-
-// --- Folders ---
-export const folders = pgTable('folders', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-  parentId: uuid('parent_id'),
-  userId: uuid('user_id').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 // --- Conversation scope enum ---
@@ -56,7 +56,7 @@ export const conversations = pgTable('conversations', {
   title: varchar('title', { length: 255 }).notNull().default('New Conversation'),
   scopeType: scopeTypeEnum('scope_type').notNull().default('all'),
   scopeId: uuid('scope_id'),
-  userId: uuid('user_id').notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -67,7 +67,7 @@ export const messageRoleEnum = pgEnum('message_role', ['user', 'assistant', 'sys
 // --- Messages ---
 export const messages = pgTable('messages', {
   id: uuid('id').defaultRandom().primaryKey(),
-  conversationId: uuid('conversation_id').notNull(),
+  conversationId: uuid('conversation_id').notNull().references(() => conversations.id, { onDelete: 'cascade' }),
   role: messageRoleEnum('role').notNull(),
   content: text('content').notNull(),
   citations: jsonb('citations'),
@@ -78,7 +78,7 @@ export const messages = pgTable('messages', {
 // --- Password Reset Tokens ---
 export const passwordResetTokens = pgTable('password_reset_tokens', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   token: varchar('token', { length: 255 }).notNull().unique(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   usedAt: timestamp('used_at', { withTimezone: true }),
