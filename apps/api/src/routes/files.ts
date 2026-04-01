@@ -7,7 +7,13 @@ import { requireAuth } from '../plugins/auth.js';
 import { AppError, ErrorCodes } from '../lib/errors.js';
 import { fileParseQueue } from '../lib/queue.js';
 import { generateUploadUrl, generatePreviewUrl, headObject, deleteObject } from '../services/s3.service.js';
+import { deleteByFileId } from '../services/vector.service.js';
 import { MAX_FILE_SIZE, SUPPORTED_MIME_TYPES } from '@ai-drive/shared';
+
+const PARSE_JOB_OPTIONS = {
+  attempts: 3,
+  backoff: { type: 'exponential' as const, delay: 30_000 },
+};
 
 // --- Schemas ---
 
@@ -159,7 +165,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       userId,
       s3Key: file.s3Key,
       mimeType: file.mimeType,
-    });
+    }, PARSE_JOB_OPTIONS);
 
     return reply.send({ fileId, status: 'parsing' });
   });
@@ -259,5 +265,34 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     const file = await getOwnedFile(id, request.user!.id);
     const previewUrl = await generatePreviewUrl(file.s3Key);
     return reply.send({ previewUrl, mimeType: file.mimeType });
+  });
+
+  // POST /:id/retry-parse
+  fastify.post('/:id/retry-parse', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = request.user!.id;
+
+    const file = await getOwnedFile(id, userId);
+    if (file.status !== 'failed') {
+      throw new AppError(ErrorCodes.VALIDATION_ERROR, 'Only failed files can be retried', 400);
+    }
+
+    await deleteByFileId(id);
+
+    await db.update(schema.files).set({
+      status: 'parsing',
+      errorMessage: null,
+      chunkCount: 0,
+      updatedAt: new Date(),
+    }).where(eq(schema.files.id, id));
+
+    await fileParseQueue.add('parse', {
+      fileId: id,
+      userId,
+      s3Key: file.s3Key,
+      mimeType: file.mimeType,
+    }, PARSE_JOB_OPTIONS);
+
+    return reply.send({ fileId: id, status: 'parsing' });
   });
 }
