@@ -1,25 +1,21 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import MemoryViewer from '@/components/MemoryViewer';
-import DatePicker from '@/components/DatePicker';
-
-const { date } = Astro.params;
+import MemoryBrowser from '@/components/MemoryBrowser';
 
 export function getStaticPaths() {
   return [
     { params: { date: 'today' } },
     { params: { date: '2026-04-01' } },
+    { params: { date: '2026-03-31' } },
   ];
 }
+const { date } = Astro.params;
 ---
 
-<Layout title={`Memory · ${date} · AI Drive Monitor`}>
+<Layout title={`Memory · ${date} · 龙虾监控站`}>
   <div class="mb-6">
     <a href="/" class="text-sm text-secondary hover:text-primary transition-colors">← Dashboard</a>
   </div>
-  <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-semibold">Memory Browser</h1>
-    <DatePicker value={date ?? ''} client:load />
-  </div>
-  <MemoryViewer date={date ?? ''} entries={[]} client:load />
+  <h1 class="text-2xl font-semibold mb-6">Memory Browser</h1>
+  <MemoryBrowser initialDate={date === 'today' ? '' : date ?? ''} client:load />
 </Layout>
