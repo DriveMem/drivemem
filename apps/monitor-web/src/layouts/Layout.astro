@@ -21,10 +21,10 @@ const { title = 'AI Drive Monitor' } = Astro.props;
   <body class="bg-page text-primary font-sans min-h-screen flex flex-col">
     <header class="border-b border-gray-200 bg-card">
       <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-        <a href="/" class="text-lg font-semibold tracking-tight">🤖 AI Drive</a>
+        <a href="/" class="text-lg font-semibold tracking-tight">🦞 龙虾监控站</a>
         <div class="flex items-center gap-6 text-sm text-secondary">
           <a href="/" class="hover:text-primary transition-colors">Dashboard</a>
-          <a href="/memory/today" class="hover:text-primary transition-colors">Memory</a>
+          <a href={`/memory/${new Date().toISOString().slice(0, 10)}`} class="hover:text-primary transition-colors">Memory</a>
         </div>
       </nav>
     </header>
