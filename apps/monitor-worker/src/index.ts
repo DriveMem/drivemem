@@ -4,6 +4,7 @@ import type { Env } from './types.js';
 import agents from './routes/agents.js';
 import memory from './routes/memory.js';
 import health from './routes/health.js';
+import { cacheMiddleware } from './middleware/cache.js';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -19,6 +20,13 @@ app.use(
     },
   })
 );
+
+// Cache API for high-frequency endpoints (TTL 30s, aligned with frontend polling)
+app.use('/api/agents/*', cacheMiddleware(30));
+app.use('/api/agents', cacheMiddleware(30));
+app.use('/api/memory/*', cacheMiddleware(30));
+app.use('/api/memory', cacheMiddleware(30));
+app.use('/api/health', cacheMiddleware(60));
 
 app.route('/api/agents', agents);
 app.route('/api/memory', memory);

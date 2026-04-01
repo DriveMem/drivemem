@@ -8,4 +8,4 @@ bucket_name = "monitor-data"
 
 [[kv_namespaces]]
 binding = "MONITOR_HEARTBEAT"
-id = "placeholder-will-be-set-by-operator"
+id = "98ad0fb0de3049ec864eca589ef83e59"

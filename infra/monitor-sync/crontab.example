@@ -1,0 +1,6 @@
+# 每 2 分钟同步 tasks
+*/2 * * * * cd /home/ubuntu/repos/ai-drive/infra/monitor-sync && bash sync-tasks.sh >> /tmp/monitor-sync-tasks.log 2>&1
+# 每 10 分钟同步 memory
+*/10 * * * * cd /home/ubuntu/repos/ai-drive/infra/monitor-sync && bash sync-memory.sh >> /tmp/monitor-sync-memory.log 2>&1
+# 每 2 分钟收集心跳
+*/2 * * * * cd /home/ubuntu/repos/ai-drive/infra/monitor-sync && bash sync-heartbeat.sh >> /tmp/monitor-sync-heartbeat.log 2>&1
