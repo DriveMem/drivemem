@@ -24,8 +24,19 @@ export async function fetchAgentTasks(id: string, status?: string): Promise<Task
     const tasks = mockTasks[id] ?? [];
     return status ? tasks.filter(t => t.status === status) : tasks;
   }
-  const params = status ? `?status=${status}` : '';
-  const res = await fetch(`${API_BASE}/agents/${id}/tasks${params}`);
+  // Worker requires status param; fetch all 4 statuses in parallel when not specified
+  if (!status) {
+    const statuses = ['active', 'blocked', 'queue', 'done'] as const;
+    const results = await Promise.all(
+      statuses.map(s =>
+        fetch(`${API_BASE}/agents/${id}/tasks?status=${s}`)
+          .then(r => r.ok ? r.json() : [])
+          .catch(() => [])
+      )
+    );
+    return results.flat();
+  }
+  const res = await fetch(`${API_BASE}/agents/${id}/tasks?status=${status}`);
   if (!res.ok) throw new Error(`Failed to fetch tasks: ${res.status}`);
   return res.json();
 }
