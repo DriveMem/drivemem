@@ -17,6 +17,14 @@ await app.register(cors, { origin: config.FRONTEND_URL, credentials: true });
 await app.register(sensible);
 await app.register(errorHandler);
 
+import authPlugin from './plugins/auth.js';
+import authRoutes from './routes/auth.js';
+import userRoutes from './routes/users.js';
+
+await app.register(authPlugin);
+await app.register(authRoutes, { prefix: '/api/auth' });
+await app.register(userRoutes, { prefix: '/api/users' });
+
 app.get('/health', async () => ({
   status: 'ok',
   timestamp: new Date().toISOString(),
