@@ -23,6 +23,8 @@ import userRoutes from './routes/users.js';
 import fileRoutes from './routes/files.js';
 import folderRoutes from './routes/folders.js';
 import conversationRoutes from './routes/conversations.js';
+import searchRoutes from './routes/search.js';
+import exportRoutes from './routes/export.js';
 
 await app.register(authPlugin);
 await app.register(authRoutes, { prefix: '/api/auth' });
@@ -30,6 +32,8 @@ await app.register(userRoutes, { prefix: '/api/users' });
 await app.register(fileRoutes, { prefix: '/api/files' });
 await app.register(folderRoutes, { prefix: '/api/folders' });
 await app.register(conversationRoutes, { prefix: '/api/conversations' });
+await app.register(searchRoutes, { prefix: '/api/search' });
+await app.register(exportRoutes, { prefix: '/api/users/me' });
 
 app.get('/health', async () => ({
   status: 'ok',

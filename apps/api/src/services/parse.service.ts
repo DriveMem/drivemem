@@ -1,4 +1,5 @@
 import { PDFParse } from 'pdf-parse';
+import mammoth from 'mammoth';
 import { AppError } from '../lib/errors.js';
 
 const MAX_TEXT_LENGTH = 500_000;
@@ -36,6 +37,11 @@ export async function parseDocument(buffer: Buffer, mimeType: string): Promise<s
           .replace(/\|/g, ' ')
           .replace(/\n{3,}/g, '\n\n')
           .trim();
+        break;
+      }
+      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
+        const result = await mammoth.extractRawText({ buffer });
+        text = result.value;
         break;
       }
       default:
