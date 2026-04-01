@@ -9,6 +9,11 @@ import { users, passwordResetTokens } from '../db/schema.js';
 import { AppError, ErrorCodes } from '../lib/errors.js';
 import { config } from '../lib/config.js';
 
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
 const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
@@ -31,6 +36,40 @@ const transporter = nodemailer.createTransport({
 });
 
 export default async function authRoutes(fastify: FastifyInstance) {
+  // POST /login — Auth.js Credentials provider 调用此端点验证密码
+  fastify.post('/login', async (request, reply) => {
+    const body = loginSchema.parse(request.body);
+
+    const [user] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        passwordHash: users.passwordHash,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(users)
+      .where(eq(users.email, body.email))
+      .limit(1);
+
+    if (!user || !user.passwordHash) {
+      throw new AppError(ErrorCodes.UNAUTHORIZED, 'Invalid email or password', 401);
+    }
+
+    const valid = await bcrypt.compare(body.password, user.passwordHash);
+    if (!valid) {
+      throw new AppError(ErrorCodes.UNAUTHORIZED, 'Invalid email or password', 401);
+    }
+
+    // 返回用户信息（不含 passwordHash），Auth.js authorize 函数用这个签 JWT
+    return reply.send({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatarUrl: user.avatarUrl,
+    });
+  });
+
   // POST /signup
   fastify.post('/signup', async (request, reply) => {
     const body = signupSchema.parse(request.body);
