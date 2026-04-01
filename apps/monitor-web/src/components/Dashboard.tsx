@@ -37,11 +37,7 @@ export default function Dashboard() {
       <div className="flex items-start justify-between gap-4 mb-6 sm:mb-8">
         <div className="min-w-0">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">龙虾系统监控站</h1>
-          {lastUpdated && (
-            <span className="text-xs text-tertiary mt-2 inline-flex items-center gap-1">
-              Updated {formatTime(lastUpdated)}
-            </span>
-          )}
+
         </div>
         <RefreshIndicator lastUpdated={lastUpdated} isRefreshing={isRefreshing} onRefresh={refresh} />
       </div>

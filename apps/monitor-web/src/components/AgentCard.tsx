@@ -17,7 +17,7 @@ export default function AgentCard({ id, name, emoji, status, lastHeartbeat, task
   return (
     <a
       href={`/agent/${id}`}
-      className={`group block rounded-xl border border-neutral-200/80 border-l-[3px] ${borderColor} bg-card shadow-card p-5 sm:p-6 transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5`}
+      className={`group block rounded-xl border-l-[3px] ${borderColor} bg-card shadow-card p-5 sm:p-6 transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5`}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
@@ -25,9 +25,6 @@ export default function AgentCard({ id, name, emoji, status, lastHeartbeat, task
           <span className="text-3xl sm:text-4xl shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-page">{emoji}</span>
           <div className="min-w-0">
             <h3 className="font-semibold text-base text-primary leading-tight">{name}</h3>
-            {currentTask && (
-              <p className="text-xs text-secondary truncate max-w-[200px] mt-1 px-1.5 py-0.5 bg-brand-50 rounded text-brand-600">{currentTask}</p>
-            )}
           </div>
         </div>
         <StatusBadge status={status} />
