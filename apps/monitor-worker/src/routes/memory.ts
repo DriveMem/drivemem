@@ -14,8 +14,10 @@ memory.get('/', async (c) => {
   if (!date || !DATE_RE.test(date)) {
     return c.json({ error: 'Invalid or missing date parameter (YYYY-MM-DD)' }, 400);
   }
+  const agent = c.req.query('agent');
+  const agentIds = agent && VALID_IDS.has(agent) ? [agent as AgentId] : [...AGENT_IDS];
   const allEntries = (
-    await Promise.all(AGENT_IDS.map((id) => getMemoryList(c.env.MONITOR_DATA, id, date)))
+    await Promise.all(agentIds.map((id) => getMemoryList(c.env.MONITOR_DATA, id, date)))
   ).flat();
   const res: MemoryListResponse = { date, entries: allEntries };
   return c.json(res);
