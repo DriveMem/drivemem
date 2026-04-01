@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, bigint, integer, timestamp, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, bigint, integer, timestamp, pgEnum, jsonb } from 'drizzle-orm/pg-core';
 
 export const authProviderEnum = pgEnum('auth_provider', ['credentials', 'google', 'github']);
 
@@ -16,4 +16,71 @@ export const users = pgTable('users', {
   lastChatResetAt: timestamp('last_chat_reset_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// --- File status enum ---
+export const fileStatusEnum = pgEnum('file_status', ['uploading', 'parsing', 'indexed', 'failed']);
+
+// --- Files ---
+export const files = pgTable('files', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  originalName: varchar('original_name', { length: 255 }).notNull(),
+  mimeType: varchar('mime_type', { length: 127 }).notNull(),
+  size: bigint('size', { mode: 'number' }).notNull(),
+  status: fileStatusEnum('status').notNull().default('uploading'),
+  errorMessage: text('error_message'),
+  folderId: uuid('folder_id'),
+  chunkCount: integer('chunk_count').notNull().default(0),
+  userId: uuid('user_id').notNull(),
+  s3Key: text('s3_key').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// --- Folders ---
+export const folders = pgTable('folders', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  parentId: uuid('parent_id'),
+  userId: uuid('user_id').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// --- Conversation scope enum ---
+export const scopeTypeEnum = pgEnum('scope_type', ['all', 'folder', 'file']);
+
+// --- Conversations ---
+export const conversations = pgTable('conversations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  title: varchar('title', { length: 255 }).notNull().default('New Conversation'),
+  scopeType: scopeTypeEnum('scope_type').notNull().default('all'),
+  scopeId: uuid('scope_id'),
+  userId: uuid('user_id').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// --- Message role enum ---
+export const messageRoleEnum = pgEnum('message_role', ['user', 'assistant', 'system']);
+
+// --- Messages ---
+export const messages = pgTable('messages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  conversationId: uuid('conversation_id').notNull(),
+  role: messageRoleEnum('role').notNull(),
+  content: text('content').notNull(),
+  citations: jsonb('citations'),
+  tokenCount: integer('token_count'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// --- Password Reset Tokens ---
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull(),
+  token: varchar('token', { length: 255 }).notNull().unique(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
