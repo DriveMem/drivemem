@@ -6,7 +6,7 @@ import { formatTime } from '@/lib/utils';
 
 /** Dashboard 主页面 — 展示所有 agent 状态卡片和全局统计 */
 export default function Dashboard() {
-  const { data: agents, loading, lastUpdated, refresh, isRefreshing } = usePolling({
+  const { data: agents, loading, error, lastUpdated, refresh, isRefreshing } = usePolling({
     fetcher: fetchAgents,
     interval: 30000,
   });
@@ -47,6 +47,24 @@ export default function Dashboard() {
           {[1, 2, 3].map(i => (
             <div key={i} className="h-48 bg-neutral-100 rounded-xl animate-pulse" />
           ))}
+        </div>
+      ) : error ? (
+        <div className="text-center py-16 sm:py-20">
+          <div className="text-4xl mb-4">😵</div>
+          <p className="text-secondary mb-2">数据加载失败</p>
+          <p className="text-xs text-tertiary mb-4">{error.message}</p>
+          <button
+            onClick={refresh}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors min-h-[44px]"
+          >
+            ↻ 重试
+          </button>
+        </div>
+      ) : list.length === 0 ? (
+        <div className="text-center py-16 sm:py-20">
+          <div className="text-4xl mb-4">🦞</div>
+          <p className="text-secondary mb-2">暂无 Agent 数据</p>
+          <p className="text-xs text-tertiary mb-4">系统可能还在初始化，稍后会自动刷新</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
