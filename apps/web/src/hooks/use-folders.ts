@@ -23,7 +23,9 @@ export function useFolders() {
     queryKey: ['folders'],
     queryFn: async () => {
       const data = await apiFetch('/api/folders')
-      return { folders: data.folders, tree: buildFolderTree(data.folders) }
+      // Handle both { folders: [...] } and [...] response formats
+      const folders = Array.isArray(data) ? data : (data?.folders || [])
+      return { folders, tree: buildFolderTree(folders) }
     },
   })
 }

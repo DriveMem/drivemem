@@ -47,7 +47,7 @@ export function FileList() {
   const [showUpload, setShowUpload] = useState(false)
   const parentRef = useRef<HTMLDivElement>(null)
 
-  const rawFiles: FileItem[] = data?.files || []
+  const rawFiles: FileItem[] = Array.isArray(data) ? data : (data?.files || [])
 
   const files = useMemo(() => {
     return [...rawFiles].sort((a, b) => {
