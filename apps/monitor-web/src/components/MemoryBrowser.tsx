@@ -135,11 +135,9 @@ export default function MemoryBrowser({ initialDate }: Props) {
                     ▼
                   </span>
                 </button>
-                <div
-                  className="overflow-hidden transition-all duration-300 ease-in-out"
-                  style={{ maxHeight: isExpanded ? '2000px' : '0px', opacity: isExpanded ? 1 : 0 }}
-                >
-                  <div className="px-4 sm:px-5 pb-5 sm:pb-6 border-t border-neutral-100">
+                {isExpanded && (
+                <div className="border-t border-neutral-100">
+                  <div className="px-4 sm:px-5 pb-5 sm:pb-6">
                     <div className="pt-4 sm:pt-5 overflow-x-auto">
                       {(() => {
                         const key = `${entry.agent}/${entry.filename}`;
@@ -152,6 +150,7 @@ export default function MemoryBrowser({ initialDate }: Props) {
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             );
           })}
