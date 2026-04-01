@@ -14,6 +14,7 @@ const labelColor: Record<Agent['status'], string> = {
   unknown: 'text-gray-400',
 };
 
+/** Agent 状态徽章 — 带颜色圆点的状态标签 */
 export default function StatusBadge({ status }: { status: Agent['status'] }) {
   const pulse = status === 'online' ? 'animate-pulse' : '';
   return (

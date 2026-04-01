@@ -17,6 +17,7 @@ const dotColor: Record<Task['status'], string> = {
 
 const DONE_LIMIT = 5;
 
+/** 任务列表 — 按状态分组展示 agent 的所有任务 */
 export default function TaskList({ tasks }: Props) {
   if (tasks.length === 0) {
     return <p className="text-sm text-gray-400">No tasks yet.</p>;

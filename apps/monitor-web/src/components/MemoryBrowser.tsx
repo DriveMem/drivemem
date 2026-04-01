@@ -12,6 +12,7 @@ interface Props {
 
 const agentMap = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 
+/** Memory 浏览器 — 按日期和 agent 筛选蒸馏记录 */
 export default function MemoryBrowser({ initialDate }: Props) {
   const defaultDate = initialDate || new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(defaultDate);

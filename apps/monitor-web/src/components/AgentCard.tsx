@@ -3,6 +3,7 @@ import TaskCount from './TaskCount';
 import type { Agent } from '@/lib/types';
 import { relativeTime } from '@/lib/utils';
 
+/** Agent 状态卡片 — Dashboard 中的单个 agent 展示 */
 export default function AgentCard({ id, name, emoji, status, lastHeartbeat, tasks, currentTask }: Agent) {
   const isOffline = status === 'offline';
   return (

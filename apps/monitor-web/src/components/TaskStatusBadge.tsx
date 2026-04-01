@@ -7,6 +7,7 @@ const styles: Record<Task['status'], { bg: string; text: string }> = {
   done:    { bg: 'bg-green-50', text: 'text-green-600' },
 };
 
+/** 任务状态徽章 — 带背景色的任务状态标签 */
 export default function TaskStatusBadge({ status }: { status: Task['status'] }) {
   const s = styles[status];
   return (

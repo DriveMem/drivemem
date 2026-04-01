@@ -11,6 +11,7 @@ interface Props {
   agentId: string;
 }
 
+/** Agent 详情页 — 展示单个 agent 的完整信息和任务列表 */
 export default function AgentDetail({ agentId }: Props) {
   const fetcher = useCallback(async () => {
     const [a, t] = await Promise.all([

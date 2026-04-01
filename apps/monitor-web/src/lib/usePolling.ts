@@ -15,6 +15,7 @@ interface UsePollingResult<T> {
   isRefreshing: boolean;
 }
 
+/** 通用轮询 hook — 定时拉取数据并支持手动刷新（默认 30s） */
 export function usePolling<T>({
   fetcher,
   interval = 30000,

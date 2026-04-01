@@ -6,6 +6,7 @@ interface Props {
   onRefresh: () => void;
 }
 
+/** 刷新指示器 — 显示最后更新时间和手动刷新按钮 */
 export default function RefreshIndicator({ lastUpdated, isRefreshing, onRefresh }: Props) {
   return (
     <div className="flex items-center gap-2 text-xs text-tertiary">

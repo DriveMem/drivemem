@@ -64,6 +64,7 @@ function renderMarkdown(md: string): string {
   return blocks.join('');
 }
 
+/** Memory 内容渲染器 — 将 Markdown 蒸馏记录渲染为 HTML */
 export default function MemoryViewer({ content }: Props) {
   return (
     <div

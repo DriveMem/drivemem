@@ -18,6 +18,7 @@ function shiftDate(dateStr: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** 日期选择器 — 支持前后切换和直接选择日期 */
 export default function DatePicker({ value, onChange }: Props) {
   return (
     <div className="flex items-center gap-3">

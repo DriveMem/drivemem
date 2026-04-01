@@ -11,6 +11,7 @@ interface Props {
   color: string;
 }
 
+/** 任务数量指示器 — AgentCard 中的单个任务状态计数 */
 export default function TaskCount({ label, count, color }: Props) {
   const c = colorMap[color] ?? colorMap.gray;
   const textColor = count > 0 ? c.active : c.zero;

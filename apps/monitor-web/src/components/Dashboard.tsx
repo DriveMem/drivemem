@@ -4,6 +4,7 @@ import { fetchAgents } from '@/lib/api';
 import { usePolling } from '@/lib/usePolling';
 import { formatTime } from '@/lib/utils';
 
+/** Dashboard 主页面 — 展示所有 agent 状态卡片和全局统计 */
 export default function Dashboard() {
   const { data: agents, loading, lastUpdated, refresh, isRefreshing } = usePolling({
     fetcher: fetchAgents,

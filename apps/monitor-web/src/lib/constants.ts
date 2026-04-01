@@ -1,3 +1,4 @@
+/** 系统中所有 agent 的静态配置 */
 export const AGENTS = [
   { id: 'main',        name: '牛马',              emoji: '🐂' },
   { id: 'ad-manager',  name: 'AD Manager',        emoji: '📋' },
