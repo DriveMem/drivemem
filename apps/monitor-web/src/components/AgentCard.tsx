@@ -17,7 +17,7 @@ export default function AgentCard({ id, name, emoji, status, lastHeartbeat, task
   return (
     <a
       href={`/agent/${id}`}
-      className={`group block rounded-xl border border-neutral-100 border-l-4 border-l-solid ${borderColor} bg-card shadow-card p-5 sm:p-6 transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5`}
+      className={`group block rounded-xl border border-solid border-neutral-100 border-l-4 ${borderColor} bg-card shadow-card p-5 sm:p-6 transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5`}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
