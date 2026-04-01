@@ -74,7 +74,9 @@ export async function fetchMemory(date: string, agent?: string): Promise<MemoryE
   if (agent) params.set('agent', agent);
   const res = await fetch(`${API_BASE}/memory?${params}`);
   if (!res.ok) throw new Error(`Failed to fetch memory: ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  const entries = Array.isArray(data) ? data : (data.entries ?? []);
+  return agent ? entries.filter((e: MemoryEntry) => e.agent === agent) : entries;
 }
 
 export async function fetchMemoryContent(agent: string, filename: string): Promise<string> {
