@@ -48,9 +48,22 @@ update_hash() {
   mv "$CACHE_FILE.tmp" "$CACHE_FILE"
 }
 
+list_r2_files() {
+  local prefix="$1"
+  curl -s "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/r2/buckets/$BUCKET/objects?prefix=$prefix" \
+    -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | \
+    python3 -c "import sys,json; [print(o['key'].split('/')[-1]) for o in json.load(sys.stdin).get('result',[])]" 2>/dev/null
+}
+
+delete_from_r2() {
+  local r2_key="$1"
+  wrangler r2 object delete --remote "$BUCKET/$r2_key" 2>/dev/null
+}
+
 uploaded=0
 skipped=0
 errors=0
+deleted=0
 
 for agent_id in "${!AGENT_PATHS[@]}"; do
   ws="${AGENT_PATHS[$agent_id]}"
@@ -94,6 +107,22 @@ for agent_id in "${!AGENT_PATHS[@]}"; do
       fi
     done < <(ls -t "$done_dir"/*.json 2>/dev/null | head -20)
   fi
+
+  # 清理 R2 中已不存在于本地的文件（仅 queue/active/blocked，不清理 done）
+  for status in queue active blocked; do
+    r2_prefix="agents/$agent_id/tasks/$status/"
+    local_dir="$tasks_dir/$status"
+    r2_files=$(list_r2_files "$r2_prefix") || true
+    for r2_file in $r2_files; do
+      [ -z "$r2_file" ] && continue
+      if [ ! -f "$local_dir/$r2_file" ]; then
+        if delete_from_r2 "${r2_prefix}${r2_file}"; then
+          echo "[sync-tasks] CLEANUP: deleted $r2_prefix$r2_file (no longer in local $status)"
+          ((deleted++)) || true
+        fi
+      fi
+    done
+  done
 done
 
-echo "[sync-tasks] $(date -Iseconds) uploaded=$uploaded skipped=$skipped errors=$errors"
+echo "[sync-tasks] $(date -Iseconds) uploaded=$uploaded skipped=$skipped errors=$errors deleted=$deleted"
