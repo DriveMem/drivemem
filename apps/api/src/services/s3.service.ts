@@ -8,14 +8,7 @@ export const s3Client = new S3Client({
     accessKeyId: config.AWS_ACCESS_KEY_ID,
     secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
   },
-  ...(config.S3_ENDPOINT && {
-    endpoint: config.S3_ENDPOINT,
-    forcePathStyle: true,
-  },
-  ...(config.S3_ENDPOINT && {
-    endpoint: config.S3_ENDPOINT,
-    forcePathStyle: true,
-  }),
+  ...(config.S3_ENDPOINT ? { endpoint: config.S3_ENDPOINT, forcePathStyle: true } : {}),
 });
 
 const bucket = config.AWS_S3_BUCKET;

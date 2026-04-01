@@ -19,8 +19,13 @@ const envSchema = z.object({
   SMTP_FROM: z.string().min(1),
   FRONTEND_URL: z.string().url(),
   PORT: z.coerce.number().default(3001),
-  LLM_MODEL: z.string().default('gpt-4o-mini'),
-  LLM_MODEL: z.string().default('gpt-4o-mini'),
+  LLM_PROVIDER: z.enum(['openai', 'anthropic']).default('openai'),
+  LLM_MODEL: z.string().optional(),
+  LLM_MAX_TOKENS: z.coerce.number().default(2048),
+  LLM_TEMPERATURE: z.coerce.number().default(0.7),
+  ANTHROPIC_API_KEY: z.string().optional(),
+  CHAT_CONTEXT_ROUNDS: z.coerce.number().default(5),
+  DAILY_CHAT_LIMIT: z.coerce.number().default(50),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
