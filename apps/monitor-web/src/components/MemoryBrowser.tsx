@@ -21,7 +21,7 @@ export default function MemoryBrowser({ initialDate }: Props) {
   const [contentCache, setContentCache] = useState<Record<string, string>>({});
   const [loadingContent, setLoadingContent] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
-  const [expandedIndex, setExpandedIndex] = useState(0);
+  const [expandedIndex, setExpandedIndex] = useState(-1);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -30,7 +30,7 @@ export default function MemoryBrowser({ initialDate }: Props) {
     try {
       const data = await fetchMemory(date, agentFilter || undefined);
       setEntries(data);
-      setExpandedIndex(0);
+      setExpandedIndex(-1);
       setContentCache({});
       setLastUpdated(new Date());
     } catch {
@@ -70,13 +70,6 @@ export default function MemoryBrowser({ initialDate }: Props) {
       if (entries[idx]) loadContent(entries[idx]);
     }
   }, [expandedIndex, entries, loadContent]);
-
-  // Load first entry content on mount
-  useEffect(() => {
-    if (entries.length > 0 && expandedIndex === 0) {
-      loadContent(entries[0]);
-    }
-  }, [entries]);
 
   const handleRefresh = useCallback(() => {
     load();

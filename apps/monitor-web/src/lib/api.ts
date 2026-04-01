@@ -89,5 +89,6 @@ export async function fetchMemoryContent(agent: string, filename: string): Promi
   }
   const res = await fetch(`${API_BASE}/memory/${agent}/${filename}`);
   if (!res.ok) throw new Error(`Failed to fetch memory content: ${res.status}`);
-  return res.text();
+  const data = await res.json();
+  return data.content ?? '';
 }
