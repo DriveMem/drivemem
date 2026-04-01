@@ -29,7 +29,7 @@ export default function TaskCount({ label, count, color }: Props) {
 
   const textColor = count > 0 ? c.active : c.zero;
   const isDone = label === 'Done';
-  const doneColor = count > 0 ? 'text-neutral-400' : c.zero;
+  const doneColor = count > 0 ? '!text-neutral-400' : c.zero;
 
   return (
     <div className="flex flex-col items-center min-w-[44px] py-2 px-1 rounded-lg bg-page/60">
