@@ -20,7 +20,7 @@ export interface Task {
   created_at: string;
   updated_at: string;
   /** 最近检查点描述 */
-  checkpoint?: string;
+  checkpoint?: string | { step?: number; description?: string; files_touched?: string[]; last_update?: string };
 }
 
 /** Memory 蒸馏记录条目 */

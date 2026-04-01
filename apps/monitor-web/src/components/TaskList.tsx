@@ -53,7 +53,7 @@ export default function TaskList({ tasks }: Props) {
                     <TaskStatusBadge status={task.status} />
                   </div>
                   {task.checkpoint && (
-                    <p className="mt-1.5 text-xs text-gray-400 leading-relaxed">{task.checkpoint}</p>
+                    <p className="mt-1.5 text-xs text-gray-400 leading-relaxed">{typeof task.checkpoint === 'string' ? task.checkpoint : (task.checkpoint as any).description ?? JSON.stringify(task.checkpoint)}</p>
                   )}
                   <div className="mt-2 flex items-center gap-3 text-xs text-gray-400">
                     <span>created {relativeTime(task.created_at)}</span>
