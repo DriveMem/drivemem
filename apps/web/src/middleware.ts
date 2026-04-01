@@ -2,17 +2,25 @@ import { auth } from "@/lib/auth"
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth
-  const isAuthPage =
-    req.nextUrl.pathname.startsWith("/login") ||
-    req.nextUrl.pathname.startsWith("/signup") ||
-    req.nextUrl.pathname.startsWith("/forgot-password") ||
-    req.nextUrl.pathname.startsWith("/reset-password")
-  const isPublicPage = req.nextUrl.pathname === "/"
-  const isApiRoute = req.nextUrl.pathname.startsWith("/api")
+  const { pathname } = req.nextUrl
+  const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup") || pathname.startsWith("/forgot-password") || pathname.startsWith("/reset-password")
+  const isPublicPage = pathname === "/"
+  const isApiRoute = pathname.startsWith("/api")
 
-  if (isApiRoute || isPublicPage || isAuthPage) return
+  if (isApiRoute) return
 
-  if (!isLoggedIn) {
+  // Public landing page: logged-in users go to /files
+  if (isPublicPage && isLoggedIn) {
+    return Response.redirect(new URL("/files", req.nextUrl))
+  }
+
+  // Auth pages: logged-in users go to /files
+  if (isAuthPage && isLoggedIn) {
+    return Response.redirect(new URL("/files", req.nextUrl))
+  }
+
+  // Protected pages: not logged in → /login
+  if (!isLoggedIn && !isAuthPage && !isPublicPage) {
     return Response.redirect(new URL("/login", req.nextUrl))
   }
 })
