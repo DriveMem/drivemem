@@ -1,26 +1,19 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import crypto from 'node:crypto';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import * as schema from '../db/schema.js';
-import { requireAuth } from '../plugins/auth.js';
+import { files, folders, users } from '../db/schema.js';
 import { AppError, ErrorCodes } from '../lib/errors.js';
-import { fileParseQueue } from '../lib/queue.js';
+import { requireAuth } from '../plugins/auth.js';
 import { generateUploadUrl, generatePreviewUrl, headObject, deleteObject } from '../services/s3.service.js';
-import { deleteByFileId } from '../services/vector.service.js';
+import { fileParseQueue } from '../lib/queue.js';
 import { MAX_FILE_SIZE, SUPPORTED_MIME_TYPES } from '@ai-drive/shared';
 
-const PARSE_JOB_OPTIONS = {
-  attempts: 3,
-  backoff: { type: 'exponential' as const, delay: 30_000 },
-};
-
-// --- Schemas ---
-
 const uploadUrlSchema = z.object({
-  fileName: z.string().min(1).max(255),
+  fileName: z.string().min(1),
   mimeType: z.string(),
-  size: z.number().int().positive(),
+  size: z.number().positive(),
   folderId: z.string().uuid().nullable(),
 });
 
@@ -36,89 +29,43 @@ const moveSchema = z.object({
   folderId: z.string().uuid().nullable(),
 });
 
-const listQuerySchema = z.object({
-  folderId: z.string().uuid().optional(),
-  status: z.enum(['uploading', 'parsing', 'indexed', 'failed']).optional(),
-});
-
-// --- Helper ---
-
-async function getOwnedFile(fileId: string, userId: string) {
-  const [file] = await db
-    .select()
-    .from(schema.files)
-    .where(and(eq(schema.files.id, fileId), eq(schema.files.userId, userId)));
-  if (!file) throw new AppError(ErrorCodes.NOT_FOUND, 'File not found', 404);
-  return file;
-}
-
-async function resolveUniqueName(name: string, folderId: string | null, userId: string, excludeId?: string): Promise<string> {
-  let candidate = name;
-  let suffix = 0;
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const conditions = [
-      eq(schema.files.name, candidate),
-      eq(schema.files.userId, userId),
-    ];
-    if (folderId) {
-      conditions.push(eq(schema.files.folderId, folderId));
-    } else {
-      conditions.push(sql`${schema.files.folderId} IS NULL`);
-    }
-    const [existing] = await db.select({ id: schema.files.id }).from(schema.files).where(and(...conditions));
-    if (!existing || (excludeId && existing.id === excludeId)) return candidate;
-    suffix++;
-    const dotIdx = name.lastIndexOf('.');
-    if (dotIdx > 0) {
-      candidate = `${name.slice(0, dotIdx)} (${suffix})${name.slice(dotIdx)}`;
-    } else {
-      candidate = `${name} (${suffix})`;
-    }
-  }
-}
-
-// --- Plugin ---
-
 export default async function fileRoutes(fastify: FastifyInstance) {
   // POST /upload-url
   fastify.post('/upload-url', { preHandler: [requireAuth] }, async (request, reply) => {
     const body = uploadUrlSchema.parse(request.body);
     const userId = request.user!.id;
 
-    // Validate mime type
-    if (!(SUPPORTED_MIME_TYPES as readonly string[]).includes(body.mimeType)) {
+    // Validate mimeType
+    if (!SUPPORTED_MIME_TYPES.includes(body.mimeType as typeof SUPPORTED_MIME_TYPES[number])) {
       throw new AppError(ErrorCodes.UNSUPPORTED_FILE_TYPE, 'Unsupported file type', 400);
     }
 
     // Validate size
     if (body.size > MAX_FILE_SIZE) {
-      throw new AppError(ErrorCodes.FILE_TOO_LARGE, 'File too large', 400);
+      throw new AppError(ErrorCodes.FILE_TOO_LARGE, 'File exceeds 50MB limit', 413);
     }
 
     // Check storage limit
-    const [user] = await db.select({ storageUsed: schema.users.storageUsed, storageLimit: schema.users.storageLimit })
-      .from(schema.users)
-      .where(eq(schema.users.id, userId));
-    if (!user) throw new AppError(ErrorCodes.NOT_FOUND, 'User not found', 404);
+    const [user] = await db.select({ storageUsed: users.storageUsed, storageLimit: users.storageLimit })
+      .from(users).where(eq(users.id, userId));
     if (user.storageUsed + body.size > user.storageLimit) {
       throw new AppError(ErrorCodes.STORAGE_LIMIT_EXCEEDED, 'Storage limit exceeded', 413);
     }
 
     // Validate folderId
     if (body.folderId) {
-      const [folder] = await db.select({ id: schema.folders.id })
-        .from(schema.folders)
-        .where(and(eq(schema.folders.id, body.folderId), eq(schema.folders.userId, userId)));
+      const [folder] = await db.select({ id: folders.id }).from(folders)
+        .where(and(eq(folders.id, body.folderId), eq(folders.userId, userId)));
       if (!folder) throw new AppError(ErrorCodes.NOT_FOUND, 'Folder not found', 404);
     }
 
-    // Create file record
-    const s3Key = `users/${userId}/files/${crypto.randomUUID()}/${body.fileName}`;
-    const uniqueName = await resolveUniqueName(body.fileName, body.folderId, userId);
+    const fileId = crypto.randomUUID();
+    const s3Key = `users/${userId}/files/${fileId}/${body.fileName}`;
+    const uploadUrl = await generateUploadUrl(s3Key, body.mimeType);
 
-    const [file] = await db.insert(schema.files).values({
-      name: uniqueName,
+    await db.insert(files).values({
+      id: fileId,
+      name: body.fileName,
       originalName: body.fileName,
       mimeType: body.mimeType,
       size: body.size,
@@ -126,92 +73,79 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       folderId: body.folderId,
       userId,
       s3Key,
-    }).returning();
+    });
 
-    const uploadUrl = await generateUploadUrl(s3Key, body.mimeType);
-
-    return reply.send({ uploadUrl, fileId: file.id, s3Key });
+    return reply.send({ uploadUrl, fileId, s3Key });
   });
 
   // POST /confirm
   fastify.post('/confirm', { preHandler: [requireAuth] }, async (request, reply) => {
-    const { fileId } = confirmSchema.parse(request.body);
+    const body = confirmSchema.parse(request.body);
     const userId = request.user!.id;
 
-    const file = await getOwnedFile(fileId, userId);
-    if (file.status !== 'uploading') {
-      throw new AppError(ErrorCodes.VALIDATION_ERROR, 'File is not in uploading status', 400);
-    }
+    const [file] = await db.select().from(files)
+      .where(and(eq(files.id, body.fileId), eq(files.userId, userId), eq(files.status, 'uploading')));
+    if (!file) throw new AppError(ErrorCodes.NOT_FOUND, 'File not found or not in uploading state', 400);
 
-    // Verify S3 object exists
     const exists = await headObject(file.s3Key);
-    if (!exists) {
-      throw new AppError(ErrorCodes.NOT_FOUND, 'S3 object not found. Upload may not be complete.', 404);
-    }
+    if (!exists) throw new AppError(ErrorCodes.NOT_FOUND, 'File not found in storage', 400);
 
-    // Update file status
-    await db.update(schema.files)
-      .set({ status: 'parsing', updatedAt: new Date() })
-      .where(eq(schema.files.id, fileId));
+    await db.update(files).set({ status: 'parsing', updatedAt: new Date() }).where(eq(files.id, file.id));
+    await db.update(users).set({ storageUsed: sql`${users.storageUsed} + ${file.size}` }).where(eq(users.id, userId));
+    await fileParseQueue.add('parse', { fileId: file.id, userId, s3Key: file.s3Key, mimeType: file.mimeType });
 
-    // Update storage used
-    await db.update(schema.users)
-      .set({ storageUsed: sql`${schema.users.storageUsed} + ${file.size}` })
-      .where(eq(schema.users.id, userId));
-
-    // Enqueue parse job
-    await fileParseQueue.add('parse', {
-      fileId,
-      userId,
-      s3Key: file.s3Key,
-      mimeType: file.mimeType,
-    }, PARSE_JOB_OPTIONS);
-
-    return reply.send({ fileId, status: 'parsing' });
+    return reply.send({ fileId: file.id, status: 'parsing' });
   });
 
-  // GET / — file list
+  // GET / — list files
   fastify.get('/', { preHandler: [requireAuth] }, async (request, reply) => {
+    const query = request.query as { folderId?: string; status?: string };
     const userId = request.user!.id;
-    const query = listQuerySchema.parse(request.query);
 
-    const conditions = [eq(schema.files.userId, userId)];
-    if (query.folderId) {
-      conditions.push(eq(schema.files.folderId, query.folderId));
-    }
-    if (query.status) {
-      conditions.push(eq(schema.files.status, query.status));
-    }
+    const conditions = [eq(files.userId, userId)];
+    if (query.folderId) conditions.push(eq(files.folderId, query.folderId));
+    if (query.status) conditions.push(eq(files.status, query.status as 'uploading' | 'parsing' | 'indexed' | 'failed'));
 
-    const fileList = await db.select()
-      .from(schema.files)
-      .where(and(...conditions))
-      .orderBy(desc(schema.files.updatedAt));
-
-    return reply.send(fileList);
+    const result = await db.select().from(files).where(and(...conditions)).orderBy(desc(files.updatedAt));
+    return reply.send({ files: result });
   });
 
   // GET /:id — file detail
   fastify.get('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
-    const file = await getOwnedFile(id, request.user!.id);
+    const userId = request.user!.id;
+
+    const [file] = await db.select().from(files).where(and(eq(files.id, id), eq(files.userId, userId)));
+    if (!file) throw new AppError(ErrorCodes.NOT_FOUND, 'File not found', 404);
     return reply.send(file);
   });
 
   // PATCH /:id — rename
   fastify.patch('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
-    const { name } = renameSchema.parse(request.body);
+    const body = renameSchema.parse(request.body);
     const userId = request.user!.id;
 
-    const file = await getOwnedFile(id, userId);
-    const uniqueName = await resolveUniqueName(name, file.folderId, userId, id);
+    const [file] = await db.select().from(files).where(and(eq(files.id, id), eq(files.userId, userId)));
+    if (!file) throw new AppError(ErrorCodes.NOT_FOUND, 'File not found', 404);
 
-    const [updated] = await db.update(schema.files)
-      .set({ name: uniqueName, updatedAt: new Date() })
-      .where(eq(schema.files.id, id))
-      .returning();
+    // Check name conflict in same folder
+    let newName = body.name;
+    const existing = await db.select({ name: files.name }).from(files)
+      .where(and(
+        eq(files.userId, userId),
+        file.folderId ? eq(files.folderId, file.folderId) : sql`${files.folderId} IS NULL`,
+        eq(files.name, newName),
+        sql`${files.id} != ${id}`,
+      ));
+    if (existing.length > 0) {
+      const ext = newName.includes('.') ? '.' + newName.split('.').pop() : '';
+      const base = ext ? newName.slice(0, -ext.length) : newName;
+      newName = `${base}(1)${ext}`;
+    }
 
+    const [updated] = await db.update(files).set({ name: newName, updatedAt: new Date() })
+      .where(eq(files.id, id)).returning();
     return reply.send(updated);
   });
 
@@ -219,80 +153,62 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   fastify.delete('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const userId = request.user!.id;
-    const file = await getOwnedFile(id, userId);
 
-    // Delete S3 object
+    const [file] = await db.select().from(files).where(and(eq(files.id, id), eq(files.userId, userId)));
+    if (!file) throw new AppError(ErrorCodes.NOT_FOUND, 'File not found', 404);
+
     await deleteObject(file.s3Key);
+    await db.delete(files).where(eq(files.id, id));
+    await db.update(users).set({ storageUsed: sql`GREATEST(${users.storageUsed} - ${file.size}, 0)` })
+      .where(eq(users.id, userId));
 
-    // Delete DB record
-    await db.delete(schema.files).where(eq(schema.files.id, id));
-
-    // Update storage
-    await db.update(schema.users)
-      .set({ storageUsed: sql`GREATEST(${schema.users.storageUsed} - ${file.size}, 0)` })
-      .where(eq(schema.users.id, userId));
-
-    return reply.send({ success: true });
-  });
-
-  // POST /:id/move — move file to another folder
-  fastify.post('/:id/move', { preHandler: [requireAuth] }, async (request, reply) => {
-    const { id } = request.params as { id: string };
-    const { folderId } = moveSchema.parse(request.body);
-    const userId = request.user!.id;
-
-    await getOwnedFile(id, userId);
-
-    // Validate target folder
-    if (folderId) {
-      const [folder] = await db.select({ id: schema.folders.id })
-        .from(schema.folders)
-        .where(and(eq(schema.folders.id, folderId), eq(schema.folders.userId, userId)));
-      if (!folder) throw new AppError(ErrorCodes.NOT_FOUND, 'Target folder not found', 404);
-    }
-
-    const [updated] = await db.update(schema.files)
-      .set({ folderId, updatedAt: new Date() })
-      .where(eq(schema.files.id, id))
-      .returning();
-
-    return reply.send(updated);
+    return reply.status(204).send();
   });
 
   // GET /:id/preview-url
   fastify.get('/:id/preview-url', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
-    const file = await getOwnedFile(id, request.user!.id);
+    const userId = request.user!.id;
+
+    const [file] = await db.select().from(files).where(and(eq(files.id, id), eq(files.userId, userId)));
+    if (!file) throw new AppError(ErrorCodes.NOT_FOUND, 'File not found', 404);
+
     const previewUrl = await generatePreviewUrl(file.s3Key);
     return reply.send({ previewUrl, mimeType: file.mimeType });
   });
 
-  // POST /:id/retry-parse
+  // POST /:id/move
+  fastify.post('/:id/move', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = moveSchema.parse(request.body);
+    const userId = request.user!.id;
+
+    const [file] = await db.select().from(files).where(and(eq(files.id, id), eq(files.userId, userId)));
+    if (!file) throw new AppError(ErrorCodes.NOT_FOUND, 'File not found', 404);
+
+    if (body.folderId) {
+      const [folder] = await db.select({ id: folders.id }).from(folders)
+        .where(and(eq(folders.id, body.folderId), eq(folders.userId, userId)));
+      if (!folder) throw new AppError(ErrorCodes.NOT_FOUND, 'Target folder not found', 404);
+    }
+
+    const [updated] = await db.update(files).set({ folderId: body.folderId, updatedAt: new Date() })
+      .where(eq(files.id, id)).returning();
+    return reply.send(updated);
+  });
+
+  // POST /:id/retry-parse — retry failed file parsing
   fastify.post('/:id/retry-parse', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const userId = request.user!.id;
 
-    const file = await getOwnedFile(id, userId);
-    if (file.status !== 'failed') {
-      throw new AppError(ErrorCodes.VALIDATION_ERROR, 'Only failed files can be retried', 400);
-    }
+    const [file] = await db.select().from(files).where(and(eq(files.id, id), eq(files.userId, userId)));
+    if (!file) throw new AppError(ErrorCodes.NOT_FOUND, 'File not found', 404);
+    if (file.status !== 'failed') throw new AppError(ErrorCodes.VALIDATION_ERROR, 'Only failed files can be retried', 400);
 
-    await deleteByFileId(id);
+    await db.update(files).set({ status: 'parsing', errorMessage: null, updatedAt: new Date() }).where(eq(files.id, id));
+    await fileParseQueue.add('parse', { fileId: file.id, userId, s3Key: file.s3Key, mimeType: file.mimeType });
 
-    await db.update(schema.files).set({
-      status: 'parsing',
-      errorMessage: null,
-      chunkCount: 0,
-      updatedAt: new Date(),
-    }).where(eq(schema.files.id, id));
-
-    await fileParseQueue.add('parse', {
-      fileId: id,
-      userId,
-      s3Key: file.s3Key,
-      mimeType: file.mimeType,
-    }, PARSE_JOB_OPTIONS);
-
-    return reply.send({ fileId: id, status: 'parsing' });
+    return reply.send({ fileId: file.id, status: 'parsing' });
   });
 }

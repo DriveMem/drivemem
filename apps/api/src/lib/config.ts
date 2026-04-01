@@ -18,6 +18,7 @@ const envSchema = z.object({
   SMTP_FROM: z.string().min(1),
   FRONTEND_URL: z.string().url(),
   PORT: z.coerce.number().default(3001),
+  LLM_MODEL: z.string().default('gpt-4o-mini'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 

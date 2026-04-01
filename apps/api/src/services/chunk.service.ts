@@ -55,16 +55,20 @@ export function chunkText(text: string, fileName: string): Array<{ text: string;
 
   const rawChunks = recursiveSplit(text, SEPARATORS);
 
+  // Apply overlap
   const chunks: string[] = [];
   for (let i = 0; i < rawChunks.length; i++) {
     if (i === 0) {
       chunks.push(rawChunks[i]);
     } else {
+      // Get overlap from end of previous chunk
       const prevTokens = encode(rawChunks[i - 1]);
       const overlapTokens = prevTokens.slice(-OVERLAP_TOKENS);
+      // Decode overlap tokens back to text - approximate by taking chars from end
       const prevText = rawChunks[i - 1];
       let overlapText = '';
       if (overlapTokens.length > 0) {
+        // Estimate chars per token ~4
         const overlapCharCount = Math.min(overlapTokens.length * 4, prevText.length);
         overlapText = prevText.slice(-overlapCharCount);
       }
@@ -73,7 +77,7 @@ export function chunkText(text: string, fileName: string): Array<{ text: string;
   }
 
   return chunks.map((chunk, index) => ({
-    text: '[' + fileName + '] \u7b2c ' + String(index + 1) + ' \u6bb5\uff1a' + chunk,
+    text: `[${fileName}] 第 ${index + 1} 段：${chunk}`,
     index,
   }));
 }

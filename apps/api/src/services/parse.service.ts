@@ -1,4 +1,6 @@
-import { PDFParse } from 'pdf-parse';
+// @ts-expect-error pdf-parse types
+import pdfParse from 'pdf-parse';
+import mammoth from 'mammoth';
 import { AppError } from '../lib/errors.js';
 
 const MAX_TEXT_LENGTH = 500_000;
@@ -9,8 +11,7 @@ export async function parseDocument(buffer: Buffer, mimeType: string): Promise<s
   try {
     switch (mimeType) {
       case 'application/pdf': {
-        const parser = new PDFParse({ data: new Uint8Array(buffer) });
-        const result = await parser.getText();
+        const result = await pdfParse(buffer);
         text = result.text;
         break;
       }
@@ -20,22 +21,28 @@ export async function parseDocument(buffer: Buffer, mimeType: string): Promise<s
       }
       case 'text/markdown': {
         const raw = buffer.toString('utf-8');
+        // Strip markdown formatting
         text = raw
-          .replace(/^#{1,6}\s+/gm, '')
-          .replace(/\*\*(.+?)\*\*/g, '$1')
-          .replace(/\*(.+?)\*/g, '$1')
-          .replace(/__(.+?)__/g, '$1')
-          .replace(/_(.+?)_/g, '$1')
-          .replace(/~~(.+?)~~/g, '$1')
-          .replace(/`{1,3}[^`]*`{1,3}/g, (m) => m.replace(/`/g, ''))
-          .replace(/^\s*[-*+]\s+/gm, '')
-          .replace(/^\s*\d+\.\s+/gm, '')
-          .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
-          .replace(/^\s*>\s?/gm, '')
-          .replace(/^---+$/gm, '')
-          .replace(/\|/g, ' ')
-          .replace(/\n{3,}/g, '\n\n')
+          .replace(/^#{1,6}\s+/gm, '')          // headings
+          .replace(/\*\*(.+?)\*\*/g, '$1')       // bold
+          .replace(/\*(.+?)\*/g, '$1')            // italic
+          .replace(/__(.+?)__/g, '$1')            // bold alt
+          .replace(/_(.+?)_/g, '$1')              // italic alt
+          .replace(/~~(.+?)~~/g, '$1')            // strikethrough
+          .replace(/`{1,3}[^`]*`{1,3}/g, (m) => m.replace(/`/g, '')) // inline/block code
+          .replace(/^\s*[-*+]\s+/gm, '')          // unordered list
+          .replace(/^\s*\d+\.\s+/gm, '')          // ordered list
+          .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1') // links/images
+          .replace(/^\s*>\s?/gm, '')              // blockquotes
+          .replace(/^---+$/gm, '')                // horizontal rules
+          .replace(/\|/g, ' ')                    // table pipes
+          .replace(/\n{3,}/g, '\n\n')             // collapse whitespace
           .trim();
+        break;
+      }
+      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
+        const result = await mammoth.extractRawText({ buffer });
+        text = result.value;
         break;
       }
       default:
@@ -51,7 +58,7 @@ export async function parseDocument(buffer: Buffer, mimeType: string): Promise<s
   }
 
   if (text.length > MAX_TEXT_LENGTH) {
-    console.warn('[parse] Text truncated from ' + text.length + ' to ' + MAX_TEXT_LENGTH + ' characters');
+    console.warn(`[parse] Text truncated from ${text.length} to ${MAX_TEXT_LENGTH} characters`);
     text = text.slice(0, MAX_TEXT_LENGTH);
   }
 
