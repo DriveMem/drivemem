@@ -4,6 +4,7 @@ interface Props {
 }
 
 const { title = 'AI Drive Monitor' } = Astro.props;
+const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -19,12 +20,27 @@ const { title = 'AI Drive Monitor' } = Astro.props;
     <title>{title}</title>
   </head>
   <body class="bg-page text-primary font-sans min-h-screen flex flex-col">
-    <header class="border-b border-gray-200 bg-card">
+    <header class="sticky top-0 z-50 border-b border-neutral-200/60 bg-white/80 backdrop-blur-lg">
       <nav class="max-w-6xl mx-auto px-4 sm:px-6 h-12 sm:h-14 flex items-center justify-between">
-        <a href="/" class="text-base sm:text-lg font-semibold tracking-tight">🦞 龙虾监控站</a>
-        <div class="flex items-center gap-4 sm:gap-6 text-sm text-secondary">
-          <a href="/" class="hover:text-primary transition-colors">Dashboard</a>
-          <a href={`/memory/${new Date().toISOString().slice(0, 10)}`} class="hover:text-primary transition-colors">Memory</a>
+        <a href="/" class="flex items-center gap-2 group">
+          <span class="text-lg sm:text-xl">🦞</span>
+          <span class="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">龙虾监控站</span>
+        </a>
+        <div class="flex items-center gap-1 sm:gap-2 text-sm">
+          <a
+            href="/"
+            class:list={[
+              'px-3 py-1.5 rounded-lg transition-colors',
+              currentPath === '/' ? 'bg-brand-50 text-brand-600 font-medium' : 'text-secondary hover:text-primary hover:bg-hover',
+            ]}
+          >Dashboard</a>
+          <a
+            href={`/memory/${new Date().toISOString().slice(0, 10)}`}
+            class:list={[
+              'px-3 py-1.5 rounded-lg transition-colors',
+              currentPath.startsWith('/memory') ? 'bg-brand-50 text-brand-600 font-medium' : 'text-secondary hover:text-primary hover:bg-hover',
+            ]}
+          >Memory</a>
         </div>
       </nav>
     </header>
@@ -33,8 +49,11 @@ const { title = 'AI Drive Monitor' } = Astro.props;
       <slot />
     </main>
 
-    <footer class="border-t border-gray-200 py-4 text-center text-xs text-tertiary">
-      AI Drive Monitor · Multi-Agent System
+    <footer class="border-t border-neutral-200/60 py-4 sm:py-6">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between text-xs text-tertiary">
+        <span>AI Drive Monitor</span>
+        <span>Multi-Agent System</span>
+      </div>
     </footer>
   </body>
 </html>

@@ -1,0 +1,20 @@
+{
+  "id": "monitor-station-arch",
+  "title": "龙虾系统监控站 — 技术选型 + 架构设计",
+  "status": "active",
+  "priority": "high",
+  "created_at": "2026-04-01T14:50:00+08:00",
+  "updated_at": "2026-04-01T14:50:00+08:00",
+  "from_agent": "ad-manager",
+  "to_agent": "ad-master",
+  "upstream_input": "~/.openclaw/shared/artifacts/spec/monitor-station-spec-2026-04-01-14-45.md",
+  "expected_output": "技术选型文档 + 架构设计 + 工程拆解 + 下游任务分配",
+  "dependencies": [],
+  "checkpoint": {
+    "step": 3,
+    "description": "架构设计完成 + 下游 7 个任务已分发。进入执行追踪阶段。",
+    "files_touched": ["~/.openclaw/shared/artifacts/decomposition/monitor-station-arch-2026-04-01.md"],
+    "last_update": "2026-04-01T14:52:00+08:00"
+  },
+  "notes": "任务批次 #2026-04-01-001 / 任务2"
+}

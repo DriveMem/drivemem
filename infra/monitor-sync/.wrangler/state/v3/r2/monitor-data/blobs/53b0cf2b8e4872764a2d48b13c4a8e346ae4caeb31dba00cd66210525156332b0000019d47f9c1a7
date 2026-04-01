@@ -1,0 +1,16 @@
+{
+  "id": "phase0-infra-2026-04-01",
+  "title": "Phase 0 基础设施 — Cloudflare 资源创建",
+  "batch": "#2026-04-01-001",
+  "upstream": "秘书",
+  "status": "active",
+  "subtasks": [
+    { "id": "O-1", "title": "创建 R2 bucket monitor-data", "status": "in-progress" },
+    { "id": "O-2", "title": "创建 KV namespace MONITOR_HEARTBEAT", "status": "in-progress" },
+    { "id": "O-3", "title": "配置 vrrrnm.cloud DNS → Cloudflare Pages", "status": "in-progress" },
+    { "id": "O-4", "title": "创建 R2 API token（只写）", "status": "in-progress" }
+  ],
+  "checkpoint": "子 agent 已委派，正在执行 wrangler 命令",
+  "createdAt": "2026-04-01T14:54:00+08:00",
+  "updatedAt": "2026-04-01T14:54:00+08:00"
+}

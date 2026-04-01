@@ -11,8 +11,8 @@ function escapeHtml(text: string): string {
 
 function processInline(text: string): string {
   return escapeHtml(text)
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-    .replace(/`(.+?)`/g, '<code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">$1</code>');
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-primary">$1</strong>')
+    .replace(/`(.+?)`/g, '<code class="bg-neutral-100 px-1.5 py-0.5 rounded text-[13px] font-mono text-brand-600">$1</code>');
 }
 
 function renderMarkdown(md: string): string {
@@ -23,7 +23,6 @@ function renderMarkdown(md: string): string {
   while (i < lines.length) {
     const line = lines[i];
 
-    // Skip empty lines
     if (line.trim() === '') { i++; continue; }
 
     // Code blocks
@@ -34,30 +33,30 @@ function renderMarkdown(md: string): string {
         codeLines.push(lines[i]);
         i++;
       }
-      i++; // skip closing ```
-      blocks.push(`<pre class="bg-gray-50 rounded-lg p-4 text-sm font-mono overflow-x-auto my-3"><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
+      i++;
+      blocks.push(`<pre class="bg-neutral-50 border border-neutral-100 rounded-xl p-4 text-[13px] font-mono overflow-x-auto my-4 leading-relaxed"><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
       continue;
     }
 
     // Headings
-    if (line.startsWith('#### ')) { blocks.push(`<h4 class="text-sm font-semibold text-primary mt-4 mb-2">${processInline(line.slice(5))}</h4>`); i++; continue; }
-    if (line.startsWith('### ')) { blocks.push(`<h3 class="text-base font-semibold text-primary mt-5 mb-2">${processInline(line.slice(4))}</h3>`); i++; continue; }
-    if (line.startsWith('## ')) { blocks.push(`<h2 class="text-lg font-semibold text-primary mt-6 mb-2">${processInline(line.slice(3))}</h2>`); i++; continue; }
-    if (line.startsWith('# ')) { blocks.push(`<h1 class="text-xl font-bold text-primary mt-6 mb-3">${processInline(line.slice(2))}</h1>`); i++; continue; }
+    if (line.startsWith('#### ')) { blocks.push(`<h4 class="text-sm font-semibold text-primary mt-5 mb-2">${processInline(line.slice(5))}</h4>`); i++; continue; }
+    if (line.startsWith('### ')) { blocks.push(`<h3 class="text-base font-semibold text-primary mt-6 mb-2">${processInline(line.slice(4))}</h3>`); i++; continue; }
+    if (line.startsWith('## ')) { blocks.push(`<h2 class="text-lg font-bold text-primary mt-8 mb-3">${processInline(line.slice(3))}</h2>`); i++; continue; }
+    if (line.startsWith('# ')) { blocks.push(`<h1 class="text-xl font-bold text-primary mt-8 mb-3">${processInline(line.slice(2))}</h1>`); i++; continue; }
 
-    // Lists - collect consecutive list items
+    // Lists
     if (line.startsWith('- ')) {
       const items: string[] = [];
       while (i < lines.length && lines[i].startsWith('- ')) {
-        items.push(`<li class="ml-4">${processInline(lines[i].slice(2))}</li>`);
+        items.push(`<li class="ml-4 leading-relaxed">${processInline(lines[i].slice(2))}</li>`);
         i++;
       }
-      blocks.push(`<ul class="list-disc space-y-1 my-3 ml-2">${items.join('')}</ul>`);
+      blocks.push(`<ul class="list-disc space-y-1.5 my-3 ml-2 text-secondary">${items.join('')}</ul>`);
       continue;
     }
 
     // Paragraph
-    blocks.push(`<p class="my-2 leading-relaxed text-secondary">${processInline(line)}</p>`);
+    blocks.push(`<p class="my-2.5 leading-[1.75] text-secondary">${processInline(line)}</p>`);
     i++;
   }
 
@@ -68,7 +67,7 @@ function renderMarkdown(md: string): string {
 export default function MemoryViewer({ content }: Props) {
   return (
     <div
-      className="prose-sm max-w-none"
+      className="max-w-none"
       dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
     />
   );

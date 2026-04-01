@@ -1,0 +1,17 @@
+{
+  "id": "F-pages",
+  "title": "三大页面实现（Dashboard + Agent 详情 + Memory 浏览）",
+  "batch": "#2026-04-01-001",
+  "task_number": 6,
+  "status": "active",
+  "priority": "high",
+  "created_at": "2026-04-01T14:55:00+08:00",
+  "updated_at": "2026-04-01T14:55:00+08:00",
+  "from_agent": "ad-master",
+  "to_agent": "ad-frontend",
+  "upstream_input": "~/.openclaw/shared/artifacts/decomposition/monitor-station-arch-2026-04-01.md (§3)",
+  "expected_output": "完整的 3 个页面 + 组件 + 30s 轮询 + 响应式布局",
+  "dependencies": ["F-scaffold", "B-worker-api"],
+  "checkpoint": { "step": 0, "description": "未开始", "files_touched": [], "last_update": null },
+  "notes": "可先用 mock 数据开发，API 就绪后切换。设计约束见 spec §6.5。"
+}

@@ -17,13 +17,27 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 mb-6 sm:mb-8">
+      {/* Hero header */}
+      <div className="flex items-start justify-between gap-4 mb-8 sm:mb-10">
         <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">龙虾系统监控站</h1>
-          <p className="text-xs sm:text-sm text-tertiary mt-1 break-words">
-            {onlineCount} agents online · {activeTaskCount} tasks active
-            {lastUpdated && <span className="hidden sm:inline"> · Updated {formatTime(lastUpdated)}</span>}
-          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">龙虾系统监控站</h1>
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-medium">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              {onlineCount} / {list.length} Online
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-sm font-medium">
+              📋 {activeTaskCount} Active Tasks
+            </span>
+            {lastUpdated && (
+              <span className="text-xs text-tertiary hidden sm:inline-flex items-center gap-1">
+                Updated {formatTime(lastUpdated)}
+              </span>
+            )}
+          </div>
         </div>
         <RefreshIndicator lastUpdated={lastUpdated} isRefreshing={isRefreshing} onRefresh={refresh} />
       </div>
@@ -31,7 +45,7 @@ export default function Dashboard() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-40 bg-gray-100 rounded-xl animate-pulse" />
+            <div key={i} className="h-48 bg-neutral-100 rounded-xl animate-pulse" />
           ))}
         </div>
       ) : (
@@ -42,7 +56,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <p className="text-center text-xs text-tertiary mt-6 sm:mt-8">数据每 30 秒自动更新</p>
+      <p className="text-center text-xs text-tertiary mt-8 sm:mt-10">数据每 30 秒自动更新</p>
     </div>
   );
 }

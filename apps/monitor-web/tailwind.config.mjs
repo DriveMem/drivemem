@@ -4,31 +4,50 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#1a1a1a',
-        secondary: '#6b7280',
-        tertiary: '#9ca3af',
-        page: '#fafafa',
+        primary: '#0a0a0a',
+        secondary: '#525252',
+        tertiary: '#a3a3a3',
+        page: '#f8f8f8',
         card: '#ffffff',
-        hover: '#f5f5f5',
-        'status-online': '#4ade80',
-        'status-busy': '#facc15',
-        'status-offline': '#f87171',
+        hover: '#f3f3f3',
+        brand: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          500: '#3b82f6',
+          600: '#2563eb',
+        },
+        status: {
+          online: '#10b981',
+          busy: '#f59e0b',
+          offline: '#d4d4d4',
+          unknown: '#d4d4d4',
+        },
       },
       borderRadius: {
-        lg: '8px',
-        xl: '12px',
+        DEFAULT: '6px',
+        lg: '10px',
+        xl: '14px',
+        '2xl': '18px',
+      },
+      boxShadow: {
+        'card': '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04)',
+        'card-hover': '0 4px 12px 0 rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.04)',
+        'elevated': '0 8px 24px 0 rgb(0 0 0 / 0.12)',
       },
       fontFamily: {
-        sans: [
-          'Inter',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          'Segoe UI',
-          'Roboto',
-          'Helvetica Neue',
-          'Arial',
-          'sans-serif',
-        ],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+      },
+      fontSize: {
+        'stat': ['2rem', { lineHeight: '1', fontWeight: '600', letterSpacing: '-0.02em' }],
+      },
+      animation: {
+        'pulse-online': 'pulse-online 2s ease-in-out infinite',
+      },
+      keyframes: {
+        'pulse-online': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.5' },
+        },
       },
     },
   },

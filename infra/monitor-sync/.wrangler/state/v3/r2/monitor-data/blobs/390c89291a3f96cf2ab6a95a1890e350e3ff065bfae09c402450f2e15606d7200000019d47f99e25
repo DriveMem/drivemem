@@ -1,0 +1,17 @@
+{
+  "id": "F-scaffold",
+  "title": "前端项目初始化（Astro + React + Tailwind）",
+  "batch": "#2026-04-01-001",
+  "task_number": 5,
+  "status": "active",
+  "priority": "high",
+  "created_at": "2026-04-01T14:55:00+08:00",
+  "updated_at": "2026-04-01T14:55:00+08:00",
+  "from_agent": "ad-master",
+  "to_agent": "ad-frontend",
+  "upstream_input": "~/.openclaw/shared/artifacts/decomposition/monitor-station-arch-2026-04-01.md (§3 目录结构)",
+  "expected_output": "`apps/monitor-web/` 项目骨架 + Astro/Tailwind 配置 + 路由结构",
+  "dependencies": [],
+  "checkpoint": { "step": 0, "description": "未开始", "files_touched": [], "last_update": null },
+  "notes": "参考架构文档 §3 目录结构。设计方向参考 spec v0.2 §6.5（Apple/Linear 风格）。"
+}

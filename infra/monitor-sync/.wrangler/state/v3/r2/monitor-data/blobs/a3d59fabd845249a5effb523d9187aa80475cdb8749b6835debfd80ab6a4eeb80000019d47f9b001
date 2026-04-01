@@ -1,0 +1,17 @@
+{
+  "id": "B-worker-api",
+  "title": "Worker API 实现（Hono + R2/KV 读取）",
+  "batch": "#2026-04-01-001",
+  "task_number": 4,
+  "status": "queue",
+  "priority": "high",
+  "created_at": "2026-04-01T14:55:00+08:00",
+  "updated_at": "2026-04-01T14:55:00+08:00",
+  "from_agent": "ad-master",
+  "to_agent": "ad-backend",
+  "upstream_input": "~/.openclaw/shared/artifacts/decomposition/monitor-station-arch-2026-04-01.md (§4)",
+  "expected_output": "`apps/monitor-worker/` 完整实现，含 6 个 API endpoint",
+  "dependencies": ["B-shared-types", "B-data-pipeline"],
+  "checkpoint": { "step": 0, "description": "未开始", "files_touched": [], "last_update": null },
+  "notes": "参考架构文档 §4。推荐先实现为独立 Worker，后续可迁移到 Pages Functions。"
+}

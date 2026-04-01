@@ -1,0 +1,17 @@
+{
+  "id": "B-shared-types",
+  "title": "新增 monitor 共享类型定义",
+  "batch": "#2026-04-01-001",
+  "task_number": 2,
+  "status": "active",
+  "priority": "high",
+  "created_at": "2026-04-01T14:55:00+08:00",
+  "updated_at": "2026-04-01T15:00:00+08:00",
+  "from_agent": "ad-master",
+  "to_agent": "ad-backend",
+  "upstream_input": "~/.openclaw/shared/artifacts/decomposition/monitor-station-arch-2026-04-01.md (§4 API Response, §6 Agent 配置)",
+  "expected_output": "`packages/shared-types/src/monitor.ts` — Agent、Task、Heartbeat、Memory 的 TypeScript 类型",
+  "dependencies": [],
+  "checkpoint": { "step": 1, "description": "子 agent 执行中 — 创建 package.json + tsconfig + monitor.ts 类型", "files_touched": [], "last_update": "2026-04-01T15:00:00+08:00" },
+  "notes": "无依赖，立即执行。子 agent 已委派。"
+}

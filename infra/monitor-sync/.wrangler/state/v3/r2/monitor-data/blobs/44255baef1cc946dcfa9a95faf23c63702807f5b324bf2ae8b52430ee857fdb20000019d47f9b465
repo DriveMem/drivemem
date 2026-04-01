@@ -1,0 +1,17 @@
+{
+  "id": "B-data-pipeline",
+  "title": "数据同步管道（sync 脚本 + 心跳 KV write）",
+  "batch": "#2026-04-01-001",
+  "task_number": 3,
+  "status": "queue",
+  "priority": "high",
+  "created_at": "2026-04-01T14:55:00+08:00",
+  "updated_at": "2026-04-01T14:55:00+08:00",
+  "from_agent": "ad-master",
+  "to_agent": "ad-backend",
+  "upstream_input": "~/.openclaw/shared/artifacts/decomposition/monitor-station-arch-2026-04-01.md (§5)",
+  "expected_output": "`infra/monitor-sync/` 下的同步脚本 + crontab 配置",
+  "dependencies": ["O-infra-setup"],
+  "checkpoint": { "step": 0, "description": "未开始", "files_touched": [], "last_update": null },
+  "notes": "参考架构文档 §5。心跳方案：优先 cron 收集各 agent 最后心跳时间写入 KV（方案 2），因为修改 OpenClaw 心跳 hook 需要评估可行性。"
+}

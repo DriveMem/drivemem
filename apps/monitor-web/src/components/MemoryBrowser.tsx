@@ -56,7 +56,7 @@ export default function MemoryBrowser({ initialDate }: Props) {
           <select
             value={agentFilter}
             onChange={e => setAgentFilter(e.target.value)}
-            className="flex-1 sm:flex-none border border-gray-200 rounded-lg px-3 py-2 sm:py-1.5 text-sm bg-card text-secondary hover:border-gray-300 transition-colors cursor-pointer min-h-10 sm:min-h-0"
+            className="flex-1 sm:flex-none border border-neutral-200/80 rounded-lg px-3 py-2 sm:py-1.5 text-sm bg-card text-secondary hover:border-neutral-300 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors cursor-pointer min-h-10 sm:min-h-0"
           >
             <option value="">All Agents</option>
             {AGENTS.map(a => (
@@ -71,15 +71,15 @@ export default function MemoryBrowser({ initialDate }: Props) {
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="bg-card border border-gray-200 rounded-xl p-4 sm:p-5 animate-pulse">
-              <div className="h-4 bg-gray-100 rounded w-1/3 mb-3" />
-              <div className="h-3 bg-gray-50 rounded w-2/3" />
+            <div key={i} className="bg-card border border-neutral-200/80 rounded-xl shadow-card p-4 sm:p-5 animate-pulse">
+              <div className="h-4 bg-neutral-100 rounded w-1/3 mb-3" />
+              <div className="h-3 bg-neutral-50 rounded w-2/3" />
             </div>
           ))}
         </div>
       ) : entries.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-4xl mb-4">📭</p>
+        <div className="text-center py-20">
+          <p className="text-5xl mb-4">📭</p>
           <p className="text-secondary text-sm">该日期暂无记录</p>
         </div>
       ) : (
@@ -90,18 +90,20 @@ export default function MemoryBrowser({ initialDate }: Props) {
             return (
               <div
                 key={entry.filename}
-                className="bg-card border border-gray-200 rounded-xl overflow-hidden transition-shadow hover:shadow-sm"
+                className="bg-card border border-neutral-200/80 rounded-xl shadow-card overflow-hidden transition-all duration-200 hover:shadow-card-hover"
               >
                 <button
                   onClick={() => setExpandedIndex(isExpanded ? -1 : idx)}
-                  className="w-full flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 text-left min-h-12"
+                  className="w-full flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 text-left min-h-12 group"
                 >
-                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <span className="text-base sm:text-lg shrink-0">{agent?.emoji ?? '📝'}</span>
-                    <span className="text-sm font-medium text-primary truncate">{agent?.name ?? entry.agent}</span>
-                    <span className="text-xs text-tertiary truncate hidden sm:inline">{entry.filename}</span>
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <span className="text-lg sm:text-xl shrink-0 flex items-center justify-center h-9 w-9 rounded-lg bg-page">{agent?.emoji ?? '📝'}</span>
+                    <div className="min-w-0">
+                      <span className="text-sm font-semibold text-primary block">{agent?.name ?? entry.agent}</span>
+                      <span className="text-[11px] text-tertiary truncate block">{entry.filename}</span>
+                    </div>
                   </div>
-                  <span className="text-xs text-tertiary transition-transform shrink-0 ml-2" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  <span className="text-xs text-tertiary transition-transform duration-200 shrink-0 ml-2" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                     ▼
                   </span>
                 </button>
@@ -109,8 +111,8 @@ export default function MemoryBrowser({ initialDate }: Props) {
                   className="overflow-hidden transition-all duration-300 ease-in-out"
                   style={{ maxHeight: isExpanded ? '2000px' : '0px', opacity: isExpanded ? 1 : 0 }}
                 >
-                  <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-gray-100">
-                    <div className="pt-3 sm:pt-4 overflow-x-auto">
+                  <div className="px-4 sm:px-5 pb-5 sm:pb-6 border-t border-neutral-100">
+                    <div className="pt-4 sm:pt-5 overflow-x-auto">
                       {entry.content ? (
                         <MemoryViewer content={entry.content} />
                       ) : (

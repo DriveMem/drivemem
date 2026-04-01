@@ -1,0 +1,24 @@
+{
+  "id": "F-1",
+  "batch": "2026-04-01-001",
+  "title": "初始化 apps/monitor-web (Astro + React Islands + Tailwind CSS)",
+  "status": "active",
+  "owner": "ad-frontend",
+  "upstream": "ad-master",
+  "created_at": "2026-04-01T14:54:00+08:00",
+  "updated_at": "2026-04-01T14:54:00+08:00",
+  "dependencies": [],
+  "description": "在 ai-drive monorepo 中创建 apps/monitor-web 项目骨架，包含 Astro + React Islands + Tailwind CSS 配置",
+  "acceptance_criteria": [
+    "apps/monitor-web/ 目录结构完整",
+    "Astro 配置正确（含 @astrojs/react + @astrojs/tailwind）",
+    "Tailwind 配置正确（含设计 tokens）",
+    "TypeScript 配置与 monorepo 对齐",
+    "package.json scripts 配置正确（dev/build/lint/typecheck）",
+    "页面路由骨架：index.astro, agent/[id].astro, memory/[date].astro",
+    "React Islands 组件骨架文件",
+    "lib/ 目录含 API client 和 types 占位",
+    "pnpm install 成功，dev server 可启动"
+  ],
+  "checkpoint": "任务接取，准备执行"
+}
