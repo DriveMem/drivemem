@@ -1,13 +1,14 @@
 import type { Heartbeat } from '@ai-drive/shared-types';
 
 export async function getHeartbeat(
-  kv: KVNamespace,
+  r2: R2Bucket,
   agentId: string
 ): Promise<Heartbeat | null> {
   try {
-    const value = await kv.get(`heartbeat:${agentId}`);
-    if (!value) return null;
-    return JSON.parse(value) as Heartbeat;
+    const obj = await r2.get(`heartbeats/${agentId}.json`);
+    if (!obj) return null;
+    const text = await obj.text();
+    return JSON.parse(text) as Heartbeat;
   } catch {
     return null;
   }

@@ -7,7 +7,7 @@ set -a; source "$SCRIPT_DIR/.env" 2>/dev/null || true; set +a
 
 : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN not set}"
 : "${CLOUDFLARE_ACCOUNT_ID:=41ccba169bc859c3f529c09f72882c5d}"
-: "${KV_NAMESPACE_ID:=98ad0fb0de3049ec864eca589ef83e59}"
+BUCKET="monitor-data"
 
 declare -A AGENT_PATHS=(
   [main]="$HOME/.openclaw/workspace"
@@ -22,16 +22,17 @@ declare -A AGENT_PATHS=(
 NOW=$(date +%s)
 THRESHOLD=300  # 5 minutes
 
-write_kv() {
-  local key="$1" value="$2"
-  local url="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces/$KV_NAMESPACE_ID/values/$key"
-  if ! curl -sf -X PUT "$url" \
-    -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-    -H "Content-Type: application/json" \
-    -d "$value" >/dev/null; then
-    echo "[sync-heartbeat] WARN: failed to write KV key=$key" >&2
+write_heartbeat() {
+  local agent_id="$1" value="$2"
+  local tmpfile="/tmp/heartbeat-${agent_id}.json"
+  echo "$value" > "$tmpfile"
+  if ! wrangler r2 object put --remote "$BUCKET/heartbeats/${agent_id}.json" \
+    --file="$tmpfile" --content-type="application/json" 2>/dev/null; then
+    echo "[sync-heartbeat] WARN: failed to write heartbeat for $agent_id" >&2
+    rm -f "$tmpfile"
     return 1
   fi
+  rm -f "$tmpfile"
 }
 
 updated=0
@@ -74,7 +75,7 @@ for agent_id in "${!AGENT_PATHS[@]}"; do
   payload=$(printf '{"timestamp":"%s","lastActive":"%s","status":"%s","currentTask":"%s","agent":"%s"}' \
     "$(date -Iseconds)" "$last_ts" "$status" "$current_task" "$agent_id")
 
-  if write_kv "heartbeat:$agent_id" "$payload"; then
+  if write_heartbeat "$agent_id" "$payload"; then
     ((updated++)) || true
     echo "[sync-heartbeat] $agent_id → $status (task: ${current_task:-none})"
   else

@@ -24,7 +24,7 @@ function getAgentStatus(lastHeartbeat: string | null, activeTasks: number): Agen
 
 export async function getAgentOverview(env: Env, agentId: AgentId): Promise<AgentOverview> {
   const config = AGENTS.find((a) => a.id === agentId)!;
-  const heartbeat = await getHeartbeat(env.MONITOR_HEARTBEAT, agentId);
+  const heartbeat = await getHeartbeat(env.MONITOR_DATA, agentId);
 
   const taskCounts: Record<TaskStatus, number> = { queue: 0, active: 0, blocked: 0, done: 0 };
   await Promise.all(
@@ -54,7 +54,7 @@ export async function getAgentDetail(env: Env, agentId: AgentId): Promise<AgentD
   const config = AGENTS.find((a) => a.id === agentId);
   if (!config) return null;
 
-  const heartbeat = await getHeartbeat(env.MONITOR_HEARTBEAT, agentId);
+  const heartbeat = await getHeartbeat(env.MONITOR_DATA, agentId);
   const [active, blocked, queue, done] = await Promise.all([
     listTaskFiles(env.MONITOR_DATA, agentId, 'active'),
     listTaskFiles(env.MONITOR_DATA, agentId, 'blocked'),
