@@ -1,7 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import TaskList from '@/components/TaskList';
-import StatusBadge from '@/components/StatusBadge';
+import AgentDetail from '@/components/AgentDetail';
 import { AGENTS } from '@/lib/constants';
 
 export function getStaticPaths() {
@@ -12,17 +11,6 @@ const { id } = Astro.params;
 const agent = AGENTS.find((a) => a.id === id);
 ---
 
-<Layout title={`${agent?.emoji ?? ''} ${agent?.name ?? id} · AI Drive Monitor`}>
-  <div class="mb-6">
-    <a href="/" class="text-sm text-secondary hover:text-primary transition-colors">← Dashboard</a>
-  </div>
-  <div class="flex items-center gap-3 mb-6">
-    <span class="text-3xl">{agent?.emoji}</span>
-    <h1 class="text-2xl font-semibold">{agent?.name ?? id}</h1>
-    <StatusBadge status="unknown" />
-  </div>
-  <section>
-    <h2 class="text-lg font-medium mb-4">Tasks</h2>
-    <TaskList tasks={[]} />
-  </section>
+<Layout title={`${agent?.emoji ?? ''} ${agent?.name ?? id} · 龙虾监控站`}>
+  <AgentDetail agentId={id!} client:load />
 </Layout>
