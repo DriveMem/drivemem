@@ -1,12 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronRight, ChevronDown, Folder, FolderOpen } from "lucide-react"
+import { ChevronRight, ChevronDown, Folder, FolderOpen, Loader2, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLayoutStore } from "@/stores/layout-store"
-import { mockFolders, type MockFolder } from "@/lib/mock-data"
+import { useFolders } from "@/hooks/use-folders"
 
-function FolderNode({ folder, depth = 0 }: { folder: MockFolder; depth?: number }) {
+interface FolderItem {
+  id: string
+  name: string
+  parentId: string | null
+  children?: FolderItem[]
+}
+
+function FolderNode({ folder, depth = 0 }: { folder: FolderItem; depth?: number }) {
   const [expanded, setExpanded] = useState(false)
   const { currentFolderId, setCurrentFolder } = useLayoutStore()
   const isActive = currentFolderId === folder.id
@@ -29,12 +36,32 @@ function FolderNode({ folder, depth = 0 }: { folder: MockFolder; depth?: number 
 
 export function FolderTree() {
   const { currentFolderId, setCurrentFolder } = useLayoutStore()
+  const { data, isLoading, error } = useFolders()
+
+  const folders: FolderItem[] = data?.tree || []
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-4">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center gap-1 px-2 py-2 text-xs text-destructive">
+        <AlertCircle className="h-3 w-3" /><span>加载失败</span>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-0.5">
       <button onClick={() => setCurrentFolder(null)} className={cn("flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-sm hover:bg-accent", currentFolderId === null && "bg-accent text-accent-foreground")}>
         <Folder className="h-4 w-4 text-muted-foreground" /><span>全部文件</span>
       </button>
-      {mockFolders.map((f) => <FolderNode key={f.id} folder={f} />)}
+      {folders.map((f) => <FolderNode key={f.id} folder={f} />)}
     </div>
   )
 }

@@ -28,7 +28,7 @@ const signupSchema = z
 
 type SignupForm = z.infer<typeof signupSchema>
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
 export default function SignupPage() {
   const router = useRouter()

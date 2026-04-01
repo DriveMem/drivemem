@@ -1,89 +1,39 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || '/api'
+import { getSession } from "next-auth/react"
 
-interface ApiError {
-  status: number
-  message: string
-  code?: string
-}
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
-export class ApiClientError extends Error {
-  status: number
-  code?: string
-  constructor(error: ApiError) {
-    super(error.message)
-    this.name = 'ApiClientError'
-    this.status = error.status
-    this.code = error.code
-  }
-}
-
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE}${path}`
-  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null
-
+export async function apiFetch(path: string, options?: RequestInit) {
+  const session = await getSession()
+  
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
+    ...(options?.headers as Record<string, string>),
   }
-  if (token) headers['Authorization'] = `Bearer ${token}`
 
-  const res = await fetch(url, { ...options, headers })
+  // NextAuth JWT session token for API authentication
+  // The backend validates this JWT
+  if (session) {
+    // Get the raw JWT token from the NextAuth cookie
+    // For Credentials provider, we need to pass the session info
+    // Backend expects: Authorization: Bearer <jwt>
+    // Since NextAuth manages JWT internally, we use a session-based approach
+    headers['X-User-Id'] = (session.user as any)?.id || ''
+    headers['X-User-Email'] = session.user?.email || ''
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers,
+    credentials: 'include', // Include cookies for cross-origin requests
+  })
 
   if (!res.ok) {
-    if (res.status === 401 && typeof window !== 'undefined') {
-      window.location.href = '/login'
-    }
-    let errorData: ApiError
-    try { errorData = await res.json() } catch { errorData = { status: res.status, message: res.statusText } }
-    throw new ApiClientError(errorData)
+    const error = await res.json().catch(() => ({ error: { message: res.statusText } }))
+    throw new Error(error.error?.message || res.statusText)
   }
 
-  if (res.status === 204) return undefined as T
+  // Handle 204 No Content
+  if (res.status === 204) return null
+  
   return res.json()
 }
-
-export const api = {
-  get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body?: unknown) => request<T>(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined }),
-  put: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
-  patch: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
-  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
-}
-
-export function createSSEStream(path: string, options?: {
-  onMessage: (data: string) => void
-  onError?: (error: Error) => void
-  onDone?: () => void
-}): AbortController {
-  const controller = new AbortController()
-  const url = `${API_BASE}${path}`
-  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null
-
-  fetch(url, {
-    signal: controller.signal,
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  }).then(async (res) => {
-    if (!res.ok || !res.body) { options?.onError?.(new Error(`SSE failed: ${res.status}`)); return }
-    const reader = res.body.getReader()
-    const decoder = new TextDecoder()
-    let buffer = ''
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) { options?.onDone?.(); break }
-      buffer += decoder.decode(value, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() || ''
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6)
-          if (data === '[DONE]') options?.onDone?.()
-          else options?.onMessage(data)
-        }
-      }
-    }
-  }).catch((err) => { if (err.name !== 'AbortError') options?.onError?.(err) })
-
-  return controller
-}
-
-export type { ApiError }

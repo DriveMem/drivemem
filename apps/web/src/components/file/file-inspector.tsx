@@ -1,8 +1,8 @@
 "use client"
 
-import { FileText, MessageSquare } from "lucide-react"
+import { FileText, MessageSquare, Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { mockFiles } from "@/lib/mock-data"
+import { useFile } from "@/hooks/use-files"
 import Link from "next/link"
 
 function formatSize(bytes: number): string {
@@ -12,11 +12,28 @@ function formatSize(bytes: number): string {
 }
 
 export function FileInspector({ fileId }: { fileId: string }) {
-  const file = mockFiles.find((f) => f.id === fileId)
-  if (!file) return <div className="p-4 text-sm text-muted-foreground">文件未找到</div>
+  const { data: file, isLoading, error } = useFile(fileId)
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (error || !file) {
+    return (
+      <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
+        <AlertCircle className="h-4 w-4" /><span>文件未找到</span>
+      </div>
+    )
+  }
+
   const typeLabels: Record<string, string> = { pdf: "PDF 文档", txt: "文本文件", md: "Markdown", image: "图片" }
   const statusLabels: Record<string, string> = { parsing: "AI 正在记住...", done: "已记住", error: "记忆失败" }
   const statusColors: Record<string, string> = { parsing: "text-yellow-500", done: "text-green-500", error: "text-red-500" }
+
   return (
     <div className="p-4 space-y-6">
       <div className="flex items-center gap-3">

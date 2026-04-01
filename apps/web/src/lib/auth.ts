@@ -8,7 +8,7 @@ const loginSchema = z.object({
   password: z.string().min(1),
 })
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+const API_BASE = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -57,6 +57,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string
       }
+      // Expose the raw JWT token to the client for API calls
+      ;(session as any).accessToken = token.sub ? token : undefined
+      ;(session as any).jwt = require("next-auth/jwt").encode ? undefined : undefined
       return session
     },
   },
