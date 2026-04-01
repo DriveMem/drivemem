@@ -1,30 +1,28 @@
 import { getSession } from "next-auth/react"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
 export async function apiFetch(path: string, options?: RequestInit) {
-  const session = await getSession()
-  
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...(options?.headers as Record<string, string>),
   }
 
-  // NextAuth JWT session token for API authentication
-  // The backend validates this JWT
-  if (session) {
-    // Get the raw JWT token from the NextAuth cookie
-    // For Credentials provider, we need to pass the session info
-    // Backend expects: Authorization: Bearer <jwt>
-    // Since NextAuth manages JWT internally, we use a session-based approach
-    headers['X-User-Id'] = (session.user as any)?.id || ''
-    headers['X-User-Email'] = session.user?.email || ''
+  // 方案 C: attach Bearer token from session
+  try {
+    const session = await getSession()
+    const token = (session as any)?.accessToken
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`
+    }
+  } catch {
+    // getSession may fail server-side, ignore
   }
 
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers,
-    credentials: 'include', // Include cookies for cross-origin requests
+    credentials: "include", // 方案 A fallback: send cookies
   })
 
   if (!res.ok) {
@@ -32,8 +30,6 @@ export async function apiFetch(path: string, options?: RequestInit) {
     throw new Error(error.error?.message || res.statusText)
   }
 
-  // Handle 204 No Content
   if (res.status === 204) return null
-  
   return res.json()
 }

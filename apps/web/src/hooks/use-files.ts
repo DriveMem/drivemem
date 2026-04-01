@@ -1,22 +1,6 @@
+import { apiFetch } from '@/lib/api-client'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
-
-async function apiFetch(path: string, options?: RequestInit) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  })
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: { message: res.statusText } }))
-    throw new Error(error.error?.message || res.statusText)
-  }
-  return res.json()
-}
 
 export function useFiles(folderId?: string | null) {
   return useQuery({
