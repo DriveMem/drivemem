@@ -6,17 +6,18 @@ import { relativeTime } from '@/lib/utils';
 const borderColorMap: Record<Agent['status'], string> = {
   online: 'border-l-emerald-500',
   busy: 'border-l-amber-400',
-  offline: 'border-l-transparent',
-  unknown: 'border-l-transparent',
+  offline: 'border-l-red-400',
+  unknown: 'border-l-neutral-300',
 };
 
 /** Agent 状态卡片 — Dashboard 中的单个 agent 展示 */
 export default function AgentCard({ id, name, emoji, status, lastHeartbeat, tasks, currentTask }: Agent) {
-  const isOffline = status === 'offline' || status === 'unknown';
+  const hasBlocked = tasks.blocked > 0;
+  const borderColor = hasBlocked ? 'border-l-orange-400' : borderColorMap[status];
   return (
     <a
       href={`/agent/${id}`}
-      className={`group block rounded-xl border border-neutral-200/80 border-l-[3px] ${borderColorMap[status]} bg-card shadow-card p-5 sm:p-6 transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5 ${isOffline ? 'opacity-55' : ''}`}
+      className={`group block rounded-xl border border-neutral-200/80 border-l-[3px] ${borderColor} bg-card shadow-card p-5 sm:p-6 transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5`}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">

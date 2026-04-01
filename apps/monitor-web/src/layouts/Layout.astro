@@ -19,14 +19,14 @@ const currentPath = Astro.url.pathname;
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>{title}</title>
   </head>
-  <body class="bg-page text-primary font-sans min-h-screen flex flex-col">
+  <body class="bg-page text-primary font-sans min-h-screen flex flex-col pb-16 sm:pb-0">
     <header class="sticky top-0 z-50 border-b border-neutral-200/60 bg-white/80 backdrop-blur-lg">
       <nav class="max-w-6xl mx-auto px-4 sm:px-6 h-12 sm:h-14 flex items-center justify-between">
         <a href="/" class="flex items-center gap-2 group">
           <span class="text-lg sm:text-xl">🦞</span>
           <span class="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">龙虾监控站</span>
         </a>
-        <div class="flex items-center gap-1 sm:gap-2 text-sm">
+        <div class="hidden sm:flex items-center gap-1 sm:gap-2 text-sm">
           <a
             href="/"
             class:list={[
@@ -49,11 +49,35 @@ const currentPath = Astro.url.pathname;
       <slot />
     </main>
 
-    <footer class="border-t border-neutral-200/60 py-4 sm:py-6">
+    <footer class="hidden sm:block border-t border-neutral-200/60 py-4 sm:py-6">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between text-xs text-tertiary">
         <span>AI Drive Monitor</span>
         <span>Multi-Agent System</span>
       </div>
     </footer>
+
+    <!-- Mobile bottom tab bar -->
+    <nav class="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-lg border-t border-neutral-200/60 flex items-center justify-around h-16 safe-area-bottom">
+      <a
+        href="/"
+        class:list={[
+          'flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors min-w-[64px]',
+          currentPath === '/' || currentPath.startsWith('/agent') ? 'text-brand-600' : 'text-tertiary',
+        ]}
+      >
+        <span class="text-xl">🏠</span>
+        <span class="text-[10px] font-medium">Dashboard</span>
+      </a>
+      <a
+        href={`/memory/${new Date().toISOString().slice(0, 10)}`}
+        class:list={[
+          'flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors min-w-[64px]',
+          currentPath.startsWith('/memory') ? 'text-brand-600' : 'text-tertiary',
+        ]}
+      >
+        <span class="text-xl">📝</span>
+        <span class="text-[10px] font-medium">Memory</span>
+      </a>
+    </nav>
   </body>
 </html>

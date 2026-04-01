@@ -4,9 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#0a0a0a',
-        secondary: '#525252',
-        tertiary: '#a3a3a3',
+        primary: '#111827',
+        secondary: '#6B7280',
+        tertiary: '#9CA3AF',
         page: '#f8f8f8',
         card: '#ffffff',
         hover: '#f3f3f3',
@@ -19,9 +19,13 @@ export default {
         status: {
           online: '#10b981',
           busy: '#f59e0b',
-          offline: '#d4d4d4',
+          offline: '#ef4444',
           unknown: '#d4d4d4',
         },
+        success: '#10B981',
+        error: '#EF4444',
+        warning: '#F59E0B',
+        info: '#3B82F6',
       },
       borderRadius: {
         DEFAULT: '6px',

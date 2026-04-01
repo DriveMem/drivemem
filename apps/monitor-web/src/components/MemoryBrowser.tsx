@@ -16,7 +16,12 @@ const agentMap = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 export default function MemoryBrowser({ initialDate }: Props) {
   const defaultDate = initialDate || new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(defaultDate);
-  const [agentFilter, setAgentFilter] = useState('');
+  const [agentFilter, setAgentFilter] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('agent') || '';
+    }
+    return '';
+  });
   const [entries, setEntries] = useState<MemoryEntry[]>([]);
   const [contentCache, setContentCache] = useState<Record<string, string>>({});
   const [loadingContent, setLoadingContent] = useState<Record<string, boolean>>({});

@@ -81,8 +81,18 @@ export default function AgentDetail({ agentId }: Props) {
         </div>
       </div>
 
+      {/* Memory shortcut */}
+      <div className="mt-6 sm:mt-8">
+        <a
+          href={`/memory/${new Date().toISOString().slice(0, 10)}?agent=${agentId}`}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-neutral-200/80 bg-card text-sm font-medium text-secondary hover:text-primary hover:border-neutral-300 hover:shadow-card transition-all min-h-[44px]"
+        >
+          📝 查看今日 Memory
+        </a>
+      </div>
+
       {/* Task list */}
-      <div className="mt-8 sm:mt-10">
+      <div className="mt-6 sm:mt-8">
         <h2 className="text-lg font-bold text-primary mb-4 sm:mb-5">Tasks</h2>
         <TaskList tasks={tasks} />
       </div>
