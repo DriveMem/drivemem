@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { MemoryEntry } from '@/lib/types';
 import { AGENTS } from '@/lib/constants';
-import { fetchMemory } from '@/lib/api';
+import { fetchMemory, fetchMemoryContent } from '@/lib/api';
 import DatePicker from './DatePicker';
 import MemoryViewer from './MemoryViewer';
 import RefreshIndicator from './RefreshIndicator';
@@ -18,6 +18,8 @@ export default function MemoryBrowser({ initialDate }: Props) {
   const [date, setDate] = useState(defaultDate);
   const [agentFilter, setAgentFilter] = useState('');
   const [entries, setEntries] = useState<MemoryEntry[]>([]);
+  const [contentCache, setContentCache] = useState<Record<string, string>>({});
+  const [loadingContent, setLoadingContent] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState(0);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -29,6 +31,7 @@ export default function MemoryBrowser({ initialDate }: Props) {
       const data = await fetchMemory(date, agentFilter || undefined);
       setEntries(data);
       setExpandedIndex(0);
+      setContentCache({});
       setLastUpdated(new Date());
     } catch {
       setEntries([]);
@@ -42,6 +45,38 @@ export default function MemoryBrowser({ initialDate }: Props) {
     setLoading(true);
     load();
   }, [load]);
+
+  // Load content for expanded entry
+  const loadContent = useCallback(async (entry: MemoryEntry) => {
+    const key = `${entry.agent}/${entry.filename}`;
+    if (contentCache[key] || loadingContent[key]) return;
+    setLoadingContent(prev => ({ ...prev, [key]: true }));
+    try {
+      const content = await fetchMemoryContent(entry.agent, entry.filename);
+      setContentCache(prev => ({ ...prev, [key]: content || '(empty)' }));
+    } catch {
+      setContentCache(prev => ({ ...prev, [key]: '(failed to load)' }));
+    } finally {
+      setLoadingContent(prev => ({ ...prev, [key]: false }));
+    }
+  }, [contentCache, loadingContent]);
+
+  // Auto-load content when expanding
+  const handleExpand = useCallback((idx: number) => {
+    if (expandedIndex === idx) {
+      setExpandedIndex(-1);
+    } else {
+      setExpandedIndex(idx);
+      if (entries[idx]) loadContent(entries[idx]);
+    }
+  }, [expandedIndex, entries, loadContent]);
+
+  // Load first entry content on mount
+  useEffect(() => {
+    if (entries.length > 0 && expandedIndex === 0) {
+      loadContent(entries[0]);
+    }
+  }, [entries]);
 
   const handleRefresh = useCallback(() => {
     load();
@@ -93,7 +128,7 @@ export default function MemoryBrowser({ initialDate }: Props) {
                 className="bg-card border border-neutral-200/80 rounded-xl shadow-card overflow-hidden transition-all duration-200 hover:shadow-card-hover"
               >
                 <button
-                  onClick={() => setExpandedIndex(isExpanded ? -1 : idx)}
+                  onClick={() => handleExpand(idx)}
                   className="w-full flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 text-left min-h-12 group"
                 >
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -113,11 +148,14 @@ export default function MemoryBrowser({ initialDate }: Props) {
                 >
                   <div className="px-4 sm:px-5 pb-5 sm:pb-6 border-t border-neutral-100">
                     <div className="pt-4 sm:pt-5 overflow-x-auto">
-                      {entry.content ? (
-                        <MemoryViewer content={entry.content} />
-                      ) : (
-                        <p className="text-sm text-tertiary italic">No content available</p>
-                      )}
+                      {(() => {
+                        const key = `${entry.agent}/${entry.filename}`;
+                        const cached = contentCache[key];
+                        const isLoading = loadingContent[key];
+                        if (isLoading) return <div className="h-20 bg-neutral-50 rounded-lg animate-pulse" />;
+                        if (cached) return <MemoryViewer content={cached} />;
+                        return <p className="text-sm text-tertiary italic">Loading...</p>;
+                      })()}
                     </div>
                   </div>
                 </div>
