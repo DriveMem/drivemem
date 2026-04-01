@@ -4,7 +4,7 @@ import type { Agent, Task, MemoryEntry } from './types';
 export const mockAgents = [
   {
     id: 'main',
-    name: '牛马',
+    name: '辛秘书',
     emoji: '🐂',
     status: 'online',
     lastHeartbeat: new Date(Date.now() - 2 * 60000).toISOString(),

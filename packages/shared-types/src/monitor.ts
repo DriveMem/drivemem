@@ -11,7 +11,7 @@ export interface AgentConfig {
 export type AgentStatus = 'online' | 'busy' | 'offline' | 'unknown';
 
 export const AGENTS: readonly AgentConfig[] = [
-  { id: 'main',        name: '牛马',              emoji: '🐂' },
+  { id: 'main',        name: '辛秘书',             emoji: '🐂' },
   { id: 'ad-manager',  name: 'AD Manager',        emoji: '📋' },
   { id: 'ad-master',   name: 'AD Master',         emoji: '🧭' },
   { id: 'ad-frontend', name: 'AD Frontend Coder', emoji: '🎨' },
