@@ -10,7 +10,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const navItems = [
-  { href: "/", icon: FileText, label: "我的文件" },
+  { href: "/dashboard", icon: FileText, label: "我的文件" },
   { href: "/chat", icon: MessageSquare, label: "AI 对话" },
   { href: "/settings", icon: Settings, label: "设置" },
 ] as const
