@@ -5,6 +5,7 @@ import { useLayoutStore } from "@/stores/layout-store"
 import { Sidebar } from "./sidebar"
 import { InspectorPanel } from "./inspector-panel"
 import { TopNav } from "./top-nav"
+import { CommandPalette } from "./command-palette"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { sidebarCollapsed, inspectorOpen } = useLayoutStore()
@@ -35,6 +36,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </motion.aside>
         )}
       </AnimatePresence>
+      <CommandPalette />
     </div>
   )
 }
