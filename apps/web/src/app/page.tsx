@@ -22,12 +22,14 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
   useEffect(() => {
     const el = ref.current
     if (!el) return
+    // Fallback: show after 800ms even if observer doesn't fire
+    const timer = setTimeout(() => setVisible(true), 800)
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect() } },
-      { threshold: 0.15 }
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); clearTimeout(timer) } },
+      { threshold: 0.05 }
     )
     obs.observe(el)
-    return () => obs.disconnect()
+    return () => { obs.disconnect(); clearTimeout(timer) }
   }, [])
   return (
     <div
