@@ -7,7 +7,7 @@ export interface ChatMessage {
   content: string;
 }
 
-const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY, ...(config.LLM_BASE_URL ? { baseURL: config.LLM_BASE_URL } : {}) });
 
 const BATCH_SIZE = 100;
 
