@@ -28,8 +28,9 @@ const signupSchema = z
 
 type SignupForm = z.infer<typeof signupSchema>
 
-// Signup calls backend directly (not through Nginx, because /api/auth/ is routed to frontend)
-const API_BASE = "http://localhost:3001"
+// Signup goes through Nginx (same origin) to avoid CORS
+// Nginx routes /api/auth/signup to backend 3001 (precise matching)
+const API_BASE = "http://localhost"
 
 export default function SignupPage() {
   const router = useRouter()
