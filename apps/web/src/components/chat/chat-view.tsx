@@ -22,11 +22,11 @@ interface ChatMessage {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
-export function ChatView({ conversationId: initialConversationId }: { conversationId?: string }) {
+export function ChatView({ conversationId: initialConversationId, fileScope }: { conversationId?: string; fileScope?: string }) {
   const [conversationId, setConversationId] = useState<string | undefined>(initialConversationId)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [streaming, setStreaming] = useState<string | undefined>(undefined)
-  const [scope, setScope] = useState<ScopeType>("all")
+  const [scope, setScope] = useState<ScopeType>(fileScope ? "file" : "all")
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -46,7 +46,7 @@ export function ChatView({ conversationId: initialConversationId }: { conversati
       if (!convId) {
         const conv = await apiFetch("/api/conversations", {
           method: "POST",
-          body: JSON.stringify({ scope: { type: scope } }),
+          body: JSON.stringify({ scope: { type: scope, id: fileScope } }),
         })
         convId = conv.id
         setConversationId(convId)
