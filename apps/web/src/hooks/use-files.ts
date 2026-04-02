@@ -1,4 +1,4 @@
-import { apiFetch } from '@/lib/api-client'
+import { apiFetch } from '@/lib/api'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 
@@ -21,23 +21,28 @@ export function useUploadFile() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ file, folderId }: { file: File; folderId?: string | null }) => {
-      // Step 1: Get presigned URL
-      const { uploadUrl, fileId, s3Key } = await apiFetch('/api/files/upload-url', {
-        method: 'POST',
-        body: JSON.stringify({
-          fileName: file.name,
-          mimeType: file.type,
-          size: file.size,
-          folderId: folderId || null,
-        }),
+      // Direct upload via backend proxy (no presigned URL)
+      const session = await (await import("next-auth/react")).getSession()
+      const token = (session as any)?.accessToken
+      const formData = new FormData()
+      formData.append("file", file)
+      if (folderId) formData.append("folderId", folderId)
+      
+      const headers: Record<string, string> = {}
+      if (token) headers["Authorization"] = `Bearer ${token}`
+      
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
+      const res = await fetch(`${API_BASE}/api/files/upload`, {
+        method: "POST",
+        headers,
+        credentials: "include",
+        body: formData,
       })
-      // Step 2: Upload to S3
-      await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
-      // Step 3: Confirm
-      return apiFetch('/api/files/confirm', {
-        method: 'POST',
-        body: JSON.stringify({ fileId }),
-      })
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: { message: res.statusText } }))
+        throw new Error(error.error?.message || res.statusText)
+      }
+      return res.json()
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['files'] }),
   })
