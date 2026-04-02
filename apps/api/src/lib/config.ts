@@ -8,6 +8,7 @@ const envSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().min(1),
   AWS_S3_BUCKET: z.string().min(1),
   AWS_REGION: z.string().min(1),
+  S3_ENDPOINT: z.string().optional(),
   QDRANT_URL: z.string().url(),
   QDRANT_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().min(1),
