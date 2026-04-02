@@ -20,8 +20,8 @@ interface FileItem {
   folderId: string | null
   createdAt: string
   updatedAt: string
-  parseStatus: "parsing" | "done" | "error"
-  parseError?: string
+  status: "uploading" | "parsing" | "indexed" | "failed"
+  errorMessage?: string
 }
 
 function fmtSize(b: number) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
@@ -34,7 +34,7 @@ function TypeIcon({ type }: { type: string }) {
 
 function StatusIcon({ status, error }: { status: string; error?: string }) {
   if (status === "parsing") return <span className="flex items-center gap-1 text-xs text-yellow-500"><Loader2 className="h-3 w-3 animate-spin" />AI 正在记住...</span>
-  if (status === "done") return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+  if (status === "indexed") return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
   return <span title={error}><XCircle className="h-3.5 w-3.5 text-red-500" /></span>
 }
 
@@ -120,7 +120,7 @@ export function FileList() {
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <TypeIcon type={file.type} />
                 <span className="flex-1 truncate text-sm">{file.name}</span>
-                <StatusIcon status={file.parseStatus} error={file.parseError} />
+                <StatusIcon status={file.status} error={file.errorMessage} />
                 <span className="w-16 text-right text-xs text-muted-foreground">{fmtSize(file.size)}</span>
                 <span className="w-28 text-right text-xs text-muted-foreground">{fmtDate(file.createdAt)}</span>
               </div>
