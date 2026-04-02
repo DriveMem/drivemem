@@ -36,11 +36,12 @@ function statusLabel(status: string): string {
 
 function useFileContent(fileId: string, fileType: string) {
   const [content, setContent] = useState<string | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!fileId || !["md", "txt"].includes(fileType)) return
+    if (!fileId || !["md", "txt", "pdf"].includes(fileType)) return
 
     let cancelled = false
     setLoading(true)
@@ -49,8 +50,14 @@ function useFileContent(fileId: string, fileType: string) {
     ;(async () => {
       try {
         const res = await apiFetch(`/api/files/${fileId}/preview-url`)
-        const { previewUrl } = res as { previewUrl: string; mimeType: string }
-        const textRes = await fetch(previewUrl)
+        const { previewUrl: url } = res as { previewUrl: string; mimeType: string }
+        if (!cancelled) setPreviewUrl(url)
+        if (fileType === "pdf") {
+          // For PDF, we only need the URL for iframe
+          if (!cancelled) setLoading(false)
+          return
+        }
+        const textRes = await fetch(url)
         if (!textRes.ok) throw new Error(`获取文件内容失败 (${textRes.status})`)
         const text = await textRes.text()
         if (!cancelled) setContent(text)
@@ -64,7 +71,7 @@ function useFileContent(fileId: string, fileType: string) {
     return () => { cancelled = true }
   }, [fileId, fileType])
 
-  return { content, loading, error }
+  return { content, previewUrl, loading, error }
 }
 
 export default function FilePreviewPage() {
@@ -94,7 +101,7 @@ export default function FilePreviewPage() {
 
   const fileType = getFileType(file.name || file.originalName || "")
   const fileName = file.name || file.originalName || "未命名文件"
-  const { content, loading: contentLoading, error: contentError } = useFileContent(params.id, fileType)
+  const { content, previewUrl, loading: contentLoading, error: contentError } = useFileContent(params.id, fileType)
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -118,11 +125,19 @@ export default function FilePreviewPage() {
         {/* Main preview area */}
         <div className="flex-1">
           {fileType === "pdf" && (
-            <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
-              <FileText className="h-12 w-12" />
-              <p>PDF 文件 — AI 已记住内容</p>
-              <p className="text-xs">可在 AI 对话中询问此文件相关问题</p>
-            </div>
+            previewUrl ? (
+              <iframe src={previewUrl} className="w-full h-[600px] rounded border" title="PDF 预览" />
+            ) : contentLoading ? (
+              <div className="flex h-96 items-center justify-center rounded border bg-muted">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
+                <FileText className="h-12 w-12" />
+                <p>PDF 文件 — AI 已记住内容</p>
+                <p className="text-xs">可在 AI 对话中询问此文件相关问题</p>
+              </div>
+            )
           )}
           {(fileType === "md" || fileType === "txt") && (
             <>
