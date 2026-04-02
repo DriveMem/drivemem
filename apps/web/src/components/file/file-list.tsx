@@ -3,11 +3,12 @@
 import { useState, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLayoutStore } from "@/stores/layout-store"
 import { useFiles, useDeleteFile, useRenameFile, useMoveFile } from "@/hooks/use-files"
+import { useCreateFolder } from "@/hooks/use-folders"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -54,6 +55,7 @@ export function FileList() {
   const deleteFile = useDeleteFile()
   const renameFile = useRenameFile()
   const moveFile = useMoveFile()
+  const createFolder = useCreateFolder()
   const [contextMenu, setContextMenu] = useState<{ fileId: string; x: number; y: number } | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>("createdAt")
   const [sortDir, setSortDir] = useState<SortDir>("desc")
@@ -120,6 +122,7 @@ export function FileList() {
           <Button variant="ghost" size="sm" onClick={() => toggleSort("createdAt")} className="gap-1 text-xs">时间 <ArrowUpDown className="h-3 w-3" /></Button>
           <Button variant="ghost" size="sm" onClick={() => toggleSort("size")} className="gap-1 text-xs">大小 <ArrowUpDown className="h-3 w-3" /></Button>
         </div>
+        <Button size="sm" onClick={() => { const name = prompt("文件夹名称"); if (name?.trim()) createFolder.mutate({ name: name.trim() }) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />新建文件夹</Button>
         <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
       </div>
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} />}
