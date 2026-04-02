@@ -20,13 +20,13 @@ export function Sidebar() {
         </div>
         <nav className="flex flex-col gap-1 p-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
             const btn = (<Button variant={isActive ? "secondary" : "ghost"} className={cn("w-full justify-start gap-2", sidebarCollapsed && "justify-center px-2")} size={sidebarCollapsed ? "icon" : "default"} asChild><Link href={item.href}><item.icon className="h-4 w-4 flex-shrink-0" />{!sidebarCollapsed && <span>{item.label}</span>}</Link></Button>)
             if (sidebarCollapsed) return (<Tooltip key={item.href}><TooltipTrigger asChild>{btn}</TooltipTrigger><TooltipContent side="right">{item.label}</TooltipContent></Tooltip>)
             return <div key={item.href}>{btn}</div>
           })}
         </nav>
-        {!sidebarCollapsed && (<div className="flex-1 overflow-auto border-t border-border p-2"><p className="px-2 py-1 text-xs font-medium text-muted-foreground">文件夹</p><FolderTree /></div>)}
+        {!sidebarCollapsed && pathname.startsWith("/files") && (<div className="flex-1 overflow-auto border-t border-border p-2"><p className="px-2 py-1 text-xs font-medium text-muted-foreground">文件夹</p><FolderTree /></div>)}
       </div>
     </TooltipProvider>
   )

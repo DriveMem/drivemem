@@ -44,7 +44,16 @@ export function FileList() {
     else { setSelected(new Set([id])); openInspector(id) }
   }, [files, selected, openInspector])
   if (files.length === 0 && !showUpload) {
-    return (<div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground"><Upload className="h-12 w-12" /><p className="text-lg">把文件拖到这里，让 AI 记住它</p><Button onClick={() => setShowUpload(true)}>上传文件</Button></div>)
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-6 text-muted-foreground p-8">
+        <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border p-10">
+          <Upload className="h-12 w-12" />
+          <p className="text-lg font-medium text-foreground">把文件拖到这里，让 AI 记住它</p>
+          <p className="text-sm">支持 PDF、TXT、Markdown 文件，最大 50MB</p>
+          <Button onClick={() => setShowUpload(true)} className="mt-2">选择文件上传</Button>
+        </div>
+      </div>
+    )
   }
   return (
     <div className="flex h-full flex-col">

@@ -34,8 +34,10 @@ export function TopNav() {
       setSearching(true)
       try {
         const data = await api.get<{ results: SearchResult[] }>(`/search?q=${encodeURIComponent(query)}`)
-        setResults(data.results || [])
-      } catch {
+        setResults(data.results ?? [])
+      } catch (e) {
+        // Silently handle — API might not be available
+        console.debug("Search failed:", e)
         setResults([])
       }
       setSearching(false)
