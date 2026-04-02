@@ -144,7 +144,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope }: {
     <div className="flex h-full flex-col">
       {/* Scope selector */}
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-        <span className="text-xs text-muted-foreground">对话范围：</span>
+        <span className="text-xs text-muted-foreground">AI 记忆范围：</span>
         {([["all", "全部文件", Files], ["folder", "指定文件夹", Folder], ["file", "指定文件", FileText]] as const).map(([type, label, Icon]) => (
           <Button key={type} variant={scope === type ? "secondary" : "ghost"} size="sm" onClick={() => setScope(type)} className="gap-1 text-xs">
             <Icon className="h-3 w-3" />{label}

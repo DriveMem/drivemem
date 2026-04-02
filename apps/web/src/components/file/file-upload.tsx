@@ -55,7 +55,7 @@ export function FileUpload({ onClose }: { onClose: () => void }) {
         <input {...getInputProps()} />
         <Upload className="h-8 w-8 text-muted-foreground mb-2" />
         <p className="text-sm text-muted-foreground">{isDragActive ? "松手让 AI 记住" : "把文件拖到这里，让 AI 记住它"}</p>
-        <p className="text-xs text-muted-foreground mt-1">支持 PDF、TXT、Markdown，最大 50MB</p>
+        <p className="text-xs text-muted-foreground mt-1">支持 PDF、TXT、Markdown，单个文件最大 50MB</p>
       </div>
       {uploads.length > 0 && (
         <div className="mt-3 space-y-2">
