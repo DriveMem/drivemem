@@ -36,16 +36,19 @@ export default function SettingsContent() {
 
   const handleExport = async () => {
     try {
-      const { apiFetch } = await import("@/lib/api")
-      const filesData = await apiFetch("/api/files")
-      const files = Array.isArray(filesData) ? filesData : (filesData?.files || [])
-      const blob = new Blob([JSON.stringify({ user: session?.user, files, exportedAt: new Date().toISOString() }, null, 2)], {
-        type: "application/json",
+      const s = await getSession()
+      const token = (s as any)?.accessToken
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
+      const res = await fetch(apiBase + "/api/users/me/export", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
+      if (!res.ok) throw new Error("导出失败")
+      const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `ai-drive-export-${new Date().toISOString().slice(0, 10)}.json`
+      a.download = `ai-drive-export-${new Date().toISOString().slice(0, 10)}.zip`
       a.click()
       URL.revokeObjectURL(url)
     } catch {
