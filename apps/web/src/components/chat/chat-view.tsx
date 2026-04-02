@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
 import { ChatInput } from "@/components/chat/chat-input"
 import { useFiles } from "@/hooks/use-files"
-import { apiFetch } from "@/lib/api-client"
+import { apiFetch } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { getSession } from "next-auth/react"
@@ -46,7 +46,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope }: {
       if (!convId) {
         const conv = await apiFetch("/api/conversations", {
           method: "POST",
-          body: JSON.stringify({ scope: { type: scope, id: fileScope } }),
+          body: JSON.stringify({ scopeType: scope, scopeId: fileScope || undefined }),
         })
         convId = conv.id
         setConversationId(convId)

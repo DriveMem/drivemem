@@ -22,7 +22,7 @@ export function MessageList({ messages, streaming }: { messages: ChatMessage[]; 
                 {msg.citations && msg.citations.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-border space-y-1">
                     <p className="text-xs text-muted-foreground font-medium">引用来源</p>
-                    {msg.citations.map((c) => <Citation key={c.index} citation={c} />)}
+                    {msg.citations.map((c, i) => <Citation key={i} citation={c} idx={i} />)}
                   </div>
                 )}
               </div>
