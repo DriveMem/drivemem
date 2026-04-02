@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { getSession } from "next-auth/react"
 import { useConversation } from "@/hooks/use-conversations"
+import { useQueryClient } from "@tanstack/react-query"
 
 type ScopeType = "all" | "folder" | "file"
 
@@ -30,6 +31,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   const [scope, setScope] = useState<ScopeType>(fileScope ? "file" : "all")
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
   const { data: filesData } = useFiles()
   const hasFiles = Array.isArray(filesData) ? filesData.length > 0 : (filesData?.files?.length ?? 0) > 0
@@ -69,6 +71,8 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         })
         convId = conv.id
         setConversationId(convId)
+        // Refresh conversation list in sidebar
+        queryClient.invalidateQueries({ queryKey: ["conversations"] })
       }
 
       // Get session token for Bearer auth
@@ -142,6 +146,8 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         citations: assistantCitations,
       }
       setMessages((prev) => [...prev, assistantMsg])
+      // Refresh conversation list (title may have been auto-generated)
+      queryClient.invalidateQueries({ queryKey: ["conversations"] })
     } catch (err: any) {
       setError(err.message || "网络错误")
       setStreaming(undefined)
