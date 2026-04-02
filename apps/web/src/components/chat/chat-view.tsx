@@ -1,9 +1,10 @@
 "use client"
 import { useState, useCallback, useEffect, useRef } from "react"
-import { MessageSquare, FileText, Folder, Files, Loader2 } from "lucide-react"
+import { MessageSquare, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
 import { ChatInput } from "@/components/chat/chat-input"
+import { ScopeSelector, type ScopeValue } from "@/components/chat/scope-selector"
 import { useConversation, useCreateConversation, type Message } from "@/hooks/use-api"
 import { createSSEStream } from "@/lib/api-client"
 import { useQueryClient } from "@tanstack/react-query"
@@ -23,14 +24,14 @@ function toChat(msg: Message): ChatMessage {
   return { id: msg.id, role: msg.role, content: msg.content, createdAt: msg.createdAt, citations: msg.citations ?? undefined }
 }
 
-export function ChatView({ conversationId }: { conversationId?: string }) {
+export function ChatView({ conversationId, initialScope }: { conversationId?: string; initialScope?: ScopeValue }) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { data: convData, isLoading } = useConversation(conversationId || "")
   const createConversation = useCreateConversation()
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([])
   const [streaming, setStreaming] = useState<string | undefined>(undefined)
-  const [scope, setScope] = useState<ScopeType>("all")
+  const [scope, setScope] = useState<ScopeValue>(initialScope || { type: "all" })
   const [sending, setSending] = useState(false)
   const cancelRef = useRef<AbortController | null>(null)
 
@@ -47,7 +48,7 @@ export function ChatView({ conversationId }: { conversationId?: string }) {
     // If no conversation yet, create one
     if (!chatId) {
       try {
-        const conv = await createConversation.mutateAsync({ scope: scope !== "all" ? scope : undefined })
+        const conv = await createConversation.mutateAsync({ scope: scope.type !== "all" ? scope.type : undefined, scopeId: scope.id })
         chatId = conv.id
         router.push(`/chat/${chatId}`)
       } catch {
@@ -126,14 +127,7 @@ export function ChatView({ conversationId }: { conversationId?: string }) {
   if (!conversationId && localMessages.length === 0) {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-          <span className="text-xs text-muted-foreground">对话范围：</span>
-          {([["all", "全部文件", Files], ["folder", "指定文件夹", Folder], ["file", "指定文件", FileText]] as const).map(([type, label, Icon]) => (
-            <Button key={type} variant={scope === type ? "secondary" : "ghost"} size="sm" onClick={() => setScope(type)} className="gap-1 text-xs">
-              <Icon className="h-3 w-3" />{label}
-            </Button>
-          ))}
-        </div>
+        <ScopeSelector value={scope} onChange={setScope} />
         <div className="flex-1 flex flex-col items-center justify-center gap-4 text-muted-foreground">
           <MessageSquare className="h-12 w-12" />
           <p className="text-lg">开始新对话</p>
@@ -146,14 +140,7 @@ export function ChatView({ conversationId }: { conversationId?: string }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-        <span className="text-xs text-muted-foreground">对话范围：</span>
-        {([["all", "全部文件", Files], ["folder", "指定文件夹", Folder], ["file", "指定文件", FileText]] as const).map(([type, label, Icon]) => (
-          <Button key={type} variant={scope === type ? "secondary" : "ghost"} size="sm" onClick={() => setScope(type)} className="gap-1 text-xs">
-            <Icon className="h-3 w-3" />{label}
-          </Button>
-        ))}
-      </div>
+      <ScopeSelector value={scope} onChange={setScope} />
       <MessageList messages={localMessages} streaming={streaming} />
       <ChatInput onSend={handleSend} disabled={sending} />
     </div>
