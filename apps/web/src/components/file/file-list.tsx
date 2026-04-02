@@ -63,6 +63,11 @@ export function FileList() {
   const [folderDialogOpen, setFolderDialogOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState("")
   const [contextMenu, setContextMenu] = useState<{ fileId: string; x: number; y: number } | null>(null)
+  const [renameTarget, setRenameTarget] = useState<{ fileId: string; currentName: string } | null>(null)
+  const [renameValue, setRenameValue] = useState("")
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [moveTarget, setMoveTarget] = useState<string | null>(null)
+  const [moveFolderId, setMoveFolderId] = useState("")
   const [sortKey, setSortKey] = useState<SortKey>("createdAt")
   const [sortDir, setSortDir] = useState<SortDir>("desc")
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -170,17 +175,17 @@ export function FileList() {
           <DropdownMenuContent align="start">
             <DropdownMenuItem onClick={() => {
               const file = files.find(f => f.id === contextMenu.fileId)
-              const newName = prompt("输入新名称", file?.name || "")
-              if (newName && newName !== file?.name) renameFile.mutate({ fileId: contextMenu.fileId, name: newName })
+              setRenameTarget({ fileId: contextMenu.fileId, currentName: file?.name || "" })
+              setRenameValue(file?.name || "")
               setContextMenu(null)
             }}>重命名</DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
-              if (confirm("确定删除此文件？")) deleteFile.mutate(contextMenu.fileId)
+              setDeleteTarget(contextMenu.fileId)
               setContextMenu(null)
             }}>删除</DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
-              const folderId = prompt("输入目标文件夹 ID（留空移到根目录）", "")
-              if (folderId !== null) moveFile.mutate({ fileId: contextMenu.fileId, folderId: folderId || null })
+              setMoveTarget(contextMenu.fileId)
+              setMoveFolderId("")
               setContextMenu(null)
             }}>移动到文件夹</DropdownMenuItem>
           </DropdownMenuContent>
@@ -205,6 +210,42 @@ export function FileList() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>取消</Button>
             <Button onClick={() => { if (newFolderName.trim()) { createFolder.mutate({ name: newFolderName.trim() }); setFolderDialogOpen(false) } }} disabled={!newFolderName.trim()}>创建</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rename Dialog */}
+      <Dialog open={!!renameTarget} onOpenChange={(open) => { if (!open) setRenameTarget(null) }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>重命名文件</DialogTitle></DialogHeader>
+          <Input value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && renameValue.trim() && renameTarget) { renameFile.mutate({ fileId: renameTarget.fileId, name: renameValue.trim() }); setRenameTarget(null) } }} placeholder="输入新名称" autoFocus />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenameTarget(null)}>取消</Button>
+            <Button disabled={!renameValue.trim() || renameValue.trim() === renameTarget?.currentName} onClick={() => { if (renameTarget) { renameFile.mutate({ fileId: renameTarget.fileId, name: renameValue.trim() }); setRenameTarget(null) } }}>确认</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm Dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>确认删除</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">确定要删除此文件吗？此操作不可撤销。</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>取消</Button>
+            <Button variant="destructive" onClick={() => { if (deleteTarget) { deleteFile.mutate(deleteTarget); setDeleteTarget(null) } }}>删除</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Move Dialog */}
+      <Dialog open={!!moveTarget} onOpenChange={(open) => { if (!open) setMoveTarget(null) }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>移动到文件夹</DialogTitle></DialogHeader>
+          <Input value={moveFolderId} onChange={(e) => setMoveFolderId(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && moveTarget) { moveFile.mutate({ fileId: moveTarget, folderId: moveFolderId || null }); setMoveTarget(null) } }} placeholder="输入目标文件夹 ID（留空移到根目录）" autoFocus />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMoveTarget(null)}>取消</Button>
+            <Button onClick={() => { if (moveTarget) { moveFile.mutate({ fileId: moveTarget, folderId: moveFolderId || null }); setMoveTarget(null) } }}>移动</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
