@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useSession, signOut } from "next-auth/react"
+import { useState, useEffect } from "react"
+import { getSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,10 +15,19 @@ import {
 } from "@/components/ui/dialog"
 
 export default function SettingsContent() {
-  const { data: session } = useSession()
-  const [name, setName] = useState(session?.user?.name || "用户")
+  const [session, setSession] = useState<any>(null)
+  const [name, setName] = useState("用户")
   const [deleteConfirm, setDeleteConfirm] = useState("")
   const [deleteOpen, setDeleteOpen] = useState(false)
+
+  useEffect(() => {
+    getSession().then((s) => {
+      if (s) {
+        setSession(s)
+        setName(s.user?.name || "用户")
+      }
+    })
+  }, [])
 
   const storageUsed = 1.8
   const storageTotal = 5
