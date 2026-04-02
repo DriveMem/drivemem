@@ -43,6 +43,7 @@ export const files = pgTable('files', {
   chunkCount: integer('chunk_count').notNull().default(0),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   s3Key: text('s3_key').notNull(),
+  summary: text('summary'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

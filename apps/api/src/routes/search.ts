@@ -4,7 +4,7 @@ import { and, eq, or, ilike } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { files } from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
-import { embedTexts } from '../services/llm.service.js';
+import { embedTexts } from '../services/embedding.service.js';
 import { searchSimilar } from '../services/vector.service.js';
 
 const searchQuerySchema = z.object({ q: z.string().min(1) });

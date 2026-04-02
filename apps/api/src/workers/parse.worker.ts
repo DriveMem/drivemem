@@ -7,7 +7,7 @@ import { files } from '../db/schema.js';
 import { getObject } from '../services/s3.service.js';
 import { parseDocument } from '../services/parse.service.js';
 import { chunkText } from '../services/chunk.service.js';
-import { embedTexts } from '../services/llm.service.js';
+import { embedTexts } from '../services/embedding.service.js';
 import { ensureCollection, upsertChunks } from '../services/vector.service.js';
 import IORedis from 'ioredis';
 
@@ -62,6 +62,21 @@ const worker = new Worker<ParseJobData>(
       }).where(eq(files.id, fileId));
 
       console.log('[file-parse] File ' + fileId + ' indexed with ' + chunks.length + ' chunks');
+
+// Auto-generate summary after successful indexing
+    try {
+      const { chat } = await import('../services/llm.service.js');
+      const chunkTexts = chunks.map((c: { text: string }) => c.text).join('\n\n').substring(0, 3000);
+      const summaryPrompt = '请用中文为以下文档内容生成一段简洁的摘要（不超过200字），概括文档的主要内容和关键信息：\n\n' + chunkTexts;
+      const summary = await chat([{ role: 'user', content: summaryPrompt }]);
+      if (summary) {
+        await db.update(files).set({ summary }).where(eq(files.id, fileId));
+        console.log('[file-parse] Summary generated for ' + fileId);
+      }
+    } catch (summaryErr) {
+      console.warn('[file-parse] Summary generation failed (non-blocking):', (summaryErr as Error).message);
+    }
+
     } catch (err) {
       if (err instanceof AppError && err.code === 'PARSE_FAILED') {
         throw new UnrecoverableError(err.message);
