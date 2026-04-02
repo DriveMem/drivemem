@@ -93,7 +93,8 @@ export default function SettingsPage() {
             导出数据
           </Button>
 
-          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                      <Button variant="outline" className="w-full" onClick={() => { import("next-auth/react").then(m => m.signOut({ callbackUrl: "/" })) }}>退出登录</Button>
+            <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
             <DialogTrigger asChild>
               <Button variant="destructive">删除账号</Button>
             </DialogTrigger>
