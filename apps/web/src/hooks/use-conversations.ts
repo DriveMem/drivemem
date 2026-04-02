@@ -20,8 +20,8 @@ export function useConversation(id: string) {
 export function useCreateConversation() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (scope: { type: 'all' | 'folder' | 'file'; id?: string }) =>
-      apiFetch('/api/conversations', { method: 'POST', body: JSON.stringify({ scope }) }),
+    mutationFn: ({ scopeType, scopeId }: { scopeType: 'all' | 'folder' | 'file'; scopeId?: string }) =>
+      apiFetch('/api/conversations', { method: 'POST', body: JSON.stringify({ scopeType, scopeId }) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['conversations'] }),
   })
 }
