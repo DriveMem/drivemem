@@ -35,15 +35,22 @@ export default function SettingsContent() {
   const chatLimitToday = 20
 
   const handleExport = async () => {
-    const blob = new Blob([JSON.stringify({ name, exportedAt: new Date().toISOString() })], {
-      type: "application/json",
-    })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "ai-drive-export.json"
-    a.click()
-    URL.revokeObjectURL(url)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const filesData = await apiFetch("/api/files")
+      const files = Array.isArray(filesData) ? filesData : (filesData?.files || [])
+      const blob = new Blob([JSON.stringify({ user: session?.user, files, exportedAt: new Date().toISOString() }, null, 2)], {
+        type: "application/json",
+      })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `ai-drive-export-${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      alert("导出失败，请稍后重试")
+    }
   }
 
   const handleDelete = () => {

@@ -263,7 +263,16 @@ export function FileList() {
       <Dialog open={!!moveTarget} onOpenChange={(open) => { if (!open) setMoveTarget(null) }}>
         <DialogContent>
           <DialogHeader><DialogTitle>移动到文件夹</DialogTitle></DialogHeader>
-          <Input value={moveFolderId} onChange={(e) => setMoveFolderId(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && moveTarget) { moveFile.mutate({ fileId: moveTarget, folderId: moveFolderId || null }); setMoveTarget(null) } }} placeholder="输入目标文件夹 ID（留空移到根目录）" autoFocus />
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            <button onClick={() => setMoveFolderId("")} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent", moveFolderId === "" && "bg-accent font-medium")}>
+              <FileText className="h-4 w-4" /> 根目录
+            </button>
+            {allFolders.map((f: any) => (
+              <button key={f.id} onClick={() => setMoveFolderId(f.id)} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent", moveFolderId === f.id && "bg-accent font-medium")}>
+                <Folder className="h-4 w-4 text-amber-500" /> {f.name}
+              </button>
+            ))}
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setMoveTarget(null)}>取消</Button>
             <Button onClick={() => { if (moveTarget) { moveFile.mutate({ fileId: moveTarget, folderId: moveFolderId || null }); setMoveTarget(null) } }}>移动</Button>
