@@ -7,7 +7,7 @@ import { FolderTree } from "@/components/file/folder-tree"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-const navItems = [{ href: "/", icon: FileText, label: "我的文件" }, { href: "/chat", icon: MessageSquare, label: "AI 对话" }, { href: "/settings", icon: Settings, label: "设置" }] as const
+const navItems = [{ href: "/files", icon: FileText, label: "我的文件" }, { href: "/chat", icon: MessageSquare, label: "AI 对话" }, { href: "/settings", icon: Settings, label: "设置" }] as const
 export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar } = useLayoutStore()
   const pathname = usePathname()
