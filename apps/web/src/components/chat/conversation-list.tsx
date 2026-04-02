@@ -43,9 +43,10 @@ export function ConversationList() {
     return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`
   }
 
-  const sorted = Array.isArray(conversations)
-    ? [...conversations].sort((a: Conversation, b: Conversation) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    : []
+    const sorted = (() => {
+    const list = Array.isArray(conversations) ? conversations : (conversations?.conversations || [])
+    return [...list].sort((a: Conversation, b: Conversation) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+  })()
 
   return (
     <div className="flex h-full flex-col border-r">
