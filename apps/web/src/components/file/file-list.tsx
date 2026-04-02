@@ -95,7 +95,7 @@ export function FileList() {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
         <Upload className="h-12 w-12" /><p className="text-lg">把文件拖到这里，让 AI 记住它</p>
-        <Button onClick={() => setShowUpload(true)}>上传文件</Button>
+        <Button onClick={() => setShowUpload(true)}>让 AI 记住文件</Button>
       </div>
     )
   }
@@ -108,7 +108,7 @@ export function FileList() {
           <Button variant="ghost" size="sm" onClick={() => toggleSort("createdAt")} className="gap-1 text-xs">时间 <ArrowUpDown className="h-3 w-3" /></Button>
           <Button variant="ghost" size="sm" onClick={() => toggleSort("size")} className="gap-1 text-xs">大小 <ArrowUpDown className="h-3 w-3" /></Button>
         </div>
-        <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1"><Upload className="h-3.5 w-3.5" /> 上传</Button>
+        <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
       </div>
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} />}
       <div ref={parentRef} className="flex-1 overflow-auto">

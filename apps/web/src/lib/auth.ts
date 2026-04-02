@@ -10,7 +10,7 @@ const loginSchema = z.object({
 
 // Server-side auth calls must go directly to backend, not through Nginx
 // (Nginx /api/auth/ routes to frontend, causing a loop)
-const API_BASE = process.env.BACKEND_URL || "http://localhost:3001"
+const API_BASE = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [

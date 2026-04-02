@@ -36,7 +36,7 @@ export function FileUpload({ onClose }: { onClose: () => void }) {
             setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "done" as const, progress: 100 } : u))
           },
           onError: (err: any) => {
-            setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "error" as const, error: err.message || "上传失败" } : u))
+            setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "error" as const, error: err.message || "记住失败" } : u))
           },
         }
       )
@@ -54,7 +54,7 @@ export function FileUpload({ onClose }: { onClose: () => void }) {
       <div {...getRootProps()} className={cn("flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 cursor-pointer transition-colors", isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground")}>
         <input {...getInputProps()} />
         <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-        <p className="text-sm text-muted-foreground">{isDragActive ? "松手上传" : "把文件拖到这里，让 AI 记住它"}</p>
+        <p className="text-sm text-muted-foreground">{isDragActive ? "松手让 AI 记住" : "把文件拖到这里，让 AI 记住它"}</p>
         <p className="text-xs text-muted-foreground mt-1">支持 PDF、TXT、Markdown，最大 50MB</p>
       </div>
       {uploads.length > 0 && (
