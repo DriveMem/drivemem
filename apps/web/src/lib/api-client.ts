@@ -27,7 +27,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
   if (token) headers['Authorization'] = `Bearer ${token}`
 
-  const res = await fetch(url, { ...options, headers })
+  const res = await fetch(url, { ...options, headers, credentials: 'include' })
 
   if (!res.ok) {
     if (res.status === 401 && typeof window !== 'undefined') {
@@ -51,6 +51,8 @@ export const api = {
 }
 
 export function createSSEStream(path: string, options?: {
+  method?: string
+  body?: string
   onMessage: (data: string) => void
   onError?: (error: Error) => void
   onDone?: () => void
@@ -59,9 +61,16 @@ export function createSSEStream(path: string, options?: {
   const url = `${API_BASE}${path}`
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null
 
+  const headers: Record<string, string> = {}
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  if (options?.body) headers['Content-Type'] = 'application/json'
+
   fetch(url, {
+    method: options?.method || 'GET',
+    body: options?.body,
     signal: controller.signal,
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers,
+    credentials: 'include',
   }).then(async (res) => {
     if (!res.ok || !res.body) { options?.onError?.(new Error(`SSE failed: ${res.status}`)); return }
     const reader = res.body.getReader()
