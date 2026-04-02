@@ -60,7 +60,7 @@ export function TopNav() {
             <DropdownMenuItem asChild>
               <a href="/settings">设置</a>
             </DropdownMenuItem>
-            <DropdownMenuItem>退出登录</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { import("next-auth/react").then(m => m.signOut({ callbackUrl: "/" })) }}>退出登录</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
