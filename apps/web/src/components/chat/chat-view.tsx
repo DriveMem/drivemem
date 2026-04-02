@@ -34,7 +34,9 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   const queryClient = useQueryClient()
 
   const { data: filesData } = useFiles()
-  const hasFiles = Array.isArray(filesData) ? filesData.length > 0 : (filesData?.files?.length ?? 0) > 0
+  const filesList = Array.isArray(filesData) ? filesData : (filesData?.files || [])
+  const indexedCount = filesList.filter((f: any) => f.status === "indexed").length
+  const hasFiles = filesList.length > 0
 
   // Load history messages for existing conversation
   const { data: convData } = useConversation(initialConversationId || "")
@@ -192,7 +194,23 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         </div>
       )}
 
-      <MessageList messages={messages} streaming={streaming} />
+      {messages.length === 0 && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-muted-foreground">
+          <MessageSquare className="h-12 w-12" />
+          {indexedCount > 0 ? (
+            <>
+              <p className="text-lg font-medium text-foreground">AI 已记住 {indexedCount} 个文件</p>
+              <p className="text-sm">问任何关于你文件的问题</p>
+            </>
+          ) : (
+            <>
+              <p className="text-lg font-medium text-foreground">开始和 AI 对话</p>
+              <p className="text-sm">先上传文件让 AI 记住，然后提问</p>
+            </>
+          )}
+        </div>
+      )}
+      {messages.length > 0 && <MessageList messages={messages} streaming={streaming} />}
       <ChatInput onSend={handleSend} disabled={sending} />
     </div>
   )
