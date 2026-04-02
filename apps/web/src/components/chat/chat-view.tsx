@@ -9,6 +9,7 @@ import { apiFetch } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { getSession } from "next-auth/react"
+import { useConversation } from "@/hooks/use-conversations"
 
 type ScopeType = "all" | "folder" | "file"
 
@@ -32,6 +33,23 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
 
   const { data: filesData } = useFiles()
   const hasFiles = Array.isArray(filesData) ? filesData.length > 0 : (filesData?.files?.length ?? 0) > 0
+
+  // Load history messages for existing conversation
+  const { data: convData } = useConversation(initialConversationId || "")
+  const [historyLoaded, setHistoryLoaded] = useState(false)
+  useEffect(() => {
+    if (convData?.messages && !historyLoaded) {
+      const loaded: ChatMessage[] = convData.messages.map((m: any) => ({
+        id: m.id,
+        role: m.role,
+        content: m.content,
+        createdAt: m.createdAt,
+        citations: m.citations || [],
+      }))
+      setMessages(loaded)
+      setHistoryLoaded(true)
+    }
+  }, [convData, historyLoaded])
 
 
   const handleSend = useCallback(async (content: string) => {
