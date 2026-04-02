@@ -13,8 +13,12 @@ const app = Fastify({
   },
 });
 
-await app.register(cors, { origin: config.FRONTEND_URL, credentials: true });
+await app.register(cors, { origin: [config.FRONTEND_URL, 'http://localhost', 'http://localhost:3000', 'https://drive.verrrnm.cloud', 'https://verrrnm.cloud', 'https://web-indol-omega-43.vercel.app', /\.vercel\.app$/], credentials: true });
 await app.register(sensible);
+
+import multipart from '@fastify/multipart';
+await app.register(multipart, { limits: { fileSize: 52428800 } }); // 50MB
+
 await app.register(errorHandler);
 
 import authPlugin from './plugins/auth.js';

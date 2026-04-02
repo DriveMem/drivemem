@@ -56,6 +56,11 @@ export async function parseDocument(buffer: Buffer, mimeType: string): Promise<s
     throw new AppError('PARSE_FAILED', 'Document contains no extractable text', 400);
   }
 
+  // Detect protected/encrypted PDFs
+  if (text.trim().length < 500 && /protected|password|encrypted/i.test(text)) {
+    throw new AppError('PARSE_FAILED', 'Document appears to be password-protected or encrypted', 400);
+  }
+
   if (text.length > MAX_TEXT_LENGTH) {
     console.warn('[parse] Text truncated from ' + text.length + ' to ' + MAX_TEXT_LENGTH + ' characters');
     text = text.slice(0, MAX_TEXT_LENGTH);

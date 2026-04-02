@@ -6,7 +6,8 @@ import { conversations, messages, users } from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
 import { AppError, ErrorCodes } from '../lib/errors.js';
 import { searchSimilar } from '../services/vector.service.js';
-import { embedTexts, streamChat, chat } from '../services/llm.service.js';
+import { streamChat, chat } from '../services/llm.service.js';
+import { embedTexts } from '../services/embedding.service.js';
 import { config } from '../lib/config.js';
 
 const createSchema = z.object({
@@ -161,14 +162,24 @@ export default async function conversationRoutes(app: FastifyInstance) {
       limit: 6,
     });
 
+    // RAG debug log
+    console.log("[RAG] user=" + user.id + " chunks=" + chunks.length + " scores=" + JSON.stringify(chunks.map(c => c.score.toFixed(2))));
+
     // Build system prompt
     const citationSources = chunks.map(
       (c, i) => `来源 ${i + 1} (${c.fileName} 第${c.chunkIndex + 1}段): ${c.text}`,
     );
-    const systemPrompt = `你是一个文档 AI 助手。基于以下文档片段回答用户问题。如果文档中没有相关信息，请如实说明。
+    const systemPrompt = `你是 AI Drive 的文档 AI 助手。你的职责是**严格基于用户上传的文档内容**回答问题。
+
+重要规则：
+1. **只使用下方提供的文档片段**来回答问题，不要使用你自己的知识补充
+2. 如果文档片段中**没有相关信息**，明确告诉用户"在您的文档中没有找到相关内容"
+3. 回答时**引用具体来源**（文件名和段落）
+4. 使用中文回答，保持专业友好的语气
+5. 如果用户没有上传任何文件或检索结果为空，提醒用户先上传文件
 
 [文档片段]
-${citationSources.join('\n\n')}`;
+${citationSources.length > 0 ? citationSources.join('\n\n') : '（未找到相关文档内容。请告诉用户在他们的文件中没有找到相关信息，或者提醒他们先上传文件。）'}`;
 
     // Build chat history for LLM
     const chatHistory = recentMessages.map((m) => ({
@@ -177,10 +188,17 @@ ${citationSources.join('\n\n')}`;
     }));
 
     // SSE response
+    // Get CORS origin from request
+    const origin = request.headers.origin;
+    const allowedOrigins = ['https://drive.verrrnm.cloud', 'https://verrrnm.cloud', 'http://localhost', 'http://localhost:3000'];
+    const corsOrigin = origin && (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) ? origin : '';
+
     reply.raw.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       Connection: 'keep-alive',
+      'Access-Control-Allow-Origin': corsOrigin,
+      'Access-Control-Allow-Credentials': 'true',
     });
 
     let fullContent = '';

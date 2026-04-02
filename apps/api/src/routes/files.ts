@@ -6,7 +6,9 @@ import * as schema from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
 import { AppError, ErrorCodes } from '../lib/errors.js';
 import { fileParseQueue } from '../lib/queue.js';
-import { generateUploadUrl, generatePreviewUrl, headObject, deleteObject } from '../services/s3.service.js';
+import { generateUploadUrl, generatePreviewUrl, headObject, deleteObject, s3Client } from '../services/s3.service.js';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { config } from '../lib/config.js';
 import { deleteByFileId } from '../services/vector.service.js';
 import { MAX_FILE_SIZE, SUPPORTED_MIME_TYPES } from '@ai-drive/shared';
 
@@ -130,7 +132,10 @@ export default async function fileRoutes(fastify: FastifyInstance) {
 
     const uploadUrl = await generateUploadUrl(s3Key, body.mimeType);
 
-    return reply.send({ uploadUrl, fileId: file.id, s3Key });
+    // Replace localhost URL with public URL for presigned access
+    const publicUploadUrl = uploadUrl.replace('http://localhost:9000', 'https://api.verrrnm.cloud/s3');
+
+    return reply.send({ uploadUrl: publicUploadUrl, fileId: file.id, s3Key });
   });
 
   // POST /confirm
@@ -264,7 +269,8 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     const { id } = request.params as { id: string };
     const file = await getOwnedFile(id, request.user!.id);
     const previewUrl = await generatePreviewUrl(file.s3Key);
-    return reply.send({ previewUrl, mimeType: file.mimeType });
+    const publicPreviewUrl = previewUrl.replace('http://localhost:9000', 'https://api.verrrnm.cloud/s3');
+    return reply.send({ previewUrl: publicPreviewUrl, mimeType: file.mimeType });
   });
 
   // POST /:id/retry-parse
@@ -294,5 +300,65 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     }, PARSE_JOB_OPTIONS);
 
     return reply.send({ fileId: id, status: 'parsing' });
+  });
+
+  // POST /upload — direct file upload (proxy to MinIO, no presigned URL needed)
+  fastify.post('/upload', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const data = await request.file();
+    if (!data) throw new AppError(ErrorCodes.VALIDATION_ERROR, 'No file provided', 400);
+
+    const fileName = data.filename;
+    const mimeType = data.mimetype;
+    const chunks: Buffer[] = [];
+    for await (const chunk of data.file) chunks.push(chunk as Buffer);
+    const buffer = Buffer.concat(chunks);
+    const size = buffer.length;
+
+    // Validate
+    if (size > MAX_FILE_SIZE) throw new AppError(ErrorCodes.FILE_TOO_LARGE, 'File exceeds 50MB limit', 413);
+    if (!(SUPPORTED_MIME_TYPES as readonly string[]).includes(mimeType)) {
+      throw new AppError(ErrorCodes.UNSUPPORTED_FILE_TYPE, 'Unsupported file type', 400);
+    }
+
+    const [user] = await db.select({ storageUsed: schema.users.storageUsed, storageLimit: schema.users.storageLimit })
+      .from(schema.users).where(eq(schema.users.id, userId));
+    if (user.storageUsed + size > user.storageLimit) {
+      throw new AppError(ErrorCodes.STORAGE_LIMIT_EXCEEDED, 'Storage limit exceeded', 413);
+    }
+
+    // Parse folderId from fields
+    const folderId = (data.fields?.folderId as any)?.value || null;
+    const fileId = crypto.randomUUID();
+    const s3Key = `users/${userId}/files/${fileId}/${fileName}`;
+
+    // Upload to MinIO directly
+    await s3Client.send(new PutObjectCommand({
+      Bucket: config.AWS_S3_BUCKET,
+      Key: s3Key,
+      Body: buffer,
+      ContentType: mimeType,
+    }));
+
+    // Create file record
+    const [file] = await db.insert(schema.files).values({
+      id: fileId,
+      name: fileName,
+      originalName: fileName,
+      mimeType,
+      size,
+      status: 'parsing',
+      folderId: folderId && folderId !== '' ? folderId : null,
+      userId,
+      s3Key,
+    }).returning();
+
+    // Update storage
+    await db.update(schema.users).set({ storageUsed: sql`${schema.users.storageUsed} + ${size}` }).where(eq(schema.users.id, userId));
+
+    // Enqueue parse job
+    await fileParseQueue.add('parse', { fileId, userId, s3Key, mimeType });
+
+    return reply.status(201).send({ fileId: file.id, status: 'parsing' });
   });
 }
