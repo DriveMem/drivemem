@@ -6,7 +6,13 @@ import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCir
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLayoutStore } from "@/stores/layout-store"
-import { useFiles, useDeleteFile } from "@/hooks/use-files"
+import { useFiles, useDeleteFile, useRenameFile, useMoveFile } from "@/hooks/use-files"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 import { FileUpload } from "./file-upload"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
 
@@ -44,6 +50,9 @@ export function FileList() {
   const { currentFolderId, openInspector, selectedFileId } = useLayoutStore()
   const { data, isLoading, error } = useFiles(currentFolderId)
   const deleteFile = useDeleteFile()
+  const renameFile = useRenameFile()
+  const moveFile = useMoveFile()
+  const [contextMenu, setContextMenu] = useState<{ fileId: string; x: number; y: number } | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>("createdAt")
   const [sortDir, setSortDir] = useState<SortDir>("desc")
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -119,6 +128,7 @@ export function FileList() {
             const isSel = selected.has(file.id) || selectedFileId === file.id
             return (
               <div key={file.id} onClick={(e) => handleClick(file.id, e)}
+                onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                 className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50", isSel && "bg-accent")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <TypeIcon type={file.type} />
@@ -131,6 +141,30 @@ export function FileList() {
           })}
         </div>
       </div>
+      {contextMenu && (
+        <DropdownMenu open onOpenChange={(open) => { if (!open) setContextMenu(null) }}>
+          <DropdownMenuTrigger asChild>
+            <div style={{ position: "fixed", left: contextMenu.x, top: contextMenu.y, width: 1, height: 1 }} />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => {
+              const file = files.find(f => f.id === contextMenu.fileId)
+              const newName = prompt("输入新名称", file?.name || "")
+              if (newName && newName !== file?.name) renameFile.mutate({ fileId: contextMenu.fileId, name: newName })
+              setContextMenu(null)
+            }}>重命名</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              if (confirm("确定删除此文件？")) deleteFile.mutate(contextMenu.fileId)
+              setContextMenu(null)
+            }}>删除</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              const folderId = prompt("输入目标文件夹 ID（留空移到根目录）", "")
+              if (folderId !== null) moveFile.mutate({ fileId: contextMenu.fileId, folderId: folderId || null })
+              setContextMenu(null)
+            }}>移动到文件夹</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
       {selected.size > 1 && (
         <div className="flex items-center justify-between border-t border-border bg-muted px-4 py-2">
           <span className="text-sm">已选择 {selected.size} 个文件</span>
