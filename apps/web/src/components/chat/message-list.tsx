@@ -4,8 +4,12 @@ import ReactMarkdown from "react-markdown"
 import rehypeHighlight from "rehype-highlight"
 import { Loader2, Bot, User } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { ChatMessage } from "@/lib/mock-chat"
 import { Citation } from "./citation"
+
+interface ChatMessage {
+  id: string; role: "user" | "assistant"; content: string; createdAt: string
+  citations?: { index: number; filename: string; snippet: string }[]
+}
 
 export function MessageList({ messages, streaming }: { messages: ChatMessage[]; streaming?: string }) {
   const bottomRef = useRef<HTMLDivElement>(null)

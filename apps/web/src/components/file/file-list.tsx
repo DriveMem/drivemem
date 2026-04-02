@@ -5,44 +5,67 @@ import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload } from "l
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLayoutStore } from "@/stores/layout-store"
-import { mockFiles, type MockFile } from "@/lib/mock-data"
+import { useFiles, type FileItem } from "@/hooks/use-api"
 import { FileUpload } from "./file-upload"
+
 type SortKey = "name" | "createdAt" | "size"
 type SortDir = "asc" | "desc"
+
 function fmtSize(b: number) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
 function fmtDate(iso: string) { return new Date(iso).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) }
-function TypeIcon({ type }: { type: MockFile["type"] }) {
+
+function fileTypeFromMime(mime: string): string {
+  if (mime.includes("pdf")) return "pdf"
+  if (mime.includes("markdown") || mime.includes("md")) return "md"
+  if (mime.includes("text")) return "txt"
+  if (mime.includes("image")) return "image"
+  return "txt"
+}
+
+function TypeIcon({ mime }: { mime: string }) {
+  const type = fileTypeFromMime(mime)
   const c: Record<string, string> = { pdf: "text-red-400", txt: "text-gray-400", md: "text-teal-400", image: "text-blue-400" }
   return <FileText className={cn("h-4 w-4 flex-shrink-0", c[type])} />
 }
-function StatusIcon({ status, error }: { status: MockFile["parseStatus"]; error?: string }) {
-  if (status === "parsing") return <span className="flex items-center gap-1 text-xs text-yellow-500"><Loader2 className="h-3 w-3 animate-spin" />AI 正在记住...</span>
-  if (status === "done") return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-  return <span title={error}><XCircle className="h-3.5 w-3.5 text-red-500" /></span>
+
+function StatusIcon({ status, error }: { status: string; error?: string | null }) {
+  if (status === "parsing" || status === "pending") return <span className="flex items-center gap-1 text-xs text-yellow-500"><Loader2 className="h-3 w-3 animate-spin" />AI 正在记住...</span>
+  if (status === "done" || status === "parsed") return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+  return <span title={error || undefined}><XCircle className="h-3.5 w-3.5 text-red-500" /></span>
 }
+
 export function FileList() {
   const { currentFolderId, openInspector, selectedFileId } = useLayoutStore()
+  const { data: apiFiles, isLoading } = useFiles(currentFolderId)
   const [sortKey, setSortKey] = useState<SortKey>("createdAt")
   const [sortDir, setSortDir] = useState<SortDir>("desc")
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [showUpload, setShowUpload] = useState(false)
   const parentRef = useRef<HTMLDivElement>(null)
+
   const files = useMemo(() => {
-    const f = currentFolderId ? mockFiles.filter((x) => x.folderId === currentFolderId) : mockFiles
-    return [...f].sort((a, b) => {
+    if (!apiFiles) return []
+    return [...apiFiles].sort((a, b) => {
       const m = sortDir === "asc" ? 1 : -1
       if (sortKey === "name") return a.name.localeCompare(b.name) * m
       if (sortKey === "size") return (a.size - b.size) * m
       return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * m
     })
-  }, [currentFolderId, sortKey, sortDir])
+  }, [apiFiles, sortKey, sortDir])
+
   const virt = useVirtualizer({ count: files.length, getScrollElement: () => parentRef.current, estimateSize: () => 48, overscan: 5 })
   const toggleSort = (k: SortKey) => { if (sortKey === k) setSortDir((d) => d === "asc" ? "desc" : "asc"); else { setSortKey(k); setSortDir("asc") } }
+
   const handleClick = useCallback((id: string, e: React.MouseEvent) => {
     if (e.ctrlKey || e.metaKey) { setSelected((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n }) }
     else if (e.shiftKey) { const ci = files.findIndex((f) => f.id === id); const fi = files.findIndex((f) => selected.has(f.id)); if (fi >= 0) { const [s, e2] = [Math.min(fi, ci), Math.max(fi, ci)]; setSelected(new Set(files.slice(s, e2 + 1).map((f) => f.id))) } else setSelected(new Set([id])) }
     else { setSelected(new Set([id])); openInspector(id) }
   }, [files, selected, openInspector])
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-full"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+  }
+
   if (files.length === 0 && !showUpload) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-6 text-muted-foreground p-8">
@@ -55,6 +78,7 @@ export function FileList() {
       </div>
     )
   }
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
@@ -71,7 +95,7 @@ export function FileList() {
           {virt.getVirtualItems().map((row) => {
             const file = files[row.index]; const isSel = selected.has(file.id) || selectedFileId === file.id
             return (<div key={file.id} onClick={(e) => handleClick(file.id, e)} className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50", isSel && "bg-accent")} style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
-              <TypeIcon type={file.type} /><span className="flex-1 truncate text-sm">{file.name}</span><StatusIcon status={file.parseStatus} error={file.parseError} /><span className="w-16 text-right text-xs text-muted-foreground">{fmtSize(file.size)}</span><span className="w-28 text-right text-xs text-muted-foreground">{fmtDate(file.createdAt)}</span>
+              <TypeIcon mime={file.mimeType} /><span className="flex-1 truncate text-sm">{file.name}</span><StatusIcon status={file.parseStatus} error={file.parseError} /><span className="w-16 text-right text-xs text-muted-foreground">{fmtSize(file.size)}</span><span className="w-28 text-right text-xs text-muted-foreground">{fmtDate(file.createdAt)}</span>
             </div>)
           })}
         </div>
