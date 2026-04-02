@@ -12,10 +12,10 @@ interface UploadItem { id: string; name: string; progress: number; status: "pend
 const ACCEPTED = { "application/pdf": [".pdf"], "text/plain": [".txt"], "text/markdown": [".md"] }
 const MAX_SIZE = 50 * 1024 * 1024
 
-export function FileUpload({ onClose }: { onClose: () => void }) {
+export function FileUpload({ onClose, folderId }: { onClose: () => void; folderId?: string | null }) {
   const [uploads, setUploads] = useState<UploadItem[]>([])
   const uploadFile = useUploadFile()
-  const currentFolderId = null // TODO: get from layout store
+  const currentFolderId = folderId ?? null
 
   const onDrop = useCallback((accepted: File[], rejected: FileRejection[]) => {
     // Add rejected files with error

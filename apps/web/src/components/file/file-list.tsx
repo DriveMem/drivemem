@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLayoutStore } from "@/stores/layout-store"
@@ -51,7 +51,7 @@ function StatusIcon({ status, error }: { status: string; error?: string }) {
 }
 
 export function FileList() {
-  const { currentFolderId, openInspector, selectedFileId } = useLayoutStore()
+  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId } = useLayoutStore()
   const router = useRouter()
   const { data, isLoading, error } = useFiles(currentFolderId)
   const deleteFile = useDeleteFile()
@@ -59,7 +59,9 @@ export function FileList() {
   const moveFile = useMoveFile()
   const createFolder = useCreateFolder()
   const { data: foldersData } = useFolders()
-  const folders = foldersData?.folders || []
+  const allFolders = foldersData?.folders || []
+  const currentFolder = allFolders.find((f: any) => f.id === currentFolderId) || null
+  const visibleFolders = allFolders.filter((f: any) => currentFolderId ? f.parentId === currentFolderId : !f.parentId)
   const [folderDialogOpen, setFolderDialogOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState("")
   const [contextMenu, setContextMenu] = useState<{ fileId: string; x: number; y: number } | null>(null)
@@ -136,11 +138,21 @@ export function FileList() {
         <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />新建文件夹</Button>
         <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
       </div>
-      {showUpload && <FileUpload onClose={() => setShowUpload(false)} />}
-      {folders.length > 0 && (
+      {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1 px-4 py-2 text-sm text-muted-foreground border-b border-border">
+        <span className={cn("cursor-pointer hover:text-foreground", !currentFolderId && "text-foreground font-medium")} onClick={() => setCurrentFolder(null)}>所有文件</span>
+        {currentFolder && (
+          <>
+            <ChevronRight className="h-3.5 w-3.5" />
+            <span className="text-foreground font-medium">{currentFolder.name}</span>
+          </>
+        )}
+      </div>
+      {visibleFolders.length > 0 && (
         <div className="border-b border-border">
-          {folders.map((folder: any) => (
-            <div key={folder.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50">
+          {visibleFolders.map((folder: any) => (
+            <div key={folder.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50" onClick={() => setCurrentFolder(folder.id)}>
               <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
               <span className="text-sm truncate">{folder.name}</span>
             </div>
@@ -206,10 +218,10 @@ export function FileList() {
           <DialogHeader>
             <DialogTitle>新建文件夹</DialogTitle>
           </DialogHeader>
-          <Input placeholder="文件夹名称" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newFolderName.trim()) { createFolder.mutate({ name: newFolderName.trim() }); setFolderDialogOpen(false) } }} autoFocus />
+          <Input placeholder="文件夹名称" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newFolderName.trim()) { createFolder.mutate({ name: newFolderName.trim(), parentId: currentFolderId }); setFolderDialogOpen(false) } }} autoFocus />
           <DialogFooter>
             <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>取消</Button>
-            <Button onClick={() => { if (newFolderName.trim()) { createFolder.mutate({ name: newFolderName.trim() }); setFolderDialogOpen(false) } }} disabled={!newFolderName.trim()}>创建</Button>
+            <Button onClick={() => { if (newFolderName.trim()) { createFolder.mutate({ name: newFolderName.trim(), parentId: currentFolderId }); setFolderDialogOpen(false) } }} disabled={!newFolderName.trim()}>创建</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
