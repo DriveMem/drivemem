@@ -173,6 +173,7 @@ export function FileList() {
             <div key={folder.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50" onClick={() => setCurrentFolder(folder.id)}>
               <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
               <span className="text-sm truncate">{folder.name}</span>
+              <ChevronRight className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
             </div>
           ))}
         </div>
