@@ -6,6 +6,7 @@ import { Upload, X, FileText, CheckCircle2, AlertCircle, Loader2 } from "lucide-
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useUploadFile } from "@/hooks/use-files"
+import { toast } from "sonner"
 
 interface UploadItem { id: string; name: string; progress: number; status: "pending" | "uploading" | "done" | "error"; error?: string }
 
@@ -41,6 +42,12 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
         }
       )
     })
+
+    // Auto-close modal and show toast after uploads start
+    if (accepted.length > 0) {
+      toast("正在让 AI 记住...", { duration: 3000 })
+      onClose()
+    }
   }, [uploadFile, currentFolderId])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: ACCEPTED, maxSize: MAX_SIZE })
