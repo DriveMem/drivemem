@@ -4,49 +4,138 @@ import { MessageSquare, FileText, Folder, Files } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
 import { ChatInput } from "@/components/chat/chat-input"
-import { mockMessages, mockSSEStream, type ChatMessage } from "@/lib/mock-chat"
-import { mockFiles } from "@/lib/mock-data"
+import { useFiles } from "@/hooks/use-files"
+import { apiFetch } from "@/lib/api-client"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { getSession } from "next-auth/react"
 
 type ScopeType = "all" | "folder" | "file"
 
-export function ChatView({ conversationId }: { conversationId?: string }) {
-  const [messages, setMessages] = useState<ChatMessage[]>(conversationId ? (mockMessages[conversationId] ?? []) : [])
+interface ChatMessage {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  createdAt: string
+  citations?: Array<{ fileId: string; fileName: string; chunkIndex: number; text: string }>
+}
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
+
+export function ChatView({ conversationId: initialConversationId }: { conversationId?: string }) {
+  const [conversationId, setConversationId] = useState<string | undefined>(initialConversationId)
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [streaming, setStreaming] = useState<string | undefined>(undefined)
   const [scope, setScope] = useState<ScopeType>("all")
   const [sending, setSending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const hasFiles = mockFiles.length > 0
+  const { data: filesData } = useFiles()
+  const hasFiles = Array.isArray(filesData) ? filesData.length > 0 : (filesData?.files?.length ?? 0) > 0
 
-  const handleSend = useCallback((content: string) => {
+  const handleSend = useCallback(async (content: string) => {
+    setError(null)
     const userMsg: ChatMessage = { id: "u-" + Date.now(), role: "user", content, createdAt: new Date().toISOString() }
     setMessages((prev) => [...prev, userMsg])
     setSending(true)
     setStreaming("")
 
-    const cancel = mockSSEStream(content,
-      (token) => setStreaming((prev) => (prev ?? "") + token),
-      (citations) => {
+    try {
+      // Create conversation if needed
+      let convId = conversationId
+      if (!convId) {
+        const conv = await apiFetch("/api/conversations", {
+          method: "POST",
+          body: JSON.stringify({ scope: { type: scope } }),
+        })
+        convId = conv.id
+        setConversationId(convId)
+      }
+
+      // Get session token for Bearer auth
+      const session = await getSession()
+      const token = (session as any)?.accessToken
+
+      const headers: Record<string, string> = { "Content-Type": "application/json" }
+      if (token) headers["Authorization"] = `Bearer ${token}`
+
+      // Send message with SSE
+      const res = await fetch(`${API_BASE}/api/conversations/${convId}/messages`, {
+        method: "POST",
+        headers,
+        credentials: "include",
+        body: JSON.stringify({ content }),
+      })
+
+      if (res.status === 429) {
+        setError("今天的对话次数已用完，明天再来")
         setStreaming(undefined)
         setSending(false)
-        const assistantMsg: ChatMessage = {
-          id: "a-" + Date.now(), role: "assistant",
-          content: "这是一个模拟的 AI 回复。你的问题是：" + content.slice(0, 20) + "...\n\n让我帮你分析相关内容 [1]。",
-          createdAt: new Date().toISOString(), citations,
-        }
-        setMessages((prev) => [...prev, assistantMsg])
+        return
       }
-    )
-    return () => cancel()
-  }, [])
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error?.message || "发送失败")
+      }
+
+      // Parse SSE stream
+      const reader = res.body?.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ""
+      let fullContent = ""
+      let assistantCitations: any[] = []
+
+      if (!reader) throw new Error("No reader")
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split("\n")
+        buffer = lines.pop() || ""
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6))
+              if (data.content !== undefined) {
+                fullContent += data.content
+                setStreaming(fullContent)
+              } else if (data.messageId) {
+                assistantCitations = data.citations || []
+              } else if (data.code) {
+                setError(data.message || "生成失败")
+              }
+            } catch {}
+          }
+        }
+      }
+
+      setStreaming(undefined)
+      setSending(false)
+      const assistantMsg: ChatMessage = {
+        id: "a-" + Date.now(),
+        role: "assistant",
+        content: fullContent,
+        createdAt: new Date().toISOString(),
+        citations: assistantCitations,
+      }
+      setMessages((prev) => [...prev, assistantMsg])
+    } catch (err: any) {
+      setError(err.message || "网络错误")
+      setStreaming(undefined)
+      setSending(false)
+    }
+  }, [conversationId, scope])
 
   if (!hasFiles) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
         <MessageSquare className="h-12 w-12" />
         <p className="text-lg">你还没有让 AI 记住任何文件</p>
-        <Button asChild><Link href="/">去上传文件</Link></Button>
+        <Button asChild><Link href="/dashboard">去上传文件</Link></Button>
       </div>
     )
   }
@@ -62,6 +151,12 @@ export function ChatView({ conversationId }: { conversationId?: string }) {
           </Button>
         ))}
       </div>
+
+      {error && (
+        <div className="px-4 py-2 text-sm text-destructive bg-destructive/10 border-b border-border">
+          {error}
+        </div>
+      )}
 
       <MessageList messages={messages} streaming={streaming} />
       <ChatInput onSend={handleSend} disabled={sending} />

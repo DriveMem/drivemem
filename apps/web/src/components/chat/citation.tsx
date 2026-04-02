@@ -2,7 +2,7 @@
 import { FileText } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
-interface CitationData { index: number; filename: string; snippet: string }
+interface CitationData { index?: number; filename?: string; snippet?: string; fileId?: string; fileName?: string; chunkIndex?: number; text?: string }
 
 export function Citation({ citation }: { citation: CitationData }) {
   return (
