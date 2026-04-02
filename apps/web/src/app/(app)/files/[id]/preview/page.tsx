@@ -1,10 +1,12 @@
 "use client"
 
 import { useParams } from "next/navigation"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useFile } from "@/hooks/use-files"
-import { Loader2, FileText, ArrowLeft } from "lucide-react"
+import { apiFetch } from "@/lib/api"
+import { Loader2, FileText, ArrowLeft, AlertCircle } from "lucide-react"
 import Link from "next/link"
 
 function getFileType(name: string): string {
@@ -30,6 +32,39 @@ function statusLabel(status: string): string {
     case "uploaded": return "⏳ 等待处理"
     default: return status || "未知"
   }
+}
+
+function useFileContent(fileId: string, fileType: string) {
+  const [content, setContent] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!fileId || !["md", "txt"].includes(fileType)) return
+
+    let cancelled = false
+    setLoading(true)
+    setError(null)
+
+    ;(async () => {
+      try {
+        const res = await apiFetch(`/api/files/${fileId}/preview-url`)
+        const { previewUrl } = res as { previewUrl: string; mimeType: string }
+        const textRes = await fetch(previewUrl)
+        if (!textRes.ok) throw new Error(`获取文件内容失败 (${textRes.status})`)
+        const text = await textRes.text()
+        if (!cancelled) setContent(text)
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message || "无法加载文件内容")
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+
+    return () => { cancelled = true }
+  }, [fileId, fileType])
+
+  return { content, loading, error }
 }
 
 export default function FilePreviewPage() {
@@ -59,6 +94,7 @@ export default function FilePreviewPage() {
 
   const fileType = getFileType(file.name || file.originalName || "")
   const fileName = file.name || file.originalName || "未命名文件"
+  const { content, loading: contentLoading, error: contentError } = useFileContent(params.id, fileType)
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -80,10 +116,31 @@ export default function FilePreviewPage() {
               <p className="text-xs">可在 AI 对话中询问此文件相关问题</p>
             </div>
           )}
-          {(fileType === "md" || fileType === "txt" || fileType === "other") && (
+          {(fileType === "md" || fileType === "txt") && (
+            <>
+              {contentLoading && (
+                <div className="flex h-96 items-center justify-center rounded border bg-muted">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              )}
+              {contentError && (
+                <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
+                  <AlertCircle className="h-8 w-8 text-destructive" />
+                  <p>无法预览文件内容</p>
+                  <p className="text-xs text-destructive">{contentError}</p>
+                </div>
+              )}
+              {!contentLoading && !contentError && content !== null && (
+                <div className="min-h-96 overflow-auto rounded border bg-background p-6">
+                  <pre className="whitespace-pre-wrap break-words text-sm leading-relaxed">{content}</pre>
+                </div>
+              )}
+            </>
+          )}
+          {fileType === "other" && (
             <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
               <FileText className="h-12 w-12" />
-              <p>{fileType.toUpperCase()} 文件</p>
+              <p>{(file.mimeType || "未知类型").toUpperCase()} 文件</p>
               <p className="text-xs">AI 已记住此文件内容，可在对话中提问</p>
             </div>
           )}

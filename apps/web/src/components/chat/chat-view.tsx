@@ -73,7 +73,16 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         })
         convId = conv.id
         setConversationId(convId)
-        // Refresh conversation list in sidebar
+        // Optimistically set temp title in query cache
+        const tempTitle = content.slice(0, 20) + (content.length > 20 ? "..." : "")
+        queryClient.setQueryData(["conversations"], (old: any) => {
+          const newConv = { id: convId, title: tempTitle, updatedAt: new Date().toISOString() }
+          if (!old) return { conversations: [newConv] }
+          if (Array.isArray(old)) return [newConv, ...old]
+          const list = old?.conversations || []
+          return { ...old, conversations: [newConv, ...list] }
+        })
+        // Also refresh from server
         queryClient.invalidateQueries({ queryKey: ["conversations"] })
       }
 

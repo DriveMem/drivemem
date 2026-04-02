@@ -52,7 +52,7 @@ export function ConversationList() {
     <div className="flex h-full flex-col border-r">
       <div className="flex items-center justify-between border-b p-3">
         <h2 className="text-sm font-semibold">对话历史</h2>
-        <Button size="sm" variant="outline" onClick={() => router.push("/chat")}>
+        <Button size="sm" variant="outline" onClick={() => router.push("/chat?new=" + Date.now())}>
           + 新对话
         </Button>
       </div>
