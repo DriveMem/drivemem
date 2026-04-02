@@ -53,7 +53,9 @@ function extractTopics(files: any[]): string[] {
     }
   }
 
-  return topics.slice(0, 3)
+  // Filter out short words already contained in longer ones
+  const filtered = topics.filter((t, i) => !topics.some((other, j) => j !== i && other.length > t.length && other.includes(t)))
+  return filtered.slice(0, 3)
 }
 
 export function MemoryOverview() {
