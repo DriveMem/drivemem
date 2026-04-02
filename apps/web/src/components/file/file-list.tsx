@@ -118,7 +118,7 @@ export function FileList() {
     )
   }
 
-  if (files.length === 0 && !showUpload) {
+  if (files.length === 0 && !showUpload && !currentFolderId && visibleFolders.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
         <Upload className="h-12 w-12" /><p className="text-lg">把文件拖到这里，让 AI 记住它</p>
