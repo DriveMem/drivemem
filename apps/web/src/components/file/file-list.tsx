@@ -5,9 +5,11 @@ import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload } from "l
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLayoutStore } from "@/stores/layout-store"
-import { useFiles, type FileItem } from "@/hooks/use-api"
+import { useFiles, useDeleteFile, useFolders, type FileItem } from "@/hooks/use-api"
 import { FileUpload } from "./file-upload"
 import { useRouter } from "next/navigation"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { toast } from "sonner"
 
 type SortKey = "name" | "createdAt" | "size"
 type SortDir = "asc" | "desc"
@@ -38,11 +40,14 @@ function StatusIcon({ status, error }: { status: string; error?: string | null }
 export function FileList() {
   const { currentFolderId, openInspector, selectedFileId } = useLayoutStore()
   const { data: apiFiles, isLoading } = useFiles(currentFolderId)
+  const deleteFile = useDeleteFile()
   const router = useRouter()
   const [sortKey, setSortKey] = useState<SortKey>("createdAt")
   const [sortDir, setSortDir] = useState<SortDir>("desc")
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [showUpload, setShowUpload] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const parentRef = useRef<HTMLDivElement>(null)
 
   const files = useMemo(() => {
@@ -96,13 +101,31 @@ export function FileList() {
         <div style={{ height: virt.getTotalSize() + "px", width: "100%", position: "relative" }}>
           {virt.getVirtualItems().map((row) => {
             const file = files[row.index]; const isSel = selected.has(file.id) || selectedFileId === file.id
-            return (<div key={file.id} onClick={(e) => handleClick(file.id, e)} onDoubleClick={() => router.push(`/files/${file.id}/preview`)} className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50", isSel && "bg-accent")} style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
+            return (<div key={file.id} onClick={(e) => handleClick(file.id, e)} className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50", isSel && "bg-accent")} style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
               <TypeIcon mime={file.mimeType} /><span className="flex-1 truncate text-sm">{file.name}</span><StatusIcon status={file.parseStatus} error={file.parseError} /><span className="w-16 text-right text-xs text-muted-foreground">{fmtSize(file.size)}</span><span className="w-28 text-right text-xs text-muted-foreground">{fmtDate(file.createdAt)}</span>
             </div>)
           })}
         </div>
       </div>
-      {selected.size > 1 && (<div className="flex items-center justify-between border-t border-border bg-muted px-4 py-2"><span className="text-sm">已选择 {selected.size} 个文件</span><div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => setSelected(new Set())}>取消</Button><Button variant="destructive" size="sm">删除</Button></div></div>)}
+      {selected.size > 1 && (<div className="flex items-center justify-between border-t border-border bg-muted px-4 py-2"><span className="text-sm">已选择 {selected.size} 个文件</span><div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => setSelected(new Set())}>取消</Button><Button variant="destructive" size="sm" onClick={() => setShowDeleteConfirm(true)}>删除</Button></div></div>)}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>确认删除</DialogTitle><DialogDescription>确定要删除选中的 {selected.size} 个文件吗？此操作不可撤销。</DialogDescription></DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>取消</Button>
+            <Button variant="destructive" disabled={deleting} onClick={async () => {
+              setDeleting(true)
+              try {
+                await Promise.all([...selected].map((id) => deleteFile.mutateAsync(id)))
+                toast.success(`已删除 ${selected.size} 个文件`)
+                setSelected(new Set())
+              } catch { toast.error("部分文件删除失败") }
+              setDeleting(false)
+              setShowDeleteConfirm(false)
+            }}>{deleting ? "删除中..." : "确认删除"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
