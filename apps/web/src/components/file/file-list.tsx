@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useCallback, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -48,6 +49,7 @@ function StatusIcon({ status, error }: { status: string; error?: string }) {
 
 export function FileList() {
   const { currentFolderId, openInspector, selectedFileId } = useLayoutStore()
+  const router = useRouter()
   const { data, isLoading, error } = useFiles(currentFolderId)
   const deleteFile = useDeleteFile()
   const renameFile = useRenameFile()
@@ -127,7 +129,7 @@ export function FileList() {
             const file = files[row.index]
             const isSel = selected.has(file.id) || selectedFileId === file.id
             return (
-              <div key={file.id} onClick={(e) => handleClick(file.id, e)}
+              <div key={file.id} onClick={(e) => handleClick(file.id, e)} onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                 className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50", isSel && "bg-accent")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
