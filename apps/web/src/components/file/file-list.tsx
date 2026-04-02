@@ -148,12 +148,24 @@ export function FileList() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 px-4 py-2 text-sm text-muted-foreground border-b border-border">
         <span className={cn("cursor-pointer hover:text-foreground", !currentFolderId && "text-foreground font-medium")} onClick={() => setCurrentFolder(null)}>所有文件</span>
-        {currentFolder && (
-          <>
-            <ChevronRight className="h-3.5 w-3.5" />
-            <span className="text-foreground font-medium">{currentFolder.name}</span>
-          </>
-        )}
+        {(() => {
+          if (!currentFolderId) return null
+          // Build full path from root to current folder
+          const path: Array<{ id: string; name: string }> = []
+          let f = allFolders.find((f: any) => f.id === currentFolderId)
+          while (f) {
+            path.unshift({ id: f.id, name: f.name })
+            f = f.parentId ? allFolders.find((p: any) => p.id === f!.parentId) : null
+          }
+          return path.map((p, i) => (
+            <span key={p.id} className="flex items-center gap-1">
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className={cn("cursor-pointer hover:text-foreground", i === path.length - 1 && "text-foreground font-medium")} onClick={() => setCurrentFolder(i === path.length - 1 ? p.id : p.id)}>
+                {p.name}
+              </span>
+            </span>
+          ))
+        })()}
       </div>
       {visibleFolders.length > 0 && (
         <div className="border-b border-border">
