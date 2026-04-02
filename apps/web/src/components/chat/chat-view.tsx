@@ -1,5 +1,5 @@
 "use client"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { MessageSquare, FileText, Folder, Files } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
@@ -22,7 +22,7 @@ interface ChatMessage {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
-export function ChatView({ conversationId: initialConversationId, fileScope }: { conversationId?: string; fileScope?: string }) {
+export function ChatView({ conversationId: initialConversationId, fileScope, presetQuestion }: { conversationId?: string; fileScope?: string; presetQuestion?: string }) {
   const [conversationId, setConversationId] = useState<string | undefined>(initialConversationId)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [streaming, setStreaming] = useState<string | undefined>(undefined)
@@ -32,6 +32,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope }: {
 
   const { data: filesData } = useFiles()
   const hasFiles = Array.isArray(filesData) ? filesData.length > 0 : (filesData?.files?.length ?? 0) > 0
+
 
   const handleSend = useCallback(async (content: string) => {
     setError(null)
@@ -129,6 +130,15 @@ export function ChatView({ conversationId: initialConversationId, fileScope }: {
       setSending(false)
     }
   }, [conversationId, scope])
+
+  // Auto-send preset question (from first upload guide)
+  const [presetSent, setPresetSent] = useState(false)
+  useEffect(() => {
+    if (presetQuestion && !presetSent && hasFiles && !sending) {
+      setPresetSent(true)
+      setTimeout(() => handleSend(presetQuestion), 500)
+    }
+  }, [presetQuestion, presetSent, hasFiles, sending, handleSend])
 
   if (!hasFiles) {
     return (

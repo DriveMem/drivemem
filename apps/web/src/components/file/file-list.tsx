@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { useLayoutStore } from "@/stores/layout-store"
 import { useFiles, useDeleteFile } from "@/hooks/use-files"
 import { FileUpload } from "./file-upload"
+import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
 
 type SortKey = "name" | "createdAt" | "size"
 type SortDir = "asc" | "desc"
@@ -139,6 +140,7 @@ export function FileList() {
           </div>
         </div>
       )}
+      <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
     </div>
   )
 }

@@ -6,7 +6,8 @@ import { ChatView } from "@/components/chat/chat-view"
 function ChatPageInner() {
   const searchParams = useSearchParams()
   const fileId = searchParams.get("file") || undefined
-  return <ChatView fileScope={fileId} />
+  const presetQuestion = searchParams.get("q") || undefined
+  return <ChatView fileScope={fileId} presetQuestion={presetQuestion} />
 }
 
 export default function ChatPage() {
