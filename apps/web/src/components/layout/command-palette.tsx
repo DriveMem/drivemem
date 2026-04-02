@@ -64,6 +64,7 @@ export function CommandPalette() {
             {files.slice(0, 5).map((f: any) => (
               <CommandItem
                 key={f.id}
+                value={`file-${f.id}-${f.name || f.originalName}`}
                 onSelect={() => navigate(`/files/${f.id}/preview`)}
               >
                 {f.name || f.originalName}
@@ -73,14 +74,14 @@ export function CommandPalette() {
         )}
 
         <CommandGroup heading="导航">
-          <CommandItem onSelect={() => navigate("/dashboard")}>我的文件</CommandItem>
-          <CommandItem onSelect={() => navigate("/chat")}>AI 对话</CommandItem>
-          <CommandItem onSelect={() => navigate("/settings")}>设置</CommandItem>
+          <CommandItem value="nav-dashboard" onSelect={() => navigate("/dashboard")}>我的文件</CommandItem>
+          <CommandItem value="nav-chat" onSelect={() => navigate("/chat")}>AI 对话</CommandItem>
+          <CommandItem value="nav-settings" onSelect={() => navigate("/settings")}>设置</CommandItem>
         </CommandGroup>
 
         <CommandGroup heading="操作">
-          <CommandItem onSelect={() => navigate("/dashboard")}>让 AI 记住文件</CommandItem>
-          <CommandItem onSelect={() => navigate("/chat")}>新对话</CommandItem>
+          <CommandItem value="action-upload" onSelect={() => navigate("/dashboard")}>让 AI 记住文件</CommandItem>
+          <CommandItem value="action-new-chat" onSelect={() => navigate("/chat")}>新对话</CommandItem>
         </CommandGroup>
       </CommandList>
     </CommandDialog>

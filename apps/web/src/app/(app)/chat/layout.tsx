@@ -4,11 +4,11 @@ import { ConversationList } from "@/components/chat/conversation-list"
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-full">
-      <div className="hidden w-64 shrink-0 md:block">
+    <div className="flex h-full overflow-hidden">
+      <aside className="hidden w-64 shrink-0 border-r bg-muted/30 overflow-y-auto md:block">
         <ConversationList />
-      </div>
-      <div className="flex-1 min-w-0">{children}</div>
+      </aside>
+      <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
     </div>
   )
 }
