@@ -34,9 +34,28 @@ export function CommandPalette() {
     router.push(path)
   }
 
+  const [inputValue, setInputValue] = useState("")
+
+  const handleSearchSubmit = () => {
+    if (inputValue.trim()) {
+      setOpen(false)
+      router.push(`/search?q=${encodeURIComponent(inputValue.trim())}`)
+    }
+  }
+
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="搜索文件、导航、操作…" />
+      <CommandInput
+        placeholder="搜索文件、导航、操作…"
+        value={inputValue}
+        onValueChange={setInputValue}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && inputValue.trim()) {
+            e.preventDefault()
+            handleSearchSubmit()
+          }
+        }}
+      />
       <CommandList>
         <CommandEmpty>未找到结果</CommandEmpty>
 

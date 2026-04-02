@@ -1,52 +1,90 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { mockFiles } from "@/lib/mock-data"
-import { COPY } from "@/lib/copy"
+import { apiFetch } from "@/lib/api"
 
 interface SearchResult {
   fileId: string
   fileName: string
   snippet: string
-  matchStart: number
-  matchEnd: number
+  score?: number
 }
 
-function highlightSnippet(snippet: string, start: number, end: number) {
-  const before = snippet.slice(0, start)
-  const match = snippet.slice(start, end)
-  const after = snippet.slice(end)
-  return (
-    <span>
-      {before}
-      <mark className="bg-yellow-200 dark:bg-yellow-800">{match}</mark>
-      {after}
-    </span>
-  )
+function normalizeResults(data: unknown): SearchResult[] {
+  if (!data) return []
+  // { results: [...] }
+  if (typeof data === "object" && data !== null && "results" in data && Array.isArray((data as any).results)) {
+    return (data as any).results.map(normalizeItem)
+  }
+  // direct array
+  if (Array.isArray(data)) {
+    return data.map(normalizeItem)
+  }
+  return []
 }
 
-// Mock search function
-function mockSearch(query: string): SearchResult[] {
-  if (!query.trim()) return []
-  const q = query.toLowerCase()
-  return mockFiles
-    .filter((f) => f.name.toLowerCase().includes(q))
-    .map((f) => {
-      const idx = f.name.toLowerCase().indexOf(q)
-      return {
-        fileId: f.id,
-        fileName: f.name,
-        snippet: f.name,
-        matchStart: idx,
-        matchEnd: idx + query.length,
-      }
-    })
+function normalizeItem(item: any): SearchResult {
+  return {
+    fileId: item.fileId || item.id || item.file_id || "",
+    fileName: item.fileName || item.name || item.originalName || item.file_name || "",
+    snippet: item.snippet || item.highlight || item.excerpt || item.fileName || item.name || "",
+    score: item.score,
+  }
 }
 
 export function SearchResults({ query }: { query: string }) {
-  const results = mockSearch(query)
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!query.trim()) return null
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([])
+      return
+    }
+
+    let cancelled = false
+    setLoading(true)
+    setError(null)
+
+    apiFetch(`/api/files/search?q=${encodeURIComponent(query)}`)
+      .then((data) => {
+        if (!cancelled) setResults(normalizeResults(data))
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || "搜索失败")
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => { cancelled = true }
+  }, [query])
+
+  if (!query.trim()) {
+    return (
+      <div className="py-8 text-center text-sm text-muted-foreground">
+        输入关键词开始搜索
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="py-8 text-center text-sm text-muted-foreground">
+        搜索中…
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="py-8 text-center text-sm text-destructive">
+        搜索出错: {error}
+      </div>
+    )
+  }
 
   if (results.length === 0) {
     return (
@@ -65,9 +103,11 @@ export function SearchResults({ query }: { query: string }) {
             className="block px-4 py-3 hover:bg-accent"
           >
             <p className="font-medium">{r.fileName}</p>
-            <p className="text-sm text-muted-foreground">
-              {highlightSnippet(r.snippet, r.matchStart, r.matchEnd)}
-            </p>
+            {r.snippet && (
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {r.snippet}
+              </p>
+            )}
           </Link>
         </li>
       ))}
