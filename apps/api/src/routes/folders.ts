@@ -86,13 +86,22 @@ export default async function folderRoutes(fastify: FastifyInstance) {
     return reply.status(201).send(folder);
   });
 
-  // GET / — list folders
+  // GET / — list folders (with file counts)
   fastify.get('/', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;
     const folderList = await db.select()
       .from(schema.folders)
       .where(eq(schema.folders.userId, userId));
-    return reply.send(folderList);
+    
+    // Add file count per folder
+    const foldersWithCount = await Promise.all(folderList.map(async (folder) => {
+      const [result] = await db.select({ count: sql`count(*)` })
+        .from(schema.files)
+        .where(and(eq(schema.files.userId, userId), eq(schema.files.folderId, folder.id)));
+      return { ...folder, fileCount: Number(result?.count || 0) };
+    }));
+    
+    return reply.send({ folders: foldersWithCount });
   });
 
   // PATCH /:id — rename
