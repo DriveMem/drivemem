@@ -6,7 +6,7 @@ import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCir
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLayoutStore } from "@/stores/layout-store"
-import { useFiles } from "@/hooks/use-files"
+import { useFiles, useDeleteFile } from "@/hooks/use-files"
 import { FileUpload } from "./file-upload"
 
 type SortKey = "name" | "createdAt" | "size"
@@ -41,6 +41,7 @@ function StatusIcon({ status, error }: { status: string; error?: string }) {
 export function FileList() {
   const { currentFolderId, openInspector, selectedFileId } = useLayoutStore()
   const { data, isLoading, error } = useFiles(currentFolderId)
+  const deleteFile = useDeleteFile()
   const [sortKey, setSortKey] = useState<SortKey>("createdAt")
   const [sortDir, setSortDir] = useState<SortDir>("desc")
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -133,7 +134,7 @@ export function FileList() {
           <span className="text-sm">已选择 {selected.size} 个文件</span>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setSelected(new Set())}>取消</Button>
-            <Button variant="destructive" size="sm">删除</Button>
+            <Button variant="destructive" size="sm" onClick={() => { selected.forEach(id => deleteFile.mutate(id)); setSelected(new Set()) }}>删除</Button>
           </div>
         </div>
       )}
