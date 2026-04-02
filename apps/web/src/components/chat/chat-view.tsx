@@ -1,10 +1,17 @@
 "use client"
 import { useState, useCallback, useEffect } from "react"
-import { MessageSquare, FileText, Folder, Files } from "lucide-react"
+import { MessageSquare, FileText, Folder, Files, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
 import { ChatInput } from "@/components/chat/chat-input"
 import { useFiles } from "@/hooks/use-files"
+import { useFolders } from "@/hooks/use-folders"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 import { apiFetch } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -29,6 +36,8 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [streaming, setStreaming] = useState<string | undefined>(undefined)
   const [scope, setScope] = useState<ScopeType>(fileScope ? "file" : "all")
+  const [scopeId, setScopeId] = useState<string | undefined>(fileScope || undefined)
+  const [scopeLabel, setScopeLabel] = useState<string | undefined>(undefined)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const queryClient = useQueryClient()
@@ -36,7 +45,11 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   const { data: filesData } = useFiles()
   const filesList = Array.isArray(filesData) ? filesData : (filesData?.files || [])
   const indexedCount = filesList.filter((f: any) => f.status === "indexed").length
+  const indexedFiles = filesList.filter((f: any) => f.status === "indexed")
   const hasFiles = filesList.length > 0
+
+  const { data: foldersData } = useFolders()
+  const foldersList = foldersData?.folders || []
 
   // Load history messages for existing conversation
   const { data: convData } = useConversation(initialConversationId || "")
@@ -69,7 +82,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       if (!convId) {
         const conv = await apiFetch("/api/conversations", {
           method: "POST",
-          body: JSON.stringify({ scopeType: scope, scopeId: fileScope || undefined }),
+          body: JSON.stringify({ scopeType: scope, scopeId: scopeId || undefined }),
         })
         convId = conv.id
         setConversationId(convId)
@@ -164,7 +177,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       setStreaming(undefined)
       setSending(false)
     }
-  }, [conversationId, scope])
+  }, [conversationId, scope, scopeId])
 
   // Auto-send preset question (from first upload guide)
   const [presetSent, setPresetSent] = useState(false)
@@ -190,11 +203,43 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       {/* Scope selector */}
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <span className="text-xs text-muted-foreground">AI 记忆范围：</span>
-        {([["all", "全部文件", Files], ["folder", "指定文件夹", Folder], ["file", "指定文件", FileText]] as const).map(([type, label, Icon]) => (
-          <Button key={type} variant={scope === type ? "secondary" : "ghost"} size="sm" onClick={() => setScope(type)} className="gap-1 text-xs">
-            <Icon className="h-3 w-3" />{label}
-          </Button>
-        ))}
+        <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined) }} className="gap-1 text-xs">
+          <Files className="h-3 w-3" />全部文件
+        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={scope === "folder" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs">
+              <Folder className="h-3 w-3" />{scope === "folder" && scopeLabel ? scopeLabel : "指定文件夹"}<ChevronDown className="h-3 w-3 ml-0.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
+            {foldersList.length === 0 ? (
+              <DropdownMenuItem disabled>暂无文件夹</DropdownMenuItem>
+            ) : foldersList.map((f: any) => (
+              <DropdownMenuItem key={f.id} onClick={() => { setScope("folder"); setScopeId(f.id); setScopeLabel(f.name) }}>
+                <Folder className="h-3 w-3 mr-2" />{f.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={scope === "file" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs">
+              <FileText className="h-3 w-3" />{scope === "file" && scopeLabel ? scopeLabel : "指定文件"}<ChevronDown className="h-3 w-3 ml-0.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
+            {indexedFiles.length === 0 ? (
+              <DropdownMenuItem disabled>暂无已索引文件</DropdownMenuItem>
+            ) : indexedFiles.map((f: any) => (
+              <DropdownMenuItem key={f.id} onClick={() => { setScope("file"); setScopeId(f.id); setScopeLabel(f.name) }}>
+                <FileText className="h-3 w-3 mr-2" />{f.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {error && (
