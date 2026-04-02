@@ -106,6 +106,14 @@ export default function FilePreviewPage() {
         <h1 className="text-xl font-bold">{fileName}</h1>
       </div>
 
+      {/* AI Summary */}
+      {file.summary && (
+        <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-4">
+          <h2 className="font-semibold mb-2">🧠 AI 摘要</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">{file.summary}</p>
+        </div>
+      )}
+
       <div className="flex gap-6">
         {/* Main preview area */}
         <div className="flex-1">

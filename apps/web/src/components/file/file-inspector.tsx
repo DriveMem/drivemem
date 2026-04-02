@@ -49,6 +49,12 @@ export function FileInspector({ fileId }: { fileId: string }) {
         <div className="flex justify-between"><span className="text-muted-foreground">状态</span><span className={statusColors[file.parseStatus]}>{statusLabels[file.parseStatus]}</span></div>
         {file.parseError && <div className="text-xs text-red-500 bg-red-500/10 rounded p-2">{file.parseError}</div>}
       </div>
+      {file.summary && (
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium text-muted-foreground">AI 摘要</p>
+          <p className="text-sm leading-relaxed">{file.summary}</p>
+        </div>
+      )}
       <Button className="w-full gap-2" asChild>
         <Link href={"/chat?file=" + file.id}><MessageSquare className="h-4 w-4" />问 AI 关于这个文件</Link>
       </Button>

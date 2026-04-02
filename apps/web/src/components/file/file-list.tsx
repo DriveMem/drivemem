@@ -33,6 +33,7 @@ interface FileItem {
   updatedAt: string
   status: "uploading" | "parsing" | "indexed" | "failed"
   errorMessage?: string
+  summary?: string | null
 }
 
 function fmtSize(b: number) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
@@ -175,7 +176,10 @@ export function FileList() {
                 className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50", isSel && "bg-accent")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <TypeIcon type={file.type} />
-                <span className="flex-1 truncate text-sm">{file.name}</span>
+                <div className="flex-1 min-w-0">
+                  <span className="truncate text-sm block">{file.name}</span>
+                  {file.summary && <span className="text-muted-foreground text-xs line-clamp-1">{file.summary.length > 80 ? file.summary.slice(0, 80) + "..." : file.summary}</span>}
+                </div>
                 <StatusIcon status={file.status} error={file.errorMessage} />
                 <span className="w-16 text-right text-xs text-muted-foreground">{fmtSize(file.size)}</span>
                 <span className="w-28 text-right text-xs text-muted-foreground">{fmtDate(file.createdAt)}</span>
