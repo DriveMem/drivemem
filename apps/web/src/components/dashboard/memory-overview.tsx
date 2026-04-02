@@ -17,16 +17,30 @@ export function MemoryOverview() {
 
   if (totalFiles === 0) return null
 
-  // Derive file types for context
-  const types = new Set<string>()
+  // Derive topic snippets from file summaries
+  const topics: string[] = []
+  const seen = new Set<string>()
   files.forEach((f: any) => {
-    const ext = (f.name || f.originalName || "").split(".").pop()?.toLowerCase()
-    if (ext === "pdf") types.add("PDF 文档")
-    else if (ext === "md" || ext === "markdown") types.add("Markdown 笔记")
-    else if (ext === "txt") types.add("文本文件")
-    else if (ext === "docx" || ext === "doc") types.add("Word 文档")
-    else if (ext) types.add(ext.toUpperCase() + " 文件")
+    if (f.summary && typeof f.summary === "string") {
+      const snippet = f.summary.replace(/\s+/g, "").slice(0, 15).replace(/[,，.。、;；:：\s]+$/, "")
+      if (snippet && !seen.has(snippet)) {
+        seen.add(snippet)
+        topics.push(snippet)
+      }
+    }
   })
+  // Fallback to file types if no summaries
+  const types = new Set<string>()
+  if (topics.length === 0) {
+    files.forEach((f: any) => {
+      const ext = (f.name || f.originalName || "").split(".").pop()?.toLowerCase()
+      if (ext === "pdf") types.add("PDF 文档")
+      else if (ext === "md" || ext === "markdown") types.add("Markdown 笔记")
+      else if (ext === "txt") types.add("文本文件")
+      else if (ext === "docx" || ext === "doc") types.add("Word 文档")
+      else if (ext) types.add(ext.toUpperCase() + " 文件")
+    })
+  }
 
   return (
     <div className="mx-4 mt-4 rounded-xl border bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 p-5">
@@ -45,7 +59,9 @@ export function MemoryOverview() {
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             AI 已记住 <strong className="text-foreground">{indexedFiles.length}</strong> 个文件
-            {types.size > 0 && <span>，涵盖 {[...types].slice(0, 3).join("、")}</span>}
+            {topics.length > 0
+              ? <span>，涵盖 {topics.slice(0, 3).join("、")}</span>
+              : types.size > 0 && <span>，涵盖 {[...types].slice(0, 3).join("、")}</span>}
             {totalFiles > indexedFiles.length && (
               <span className="text-yellow-500">（{totalFiles - indexedFiles.length} 个处理中）</span>
             )}

@@ -1,12 +1,24 @@
 "use client"
-import { Suspense } from "react"
-import { useSearchParams } from "next/navigation"
+import { Suspense, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { ChatView } from "@/components/chat/chat-view"
+import { useConversations } from "@/hooks/use-conversations"
 
 function ChatPageInner() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const fileId = searchParams.get("file") || undefined
   const presetQuestion = searchParams.get("q") || undefined
+  const { data: convsData, isLoading } = useConversations()
+
+  useEffect(() => {
+    if (isLoading || fileId || presetQuestion) return
+    const convs = Array.isArray(convsData) ? convsData : (convsData?.conversations || [])
+    if (convs.length > 0 && convs[0].id) {
+      router.replace("/chat/" + convs[0].id)
+    }
+  }, [convsData, isLoading, fileId, presetQuestion, router])
+
   return <ChatView fileScope={fileId} presetQuestion={presetQuestion} />
 }
 
