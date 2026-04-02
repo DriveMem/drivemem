@@ -48,7 +48,7 @@ export function SearchResults({ query }: { query: string }) {
     setLoading(true)
     setError(null)
 
-    apiFetch(`/api/files/search?q=${encodeURIComponent(query)}`)
+    apiFetch(`/api/search?q=${encodeURIComponent(query)}`)
       .then((data) => {
         if (!cancelled) setResults(normalizeResults(data))
       })
