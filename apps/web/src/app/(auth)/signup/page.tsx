@@ -28,7 +28,8 @@ const signupSchema = z
 
 type SignupForm = z.infer<typeof signupSchema>
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
+// Signup calls backend directly (not through Nginx, because /api/auth/ is routed to frontend)
+const API_BASE = "http://localhost:3001"
 
 export default function SignupPage() {
   const router = useRouter()
