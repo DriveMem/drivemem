@@ -120,15 +120,20 @@ export function FileList() {
 
   if (files.length === 0 && !showUpload && !currentFolderId && visibleFolders.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
+      <div
+        className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground"
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
+        onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setShowUpload(true) }}
+      >
         <Upload className="h-12 w-12" /><p className="text-lg">把文件拖到这里，让 AI 记住它</p>
         <Button onClick={() => setShowUpload(true)}>让 AI 记住文件</Button>
+        {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
       </div>
     )
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" onDragOver={(e) => { e.preventDefault() }} onDrop={(e) => { e.preventDefault(); setShowUpload(true) }}>
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => toggleSort("name")} className="gap-1 text-xs">名称 <ArrowUpDown className="h-3 w-3" /></Button>
