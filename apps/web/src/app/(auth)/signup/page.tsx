@@ -57,7 +57,7 @@ export default function SignupPage() {
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         const code = body.error?.code || body.code
-        if (res.status === 409 || code === "EMAIL_ALREADY_EXISTS" || code === "CONFLICT") {
+        if (res.status === 409 || code === "EMAIL_EXISTS" || code === "EMAIL_ALREADY_EXISTS" || code === "CONFLICT") {
           setError("该邮箱已注册，请直接登录或使用其他邮箱")
         } else {
           setError(body.error?.message || body.message || "注册失败，请稍后重试")
