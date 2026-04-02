@@ -33,9 +33,10 @@ function TypeIcon({ type }: { type: string }) {
 }
 
 function StatusIcon({ status, error }: { status: string; error?: string }) {
+  if (status === "uploading") return <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
   if (status === "parsing") return <span className="flex items-center gap-1 text-xs text-yellow-500"><Loader2 className="h-3 w-3 animate-spin" />AI 正在记住...</span>
   if (status === "indexed") return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-  return <span title={error}><XCircle className="h-3.5 w-3.5 text-red-500" /></span>
+  return <span title="解析失败，请重新上传" className="flex items-center gap-1 text-xs text-red-500"><XCircle className="h-3.5 w-3.5" />解析失败</span>
 }
 
 export function FileList() {
