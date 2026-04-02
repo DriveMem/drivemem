@@ -5,6 +5,57 @@ import { useFiles } from "@/hooks/use-files"
 import { useConversations } from "@/hooks/use-conversations"
 import Link from "next/link"
 
+const STOP_WORDS = new Set([
+  "本文档", "本文", "文档", "摘要", "内容", "介绍", "分析了", "描述了",
+  "总结", "概述", "核心", "主要", "包括", "以及", "其中", "通过",
+  "基于", "关于", "用于", "提供", "支持", "功能", "进行", "实现",
+  "使用", "一个", "这个", "该文", "详细",
+])
+
+function extractTopics(files: any[]): string[] {
+  const topics: string[] = []
+  const seen = new Set<string>()
+
+  const add = (w: string) => {
+    if (w && w.length >= 2 && !STOP_WORDS.has(w) && !seen.has(w)) {
+      seen.add(w)
+      topics.push(w)
+    }
+  }
+
+  // 1. Extract from file names
+  const nameMap: Record<string, string> = {
+    "competitive": "竞品分析", "analysis": "分析", "test": "测试",
+    "report": "报告", "design": "设计", "product": "产品",
+    "tech": "技术", "guide": "指南", "spec": "规格",
+  }
+
+  for (const f of files) {
+    const name = (f.name || f.originalName || "").replace(/\.[^.]+$/, "")
+    // Chinese phrases from name
+    const cn = name.match(/[\u4e00-\u9fff]{2,6}/g) || []
+    cn.forEach(add)
+    // Map English words
+    const words = name.toLowerCase().split(/[-_\s]+/)
+    words.forEach((w: string) => { if (nameMap[w]) add(nameMap[w]) })
+  }
+
+  // 2. If need more, extract from summaries
+  if (topics.length < 3) {
+    for (const f of files) {
+      if (!f.summary || topics.length >= 5) continue
+      // Extract 2-4 char Chinese phrases, skip stop words
+      const matches = f.summary.match(/[\u4e00-\u9fff]{2,4}/g) || []
+      for (const w of matches) {
+        if (topics.length >= 5) break
+        add(w)
+      }
+    }
+  }
+
+  return topics.slice(0, 3)
+}
+
 export function MemoryOverview() {
   const { data: filesData } = useFiles()
   const { data: convsData } = useConversations()
@@ -17,19 +68,9 @@ export function MemoryOverview() {
 
   if (totalFiles === 0) return null
 
-  // Derive topic snippets from file summaries
-  const topics: string[] = []
-  const seen = new Set<string>()
-  files.forEach((f: any) => {
-    if (f.summary && typeof f.summary === "string") {
-      const snippet = f.summary.replace(/\s+/g, "").slice(0, 15).replace(/[,，.。、;；:：\s]+$/, "")
-      if (snippet && !seen.has(snippet)) {
-        seen.add(snippet)
-        topics.push(snippet)
-      }
-    }
-  })
-  // Fallback to file types if no summaries
+  const topics = extractTopics(files)
+
+  // Fallback to file types
   const types = new Set<string>()
   if (topics.length === 0) {
     files.forEach((f: any) => {
@@ -60,7 +101,7 @@ export function MemoryOverview() {
           <p className="mt-1 text-sm text-muted-foreground">
             AI 已记住 <strong className="text-foreground">{indexedFiles.length}</strong> 个文件
             {topics.length > 0
-              ? <span>，涵盖 {topics.slice(0, 3).join("、")}</span>
+              ? <span>，涵盖 {topics.join("、")}</span>
               : types.size > 0 && <span>，涵盖 {[...types].slice(0, 3).join("、")}</span>}
             {totalFiles > indexedFiles.length && (
               <span className="text-yellow-500">（{totalFiles - indexedFiles.length} 个处理中）</span>
