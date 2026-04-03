@@ -8,6 +8,43 @@ import { getObject } from '../services/s3.service.js';
 import { parseDocument } from '../services/parse.service.js';
 import { chunkText } from '../services/chunk.service.js';
 import { embedTexts } from '../services/embedding.service.js';
+
+/**
+ * Truncate text at a semantic boundary (sentence end, newline, comma) near maxLen.
+ * Avoids cutting in the middle of Chinese characters or mid-sentence.
+ */
+function truncateAtBoundary(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text;
+
+  // Search backwards from maxLen for a good break point
+  const searchStart = Math.max(0, maxLen - 200);
+  const candidates = text.substring(searchStart, maxLen);
+
+  // Prefer: Chinese period, period+space, newline, semicolon, comma variants
+  const breakChars = ['。', '.\n', '\n\n', '\n', '；', '；', '. ', '，', ','];
+  let bestPos = -1;
+
+  for (const ch of breakChars) {
+    const idx = candidates.lastIndexOf(ch);
+    if (idx !== -1) {
+      bestPos = searchStart + idx + ch.length;
+      break;
+    }
+  }
+
+  if (bestPos > 0) {
+    return text.substring(0, bestPos).trimEnd();
+  }
+
+  // Fallback: substring is safe for JS strings (UTF-16 code units won't split
+  // a character when using string.substring on well-formed strings), but trim
+  // any trailing lone high surrogate just in case.
+  let end = maxLen;
+  const code = text.charCodeAt(end - 1);
+  if (code >= 0xD800 && code <= 0xDBFF) end--;
+
+  return text.substring(0, end);
+}
 import { ensureCollection, upsertChunks } from '../services/vector.service.js';
 import IORedis from 'ioredis';
 
@@ -66,7 +103,7 @@ const worker = new Worker<ParseJobData>(
 // Auto-generate summary after successful indexing
     try {
       const { chat } = await import('../services/llm.service.js');
-      const chunkTexts = chunks.map((c: { text: string }) => c.text).join('\n\n').substring(0, 3000);
+      const chunkTexts = truncateAtBoundary(chunks.map((c: { text: string }) => c.text).join('\n\n'), 3000);
       const summaryPrompt = '请用中文为以下文档内容生成一段简洁的摘要（不超过200字），概括文档的主要内容和关键信息：\n\n' + chunkTexts;
       const summary = await chat([{ role: 'user', content: summaryPrompt }]);
       if (summary) {
