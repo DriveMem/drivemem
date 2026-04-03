@@ -31,7 +31,7 @@ export function MessageList({ messages, streaming }: { messages: ChatMessage[]; 
               </div>
             ) : <p>{msg.content}</p>}
           </div>
-          {msg.role === "user" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center"><User className="h-4 w-4" /></div>}
+          {msg.role === "user" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">U</div>}
         </div>
       ))}
       {streaming !== undefined && (
