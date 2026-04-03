@@ -1,79 +1,54 @@
 import { FastifyInstance } from 'fastify';
-import { ilike, or, eq, and } from 'drizzle-orm';
+import { z } from 'zod';
+import { and, eq, or, ilike } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { files } from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
-import { AppError, ErrorCodes } from '../lib/errors.js';
+import { embedTexts } from '../services/embedding.service.js';
 import { searchSimilar } from '../services/vector.service.js';
-import { embedTexts } from '../services/llm.service.js';
+
+const searchQuerySchema = z.object({ q: z.string().min(1) });
 
 export default async function searchRoutes(app: FastifyInstance) {
-  // GET / — full-text search
-  app.get('/', { preHandler: [requireAuth] }, async (request, reply) => {
-    const { q } = request.query as { q?: string };
+  app.get('/', { preHandler: [requireAuth] }, async (request) => {
+    const { q } = searchQuerySchema.parse(request.query);
+    const user = request.user!;
 
-    if (!q || q.trim().length === 0) {
-      throw new AppError(ErrorCodes.VALIDATION_ERROR, 'Query parameter "q" is required', 400);
-    }
-
-    const query = q.trim();
-    const userId = request.user!.id;
-    const results: Array<{
-      type: 'file' | 'chunk';
-      fileId: string;
-      fileName: string;
-      chunkIndex?: number;
-      text?: string;
-      highlight?: string;
-    }> = [];
-
-    // 1. Search by file name (ILIKE)
-    const pattern = `%${query}%`;
-    const fileResults = await db
-      .select({ id: files.id, name: files.name, originalName: files.originalName })
-      .from(files)
-      .where(
-        and(
-          eq(files.userId, userId),
-          or(ilike(files.name, pattern), ilike(files.originalName, pattern)),
-        ),
-      )
+    // 1. 搜文件名 (PG ILIKE)
+    const fileResults = await db.select().from(files)
+      .where(and(
+        eq(files.userId, user.id),
+        or(ilike(files.name, `%${q}%`), ilike(files.originalName, `%${q}%`))
+      ))
       .limit(10);
 
-    for (const f of fileResults) {
-      results.push({
-        type: 'file',
+    // 2. 搜内容 (Qdrant 向量搜索)
+    const [queryVector] = await embedTexts([q]);
+    const chunkResults = await searchSimilar({
+      userId: user.id,
+      query: queryVector,
+      scopeType: 'all',
+      limit: 10,
+    });
+
+    // 合并结果
+    const results = [
+      ...fileResults.map(f => ({
+        type: 'file' as const,
         fileId: f.id,
-        fileName: f.originalName,
-        highlight: f.originalName,
-      });
-    }
+        fileName: f.name,
+        highlight: f.name,
+      })),
+      ...chunkResults.map(c => ({
+        type: 'chunk' as const,
+        fileId: c.fileId,
+        fileName: c.fileName,
+        chunkIndex: c.chunkIndex,
+        text: c.text.slice(0, 200),
+        score: c.score,
+      })),
+    ].slice(0, 20);
 
-    // 2. Semantic search via Qdrant
-    const remaining = 20 - results.length;
-    if (remaining > 0) {
-      const [queryEmbedding] = await embedTexts([query]);
-      const chunkResults = await searchSimilar({
-        userId,
-        query: queryEmbedding,
-        scopeType: 'all',
-        limit: remaining,
-      });
-
-      const existingFileIds = new Set(results.map((r) => r.fileId));
-      for (const c of chunkResults) {
-        // Avoid duplicate file entries
-        if (results.length >= 20) break;
-        results.push({
-          type: 'chunk',
-          fileId: c.fileId,
-          fileName: c.fileName,
-          chunkIndex: c.chunkIndex,
-          text: c.text.slice(0, 200),
-        });
-      }
-    }
-
-    return reply.send({ results });
+    return { results };
   });
 }

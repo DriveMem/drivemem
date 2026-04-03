@@ -1,5 +1,4 @@
-// @ts-expect-error pdf-parse types
-import pdfParse from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 import mammoth from 'mammoth';
 import { AppError } from '../lib/errors.js';
 
@@ -11,7 +10,8 @@ export async function parseDocument(buffer: Buffer, mimeType: string): Promise<s
   try {
     switch (mimeType) {
       case 'application/pdf': {
-        const result = await pdfParse(buffer);
+        const parser = new PDFParse({ data: new Uint8Array(buffer) });
+        const result = await parser.getText();
         text = result.text;
         break;
       }
@@ -21,22 +21,21 @@ export async function parseDocument(buffer: Buffer, mimeType: string): Promise<s
       }
       case 'text/markdown': {
         const raw = buffer.toString('utf-8');
-        // Strip markdown formatting
         text = raw
-          .replace(/^#{1,6}\s+/gm, '')          // headings
-          .replace(/\*\*(.+?)\*\*/g, '$1')       // bold
-          .replace(/\*(.+?)\*/g, '$1')            // italic
-          .replace(/__(.+?)__/g, '$1')            // bold alt
-          .replace(/_(.+?)_/g, '$1')              // italic alt
-          .replace(/~~(.+?)~~/g, '$1')            // strikethrough
-          .replace(/`{1,3}[^`]*`{1,3}/g, (m) => m.replace(/`/g, '')) // inline/block code
-          .replace(/^\s*[-*+]\s+/gm, '')          // unordered list
-          .replace(/^\s*\d+\.\s+/gm, '')          // ordered list
-          .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1') // links/images
-          .replace(/^\s*>\s?/gm, '')              // blockquotes
-          .replace(/^---+$/gm, '')                // horizontal rules
-          .replace(/\|/g, ' ')                    // table pipes
-          .replace(/\n{3,}/g, '\n\n')             // collapse whitespace
+          .replace(/^#{1,6}\s+/gm, '')
+          .replace(/\*\*(.+?)\*\*/g, '$1')
+          .replace(/\*(.+?)\*/g, '$1')
+          .replace(/__(.+?)__/g, '$1')
+          .replace(/_(.+?)_/g, '$1')
+          .replace(/~~(.+?)~~/g, '$1')
+          .replace(/`{1,3}[^`]*`{1,3}/g, (m) => m.replace(/`/g, ''))
+          .replace(/^\s*[-*+]\s+/gm, '')
+          .replace(/^\s*\d+\.\s+/gm, '')
+          .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+          .replace(/^\s*>\s?/gm, '')
+          .replace(/^---+$/gm, '')
+          .replace(/\|/g, ' ')
+          .replace(/\n{3,}/g, '\n\n')
           .trim();
         break;
       }
@@ -57,8 +56,13 @@ export async function parseDocument(buffer: Buffer, mimeType: string): Promise<s
     throw new AppError('PARSE_FAILED', 'Document contains no extractable text', 400);
   }
 
+  // Detect protected/encrypted PDFs
+  if (text.trim().length < 500 && /protected|password|encrypted/i.test(text)) {
+    throw new AppError('PARSE_FAILED', 'Document appears to be password-protected or encrypted', 400);
+  }
+
   if (text.length > MAX_TEXT_LENGTH) {
-    console.warn(`[parse] Text truncated from ${text.length} to ${MAX_TEXT_LENGTH} characters`);
+    console.warn('[parse] Text truncated from ' + text.length + ' to ' + MAX_TEXT_LENGTH + ' characters');
     text = text.slice(0, MAX_TEXT_LENGTH);
   }
 

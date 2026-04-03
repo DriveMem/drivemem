@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import { config } from '../lib/config.js';
 
 const COLLECTION_NAME = 'document_chunks';
-const VECTOR_SIZE = 1536;
+const VECTOR_SIZE = 512; // bge-small-zh-v1.5
 
 const qdrant = new QdrantClient({
   url: config.QDRANT_URL,

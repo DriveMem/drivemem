@@ -2,7 +2,8 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
+import { SignJWT } from 'jose';
 import { eq, and, isNull, gt } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { users, passwordResetTokens } from '../db/schema.js';
@@ -29,14 +30,10 @@ const resetPasswordSchema = z.object({
   password: z.string().min(8),
 });
 
-const transporter = nodemailer.createTransport({
-  host: config.SMTP_HOST,
-  port: config.SMTP_PORT,
-  auth: { user: config.SMTP_USER, pass: config.SMTP_PASS },
-});
+const resend = new Resend(process.env.RESEND_API_KEY || '');
 
 export default async function authRoutes(fastify: FastifyInstance) {
-  // POST /login — Auth.js Credentials provider 调用此端点验证密码
+  // POST /login
   fastify.post('/login', async (request, reply) => {
     const body = loginSchema.parse(request.body);
 
@@ -61,12 +58,20 @@ export default async function authRoutes(fastify: FastifyInstance) {
       throw new AppError(ErrorCodes.UNAUTHORIZED, 'Invalid email or password', 401);
     }
 
-    // 返回用户信息（不含 passwordHash），Auth.js authorize 函数用这个签 JWT
+    // Sign a plain JWT for the frontend to use in API calls
+    const jwtSecret = new TextEncoder().encode(config.JWT_SECRET);
+    const token = await new SignJWT({ sub: user.id, email: user.email, name: user.name })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('7d')
+      .sign(jwtSecret);
+
     return reply.send({
       id: user.id,
       email: user.email,
       name: user.name,
       avatarUrl: user.avatarUrl,
+      token,
     });
   });
 
@@ -120,10 +125,10 @@ export default async function authRoutes(fastify: FastifyInstance) {
       });
 
       const resetLink = `${config.FRONTEND_URL}/reset-password?token=${token}`;
-      await transporter.sendMail({
-        from: config.SMTP_FROM,
+      await resend.emails.send({
+        from: 'AI Drive <noreply@verrrnm.cloud>',
         to: body.email,
-        subject: 'Reset your password',
+        subject: 'Reset your password - AI Drive',
         html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link expires in 1 hour.</p>`,
       });
     }

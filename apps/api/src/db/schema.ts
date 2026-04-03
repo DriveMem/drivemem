@@ -43,6 +43,8 @@ export const files = pgTable('files', {
   chunkCount: integer('chunk_count').notNull().default(0),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   s3Key: text('s3_key').notNull(),
+  summary: text('summary'),
+  suggestedFolder: text('suggested_folder'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -53,7 +55,7 @@ export const scopeTypeEnum = pgEnum('scope_type', ['all', 'folder', 'file']);
 // --- Conversations ---
 export const conversations = pgTable('conversations', {
   id: uuid('id').defaultRandom().primaryKey(),
-  title: varchar('title', { length: 255 }).notNull().default('New Conversation'),
+  title: varchar('title', { length: 255 }).notNull().default('新对话'),
   scopeType: scopeTypeEnum('scope_type').notNull().default('all'),
   scopeId: uuid('scope_id'),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
