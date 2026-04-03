@@ -1,6 +1,6 @@
 "use client"
 import { useState, useCallback, useEffect } from "react"
-import { MessageSquare, FileText, Folder, Files, ChevronDown, Link2 } from "lucide-react"
+import { MessageSquare, FileText, Folder, Files, ChevronDown, Link2, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
 import { ChatInput } from "@/components/chat/chat-input"
@@ -266,7 +266,6 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
 
   return (
     <div className="flex h-full flex-col">
-      {/* Scope selector */}
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <span className="text-xs text-muted-foreground">AI 记忆范围：</span>
         <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined) }} className="gap-1 text-xs">
@@ -306,6 +305,29 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {messages.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto gap-1 text-xs"
+            onClick={() => {
+              const md = messages.map(m => {
+                const role = m.role === "user" ? "## 👤 用户" : "## 🤖 AI"
+                return `${role}\n\n${m.content}\n`
+              }).join("\n---\n\n")
+              const blob = new Blob([md], { type: "text/markdown" })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement("a")
+              a.href = url
+              a.download = `对话-${new Date().toISOString().slice(0, 10)}.md`
+              a.click()
+              URL.revokeObjectURL(url)
+            }}
+          >
+            <Download className="h-3 w-3" />导出
+          </Button>
+        )}
       </div>
 
       {compareMode && compareFileNames && (
