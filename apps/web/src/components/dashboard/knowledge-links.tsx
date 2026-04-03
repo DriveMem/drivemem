@@ -48,7 +48,7 @@ export function KnowledgeLinks() {
               {link.fileAName} 和 {link.fileBName} — {link.description}
             </span>
             <Link
-              href={`/chat?q=对比 ${link.fileAName} 和 ${link.fileBName}`}
+              href={`/chat?q=对比「${link.fileAName}」和「${link.fileBName}」的核心观点异同`}
               className="shrink-0 ml-3 text-xs text-blue-500 hover:underline"
             >
               对比
