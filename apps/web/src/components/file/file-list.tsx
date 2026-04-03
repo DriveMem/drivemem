@@ -40,7 +40,7 @@ interface FileItem {
   suggestedFolder?: string | null
 }
 
-function fmtSize(b: number) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
+function fmtSize(b: number) { return !b ? "—" : b < 1024 ? "< 1 KB" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
 function fmtDate(iso: string) { return new Date(iso).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) }
 
 function formatRelativeTime(date: string): string {
@@ -386,6 +386,11 @@ export function FileList() {
         </div>
       )}
       <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
+      {filteredFiles.length < 5 && filteredFiles.length > 0 && (
+        <div className="flex items-center justify-center py-8 text-xs text-muted-foreground/50">
+          拖拽文件到这里上传，或使用 Web Clipper 保存网页
+        </div>
+      )}
       <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
         <DialogContent>
           <DialogHeader>
