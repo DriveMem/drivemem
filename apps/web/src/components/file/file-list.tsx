@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List } from "lucide-react"
+import { Lightbulb } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -39,8 +40,22 @@ interface FileItem {
   suggestedFolder?: string | null
 }
 
-function fmtSize(b: number) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
+function fmtSize(b: number) { return !b ? "—" : b < 1024 ? "< 1 KB" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
 function fmtDate(iso: string) { return new Date(iso).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) }
+
+function formatRelativeTime(date: string): string {
+  const d = new Date(date)
+  const now = new Date()
+  const diff = now.getTime() - d.getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return "刚刚"
+  if (mins < 60) return `${mins} 分钟前`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours} 小时前`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days} 天前`
+  return d.toLocaleDateString("zh-CN")
+}
 
 function TypeIcon({ type, name, className }: { type: string; name?: string; className?: string }) {
   const ext = name?.split(".").pop()?.toLowerCase()
@@ -60,10 +75,14 @@ function TypeIcon({ type, name, className }: { type: string; name?: string; clas
   return <FileText className={cn("h-4 w-4 flex-shrink-0", className, color)} />
 }
 
-function StatusIcon({ status, error }: { status: string; error?: string }) {
+function StatusIcon({ status, error, compact }: { status: string; error?: string; compact?: boolean }) {
   if (status === "uploading") return <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-  if (status === "parsing") return <span className="flex items-center gap-1 text-xs text-yellow-500"><Loader2 className="h-3 w-3 animate-spin" />AI 正在记住...</span>
+  if (status === "parsing") {
+    if (compact) return <Loader2 className="h-3 w-3 animate-spin text-yellow-500" />
+    return <span className="flex items-center gap-1 text-xs text-yellow-500"><Loader2 className="h-3 w-3 animate-spin" />AI 正在记住...</span>
+  }
   if (status === "indexed") return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+  if (compact) return <XCircle className="h-3.5 w-3.5 text-red-500" />
   return <span title="解析失败，请重新上传" className="flex items-center gap-1 text-xs text-red-500"><XCircle className="h-3.5 w-3.5" />解析失败</span>
 }
 
@@ -184,27 +203,23 @@ export function FileList() {
 
   return (
     <div className="flex h-full flex-col" onDragOver={(e) => { e.preventDefault() }} onDrop={(e) => { e.preventDefault(); setShowUpload(true) }}>
+      {/* Toolbar: filters left, actions right */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => toggleSort("name")} className="gap-1 text-xs">名称 <ArrowUpDown className="h-3 w-3" /></Button>
-          <Button variant="ghost" size="sm" onClick={() => toggleSort("createdAt")} className="gap-1 text-xs">时间 <ArrowUpDown className="h-3 w-3" /></Button>
-          <Button variant="ghost" size="sm" onClick={() => toggleSort("size")} className="gap-1 text-xs">大小 <ArrowUpDown className="h-3 w-3" /></Button>
-          <div className="flex items-center gap-1 ml-2">
-            {FILTERS.map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setTypeFilter(key)}
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs transition",
-                  typeFilter === key
-                    ? "bg-blue-600 text-white"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center gap-1">
+          {FILTERS.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setTypeFilter(key)}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs transition",
+                typeFilter === key
+                  ? "bg-blue-600 text-white"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+            >
+              {label}
+            </button>
+          ))}
         </div>
         <div className="flex items-center gap-1">
           <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />新建文件夹</Button>
@@ -279,42 +294,26 @@ export function FileList() {
                 className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <TypeIcon type={file.type} name={file.name} />
-                <div className="flex-1 min-w-0">
-                  <span className="truncate text-sm block">{file.name}</span>
-                  {file.summary && <span className="text-xs line-clamp-1 flex items-center gap-1.5"><span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-blue-500/15 to-purple-500/15 px-1.5 py-0.5 text-[10px] font-medium text-blue-400 shrink-0">🧠 AI</span><span className="text-muted-foreground">{file.summary.length > 80 ? (() => { const s = file.summary!.slice(0, 80); const i = Math.max(s.lastIndexOf("。"), s.lastIndexOf("，"), s.lastIndexOf(" "), s.lastIndexOf("；")); return (i > 20 ? s.slice(0, i + 1) : s) + "…" })() : file.summary}</span></span>}
-                  {file.suggestedFolder && !file.folderId && (
-                    <span className="text-xs text-blue-500 flex items-center gap-1">
-                      💡 AI 建议归入：{file.suggestedFolder}
-                      <button
-                        className="ml-1 px-1.5 py-0.5 rounded bg-blue-500 text-white text-xs hover:bg-blue-600 transition-colors"
-                        onClick={(e) => {
+                <span className="truncate text-sm flex-1 min-w-0">{file.name}</span>
+                {file.suggestedFolder && !file.folderId && (
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button className="shrink-0 text-blue-500 hover:text-blue-600 transition-colors" onClick={(e) => {
                           e.stopPropagation()
                           const matched = allFolders.find((f: any) => f.name === file.suggestedFolder)
-                          if (matched) {
-                            moveFile.mutate({ fileId: file.id, folderId: matched.id })
-                          } else {
-                            alert("请先创建此文件夹")
-                          }
-                        }}
-                      >
-                        移入
-                      </button>
-                    </span>
-                  )}
-                </div>
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition shrink-0" onClick={(e) => { e.stopPropagation(); router.push('/chat?file=' + file.id) }}>
-                        <MessageSquare className="h-3.5 w-3.5 text-blue-500" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top"><p>问 AI 关于这个文件</p></TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <StatusIcon status={file.status} error={file.errorMessage} />
-                <span className="w-16 text-right text-xs text-muted-foreground">{fmtSize(file.size)}</span>
-                <span className="w-28 text-right text-xs text-muted-foreground">{fmtDate(file.createdAt)}</span>
+                          if (matched) { moveFile.mutate({ fileId: file.id, folderId: matched.id }) } else { alert("请先创建此文件夹") }
+                        }}>
+                          <Lightbulb className="h-3.5 w-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top"><p>AI 建议归入：{file.suggestedFolder}（点击移入）</p></TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                <StatusIcon status={file.status} error={file.errorMessage} compact />
+                <span className="w-20 text-right text-xs text-muted-foreground shrink-0">{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
+                <span className="w-16 text-right text-xs text-muted-foreground shrink-0">{fmtSize(file.size)}</span>
               </div>
             )
           })}
@@ -387,6 +386,11 @@ export function FileList() {
         </div>
       )}
       <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
+      {filteredFiles.length < 5 && filteredFiles.length > 0 && (
+        <div className="flex items-center justify-center py-8 text-xs text-muted-foreground/50">
+          拖拽文件到这里上传，或使用 Web Clipper 保存网页
+        </div>
+      )}
       <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
         <DialogContent>
           <DialogHeader>

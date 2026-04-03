@@ -14,6 +14,7 @@ import {
   Quote,
   ArrowRight,
   ChevronRight,
+  Globe,
 } from "lucide-react"
 
 function FadeIn({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -42,12 +43,6 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
 }
 
 /* ---------- page ---------- */
-
-const VALUE_CARDS = [
-  { icon: Brain, title: "智能理解", desc: "上传 PDF、Markdown、TXT，AI 自动解析内容" },
-  { icon: MessageSquare, title: "精准回答", desc: "基于你的文档回答问题，每个答案都有来源引用" },
-  { icon: Shield, title: "数据隔离", desc: "你的文件只属于你，完全隔离存储" },
-] as const
 
 const STEPS = [
   { icon: Upload, title: "上传文件", desc: "拖拽或选择你的 PDF、Markdown、TXT 文件" },
@@ -90,71 +85,55 @@ export default function LandingPage() {
       </section>
 
       {/* ===== Product Preview ===== */}
-      <section className="relative z-10 px-6 py-16">
+      <section className="relative z-10 px-6 py-20">
         <div className="mx-auto max-w-5xl" style={{ perspective: "1200px" }}>
-          <div className="rounded-xl border border-gray-700 bg-gray-900 p-1 shadow-2xl shadow-blue-500/10" style={{ transform: "rotateX(2deg)" }}>
+          <div className="rounded-xl border border-gray-700 bg-gray-900 p-1 shadow-2xl shadow-blue-500/20 ring-1 ring-blue-500/10" style={{ transform: "rotateX(2deg)" }}>
             <div className="flex items-center gap-1.5 px-3 py-2">
               <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
               <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
               <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
               <span className="ml-2 text-xs text-gray-500">drive.verrrnm.cloud</span>
             </div>
-            <div className="aspect-[16/9] rounded-lg bg-gray-950 flex items-center justify-center text-gray-600">
-              <div className="w-full h-full p-4 flex gap-4">
-                <div className="w-48 border-r border-gray-800 pr-4 space-y-3">
-                  <div className="h-3 w-20 rounded bg-gray-800" />
-                  <div className="h-3 w-28 rounded bg-gray-800" />
-                  <div className="h-3 w-24 rounded bg-gray-800" />
-                </div>
-                <div className="flex-1 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-blue-500/20" />
-                    <div className="space-y-1.5">
-                      <div className="h-3 w-40 rounded bg-gray-800" />
-                      <div className="h-2.5 w-32 rounded bg-gray-800/60" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3 rounded-lg bg-gray-900/50 p-3">
-                      <div className="h-6 w-6 rounded bg-red-500/30" />
-                      <div className="h-3 w-48 rounded bg-gray-800" />
-                      <div className="ml-auto h-3 w-16 rounded bg-gray-800/60" />
-                    </div>
-                    <div className="flex items-center gap-3 rounded-lg bg-gray-900/50 p-3">
-                      <div className="h-6 w-6 rounded bg-green-500/30" />
-                      <div className="h-3 w-56 rounded bg-gray-800" />
-                      <div className="ml-auto h-3 w-16 rounded bg-gray-800/60" />
-                    </div>
-                    <div className="flex items-center gap-3 rounded-lg bg-gray-900/50 p-3">
-                      <div className="h-6 w-6 rounded bg-blue-500/30" />
-                      <div className="h-3 w-44 rounded bg-gray-800" />
-                      <div className="ml-auto h-3 w-16 rounded bg-gray-800/60" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <img src="/screenshots/dashboard.png" alt="AI Drive Dashboard" className="w-full rounded-lg" />
           </div>
         </div>
       </section>
 
-      {/* ===== Value Cards ===== */}
+      {/* Value Cards section removed — AI Feature Showcase below is more specific */}
+
+      {/* ===== AI Feature Showcase ===== */}
       <section id="features" className="relative z-10 mx-auto max-w-6xl px-6 py-24">
         <FadeIn>
-          <div className="grid gap-6 sm:grid-cols-3">
-            {VALUE_CARDS.map((c) => (
-              <div key={c.title} className="group rounded-2xl border border-gray-800 bg-gray-900/60 p-8 backdrop-blur transition hover:border-gray-700 hover:bg-gray-900/80">
-                <c.icon className="mb-4 h-8 w-8 text-blue-400" />
-                <h3 className="text-xl font-semibold">{c.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-gray-400">{c.desc}</p>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">AI 让你的文件更智能</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-gray-400">不只是存储，更是理解。AI Drive 让每个文件都成为可交互的知识。</p>
+          <div className="mt-16 grid gap-6 sm:grid-cols-3">
+            <div className="group rounded-2xl border border-gray-800 bg-gray-900/60 p-8 backdrop-blur transition hover:border-blue-500/30 hover:bg-gray-900/80">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 mb-4">
+                <Brain className="h-6 w-6 text-blue-400" />
               </div>
-            ))}
+              <h3 className="text-xl font-semibold mb-2">AI 智能摘要</h3>
+              <p className="text-gray-400 leading-relaxed">上传文件自动生成摘要，不用阅读全文就能了解核心内容</p>
+            </div>
+            <div className="group rounded-2xl border border-gray-800 bg-gray-900/60 p-8 backdrop-blur transition hover:border-blue-500/30 hover:bg-gray-900/80">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 mb-4">
+                <MessageSquare className="h-6 w-6 text-purple-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">跨文件问答</h3>
+              <p className="text-gray-400 leading-relaxed">同时问 AI 多个文件的内容，获得跨文档的综合分析</p>
+            </div>
+            <div className="group rounded-2xl border border-gray-800 bg-gray-900/60 p-8 backdrop-blur transition hover:border-blue-500/30 hover:bg-gray-900/80">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 mb-4">
+                <Globe className="h-6 w-6 text-cyan-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Web Clipper</h3>
+              <p className="text-gray-400 leading-relaxed">一键保存网页到 AI 记忆，浏览器扩展让知识自动积累</p>
+            </div>
           </div>
         </FadeIn>
       </section>
 
       {/* ===== How It Works ===== */}
-      <section className="relative z-10 mx-auto max-w-5xl px-6 py-24">
+      <section className="relative z-10 mx-auto max-w-5xl px-6 py-20">
         <FadeIn>
           <h2 className="text-center text-3xl font-bold sm:text-4xl">看看 AI Drive 如何工作</h2>
           <div className="mt-16 grid gap-8 sm:grid-cols-3">
@@ -187,9 +166,13 @@ export default function LandingPage() {
                 <h3 className="text-2xl font-bold sm:text-3xl">{f.title}</h3>
                 <p className="text-gray-400 leading-relaxed">{f.desc}</p>
               </div>
-              {/* placeholder card */}
-              <div className="flex h-56 w-full flex-1 items-center justify-center rounded-2xl border border-gray-800 bg-gray-900/50">
-                <f.icon className="h-16 w-16 text-gray-700" />
+              {/* real screenshot */}
+              <div className="w-full flex-1 overflow-hidden rounded-2xl border border-gray-800">
+                <img
+                  src={f.title === "AI 对话" || f.title === "引用来源" ? "/screenshots/chat.png" : "/screenshots/dashboard.png"}
+                  alt={f.title}
+                  className="w-full rounded-2xl"
+                />
               </div>
             </div>
           </FadeIn>
