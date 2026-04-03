@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2 } from "lucide-react"
 import { Lightbulb } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
@@ -24,6 +24,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { FileUpload } from "./file-upload"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
+import { toast } from "sonner"
 
 type SortKey = "name" | "createdAt" | "size"
 type SortDir = "asc" | "desc"
@@ -115,7 +116,25 @@ export function FileList() {
   const [showUpload, setShowUpload] = useState(false)
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [shareUrl, setShareUrl] = useState("")
+  const [shareLoading, setShareLoading] = useState(false)
   const parentRef = useRef<HTMLDivElement>(null)
+
+  const handleShare = useCallback(async (fileId: string) => {
+    setShareLoading(true)
+    setShareDialogOpen(true)
+    try {
+      const data = await apiFetch(`/api/files/${fileId}/share`, { method: "POST" })
+      setShareUrl(data.url || "")
+    } catch (err) {
+      console.error("Share failed:", err)
+      toast.error("分享失败，请重试")
+      setShareDialogOpen(false)
+    } finally {
+      setShareLoading(false)
+    }
+  }, [])
 
   const handleDownload = useCallback(async (fileId: string, e?: React.MouseEvent) => {
     e?.stopPropagation()
@@ -423,6 +442,12 @@ export function FileList() {
               setMoveFolderId("")
               setContextMenu(null)
             }}>移动到文件夹</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              handleShare(contextMenu.fileId)
+              setContextMenu(null)
+            }}>
+              <Share2 className="h-4 w-4 mr-2" />分享
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )}
@@ -496,6 +521,24 @@ export function FileList() {
             <Button variant="outline" onClick={() => setBatchMoveOpen(false)}>取消</Button>
             <Button onClick={() => handleBatchMove(moveFolderId || null)}>移动</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Dialog */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>分享链接</DialogTitle></DialogHeader>
+          {shareLoading ? (
+            <div className="flex items-center justify-center py-4"><Loader2 className="h-5 w-5 animate-spin" /></div>
+          ) : (
+            <div className="space-y-4">
+              <Input value={shareUrl} readOnly onClick={(e) => (e.target as HTMLInputElement).select()} />
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShareDialogOpen(false)}>关闭</Button>
+                <Button onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success("已复制") }}>复制</Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
