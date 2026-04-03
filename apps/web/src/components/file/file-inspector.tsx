@@ -1,4 +1,5 @@
 "use client"
+import { useState, useEffect } from "react"
 import { FileText, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useFiles, type FileItem } from "@/hooks/use-api"
@@ -17,6 +18,8 @@ function fileTypeLabel(mime: string) {
 export function FileInspector({ fileId }: { fileId: string }) {
   const { data: files } = useFiles()
   const file = files?.find((f) => f.id === fileId)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
   if (!file) return <div className="p-4 text-sm text-muted-foreground">文件未找到</div>
 
   const statusLabels: Record<string, string> = { pending: "AI 正在记住...", parsing: "AI 正在记住...", done: "已记住", parsed: "已记住", failed: "记忆失败", error: "记忆失败" }
@@ -27,7 +30,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
       <div className="flex items-center gap-3"><FileText className="h-8 w-8 text-muted-foreground" /><div><p className="font-medium text-sm">{file.name}</p><p className="text-xs text-muted-foreground">{fileTypeLabel(file.mimeType)}</p></div></div>
       <div className="space-y-3 text-sm">
         <div className="flex justify-between"><span className="text-muted-foreground">大小</span><span>{formatSize(file.size)}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">上传时间</span><span>{new Date(file.createdAt).toLocaleString("zh-CN")}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">上传时间</span><span>{mounted ? new Date(file.createdAt).toLocaleString("zh-CN") : ""}</span></div>
         <div className="flex justify-between"><span className="text-muted-foreground">状态</span><span className={statusColors[file.parseStatus] || "text-muted-foreground"}>{statusLabels[file.parseStatus] || file.parseStatus}</span></div>
         {file.parseError && <div className="text-xs text-red-500 bg-red-500/10 rounded p-2">{file.parseError}</div>}
       </div>

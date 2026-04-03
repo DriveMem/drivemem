@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { useTheme } from "next-themes"
 import { Sun, Moon, Search, LogOut, User, Settings, FileText, X, Loader2, Menu } from "lucide-react"
@@ -15,15 +15,20 @@ interface SearchResult { fileId: string; filename: string; snippet: string; scor
 
 export function TopNav() {
   const { data: session } = useSession()
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, resolvedTheme } = useTheme()
   const router = useRouter()
   const { mobileMenuOpen, setMobileMenuOpen } = useLayoutStore()
+  const [mounted, setMounted] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (searchOpen && inputRef.current) inputRef.current.focus()
@@ -98,8 +103,8 @@ export function TopNav() {
       </div>
 
       <div className="flex items-center gap-1 md:gap-2">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
+          {mounted ? (resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />) : <Sun className="h-4 w-4 opacity-0" />}
         </Button>
         {session?.user && (
           <DropdownMenu>

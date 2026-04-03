@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, PanelLeftClose, PanelLeft, MessageSquare, Loader2, X, History } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,8 @@ import { useLayoutStore } from "@/stores/layout-store"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 
-function formatTime(iso: string) {
+function formatTime(iso: string, mounted: boolean) {
+  if (!mounted) return ""
   const d = new Date(iso)
   const now = new Date()
   const diff = now.getTime() - d.getTime()
@@ -24,6 +25,8 @@ function ConversationList({ onSelect }: { onSelect?: () => void }) {
   const activeId = params?.id as string | undefined
   const { data: conversations, isLoading } = useConversations()
   const createConversation = useCreateConversation()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   async function handleNew() {
     try {
@@ -52,7 +55,7 @@ function ConversationList({ onSelect }: { onSelect?: () => void }) {
             <Link key={conv.id} href={`/chat/${conv.id}`} onClick={onSelect}
               className={cn("flex flex-col gap-0.5 px-3 py-2 text-sm hover:bg-accent rounded-md mx-1", activeId === conv.id && "bg-accent")}>
               <span className="truncate font-medium">{conv.title || "新对话"}</span>
-              <span className="text-xs text-muted-foreground">{formatTime(conv.updatedAt || conv.createdAt)}</span>
+              <span className="text-xs text-muted-foreground">{formatTime(conv.updatedAt || conv.createdAt, mounted)}</span>
             </Link>
           ))
         )}
