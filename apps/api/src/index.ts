@@ -57,6 +57,11 @@ await app.register(exportRoutes, { prefix: '/api/users/me' });
 await app.register(clipRoutes, { prefix: '/api/clips' });
 await app.register(sharesRoutes, { prefix: '/api' });
 
+// Health check endpoint
+app.get('/api/health', async (_request, reply) => {
+  return reply.send({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
+
 app.get('/health', async () => ({
   status: 'ok',
   timestamp: new Date().toISOString(),
