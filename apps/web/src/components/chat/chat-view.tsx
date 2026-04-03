@@ -31,6 +31,47 @@ interface ChatMessage {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
+function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (msg: string) => void }) {
+  const [suggestions, setSuggestions] = useState<string[]>([])
+
+  useEffect(() => {
+    apiFetch("/api/conversations/suggestions")
+      .then((data: any) => {
+        if (data?.suggestions?.length) setSuggestions(data.suggestions.slice(0, 3))
+      })
+      .catch(() => {/* fallback to default text */})
+  }, [])
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-3 text-muted-foreground">
+      <MessageSquare className="h-12 w-12" />
+      {indexedCount > 0 ? (
+        <>
+          <p className="text-lg font-medium text-foreground">AI 已记住 {indexedCount} 个文件</p>
+          {suggestions.length > 0 ? (
+            <div className="mt-2 flex flex-col gap-2 w-full max-w-md px-4">
+              <p className="text-xs text-center text-muted-foreground">试试问这些问题：</p>
+              {suggestions.map((q, i) => (
+                <button key={i} onClick={() => onSend(q)}
+                  className="rounded-lg border px-4 py-3 text-left text-sm hover:bg-accent transition">
+                  {q}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm">问任何关于你文件的问题</p>
+          )}
+        </>
+      ) : (
+        <>
+          <p className="text-lg font-medium text-foreground">开始和 AI 对话</p>
+          <p className="text-sm">先上传文件让 AI 记住，然后提问</p>
+        </>
+      )}
+    </div>
+  )
+}
+
 export function ChatView({ conversationId: initialConversationId, fileScope, presetQuestion }: { conversationId?: string; fileScope?: string; presetQuestion?: string }) {
   const [conversationId, setConversationId] = useState<string | undefined>(initialConversationId)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -249,20 +290,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       )}
 
       {messages.length === 0 && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-muted-foreground">
-          <MessageSquare className="h-12 w-12" />
-          {indexedCount > 0 ? (
-            <>
-              <p className="text-lg font-medium text-foreground">AI 已记住 {indexedCount} 个文件</p>
-              <p className="text-sm">问任何关于你文件的问题</p>
-            </>
-          ) : (
-            <>
-              <p className="text-lg font-medium text-foreground">开始和 AI 对话</p>
-              <p className="text-sm">先上传文件让 AI 记住，然后提问</p>
-            </>
-          )}
-        </div>
+        <EmptyState indexedCount={indexedCount} onSend={handleSend} />
       )}
       {messages.length > 0 && <MessageList messages={messages} streaming={streaming} />}
       <ChatInput onSend={handleSend} disabled={sending} />
