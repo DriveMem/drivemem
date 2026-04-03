@@ -92,6 +92,7 @@ export function FileList() {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [showUpload, setShowUpload] = useState(false)
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
+  const [typeFilter, setTypeFilter] = useState<string>("all")
   const parentRef = useRef<HTMLDivElement>(null)
 
   const rawFiles: FileItem[] = Array.isArray(data) ? data : (data?.files || [])
@@ -105,7 +106,29 @@ export function FileList() {
     })
   }, [rawFiles, sortKey, sortDir])
 
-  const virt = useVirtualizer({ count: files.length, getScrollElement: () => parentRef.current, estimateSize: () => 48, overscan: 5 })
+  const FILTERS = [
+    { key: "all", label: "全部" },
+    { key: "pdf", label: "PDF" },
+    { key: "word", label: "Word" },
+    { key: "md", label: "Markdown" },
+    { key: "txt", label: "文本" },
+    { key: "image", label: "图片" },
+  ]
+
+  const filteredFiles = typeFilter === "all" ? files : files.filter((f: any) => {
+    const ext = (f.name || f.originalName || "").split(".").pop()?.toLowerCase()
+    const mime = f.mimeType || ""
+    switch (typeFilter) {
+      case "pdf": return ext === "pdf" || mime.includes("pdf")
+      case "word": return ext === "docx" || ext === "doc" || mime.includes("word")
+      case "md": return ext === "md" || ext === "markdown"
+      case "txt": return ext === "txt" || mime === "text/plain"
+      case "image": return mime.startsWith("image/") || ["png","jpg","jpeg","gif","webp"].includes(ext || "")
+      default: return true
+    }
+  })
+
+  const virt = useVirtualizer({ count: filteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 48, overscan: 5 })
 
   const toggleSort = (k: SortKey) => { if (sortKey === k) setSortDir((d) => d === "asc" ? "desc" : "asc"); else { setSortKey(k); setSortDir("asc") } }
 
@@ -166,6 +189,22 @@ export function FileList() {
           <Button variant="ghost" size="sm" onClick={() => toggleSort("name")} className="gap-1 text-xs">名称 <ArrowUpDown className="h-3 w-3" /></Button>
           <Button variant="ghost" size="sm" onClick={() => toggleSort("createdAt")} className="gap-1 text-xs">时间 <ArrowUpDown className="h-3 w-3" /></Button>
           <Button variant="ghost" size="sm" onClick={() => toggleSort("size")} className="gap-1 text-xs">大小 <ArrowUpDown className="h-3 w-3" /></Button>
+          <div className="flex items-center gap-1 ml-2">
+            {FILTERS.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setTypeFilter(key)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs transition",
+                  typeFilter === key
+                    ? "bg-blue-600 text-white"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex items-center gap-1">
           <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />新建文件夹</Button>
@@ -232,7 +271,7 @@ export function FileList() {
       <div ref={parentRef} className="flex-1 overflow-auto">
         <div style={{ height: virt.getTotalSize() + "px", width: "100%", position: "relative" }}>
           {virt.getVirtualItems().map((row) => {
-            const file = files[row.index]
+            const file = filteredFiles[row.index]
             const isSel = selected.has(file.id) || selectedFileId === file.id
             return (
               <div key={file.id} onClick={(e) => handleClick(file.id, e)} onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
@@ -284,7 +323,7 @@ export function FileList() {
       ) : (
         <div className="flex-1 overflow-auto">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-            {files.map((file) => {
+            {filteredFiles.map((file) => {
               const isSel = selected.has(file.id) || selectedFileId === file.id
               return (
                 <div
