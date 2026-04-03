@@ -44,6 +44,7 @@ import conversationRoutes from './routes/conversations.js';
 import searchRoutes from './routes/search.js';
 import exportRoutes from './routes/export.js';
 import clipRoutes from './routes/clips.js';
+import sharesRoutes from './routes/shares.js';
 
 await app.register(authPlugin);
 await app.register(authRoutes, { prefix: '/api/auth' });
@@ -54,6 +55,7 @@ await app.register(conversationRoutes, { prefix: '/api/conversations' });
 await app.register(searchRoutes, { prefix: '/api/search' });
 await app.register(exportRoutes, { prefix: '/api/users/me' });
 await app.register(clipRoutes, { prefix: '/api/clips' });
+await app.register(sharesRoutes, { prefix: '/api' });
 
 app.get('/health', async () => ({
   status: 'ok',
