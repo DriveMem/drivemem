@@ -9,7 +9,9 @@ const STOP_WORDS = new Set([
   "本文档", "本文", "文档", "摘要", "内容", "介绍", "分析了", "描述了",
   "总结", "概述", "核心", "主要", "包括", "以及", "其中", "通过",
   "基于", "关于", "用于", "提供", "支持", "功能", "进行", "实现",
-  "使用", "一个", "这个", "该文", "详细",
+  "使用", "一个", "这个", "该文", "详细", "介绍了", "测试", "验证",
+  "绍了", "文档介", "本文档介", "档介绍", "针对", "涉及", "方面",
+  "目的", "方法", "过程", "结果", "系统", "平台", "工具", "模型",
 ])
 
 function extractTopics(files: any[]): string[] {
@@ -17,10 +19,11 @@ function extractTopics(files: any[]): string[] {
   const seen = new Set<string>()
 
   const add = (w: string) => {
-    if (w && w.length >= 2 && !STOP_WORDS.has(w) && !seen.has(w)) {
-      seen.add(w)
-      topics.push(w)
-    }
+    if (!w || w.length < 2 || STOP_WORDS.has(w) || seen.has(w)) return
+    // Reject fragments that end with common verb suffixes or start mid-word
+    if (/^[了的着过得]/.test(w) || /[了的着过得]$/.test(w) && w.length <= 2) return
+    seen.add(w)
+    topics.push(w)
   }
 
   // 1. Extract from file names
