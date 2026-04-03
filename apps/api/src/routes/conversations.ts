@@ -209,6 +209,13 @@ export default async function conversationRoutes(app: FastifyInstance) {
 [文档片段]
 ${citationSources.length > 0 ? citationSources.join('\n\n') : '（未找到相关文档内容。请告诉用户在他们的文件中没有找到相关信息，或者提醒他们先上传文件。）'}`;
 
+    // Enhance prompt for comparison queries
+    const compareKeywords = ['对比', '比较', '异同', '区别', '差异', 'compare', 'vs'];
+    const isCompare = compareKeywords.some(k => body.content.includes(k));
+    const finalSystemPrompt = isCompare
+      ? systemPrompt + `\n\n【对比分析模式】\n用户正在进行文件对比分析。请使用以下结构化格式输出：\n## 📋 相同点\n列出两份文档的共同之处\n## 🔍 不同点\n列出两份文档的差异\n## 🤝 互补之处\n分析两份文档如何互相补充\n## 💡 建议\n基于对比结果给出 1-2 条有价值的建议`
+      : systemPrompt;
+
     // Build chat history for LLM
     const chatHistory = recentMessages.map((m) => ({
       role: m.role as 'system' | 'user' | 'assistant',
@@ -233,7 +240,7 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : '（未找到相�
 
     try {
       const llmMessages = [
-        { role: 'system' as const, content: systemPrompt },
+        { role: 'system' as const, content: finalSystemPrompt },
         ...chatHistory,
       ];
 
