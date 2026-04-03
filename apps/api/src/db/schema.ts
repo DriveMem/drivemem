@@ -77,6 +77,17 @@ export const messages = pgTable('messages', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// --- Knowledge Links ---
+export const knowledgeLinks = pgTable('knowledge_links', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  fileAId: uuid('file_a_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  fileBId: uuid('file_b_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  relationType: text('relation_type').notNull(),
+  description: text('description').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Password Reset Tokens ---
 export const passwordResetTokens = pgTable('password_reset_tokens', {
   id: uuid('id').defaultRandom().primaryKey(),

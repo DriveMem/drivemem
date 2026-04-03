@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { eq, and, sql, isNotNull, isNull } from 'drizzle-orm';
+import { eq, and, sql, isNotNull, isNull, desc, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { users, files } from '../db/schema.js';
+import { users, files, knowledgeLinks } from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
 import { AppError, ErrorCodes } from '../lib/errors.js';
 
@@ -61,6 +61,40 @@ export default async function userRoutes(fastify: FastifyInstance) {
       topics: result.map(r => ({ topic: r.topic, fileCount: Number(r.fileCount) })),
       unclassifiedCount: Number(unclassified?.count || 0),
       totalFiles: Number(totalFiles[0]?.count || 0),
+    });
+  });
+
+  // GET /me/knowledge-links
+  fastify.get('/me/knowledge-links', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+
+    const links = await db.select({
+      id: knowledgeLinks.id,
+      fileAId: knowledgeLinks.fileAId,
+      fileBId: knowledgeLinks.fileBId,
+      relationType: knowledgeLinks.relationType,
+      description: knowledgeLinks.description,
+      createdAt: knowledgeLinks.createdAt,
+    })
+      .from(knowledgeLinks)
+      .where(eq(knowledgeLinks.userId, userId))
+      .orderBy(desc(knowledgeLinks.createdAt));
+
+    const fileIds = [...new Set(links.flatMap(l => [l.fileAId, l.fileBId]))];
+    const fileNames: Record<string, string> = {};
+    if (fileIds.length > 0) {
+      const filesData = await db.select({ id: files.id, name: files.name })
+        .from(files)
+        .where(inArray(files.id, fileIds));
+      filesData.forEach(f => { fileNames[f.id] = f.name; });
+    }
+
+    return reply.send({
+      links: links.map(l => ({
+        ...l,
+        fileAName: fileNames[l.fileAId] || 'Unknown',
+        fileBName: fileNames[l.fileBId] || 'Unknown',
+      })),
     });
   });
 
