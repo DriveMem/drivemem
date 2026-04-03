@@ -41,9 +41,22 @@ interface FileItem {
 function fmtSize(b: number) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
 function fmtDate(iso: string) { return new Date(iso).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) }
 
-function TypeIcon({ type }: { type: string }) {
-  const c: Record<string, string> = { pdf: "text-red-400", txt: "text-gray-400", md: "text-teal-400", image: "text-blue-400" }
-  return <FileText className={cn("h-4 w-4 flex-shrink-0", c[type])} />
+function TypeIcon({ type, name }: { type: string; name?: string }) {
+  const ext = name?.split(".").pop()?.toLowerCase()
+  const colorByExt: Record<string, string> = {
+    pdf: "text-red-500",
+    doc: "text-blue-600", docx: "text-blue-600",
+    md: "text-green-500", markdown: "text-green-500",
+    txt: "text-gray-500",
+  }
+  const colorByType: Record<string, string> = {
+    pdf: "text-red-500",
+    txt: "text-gray-500",
+    md: "text-green-500",
+    image: "text-blue-400",
+  }
+  const color = (ext && colorByExt[ext]) || colorByType[type] || "text-muted-foreground"
+  return <FileText className={cn("h-4 w-4 flex-shrink-0", color)} />
 }
 
 function StatusIcon({ status, error }: { status: string; error?: string }) {
@@ -202,7 +215,7 @@ export function FileList() {
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                 className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50", isSel && "bg-accent")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
-                <TypeIcon type={file.type} />
+                <TypeIcon type={file.type} name={file.name} />
                 <div className="flex-1 min-w-0">
                   <span className="truncate text-sm block">{file.name}</span>
                   {file.summary && <span className="text-muted-foreground text-xs line-clamp-1">{file.summary.length > 80 ? (() => { const s = file.summary!.slice(0, 80); const i = Math.max(s.lastIndexOf("。"), s.lastIndexOf("，"), s.lastIndexOf(" "), s.lastIndexOf("；")); return (i > 20 ? s.slice(0, i + 1) : s) + "…" })() : file.summary}</span>}

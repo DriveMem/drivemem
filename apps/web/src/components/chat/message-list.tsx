@@ -41,7 +41,14 @@ export function MessageList({ messages, streaming }: { messages: ChatMessage[]; 
             {streaming ? (
               <div className="prose prose-sm dark:prose-invert max-w-none"><ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{streaming + "▊"}</ReactMarkdown></div>
             ) : (
-              <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /><span>思考中...</span></div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="flex gap-1">
+                  <span className="animate-bounce [animation-delay:0ms] h-2 w-2 rounded-full bg-blue-500" />
+                  <span className="animate-bounce [animation-delay:150ms] h-2 w-2 rounded-full bg-blue-500" />
+                  <span className="animate-bounce [animation-delay:300ms] h-2 w-2 rounded-full bg-blue-500" />
+                </div>
+                <span>AI 正在思考...</span>
+              </div>
             )}
           </div>
         </div>
