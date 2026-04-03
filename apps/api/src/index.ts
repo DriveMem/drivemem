@@ -13,6 +13,16 @@ const app = Fastify({
   },
 });
 
+// Allow empty body with application/json content-type (e.g. DELETE requests from browsers)
+app.addHook('onRequest', async (request) => {
+  if (request.method === 'DELETE') {
+    const ct = request.headers['content-type'];
+    if (ct && request.headers['content-length'] === '0') {
+      delete request.headers['content-type'];
+    }
+  }
+});
+
 await app.register(cors, { origin: [config.FRONTEND_URL, 'http://localhost', 'http://localhost:3000', 'https://drive.verrrnm.cloud', 'https://verrrnm.cloud', 'https://web-indol-omega-43.vercel.app', /\.vercel\.app$/], credentials: true });
 await app.register(sensible);
 

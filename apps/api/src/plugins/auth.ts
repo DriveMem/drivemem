@@ -70,6 +70,7 @@ async function authPlugin(fastify: FastifyInstance) {
     try {
       const encKey = await getEncryptionKey();
       const { payload } = await jwtDecrypt(sessionToken, encKey);
+      console.log('[auth] Cookie payload keys:', Object.keys(payload), 'sub:', payload.sub, 'id:', payload.id, 'email:', payload.email);
       const userId = (payload.sub || payload.id || '') as string;
       if (!userId) return; // Invalid payload — skip
       request.user = {
