@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { eq, and, sql, isNotNull, isNull, desc, inArray } from 'drizzle-orm';
+import * as schema from '../db/schema.js';
 import { db } from '../db/index.js';
 import { users, files, knowledgeLinks } from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
@@ -120,5 +121,56 @@ export default async function userRoutes(fastify: FastifyInstance) {
       });
 
     return reply.send(user);
+  });
+
+  // GET /me/insights
+  fastify.get('/me/insights', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+
+    // Check cached insight
+    const [user] = await db.select({ insight: schema.users.insight })
+      .from(schema.users)
+      .where(eq(schema.users.id, userId));
+
+    if (user?.insight) {
+      return reply.send({ insight: user.insight });
+    }
+
+    // Generate insight from summaries + knowledge links
+    const userFiles = await db.select({ name: schema.files.name, summary: schema.files.summary })
+      .from(schema.files)
+      .where(and(eq(schema.files.userId, userId), sql`${schema.files.summary} IS NOT NULL`));
+
+    if (userFiles.length < 2) {
+      return reply.send({ insight: null });
+    }
+
+    const links = await db.select({
+      relationType: schema.knowledgeLinks.relationType,
+      description: schema.knowledgeLinks.description,
+    })
+      .from(schema.knowledgeLinks)
+      .where(eq(schema.knowledgeLinks.userId, userId));
+
+    const { chat } = await import('../services/llm.service.js');
+
+    const fileSummaries = userFiles.map(f => `${f.name}: ${f.summary?.substring(0, 100)}`).join('\n');
+    const linkInfo = links.length > 0
+      ? links.map(l => `${l.relationType}: ${l.description}`).join('\n')
+      : '暂无关联';
+
+    const prompt = `用户有以下文件：\n${fileSummaries}\n\n文件间关联：\n${linkInfo}\n\n基于这些信息，生成2-3句话的综合洞察，告诉用户他的知识库有什么特点、文件之间有什么有趣的关系、以及可以做什么深入探索。用中文，语气友好专业，不要用"你好"开头。直接输出洞察文本。`;
+
+    try {
+      const insight = await chat([{ role: 'user', content: prompt }]);
+      const trimmed = insight.trim().slice(0, 500);
+
+      // Cache
+      await db.update(schema.users).set({ insight: trimmed }).where(eq(schema.users.id, userId));
+
+      return reply.send({ insight: trimmed });
+    } catch {
+      return reply.send({ insight: null });
+    }
   });
 }

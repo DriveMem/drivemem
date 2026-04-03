@@ -101,6 +101,9 @@ const worker = new Worker<ParseJobData>(
 
       console.log('[file-parse] File ' + fileId + ' indexed with ' + chunks.length + ' chunks');
 
+      // Clear insight cache so it regenerates with new file data
+      await db.update(schema.users).set({ insight: null }).where(eq(schema.users.id, userId));
+
 // Auto-generate summary after successful indexing
     try {
       const { chat } = await import('../services/llm.service.js');

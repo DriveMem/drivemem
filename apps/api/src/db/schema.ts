@@ -15,6 +15,7 @@ export const users = pgTable('users', {
   dailyChatLimit: integer('daily_chat_limit').notNull().default(20), // 产品 Spec: 20次/天
   lastChatResetAt: timestamp('last_chat_reset_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  insight: text('insight'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
