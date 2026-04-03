@@ -17,8 +17,12 @@ const app = Fastify({
 app.addHook('onRequest', async (request) => {
   if (request.method === 'DELETE') {
     const ct = request.headers['content-type'];
-    if (ct && request.headers['content-length'] === '0') {
-      delete request.headers['content-type'];
+    if (ct) {
+      // Browser fetch sends content-type without body on DELETE — strip it
+      const cl = request.headers['content-length'];
+      if (!cl || cl === '0') {
+        delete request.headers['content-type'];
+      }
     }
   }
 });
