@@ -188,9 +188,13 @@ export default function LandingPage() {
                 <h3 className="text-2xl font-bold sm:text-3xl">{f.title}</h3>
                 <p className="text-gray-400 leading-relaxed">{f.desc}</p>
               </div>
-              {/* feature illustration */}
-              <div className="flex h-48 w-full flex-1 items-center justify-center rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 to-gray-950">
-                <f.icon className="h-16 w-16 text-gray-700" />
+              {/* real screenshot */}
+              <div className="w-full flex-1 overflow-hidden rounded-2xl border border-gray-800">
+                <img
+                  src={f.title === "AI 对话" || f.title === "引用来源" ? "/screenshots/chat.png" : "/screenshots/dashboard.png"}
+                  alt={f.title}
+                  className="w-full rounded-2xl"
+                />
               </div>
             </div>
           </FadeIn>
