@@ -5,58 +5,43 @@ import { useFiles } from "@/hooks/use-files"
 import { useConversations } from "@/hooks/use-conversations"
 import Link from "next/link"
 
-const STOP_WORDS = new Set([
-  "本文档", "本文", "文档", "摘要", "内容", "介绍", "分析了", "描述了",
-  "总结", "概述", "核心", "主要", "包括", "以及", "其中", "通过",
-  "基于", "关于", "用于", "提供", "支持", "功能", "进行", "实现",
-  "使用", "一个", "这个", "该文", "详细", "介绍了", "测试", "验证",
-  "绍了", "文档介", "本文档介", "档介绍", "针对", "涉及", "方面",
-  "目的", "方法", "过程", "结果", "系统", "平台", "工具", "模型",
-])
-
 function extractTopics(files: any[]): string[] {
   const topics: string[] = []
   const seen = new Set<string>()
 
   const add = (w: string) => {
-    if (!w || w.length < 2 || STOP_WORDS.has(w) || seen.has(w)) return
-    // Reject fragments that end with common verb suffixes or start mid-word
-    if (/^[了的着过得]/.test(w) || /[了的着过得]$/.test(w) && w.length <= 2) return
+    if (!w || w.length < 2 || seen.has(w)) return
     seen.add(w)
     topics.push(w)
   }
 
-  // 1. Extract from file names
   const nameMap: Record<string, string> = {
-    "competitive": "竞品分析", "analysis": "分析", "test": "测试",
+    "competitive": "竞品分析", "analysis": "", "test": "测试",
     "report": "报告", "design": "设计", "product": "产品",
     "tech": "技术", "guide": "指南", "spec": "规格",
+    "resume": "简历", "cv": "简历", "deepseek": "DeepSeek",
+    "drive": "", "ai": "", "web": "", "app": "", "doc": "", "docs": "",
   }
 
   for (const f of files) {
+    if (topics.length >= 5) break
     const name = (f.name || f.originalName || "").replace(/\.[^.]+$/, "")
-    // Chinese phrases from name
-    const cn = name.match(/[\u4e00-\u9fff]{2,6}/g) || []
-    cn.forEach(add)
-    // Map English words
-    const words = name.toLowerCase().split(/[-_\s]+/)
-    words.forEach((w: string) => { if (nameMap[w]) add(nameMap[w]) })
-  }
 
-  // 2. If need more, extract from summaries
-  if (topics.length < 3) {
-    for (const f of files) {
-      if (!f.summary || topics.length >= 5) continue
-      // Extract 2-4 char Chinese phrases, skip stop words
-      const matches = f.summary.match(/[\u4e00-\u9fff]{2,4}/g) || []
-      for (const w of matches) {
-        if (topics.length >= 5) break
-        add(w)
-      }
+    // Chinese: extract meaningful phrases (2-8 chars) from filename
+    const cnPhrases = name.match(/[\u4e00-\u9fff]{2,8}/g) || []
+    for (const phrase of cnPhrases) {
+      if (phrase.length >= 2 && phrase.length <= 8) add(phrase)
+    }
+
+    // English: map known keywords
+    const words = name.toLowerCase().split(/[-_\s]+/)
+    for (const w of words) {
+      const mapped = nameMap[w]
+      if (mapped) add(mapped)
     }
   }
 
-  // Filter out short words already contained in longer ones
+  // Deduplicate: remove short keywords contained in longer ones
   const filtered = topics.filter((t, i) => !topics.some((other, j) => j !== i && other.length > t.length && other.includes(t)))
   return filtered.slice(0, 3)
 }
