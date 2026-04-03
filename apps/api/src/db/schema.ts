@@ -55,7 +55,7 @@ export const scopeTypeEnum = pgEnum('scope_type', ['all', 'folder', 'file']);
 // --- Conversations ---
 export const conversations = pgTable('conversations', {
   id: uuid('id').defaultRandom().primaryKey(),
-  title: varchar('title', { length: 255 }).notNull().default('New Conversation'),
+  title: varchar('title', { length: 255 }).notNull().default('新对话'),
   scopeType: scopeTypeEnum('scope_type').notNull().default('all'),
   scopeId: uuid('scope_id'),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
