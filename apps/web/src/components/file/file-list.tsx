@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -42,7 +42,7 @@ interface FileItem {
 function fmtSize(b: number) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
 function fmtDate(iso: string) { return new Date(iso).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) }
 
-function TypeIcon({ type, name }: { type: string; name?: string }) {
+function TypeIcon({ type, name, className }: { type: string; name?: string; className?: string }) {
   const ext = name?.split(".").pop()?.toLowerCase()
   const colorByExt: Record<string, string> = {
     pdf: "text-red-500",
@@ -57,7 +57,7 @@ function TypeIcon({ type, name }: { type: string; name?: string }) {
     image: "text-blue-400",
   }
   const color = (ext && colorByExt[ext]) || colorByType[type] || "text-muted-foreground"
-  return <FileText className={cn("h-4 w-4 flex-shrink-0", color)} />
+  return <FileText className={cn("h-4 w-4 flex-shrink-0", className, color)} />
 }
 
 function StatusIcon({ status, error }: { status: string; error?: string }) {
@@ -91,6 +91,7 @@ export function FileList() {
   const [sortDir, setSortDir] = useState<SortDir>("desc")
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [showUpload, setShowUpload] = useState(false)
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const parentRef = useRef<HTMLDivElement>(null)
 
   const rawFiles: FileItem[] = Array.isArray(data) ? data : (data?.files || [])
@@ -166,8 +167,14 @@ export function FileList() {
           <Button variant="ghost" size="sm" onClick={() => toggleSort("createdAt")} className="gap-1 text-xs">时间 <ArrowUpDown className="h-3 w-3" /></Button>
           <Button variant="ghost" size="sm" onClick={() => toggleSort("size")} className="gap-1 text-xs">大小 <ArrowUpDown className="h-3 w-3" /></Button>
         </div>
-        <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />新建文件夹</Button>
-        <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
+        <div className="flex items-center gap-1">
+          <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />新建文件夹</Button>
+          <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
+          <div className="flex items-center rounded-md border border-border ml-2">
+            <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-r-none", viewMode === "list" && "bg-accent")} onClick={() => setViewMode("list")}><List className="h-3.5 w-3.5" /></Button>
+            <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-l-none", viewMode === "grid" && "bg-accent")} onClick={() => setViewMode("grid")}><LayoutGrid className="h-3.5 w-3.5" /></Button>
+          </div>
+        </div>
       </div>
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
       {/* Breadcrumb */}
@@ -192,7 +199,22 @@ export function FileList() {
           ))
         })()}
       </div>
-      {visibleFolders.length > 0 && (
+      {viewMode === "grid" && visibleFolders.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4 border-b border-border">
+          {visibleFolders.map((folder: any) => (
+            <div key={folder.id} className="rounded-xl border p-4 hover:bg-accent/50 transition cursor-pointer flex flex-col gap-2" onClick={() => setCurrentFolder(folder.id)}>
+              <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
+                <Folder className="h-10 w-10 text-amber-500" />
+              </div>
+              <p className="text-sm font-medium truncate">{folder.name}</p>
+              {typeof folder.fileCount === "number" && (
+                <p className="text-xs text-muted-foreground">{folder.fileCount} 个文件</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {viewMode === "list" && visibleFolders.length > 0 && (
         <div className="border-b border-border">
           {visibleFolders.map((folder: any) => (
             <div key={folder.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setCurrentFolder(folder.id)}>
@@ -206,6 +228,7 @@ export function FileList() {
           ))}
         </div>
       )}
+      {viewMode === "list" ? (
       <div ref={parentRef} className="flex-1 overflow-auto">
         <div style={{ height: virt.getTotalSize() + "px", width: "100%", position: "relative" }}>
           {virt.getVirtualItems().map((row) => {
@@ -258,6 +281,39 @@ export function FileList() {
           })}
         </div>
       </div>
+      ) : (
+        <div className="flex-1 overflow-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+            {files.map((file) => {
+              const isSel = selected.has(file.id) || selectedFileId === file.id
+              return (
+                <div
+                  key={file.id}
+                  onClick={(e) => handleClick(file.id, e)}
+                  onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
+                  onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
+                  className={cn("rounded-xl border p-4 hover:bg-accent/50 transition cursor-pointer flex flex-col gap-2", isSel && "bg-accent ring-2 ring-primary")}
+                >
+                  <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
+                    <TypeIcon type={file.type} name={file.name} className="h-10 w-10" />
+                  </div>
+                  <p className="text-sm font-medium truncate">{file.name}</p>
+                  {file.summary && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">{file.summary}</p>
+                  )}
+                  {file.suggestedFolder && !file.folderId && (
+                    <span className="text-xs text-blue-500">💡 {file.suggestedFolder}</span>
+                  )}
+                  <div className="flex items-center justify-between mt-auto">
+                    <StatusIcon status={file.status} error={file.errorMessage} />
+                    <span className="text-[10px] text-muted-foreground">{fmtSize(file.size)}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
       {contextMenu && (
         <DropdownMenu open onOpenChange={(open) => { if (!open) setContextMenu(null) }}>
           <DropdownMenuTrigger asChild>
