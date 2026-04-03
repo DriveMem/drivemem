@@ -295,6 +295,22 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : '（未找到相�
         }
       }
 
+      // Generate follow-up suggestions (non-blocking)
+      try {
+        const suggestPrompt = `基于以下AI回答，生成3个用户可能想追问的简短问题（每个不超过20字）。只返回JSON数组格式：["问题1","问题2","问题3"]
+
+AI回答：${fullContent.substring(0, 300)}`;
+        const suggestResult = await chat([{ role: 'user', content: suggestPrompt }]);
+        // Extract JSON array from response
+        const jsonMatch = suggestResult.match(/\[[\s\S]*?\]/);
+        if (jsonMatch) {
+          const suggestions = JSON.parse(jsonMatch[0]).slice(0, 3);
+          reply.raw.write(`event: suggestions\ndata: ${JSON.stringify({ suggestions })}\n\n`);
+        }
+      } catch {
+        // Non-blocking — skip suggestions on failure
+      }
+
       reply.raw.write(
         `event: done\ndata: ${JSON.stringify({ messageId: assistantMessage.id, citations })}\n\n`,
       );
