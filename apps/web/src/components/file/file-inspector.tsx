@@ -2,7 +2,8 @@
 
 import { FileText, MessageSquare, Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useFile } from "@/hooks/use-files"
+import { useFile, useMoveFile } from "@/hooks/use-files"
+import { useFolders } from "@/hooks/use-folders"
 import Link from "next/link"
 
 function formatSize(bytes: number): string {
@@ -13,6 +14,9 @@ function formatSize(bytes: number): string {
 
 export function FileInspector({ fileId }: { fileId: string }) {
   const { data: file, isLoading, error } = useFile(fileId)
+  const moveFile = useMoveFile()
+  const { data: foldersData } = useFolders()
+  const allFolders = foldersData?.folders || []
 
   if (isLoading) {
     return (
@@ -53,6 +57,25 @@ export function FileInspector({ fileId }: { fileId: string }) {
         <div className="space-y-1.5">
           <p className="text-sm font-medium text-muted-foreground">AI 摘要</p>
           <p className="text-sm leading-relaxed">{file.summary}</p>
+        </div>
+      )}
+      {file.suggestedFolder && !file.folderId && (
+        <div className="space-y-2 rounded-lg bg-blue-500/5 border border-blue-500/20 p-3">
+          <p className="text-sm">🧠 AI 分类建议：{file.suggestedFolder}</p>
+          <Button
+            size="sm"
+            className="w-full"
+            onClick={() => {
+              const matched = allFolders.find((f: any) => f.name === file.suggestedFolder)
+              if (matched) {
+                moveFile.mutate({ fileId: file.id, folderId: matched.id })
+              } else {
+                alert("请先创建此文件夹")
+              }
+            }}
+          >
+            一键移入
+          </Button>
         </div>
       )}
       <Button className="w-full gap-2" asChild>

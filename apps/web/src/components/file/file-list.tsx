@@ -35,6 +35,7 @@ interface FileItem {
   status: "uploading" | "parsing" | "indexed" | "failed"
   errorMessage?: string
   summary?: string | null
+  suggestedFolder?: string | null
 }
 
 function fmtSize(b: number) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
@@ -205,6 +206,25 @@ export function FileList() {
                 <div className="flex-1 min-w-0">
                   <span className="truncate text-sm block">{file.name}</span>
                   {file.summary && <span className="text-muted-foreground text-xs line-clamp-1">{file.summary.length > 80 ? (() => { const s = file.summary!.slice(0, 80); const i = Math.max(s.lastIndexOf("。"), s.lastIndexOf("，"), s.lastIndexOf(" "), s.lastIndexOf("；")); return (i > 20 ? s.slice(0, i + 1) : s) + "…" })() : file.summary}</span>}
+                  {file.suggestedFolder && !file.folderId && (
+                    <span className="text-xs text-blue-500 flex items-center gap-1">
+                      💡 AI 建议归入：{file.suggestedFolder}
+                      <button
+                        className="ml-1 px-1.5 py-0.5 rounded bg-blue-500 text-white text-xs hover:bg-blue-600 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const matched = allFolders.find((f: any) => f.name === file.suggestedFolder)
+                          if (matched) {
+                            moveFile.mutate({ fileId: file.id, folderId: matched.id })
+                          } else {
+                            alert("请先创建此文件夹")
+                          }
+                        }}
+                      >
+                        移入
+                      </button>
+                    </span>
+                  )}
                 </div>
                 <StatusIcon status={file.status} error={file.errorMessage} />
                 <span className="w-16 text-right text-xs text-muted-foreground">{fmtSize(file.size)}</span>

@@ -4,7 +4,8 @@ import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { useFile } from "@/hooks/use-files"
+import { useFile, useMoveFile } from "@/hooks/use-files"
+import { useFolders } from "@/hooks/use-folders"
 import { apiFetch } from "@/lib/api"
 import { Loader2, FileText, ArrowLeft, AlertCircle } from "lucide-react"
 import Link from "next/link"
@@ -77,6 +78,9 @@ function useFileContent(fileId: string, fileType: string) {
 export default function FilePreviewPage() {
   const params = useParams<{ id: string }>()
   const { data, isLoading, error } = useFile(params.id)
+  const moveFile = useMoveFile()
+  const { data: foldersData } = useFolders()
+  const allFolders = foldersData?.folders || []
 
   if (isLoading) {
     return (
@@ -118,6 +122,26 @@ export default function FilePreviewPage() {
         <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-4">
           <h2 className="font-semibold mb-2">🧠 AI 摘要</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">{file.summary}</p>
+        </div>
+      )}
+
+      {/* AI Classification Suggestion */}
+      {file.suggestedFolder && !file.folderId && (
+        <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-4 flex items-center justify-between">
+          <span className="text-sm">💡 AI 建议将此文件归入：<strong>{file.suggestedFolder}</strong></span>
+          <Button
+            size="sm"
+            onClick={() => {
+              const matched = allFolders.find((f: any) => f.name === file.suggestedFolder)
+              if (matched) {
+                moveFile.mutate({ fileId: file.id, folderId: matched.id })
+              } else {
+                alert("请先创建此文件夹")
+              }
+            }}
+          >
+            移入
+          </Button>
         </div>
       )}
 
