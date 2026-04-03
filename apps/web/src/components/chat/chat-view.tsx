@@ -1,6 +1,6 @@
 "use client"
 import { useState, useCallback, useEffect } from "react"
-import { MessageSquare, FileText, Folder, Files, ChevronDown } from "lucide-react"
+import { MessageSquare, FileText, Folder, Files, ChevronDown, Link2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
 import { ChatInput } from "@/components/chat/chat-input"
@@ -72,12 +72,27 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
   )
 }
 
-export function ChatView({ conversationId: initialConversationId, fileScope, presetQuestion }: { conversationId?: string; fileScope?: string; presetQuestion?: string }) {
+export function ChatView({ conversationId: initialConversationId, fileScope, presetQuestion, compareMode, fileA, fileB }: { conversationId?: string; fileScope?: string; presetQuestion?: string; compareMode?: boolean; fileA?: string; fileB?: string }) {
   const [conversationId, setConversationId] = useState<string | undefined>(initialConversationId)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [streaming, setStreaming] = useState<string | undefined>(undefined)
   const [scope, setScope] = useState<ScopeType>(fileScope ? "file" : "all")
   const [scopeId, setScopeId] = useState<string | undefined>(fileScope || undefined)
+
+  // Compare mode: force scope to "all" and extract file names from query
+  const compareFileNames = compareMode && presetQuestion
+    ? (() => {
+        const match = presetQuestion.match(/对比「(.+?)」和「(.+?)」/)
+        return match ? { a: match[1], b: match[2] } : null
+      })()
+    : null
+
+  useEffect(() => {
+    if (compareMode) {
+      setScope("all")
+      setScopeId(undefined)
+    }
+  }, [compareMode])
   const [scopeLabel, setScopeLabel] = useState<string | undefined>(undefined)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -282,6 +297,14 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {compareMode && compareFileNames && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 border-b border-purple-500/20 text-sm">
+          <Link2 className="h-4 w-4 text-purple-400" />
+          <span className="font-medium">对比分析</span>
+          <span className="text-muted-foreground">· {compareFileNames.a} vs {compareFileNames.b}</span>
+        </div>
+      )}
 
       {error && (
         <div className="px-4 py-2 text-sm text-destructive bg-destructive/10 border-b border-border">
