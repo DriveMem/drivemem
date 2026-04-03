@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Brain, FileText, MessageSquare, Sparkles } from "lucide-react"
+import { Brain, FileText, MessageSquare, Sparkles, ArrowRight } from "lucide-react"
 import { useFiles } from "@/hooks/use-files"
 import { useConversations } from "@/hooks/use-conversations"
 import { apiFetch } from "@/lib/api"
@@ -83,9 +83,10 @@ export function MemoryOverview() {
   }
 
   return (
-    <div className="mx-4 mt-4 rounded-xl border bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 p-5">
+    <>
+    <div className="mx-4 mt-4 rounded-xl border border-blue-500/20 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 p-5">
       <div className="flex items-start gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500/10 shadow-lg shadow-blue-500/30">
           <Brain className="h-5 w-5 text-blue-500" />
         </div>
         <div className="flex-1 min-w-0">
@@ -142,5 +143,11 @@ export function MemoryOverview() {
         </div>
       </div>
     </div>
+    <Link href="/chat" className="mx-4 mt-3 mb-4 flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground hover:bg-muted/50 transition">
+      <MessageSquare className="h-4 w-4 text-blue-500" />
+      <span>问你的 AI 任何问题...</span>
+      <ArrowRight className="ml-auto h-4 w-4" />
+    </Link>
+    </>
   )
 }

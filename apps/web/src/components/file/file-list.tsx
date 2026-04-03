@@ -3,7 +3,8 @@
 import { useState, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLayoutStore } from "@/stores/layout-store"
@@ -213,12 +214,12 @@ export function FileList() {
             return (
               <div key={file.id} onClick={(e) => handleClick(file.id, e)} onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
-                className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
+                className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <TypeIcon type={file.type} name={file.name} />
                 <div className="flex-1 min-w-0">
                   <span className="truncate text-sm block">{file.name}</span>
-                  {file.summary && <span className="text-muted-foreground text-xs line-clamp-1">{file.summary.length > 80 ? (() => { const s = file.summary!.slice(0, 80); const i = Math.max(s.lastIndexOf("。"), s.lastIndexOf("，"), s.lastIndexOf(" "), s.lastIndexOf("；")); return (i > 20 ? s.slice(0, i + 1) : s) + "…" })() : file.summary}</span>}
+                  {file.summary && <span className="text-xs line-clamp-1 flex items-center gap-1.5"><span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-blue-500/15 to-purple-500/15 px-1.5 py-0.5 text-[10px] font-medium text-blue-400 shrink-0">🧠 AI</span><span className="text-muted-foreground">{file.summary.length > 80 ? (() => { const s = file.summary!.slice(0, 80); const i = Math.max(s.lastIndexOf("。"), s.lastIndexOf("，"), s.lastIndexOf(" "), s.lastIndexOf("；")); return (i > 20 ? s.slice(0, i + 1) : s) + "…" })() : file.summary}</span></span>}
                   {file.suggestedFolder && !file.folderId && (
                     <span className="text-xs text-blue-500 flex items-center gap-1">
                       💡 AI 建议归入：{file.suggestedFolder}
@@ -239,6 +240,16 @@ export function FileList() {
                     </span>
                   )}
                 </div>
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition shrink-0" onClick={(e) => { e.stopPropagation(); router.push('/chat?file=' + file.id) }}>
+                        <MessageSquare className="h-3.5 w-3.5 text-blue-500" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top"><p>问 AI 关于这个文件</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <StatusIcon status={file.status} error={file.errorMessage} />
                 <span className="w-16 text-right text-xs text-muted-foreground">{fmtSize(file.size)}</span>
                 <span className="w-28 text-right text-xs text-muted-foreground">{fmtDate(file.createdAt)}</span>
