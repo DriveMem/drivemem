@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useFile, useMoveFile } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
 import { apiFetch } from "@/lib/api"
-import { Loader2, FileText, ArrowLeft, AlertCircle } from "lucide-react"
+import { Loader2, FileText, ArrowLeft, AlertCircle, Download } from "lucide-react"
 import Link from "next/link"
 
 function getFileType(name: string): string {
@@ -234,9 +234,30 @@ export default function FilePreviewPage() {
                 </div>
               )}
             </dl>
-            <Button className="w-full" asChild>
-              <Link href={`/chat?file=${file.id}`}>对此文件提问</Link>
-            </Button>
+            <div className="flex gap-2">
+              <Button className="flex-1" asChild>
+                <Link href={`/chat?file=${file.id}`}>对此文件提问</Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                title="下载原文件"
+                onClick={async () => {
+                  try {
+                    const res = await apiFetch(`/api/files/${params.id}/preview-url`) as { previewUrl: string }
+                    const a = document.createElement("a")
+                    a.href = res.previewUrl
+                    a.download = fileName
+                    a.target = "_blank"
+                    a.click()
+                  } catch {
+                    alert("获取下载链接失败")
+                  }
+                }}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

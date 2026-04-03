@@ -50,7 +50,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/settings": {
+    "/dashboard": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -63,8 +63,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/settings",
-      "dataRoute": "/settings.rsc",
+      "srcRoute": "/dashboard",
+      "dataRoute": "/dashboard.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -98,7 +98,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/dashboard": {
+    "/settings": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -111,8 +111,8 @@
         }
       ],
       "initialRevalidateSeconds": false,
-      "srcRoute": "/dashboard",
-      "dataRoute": "/dashboard.rsc",
+      "srcRoute": "/settings",
+      "dataRoute": "/settings.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -137,6 +137,30 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/forgot-password",
       "dataRoute": "/forgot-password.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/login": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/login",
+      "dataRoute": "/login.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -194,30 +218,6 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/login": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/login",
-      "dataRoute": "/login.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
     "/chat": {
       "experimentalBypassFor": [
         {
@@ -246,8 +246,8 @@
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "3329e558f0ad60e6d0a05a185171df82",
-    "previewModeSigningKey": "ae7ac9f1efc56c002e82fb2c1bcbb56e5ddf5ea9cbc8a260d30c55eb0ae3e8d6",
-    "previewModeEncryptionKey": "e2fc52c4f00a9dd6325ef56f2700b509834c82b6aa84076e642680d010cefc32"
+    "previewModeId": "328dfc0bbfbdcbdf33bd86381ee4f55c",
+    "previewModeSigningKey": "8039e5b541b5f54b4c8347ab3c0215db0ed189d0b234a780172b4cd883f2466c",
+    "previewModeEncryptionKey": "8e752630c3f77697b09a429dae72442201bbd748ff3f3adeab6255ba53e84d9d"
   }
 }
