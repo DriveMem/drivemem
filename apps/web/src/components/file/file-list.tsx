@@ -38,7 +38,7 @@ function StatusIcon({ status, error }: { status: string; error?: string | null }
 }
 
 export function FileList() {
-  const { currentFolderId, openInspector, selectedFileId } = useLayoutStore()
+  const { currentFolderId, openInspector, selectedFileId, setMobileInspectorOpen } = useLayoutStore()
   const { data: apiFiles, isLoading } = useFiles(currentFolderId)
   const deleteFile = useDeleteFile()
   const router = useRouter()
@@ -66,7 +66,7 @@ export function FileList() {
   const handleClick = useCallback((id: string, e: React.MouseEvent) => {
     if (e.ctrlKey || e.metaKey) { setSelected((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n }) }
     else if (e.shiftKey) { const ci = files.findIndex((f) => f.id === id); const fi = files.findIndex((f) => selected.has(f.id)); if (fi >= 0) { const [s, e2] = [Math.min(fi, ci), Math.max(fi, ci)]; setSelected(new Set(files.slice(s, e2 + 1).map((f) => f.id))) } else setSelected(new Set([id])) }
-    else { setSelected(new Set([id])); openInspector(id) }
+    else { setSelected(new Set([id])); openInspector(id); setMobileInspectorOpen(true) }
   }, [files, selected, openInspector])
 
   if (isLoading) {
@@ -92,7 +92,7 @@ export function FileList() {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => toggleSort("name")} className="gap-1 text-xs">名称 <ArrowUpDown className="h-3 w-3" /></Button>
           <Button variant="ghost" size="sm" onClick={() => toggleSort("createdAt")} className="gap-1 text-xs">时间 <ArrowUpDown className="h-3 w-3" /></Button>
-          <Button variant="ghost" size="sm" onClick={() => toggleSort("size")} className="gap-1 text-xs">大小 <ArrowUpDown className="h-3 w-3" /></Button>
+          <Button variant="ghost" size="sm" onClick={() => toggleSort("size")} className="hidden md:inline-flex gap-1 text-xs">大小 <ArrowUpDown className="h-3 w-3" /></Button>
         </div>
         <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1"><Upload className="h-3.5 w-3.5" /> 上传</Button>
       </div>
@@ -101,8 +101,8 @@ export function FileList() {
         <div style={{ height: virt.getTotalSize() + "px", width: "100%", position: "relative" }}>
           {virt.getVirtualItems().map((row) => {
             const file = files[row.index]; const isSel = selected.has(file.id) || selectedFileId === file.id
-            return (<div key={file.id} onClick={(e) => handleClick(file.id, e)} className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50", isSel && "bg-accent")} style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
-              <TypeIcon mime={file.mimeType} /><span className="flex-1 truncate text-sm">{file.name}</span><StatusIcon status={file.parseStatus} error={file.parseError} /><span className="w-16 text-right text-xs text-muted-foreground">{fmtSize(file.size)}</span><span className="w-28 text-right text-xs text-muted-foreground">{fmtDate(file.createdAt)}</span>
+            return (<div key={file.id} onClick={(e) => handleClick(file.id, e)} className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-2 md:gap-3 border-b border-border px-2 md:px-4 hover:bg-accent/50", isSel && "bg-accent")} style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
+              <TypeIcon mime={file.mimeType} /><span className="flex-1 truncate text-sm">{file.name}</span><StatusIcon status={file.parseStatus} error={file.parseError} /><span className="hidden md:inline w-16 text-right text-xs text-muted-foreground">{fmtSize(file.size)}</span><span className="hidden md:inline w-28 text-right text-xs text-muted-foreground">{fmtDate(file.createdAt)}</span>
             </div>)
           })}
         </div>

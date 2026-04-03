@@ -2,13 +2,14 @@
 import { useState, useRef, useEffect } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { useTheme } from "next-themes"
-import { Sun, Moon, Search, LogOut, User, Settings, FileText, X, Loader2 } from "lucide-react"
+import { Sun, Moon, Search, LogOut, User, Settings, FileText, X, Loader2, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { api } from "@/lib/api-client"
+import { useLayoutStore } from "@/stores/layout-store"
 
 interface SearchResult { fileId: string; filename: string; snippet: string; score: number }
 
@@ -16,6 +17,7 @@ export function TopNav() {
   const { data: session } = useSession()
   const { theme, setTheme } = useTheme()
   const router = useRouter()
+  const { mobileMenuOpen, setMobileMenuOpen } = useLayoutStore()
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<SearchResult[]>([])
@@ -36,7 +38,6 @@ export function TopNav() {
         const data = await api.get<{ results: SearchResult[] }>(`/search?q=${encodeURIComponent(query)}`)
         setResults(data.results ?? [])
       } catch (e) {
-        // Silently handle — API might not be available
         console.debug("Search failed:", e)
         setResults([])
       }
@@ -48,13 +49,17 @@ export function TopNav() {
   function closeSearch() { setSearchOpen(false); setQuery(""); setResults([]) }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border px-4">
-      <div className="flex items-center gap-4">
-        <Link href="/files" className="text-lg font-bold">AI Drive</Link>
+    <header className="flex h-14 items-center justify-between border-b border-border px-3 md:px-4 gap-2">
+      <div className="flex items-center gap-2 md:gap-4">
+        {/* Mobile hamburger */}
+        <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <Menu className="h-5 w-5" />
+        </Button>
+        <Link href="/files" className="text-lg font-bold hidden sm:block">AI Drive</Link>
       </div>
 
-      {/* Search */}
-      <div className="flex-1 max-w-md mx-4 relative">
+      {/* Search - icon on mobile, full bar on desktop */}
+      <div className="flex-1 max-w-md mx-2 md:mx-4 relative">
         {searchOpen ? (
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -79,13 +84,20 @@ export function TopNav() {
             )}
           </div>
         ) : (
-          <Button variant="outline" onClick={() => setSearchOpen(true)} className="w-full justify-start text-muted-foreground h-9 gap-2">
-            <Search className="h-4 w-4" />搜索文件内容...
-          </Button>
+          <>
+            {/* Mobile: icon only */}
+            <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} className="h-8 w-8 sm:hidden">
+              <Search className="h-4 w-4" />
+            </Button>
+            {/* Desktop: full search bar */}
+            <Button variant="outline" onClick={() => setSearchOpen(true)} className="hidden sm:flex w-full justify-start text-muted-foreground h-9 gap-2">
+              <Search className="h-4 w-4" />搜索文件内容...
+            </Button>
+          </>
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 md:gap-2">
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
           {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
