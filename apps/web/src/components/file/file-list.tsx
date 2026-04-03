@@ -256,7 +256,7 @@ export function FileList() {
       {viewMode === "grid" && visibleFolders.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4 border-b border-border">
           {visibleFolders.map((folder: any) => (
-            <div key={folder.id} className="rounded-xl border p-4 hover:bg-accent/50 transition cursor-pointer flex flex-col gap-2" onClick={() => setCurrentFolder(folder.id)}>
+            <div key={folder.id} className="rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2" onClick={() => setCurrentFolder(folder.id)}>
               <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
                 <Folder className="h-10 w-10 text-amber-500" />
               </div>
@@ -330,7 +330,7 @@ export function FileList() {
                   onClick={(e) => handleClick(file.id, e)}
                   onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
                   onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
-                  className={cn("rounded-xl border p-4 hover:bg-accent/50 transition cursor-pointer flex flex-col gap-2", isSel && "bg-accent ring-2 ring-primary")}
+                  className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", isSel && "bg-accent ring-2 ring-primary")}
                 >
                   <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
                     <TypeIcon type={file.type} name={file.name} className="h-10 w-10" />

@@ -21,7 +21,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </motion.aside>
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopNav />
-        <main className="flex-1 overflow-auto">{children}</main>
+        <motion.main
+          className="flex-1 overflow-auto"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+        >
+          {children}
+        </motion.main>
       </div>
       <AnimatePresence>
         {inspectorOpen && (

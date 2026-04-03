@@ -29,11 +29,17 @@ export function Sidebar() {
         </div>
         <nav className="flex flex-col gap-1 p-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href || pathname?.startsWith(item.href + "/")
             const btn = (
               <Button
                 variant={isActive ? "secondary" : "ghost"}
-                className={cn("w-full justify-start gap-2", sidebarCollapsed && "justify-center px-2")}
+                className={cn(
+                  "w-full justify-start gap-2",
+                  sidebarCollapsed && "justify-center px-2",
+                  isActive
+                    ? "bg-muted text-foreground font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                )}
                 size={sidebarCollapsed ? "icon" : "default"}
                 asChild
               >
