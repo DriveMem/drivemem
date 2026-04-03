@@ -94,29 +94,7 @@ export default function LandingPage() {
               <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
               <span className="ml-2 text-xs text-gray-500">drive.verrrnm.cloud</span>
             </div>
-            <div className="aspect-[16/9] rounded-lg bg-gray-950 p-4 flex gap-4">
-              <div className="w-48 border-r border-gray-800 pr-4 space-y-3">
-                <div className="h-3 w-20 rounded bg-gray-800" />
-                <div className="h-3 w-28 rounded bg-gray-800" />
-                <div className="h-3 w-24 rounded bg-gray-800" />
-                <div className="h-3 w-16 rounded bg-gray-800/60" />
-              </div>
-              <div className="flex-1 space-y-3">
-                <div className="flex items-center gap-3 rounded-lg bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-3">
-                  <div className="h-8 w-8 rounded-full bg-blue-500/20" />
-                  <div className="space-y-1"><div className="h-3 w-32 rounded bg-gray-700" /><div className="h-2 w-48 rounded bg-gray-800/60" /></div>
-                </div>
-                <div className="flex gap-2">{[1,2,3,4,5].map(i => <div key={i} className="h-6 w-14 rounded-full bg-gray-800/60" />)}</div>
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="flex items-center gap-3 rounded-lg bg-gray-900/50 p-2.5">
-                    <div className={`h-5 w-5 rounded ${i%2===0 ? 'bg-red-500/30' : 'bg-green-500/30'}`} />
-                    <div className="h-3 w-40 rounded bg-gray-800" />
-                    <div className="ml-auto h-2.5 w-16 rounded bg-gray-800/40" />
-                    <div className="h-2.5 w-12 rounded bg-gray-800/40" />
-                  </div>
-                ))}
-              </div>
-            </div>
+                        <img src="/screenshots/dashboard.png" alt="AI Drive Dashboard" className="w-full rounded-b-lg" />
           </div>
         </div>
       </section>
@@ -189,7 +167,7 @@ export default function LandingPage() {
                 <p className="text-gray-400 leading-relaxed">{f.desc}</p>
               </div>
               {/* real screenshot */}
-              <div className="w-full flex-1 overflow-hidden rounded-2xl border border-gray-800">
+              <div className="w-full flex-1 overflow-hidden rounded-2xl border border-white/10 ring-1 ring-white/5 shadow-lg">
                 <img
                   src={f.title === "AI 对话" || f.title === "引用来源" ? "/screenshots/chat.png" : "/screenshots/dashboard.png"}
                   alt={f.title}
