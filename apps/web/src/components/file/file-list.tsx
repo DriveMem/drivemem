@@ -204,7 +204,7 @@ export function FileList() {
                 <TypeIcon type={file.type} />
                 <div className="flex-1 min-w-0">
                   <span className="truncate text-sm block">{file.name}</span>
-                  {file.summary && <span className="text-muted-foreground text-xs line-clamp-1">{file.summary.length > 80 ? file.summary.slice(0, 80) + "..." : file.summary}</span>}
+                  {file.summary && <span className="text-muted-foreground text-xs line-clamp-1">{file.summary.length > 80 ? (() => { const s = file.summary!.slice(0, 80); const i = Math.max(s.lastIndexOf("。"), s.lastIndexOf("，"), s.lastIndexOf(" "), s.lastIndexOf("；")); return (i > 20 ? s.slice(0, i + 1) : s) + "…" })() : file.summary}</span>}
                 </div>
                 <StatusIcon status={file.status} error={file.errorMessage} />
                 <span className="w-16 text-right text-xs text-muted-foreground">{fmtSize(file.size)}</span>

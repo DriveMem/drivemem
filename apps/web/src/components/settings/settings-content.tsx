@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { getSession, signOut } from "next-auth/react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,10 +30,32 @@ export default function SettingsContent() {
     })
   }, [])
 
-  const storageUsed = 1.8
-  const storageTotal = 5
-  const chatUsedToday = 7
-  const chatLimitToday = 20
+  const [storageUsed, setStorageUsed] = useState<string>("—")
+  const [storageTotal, setStorageTotal] = useState<string>("—")
+  const [chatUsedToday, setChatUsedToday] = useState<string>("—")
+  const [chatLimitToday, setChatLimitToday] = useState<string>("—")
+
+  useEffect(() => {
+    const fetchUsage = async () => {
+      try {
+        const s = await getSession()
+        const token = (s as any)?.accessToken
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
+        const res = await fetch(apiBase + "/api/users/me/usage", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+        if (!res.ok) throw new Error("not ok")
+        const data = await res.json()
+        setStorageUsed((data.storageUsedBytes / 1073741824).toFixed(2))
+        setStorageTotal(String(data.storageTotalGB ?? 5))
+        setChatUsedToday(String(data.chatUsedToday ?? "—"))
+        setChatLimitToday(String(data.chatLimitToday ?? 20))
+      } catch {
+        // API not available, keep fallback "—"
+      }
+    }
+    fetchUsage()
+  }, [])
 
   const handleExport = async () => {
     try {
@@ -83,7 +106,7 @@ export default function SettingsContent() {
               <Input id="email" value={session.user.email} readOnly className="bg-muted" />
             </div>
           )}
-          <Button size="sm">保存</Button>
+          <Button size="sm" onClick={() => toast.success("已保存")}>保存</Button>
         </CardContent>
       </Card>
 
@@ -100,7 +123,7 @@ export default function SettingsContent() {
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
                 className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${(storageUsed / storageTotal) * 100}%` }}
+                style={{ width: `${storageUsed !== "—" && storageTotal !== "—" ? (parseFloat(storageUsed) / parseFloat(storageTotal)) * 100 : 0}%` }}
               />
             </div>
           </div>

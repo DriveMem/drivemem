@@ -62,8 +62,11 @@ export function ConversationList() {
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : sorted.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center p-4">
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 p-4">
           <p className="text-sm text-muted-foreground">暂无对话</p>
+          <Button variant="ghost" size="sm" onClick={() => router.push("/chat?new=" + Date.now())}>
+            开始对话 →
+          </Button>
         </div>
       ) : (
         <ul className="flex-1 overflow-y-auto">
