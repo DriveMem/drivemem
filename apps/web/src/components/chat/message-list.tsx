@@ -14,9 +14,9 @@ export function MessageList({ messages, streaming }: { messages: ChatMessage[]; 
   return (
     <div className="flex-1 overflow-auto px-4 py-6 space-y-6">
       {messages.map((msg) => (
-        <div key={msg.id} className={cn("flex gap-3", msg.role === "user" && "justify-end")}>
+        <div key={msg.id} className={cn("flex gap-3", msg.role === "user" ? "justify-end" : "")}>
           {msg.role === "assistant" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>}
-          <div className={cn("max-w-[80%] rounded-lg px-4 py-3 text-sm", msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted")}>
+          <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-blue-600 text-white rounded-2xl rounded-br-sm px-4 py-3" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>
             {msg.role === "assistant" ? (
               <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{msg.content}</ReactMarkdown>

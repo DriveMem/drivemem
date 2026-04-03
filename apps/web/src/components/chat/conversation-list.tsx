@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useConversations, useDeleteConversation } from "@/hooks/use-conversations"
+import { apiFetch } from "@/lib/api"
 import { Loader2 } from "lucide-react"
 
 interface Conversation {
@@ -26,6 +27,13 @@ export function ConversationList() {
   const { data: conversations, isLoading } = useConversations()
   const deleteMutation = useDeleteConversation()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState("")
+  const editInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editingId && editInputRef.current) editInputRef.current.focus()
+  }, [editingId])
 
   const handleDelete = () => {
     if (deleteTarget) {
@@ -79,7 +87,43 @@ export function ConversationList() {
               onClick={() => router.push(`/chat/${c.id}`)}
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{c.title || "新对话"}</p>
+                {editingId === c.id ? (
+                  <input
+                    ref={editInputRef}
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        const trimmed = editValue.trim()
+                        if (trimmed && trimmed !== c.title) {
+                          apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ title: trimmed }) })
+                        }
+                        setEditingId(null)
+                      } else if (e.key === "Escape") {
+                        setEditingId(null)
+                      }
+                    }}
+                    onBlur={() => {
+                      const trimmed = editValue.trim()
+                      if (trimmed && trimmed !== c.title) {
+                        apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ title: trimmed }) })
+                      }
+                      setEditingId(null)
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full text-sm font-medium bg-transparent border-b border-primary outline-none"
+                  />
+                ) : (
+                  <p
+                    className="truncate text-sm font-medium"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation()
+                      setEditingId(c.id)
+                      setEditValue(c.title || "新对话")
+                    }}
+                  >{c.title || "新对话"}</p>
+                )}
                 <p className="text-xs text-muted-foreground">{formatTime(c.updatedAt)}</p>
               </div>
               <Button
