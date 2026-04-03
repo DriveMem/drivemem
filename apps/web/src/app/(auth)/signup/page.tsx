@@ -28,7 +28,9 @@ const signupSchema = z
 
 type SignupForm = z.infer<typeof signupSchema>
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+// Signup goes through Nginx (same origin) to avoid CORS
+// Nginx routes /api/auth/signup to backend 3001 (precise matching)
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
 export default function SignupPage() {
   const router = useRouter()
@@ -50,12 +52,17 @@ export default function SignupPage() {
       const res = await fetch(`${API_BASE}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: data.email, password: data.password }),
+        body: JSON.stringify({ email: data.email, password: data.password, name: data.email.split("@")[0] }),
       })
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
-        setError(body.message || "注册失败，请稍后重试")
+        const code = body.error?.code || body.code
+        if (res.status === 409 || code === "EMAIL_EXISTS" || code === "EMAIL_ALREADY_EXISTS" || code === "CONFLICT") {
+          setError("该邮箱已注册，请直接登录或使用其他邮箱")
+        } else {
+          setError(body.error?.message || body.message || "注册失败，请稍后重试")
+        }
         return
       }
 

@@ -1,6 +1,6 @@
 export interface ChatMessage {
   id: string; role: "user" | "assistant"; content: string; createdAt: string
-  citations?: { index: number; filename: string; snippet: string }[]
+  citations?: { fileId?: string; fileName?: string; chunkIndex?: number; text?: string; index?: number; filename?: string; snippet?: string }[]
 }
 export interface Conversation { id: string; title: string; createdAt: string; scope?: { type: "all" | "folder" | "file"; id?: string; name?: string } }
 export const mockConversations: Conversation[] = [

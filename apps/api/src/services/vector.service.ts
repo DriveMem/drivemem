@@ -18,9 +18,10 @@ export async function ensureCollection(): Promise<void> {
     await qdrant.createCollection(COLLECTION_NAME, {
       vectors: { size: VECTOR_SIZE, distance: 'Cosine' },
     });
-    console.log('[vector] Created collection: ' + COLLECTION_NAME);
+    console.log(`[vector] Created collection: ${COLLECTION_NAME}`);
   }
 
+  // Ensure payload indexes
   try {
     await qdrant.createPayloadIndex(COLLECTION_NAME, {
       field_name: 'user_id',
@@ -62,6 +63,7 @@ export async function upsertChunks(params: {
     },
   }));
 
+  // Upsert in batches of 100
   for (let i = 0; i < points.length; i += 100) {
     await qdrant.upsert(COLLECTION_NAME, {
       points: points.slice(i, i + 100),
@@ -73,6 +75,14 @@ export async function deleteByFileId(fileId: string): Promise<void> {
   await qdrant.delete(COLLECTION_NAME, {
     filter: {
       must: [{ key: 'file_id', match: { value: fileId } }],
+    },
+  });
+}
+
+export async function deleteByUserId(userId: string): Promise<void> {
+  await qdrant.delete(COLLECTION_NAME, {
+    filter: {
+      must: [{ key: 'user_id', match: { value: userId } }],
     },
   });
 }

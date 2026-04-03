@@ -1,15 +1,12 @@
 "use client"
 import { useRef, useEffect } from "react"
 import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
 import { Loader2, Bot, User } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { ChatMessage } from "@/lib/mock-chat"
 import { Citation } from "./citation"
-
-interface ChatMessage {
-  id: string; role: "user" | "assistant"; content: string; createdAt: string
-  citations?: { index: number; filename: string; snippet: string }[]
-}
 
 export function MessageList({ messages, streaming }: { messages: ChatMessage[]; streaming?: string }) {
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -22,12 +19,14 @@ export function MessageList({ messages, streaming }: { messages: ChatMessage[]; 
           <div className={cn("max-w-[80%] rounded-lg px-4 py-3 text-sm", msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted")}>
             {msg.role === "assistant" ? (
               <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 max-w-none">
-                <ReactMarkdown rehypePlugins={[rehypeHighlight]}>{msg.content}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{msg.content}</ReactMarkdown>
                 {msg.citations && msg.citations.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-border space-y-1">
-                    <p className="text-xs text-muted-foreground font-medium">引用来源</p>
-                    {msg.citations.map((c) => <Citation key={c.index} citation={c} />)}
-                  </div>
+                  <details className="mt-3 pt-3 border-t border-border">
+                    <summary className="text-xs text-muted-foreground font-medium cursor-pointer select-none hover:text-foreground">📎 {msg.citations.length} 个来源引用</summary>
+                    <div className="mt-2 space-y-1">
+                      {msg.citations.map((c, i) => <Citation key={i} citation={c} idx={i} />)}
+                    </div>
+                  </details>
                 )}
               </div>
             ) : <p>{msg.content}</p>}
@@ -40,9 +39,16 @@ export function MessageList({ messages, streaming }: { messages: ChatMessage[]; 
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>
           <div className="max-w-[80%] rounded-lg px-4 py-3 text-sm bg-muted">
             {streaming ? (
-              <div className="prose prose-sm dark:prose-invert max-w-none"><ReactMarkdown rehypePlugins={[rehypeHighlight]}>{streaming + "▊"}</ReactMarkdown></div>
+              <div className="prose prose-sm dark:prose-invert max-w-none"><ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{streaming + "▊"}</ReactMarkdown></div>
             ) : (
-              <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /><span>思考中...</span></div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="flex gap-1">
+                  <span className="animate-bounce [animation-delay:0ms] h-2 w-2 rounded-full bg-blue-500" />
+                  <span className="animate-bounce [animation-delay:150ms] h-2 w-2 rounded-full bg-blue-500" />
+                  <span className="animate-bounce [animation-delay:300ms] h-2 w-2 rounded-full bg-blue-500" />
+                </div>
+                <span>AI 正在思考...</span>
+              </div>
             )}
           </div>
         </div>

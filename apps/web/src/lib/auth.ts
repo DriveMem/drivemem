@@ -8,7 +8,9 @@ const loginSchema = z.object({
   password: z.string().min(1),
 })
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+// Server-side auth calls must go directly to backend, not through Nginx
+// (Nginx /api/auth/ routes to frontend, causing a loop)
+const API_BASE = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -34,6 +36,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           image: user.avatarUrl,
+          accessToken: user.token, // plain JWT from backend (方案 C)
         }
       },
     }),
@@ -50,6 +53,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        // Store the plain JWT from backend (方案 C)
+        if ((user as any).accessToken) {
+          token.accessToken = (user as any).accessToken
+        }
       }
       return token
     },
@@ -57,6 +64,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string
       }
+      // Expose accessToken to client for API calls (方案 C)
+      ;(session as any).accessToken = token.accessToken as string | undefined
       return session
     },
   },

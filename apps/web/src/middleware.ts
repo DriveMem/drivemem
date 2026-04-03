@@ -2,25 +2,32 @@ import { auth } from "@/lib/auth"
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth
-  const { pathname } = req.nextUrl
-  const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup") || pathname.startsWith("/forgot-password") || pathname.startsWith("/reset-password")
-  const isPublicPage = pathname === "/"
-  const isApiRoute = pathname.startsWith("/api")
+  const isAuthPage =
+    req.nextUrl.pathname.startsWith("/login") ||
+    req.nextUrl.pathname.startsWith("/signup") ||
+    req.nextUrl.pathname.startsWith("/forgot-password") ||
+    req.nextUrl.pathname.startsWith("/reset-password")
+  const isLandingPage = req.nextUrl.pathname === "/"
+  const isApiRoute = req.nextUrl.pathname.startsWith("/api")
 
+  // API routes always pass through
   if (isApiRoute) return
 
-  // Public landing page: logged-in users go to /files
-  if (isPublicPage && isLoggedIn) {
-    return Response.redirect(new URL("/files", req.nextUrl))
+  // Logged-in user on landing page → redirect to /dashboard (files)
+  if (isLoggedIn && isLandingPage) {
+    return Response.redirect(new URL("/dashboard", req.nextUrl))
   }
 
-  // Auth pages: logged-in users go to /files
-  if (isAuthPage && isLoggedIn) {
-    return Response.redirect(new URL("/files", req.nextUrl))
+  // Logged-in user on auth pages → redirect to /dashboard
+  if (isLoggedIn && isAuthPage) {
+    return Response.redirect(new URL("/dashboard", req.nextUrl))
   }
 
-  // Protected pages: not logged in → /login
-  if (!isLoggedIn && !isAuthPage && !isPublicPage) {
+  // Landing page is public
+  if (isLandingPage || isAuthPage) return
+
+  // Everything else requires auth
+  if (!isLoggedIn) {
     return Response.redirect(new URL("/login", req.nextUrl))
   }
 })
