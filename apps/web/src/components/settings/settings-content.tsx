@@ -41,15 +41,15 @@ export default function SettingsContent() {
         const s = await getSession()
         const token = (s as any)?.accessToken
         const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
-        const res = await fetch(apiBase + "/api/users/me/usage", {
+        const res = await fetch(apiBase + "/api/users/me", {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
         if (!res.ok) throw new Error("not ok")
         const data = await res.json()
-        setStorageUsed((data.storageUsedBytes / 1073741824).toFixed(2))
-        setStorageTotal(String(data.storageTotalGB ?? 5))
-        setChatUsedToday(String(data.chatUsedToday ?? "—"))
-        setChatLimitToday(String(data.chatLimitToday ?? 20))
+        setStorageUsed(((data.storageUsed || 0) / 1073741824).toFixed(2))
+        setStorageTotal(((data.storageLimit || 5368709120) / 1073741824).toFixed(1))
+        setChatUsedToday(String(data.dailyChatCount ?? "—"))
+        setChatLimitToday(String(data.dailyChatLimit ?? 20))
       } catch {
         // API not available, keep fallback "—"
       }
