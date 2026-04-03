@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { config } from '../lib/config.js';
 import { AppError } from '../lib/errors.js';
 import { db } from '../db/index.js';
+import * as schema from '../db/schema.js';
 import { files } from '../db/schema.js';
 import { getObject } from '../services/s3.service.js';
 import { parseDocument } from '../services/parse.service.js';
@@ -112,6 +113,31 @@ const worker = new Worker<ParseJobData>(
       }
     } catch (summaryErr) {
       console.warn('[file-parse] Summary generation failed (non-blocking):', (summaryErr as Error).message);
+    }
+
+// Auto-suggest folder classification
+    try {
+      const userFolders = await db.select({ id: schema.folders.id, name: schema.folders.name })
+        .from(schema.folders)
+        .where(eq(schema.folders.userId, userId));
+
+      const [currentFile] = await db.select({ summary: files.summary }).from(files).where(eq(files.id, fileId));
+      const fileSummary = currentFile?.summary;
+
+      if (userFolders.length > 0 && fileSummary) {
+        const { chat } = await import('../services/llm.service.js');
+        const folderNames = userFolders.map(f => f.name).join('、');
+        const classifyPrompt = `文件摘要：${fileSummary}\n\n用户的文件夹列表：${folderNames}\n\n这个文件最适合放入哪个文件夹？只返回文件夹名称。如果都不合适，返回"无"。`;
+        const suggested = await chat([{ role: 'user', content: classifyPrompt }]);
+        const trimmed = suggested?.trim().replace(/["""]/g, '');
+
+        if (trimmed && trimmed !== '无' && trimmed !== 'null') {
+          await db.update(files).set({ suggestedFolder: trimmed }).where(eq(files.id, fileId));
+          console.log('[file-parse] Suggested folder for ' + fileId + ': ' + trimmed);
+        }
+      }
+    } catch (classifyErr) {
+      console.warn('[file-parse] Classification failed (non-blocking):', (classifyErr as Error).message);
     }
 
     } catch (err) {

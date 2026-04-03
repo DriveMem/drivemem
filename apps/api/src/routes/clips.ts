@@ -59,7 +59,7 @@ export default async function clipRoutes(fastify: FastifyInstance) {
       status: 'parsing',
       userId,
       s3Key,
-      folderId: null,
+      // folderId omitted — DB defaults to null
     });
 
     // Update storage

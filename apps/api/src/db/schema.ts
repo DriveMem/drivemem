@@ -44,6 +44,7 @@ export const files = pgTable('files', {
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   s3Key: text('s3_key').notNull(),
   summary: text('summary'),
+  suggestedFolder: text('suggested_folder'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
