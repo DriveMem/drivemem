@@ -31,7 +31,9 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
       setUploads((p) => [...p, { id: itemId, name: file.name, progress: 0, status: "uploading" as const }])
 
       uploadFile.mutate(
-        { file, folderId: currentFolderId },
+        { file, folderId: currentFolderId, onProgress: (pct: number) => {
+          setUploads((p) => p.map((u) => u.id === itemId ? { ...u, progress: pct } : u))
+        }},
         {
           onSuccess: () => {
             setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "done" as const, progress: 100 } : u))
@@ -67,12 +69,20 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
       {uploads.length > 0 && (
         <div className="mt-3 space-y-2">
           {uploads.map((item) => (
-            <div key={item.id} className="flex items-center gap-2 text-sm">
+            <div key={item.id} className="space-y-1">
+              <div className="flex items-center gap-2 text-sm">
               <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               <span className="flex-1 truncate">{item.name}</span>
+              {item.status === "uploading" && <span className="text-xs text-muted-foreground">{item.progress}%</span>}
               {item.status === "uploading" && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
               {item.status === "done" && <CheckCircle2 className="h-4 w-4 text-green-500" />}
               {item.status === "error" && <span className="flex items-center gap-1 text-xs text-red-500"><AlertCircle className="h-3.5 w-3.5" />{item.error}</span>}
+              </div>
+              {item.status === "uploading" && (
+                <div className="w-full bg-muted rounded-full h-1.5">
+                  <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style={{ width: `${item.progress}%` }} />
+                </div>
+              )}
             </div>
           ))}
         </div>

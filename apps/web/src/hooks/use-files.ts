@@ -20,29 +20,38 @@ export function useFile(fileId: string) {
 export function useUploadFile() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ file, folderId }: { file: File; folderId?: string | null }) => {
-      // Direct upload via backend proxy (no presigned URL)
+    mutationFn: async ({ file, folderId, onProgress }: { file: File; folderId?: string | null; onProgress?: (pct: number) => void }) => {
       const session = await (await import("next-auth/react")).getSession()
       const token = (session as any)?.accessToken
       const formData = new FormData()
       formData.append("file", file)
       if (folderId) formData.append("folderId", folderId)
-      
-      const headers: Record<string, string> = {}
-      if (token) headers["Authorization"] = `Bearer ${token}`
-      
+
       const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
-      const res = await fetch(`${API_BASE}/api/files/upload`, {
-        method: "POST",
-        headers,
-        credentials: "include",
-        body: formData,
+
+      return new Promise<any>((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable && onProgress) {
+            onProgress(Math.round((e.loaded / e.total) * 100))
+          }
+        }
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try { resolve(JSON.parse(xhr.responseText)) } catch { resolve({}) }
+          } else {
+            try {
+              const err = JSON.parse(xhr.responseText)
+              reject(new Error(err.error?.message || xhr.statusText))
+            } catch { reject(new Error(xhr.statusText)) }
+          }
+        }
+        xhr.onerror = () => reject(new Error("Upload failed"))
+        xhr.open("POST", `${API_BASE}/api/files/upload`)
+        if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`)
+        xhr.withCredentials = true
+        xhr.send(formData)
       })
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({ error: { message: res.statusText } }))
-        throw new Error(error.error?.message || res.statusText)
-      }
-      return res.json()
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['files'] }),
   })

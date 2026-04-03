@@ -17,6 +17,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
+import { Skeleton } from "@/components/ui/skeleton"
 import { FileUpload } from "./file-upload"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
 
@@ -105,8 +106,17 @@ export function FileList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full gap-2 text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin" /><span>加载中...</span>
+      <div className="flex flex-col gap-3 p-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <Skeleton className="h-8 w-8 rounded" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+            <Skeleton className="h-4 w-16" />
+          </div>
+        ))}
       </div>
     )
   }
