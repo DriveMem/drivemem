@@ -70,9 +70,11 @@ async function authPlugin(fastify: FastifyInstance) {
     try {
       const encKey = await getEncryptionKey();
       const { payload } = await jwtDecrypt(sessionToken, encKey);
+      const userId = (payload.sub || payload.id || '') as string;
+      if (!userId) return; // Invalid payload — skip
       request.user = {
-        id: (payload.sub || payload.id) as string,
-        email: payload.email as string,
+        id: userId,
+        email: (payload.email || '') as string,
         name: (payload.name || '') as string,
       };
     } catch {
