@@ -79,7 +79,7 @@ export default function LandingPage() {
             上传你的文档，AI 帮你记忆、理解、随时回答。你的个人 AI 知识库。
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Button asChild size="lg" className="h-12 px-8 text-base">
+            <Button asChild size="lg" className="h-12 px-8 text-base bg-blue-600 hover:bg-blue-700 text-white">
               <Link href="/signup">免费开始 <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 border-gray-700 px-8 text-base text-gray-300 hover:bg-gray-800 hover:text-white">
@@ -87,6 +87,55 @@ export default function LandingPage() {
             </Button>
           </div>
         </FadeIn>
+      </section>
+
+      {/* ===== Product Preview ===== */}
+      <section className="relative z-10 px-6 py-16">
+        <div className="mx-auto max-w-5xl" style={{ perspective: "1200px" }}>
+          <div className="rounded-xl border border-gray-700 bg-gray-900 p-1 shadow-2xl shadow-blue-500/10" style={{ transform: "rotateX(2deg)" }}>
+            <div className="flex items-center gap-1.5 px-3 py-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
+              <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
+              <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
+              <span className="ml-2 text-xs text-gray-500">drive.verrrnm.cloud</span>
+            </div>
+            <div className="aspect-[16/9] rounded-lg bg-gray-950 flex items-center justify-center text-gray-600">
+              <div className="w-full h-full p-4 flex gap-4">
+                <div className="w-48 border-r border-gray-800 pr-4 space-y-3">
+                  <div className="h-3 w-20 rounded bg-gray-800" />
+                  <div className="h-3 w-28 rounded bg-gray-800" />
+                  <div className="h-3 w-24 rounded bg-gray-800" />
+                </div>
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-blue-500/20" />
+                    <div className="space-y-1.5">
+                      <div className="h-3 w-40 rounded bg-gray-800" />
+                      <div className="h-2.5 w-32 rounded bg-gray-800/60" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 rounded-lg bg-gray-900/50 p-3">
+                      <div className="h-6 w-6 rounded bg-red-500/30" />
+                      <div className="h-3 w-48 rounded bg-gray-800" />
+                      <div className="ml-auto h-3 w-16 rounded bg-gray-800/60" />
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-gray-900/50 p-3">
+                      <div className="h-6 w-6 rounded bg-green-500/30" />
+                      <div className="h-3 w-56 rounded bg-gray-800" />
+                      <div className="ml-auto h-3 w-16 rounded bg-gray-800/60" />
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-gray-900/50 p-3">
+                      <div className="h-6 w-6 rounded bg-blue-500/30" />
+                      <div className="h-3 w-44 rounded bg-gray-800" />
+                      <div className="ml-auto h-3 w-16 rounded bg-gray-800/60" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* ===== Value Cards ===== */}
@@ -152,7 +201,7 @@ export default function LandingPage() {
         <FadeIn>
           <h2 className="text-3xl font-bold sm:text-4xl">准备好了吗？让 AI 记住你的一切</h2>
           <div className="mt-8">
-            <Button asChild size="lg" className="h-12 px-10 text-base">
+            <Button asChild size="lg" className="h-12 px-10 text-base bg-blue-600 hover:bg-blue-700 text-white">
               <Link href="/signup">免费开始 <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>

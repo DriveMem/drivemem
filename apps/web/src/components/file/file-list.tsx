@@ -194,7 +194,7 @@ export function FileList() {
       {visibleFolders.length > 0 && (
         <div className="border-b border-border">
           {visibleFolders.map((folder: any) => (
-            <div key={folder.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50" onClick={() => setCurrentFolder(folder.id)}>
+            <div key={folder.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setCurrentFolder(folder.id)}>
               <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
               <span className="text-sm truncate">{folder.name}</span>
               {typeof folder.fileCount === "number" && (
@@ -213,7 +213,7 @@ export function FileList() {
             return (
               <div key={file.id} onClick={(e) => handleClick(file.id, e)} onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
-                className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50", isSel && "bg-accent")}
+                className={cn("absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <TypeIcon type={file.type} name={file.name} />
                 <div className="flex-1 min-w-0">

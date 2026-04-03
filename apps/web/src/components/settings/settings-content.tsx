@@ -106,7 +106,7 @@ export default function SettingsContent() {
               <Input id="email" value={session.user.email} readOnly className="bg-muted" />
             </div>
           )}
-          <Button size="sm" onClick={() => toast.success("已保存")}>保存</Button>
+          <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => toast.success("已保存")}>保存</Button>
         </CardContent>
       </Card>
 

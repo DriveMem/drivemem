@@ -64,3 +64,9 @@
 .prose table { @apply w-full border-collapse text-sm; }
 .prose th, .prose td { @apply border border-border px-3 py-2; }
 .prose th { @apply bg-muted font-medium; }
+
+/* Smooth transitions */
+* { @apply transition-colors duration-150; }
+
+/* Card hover */
+.card-hover { @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5; }
