@@ -276,7 +276,7 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : '（未找到相�
       if (isFirstUserMessage) {
         try {
           const titleResponse = await chat([
-            { role: 'system', content: '根据用户的第一条消息，生成一个简短的对话标题（不超过20个字），只返回标题文本，不要引号或其他格式。' },
+            { role: 'system', content: '你是标题生成器。根据用户消息生成一个10字以内的中文短标题。规则：只输出标题本身，禁止输出解释、引号、标点、前缀。' },
             { role: 'user', content: body.content },
           ]);
           const title = titleResponse.slice(0, 50).trim() || body.content.slice(0, 30);
