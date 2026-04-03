@@ -28,8 +28,6 @@ const signupSchema = z
 
 type SignupForm = z.infer<typeof signupSchema>
 
-// Signup goes through Nginx (same origin) to avoid CORS
-// Nginx routes /api/auth/signup to backend 3001 (precise matching)
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
 export default function SignupPage() {
@@ -66,7 +64,6 @@ export default function SignupPage() {
         return
       }
 
-      // Auto login after signup
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
@@ -74,7 +71,6 @@ export default function SignupPage() {
       })
 
       if (result?.error) {
-        // Signup succeeded but auto-login failed, redirect to login
         router.push("/login")
       } else {
         router.push("/")
@@ -88,15 +84,22 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="rounded-lg border bg-card p-6 shadow-sm">
-      <h2 className="mb-4 text-xl font-semibold">注册</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div className="p-8">
+      {/* Mobile-only header */}
+      <div className="lg:hidden text-center mb-8">
+        <h1 className="text-3xl font-bold">AI Drive</h1>
+        <p className="mt-2 text-sm text-muted-foreground">让 AI 记住你的一切</p>
+      </div>
+
+      <h2 className="mb-6 text-2xl font-semibold">注册</h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">邮箱</Label>
           <Input
             id="email"
             type="email"
             placeholder="your@email.com"
+            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             {...register("email")}
           />
           {errors.email && (
@@ -110,6 +113,7 @@ export default function SignupPage() {
             id="password"
             type="password"
             placeholder="至少 8 位，含字母和数字"
+            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             {...register("password")}
           />
           {errors.password && (
@@ -123,6 +127,7 @@ export default function SignupPage() {
             id="confirmPassword"
             type="password"
             placeholder="再次输入密码"
+            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             {...register("confirmPassword")}
           />
           {errors.confirmPassword && (
@@ -134,12 +139,16 @@ export default function SignupPage() {
           <p className="text-sm text-destructive">{error}</p>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button
+          type="submit"
+          className="bg-blue-600 hover:bg-blue-700 rounded-xl h-12 w-full text-white font-medium"
+          disabled={loading}
+        >
           {loading ? "注册中..." : "注册"}
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         已有账号？{" "}
         <Link href="/login" className="text-primary hover:underline">
           登录
