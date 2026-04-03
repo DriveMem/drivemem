@@ -14,6 +14,7 @@ import {
   Quote,
   ArrowRight,
   ChevronRight,
+  Globe,
 } from "lucide-react"
 
 function FadeIn({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -90,9 +91,9 @@ export default function LandingPage() {
       </section>
 
       {/* ===== Product Preview ===== */}
-      <section className="relative z-10 px-6 py-16">
+      <section className="relative z-10 px-6 py-20">
         <div className="mx-auto max-w-5xl" style={{ perspective: "1200px" }}>
-          <div className="rounded-xl border border-gray-700 bg-gray-900 p-1 shadow-2xl shadow-blue-500/10" style={{ transform: "rotateX(2deg)" }}>
+          <div className="rounded-xl border border-gray-700 bg-gray-900 p-1 shadow-2xl shadow-blue-500/20 ring-1 ring-blue-500/10" style={{ transform: "rotateX(2deg)" }}>
             <div className="flex items-center gap-1.5 px-3 py-2">
               <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
               <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
@@ -107,13 +108,30 @@ export default function LandingPage() {
                   <div className="h-3 w-24 rounded bg-gray-800" />
                 </div>
                 <div className="flex-1 space-y-4">
+                  {/* Top bar with search */}
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-blue-500/20" />
-                    <div className="space-y-1.5">
-                      <div className="h-3 w-40 rounded bg-gray-800" />
-                      <div className="h-2.5 w-32 rounded bg-gray-800/60" />
+                    <div className="h-8 flex-1 rounded-lg bg-gray-800/50 flex items-center px-3">
+                      <div className="h-2.5 w-2.5 rounded-full bg-gray-600" />
+                      <div className="ml-2 h-2.5 w-24 rounded bg-gray-700/60" />
+                    </div>
+                    <div className="h-8 w-8 rounded-lg bg-blue-500/20" />
+                  </div>
+                  {/* Stats row */}
+                  <div className="flex gap-3">
+                    <div className="flex-1 rounded-lg bg-gray-800/30 p-2.5 space-y-1">
+                      <div className="h-2 w-10 rounded bg-gray-700/60" />
+                      <div className="h-4 w-8 rounded bg-blue-500/30" />
+                    </div>
+                    <div className="flex-1 rounded-lg bg-gray-800/30 p-2.5 space-y-1">
+                      <div className="h-2 w-12 rounded bg-gray-700/60" />
+                      <div className="h-4 w-10 rounded bg-green-500/30" />
+                    </div>
+                    <div className="flex-1 rounded-lg bg-gray-800/30 p-2.5 space-y-1">
+                      <div className="h-2 w-8 rounded bg-gray-700/60" />
+                      <div className="h-4 w-6 rounded bg-purple-500/30" />
                     </div>
                   </div>
+                  {/* File list */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 rounded-lg bg-gray-900/50 p-3">
                       <div className="h-6 w-6 rounded bg-red-500/30" />
@@ -128,6 +146,16 @@ export default function LandingPage() {
                     <div className="flex items-center gap-3 rounded-lg bg-gray-900/50 p-3">
                       <div className="h-6 w-6 rounded bg-blue-500/30" />
                       <div className="h-3 w-44 rounded bg-gray-800" />
+                      <div className="ml-auto h-3 w-16 rounded bg-gray-800/60" />
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-gray-900/50 p-3">
+                      <div className="h-6 w-6 rounded bg-yellow-500/30" />
+                      <div className="h-3 w-52 rounded bg-gray-800" />
+                      <div className="ml-auto h-3 w-16 rounded bg-gray-800/60" />
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-gray-900/50 p-3">
+                      <div className="h-6 w-6 rounded bg-purple-500/30" />
+                      <div className="h-3 w-40 rounded bg-gray-800" />
                       <div className="ml-auto h-3 w-16 rounded bg-gray-800/60" />
                     </div>
                   </div>
@@ -153,8 +181,39 @@ export default function LandingPage() {
         </FadeIn>
       </section>
 
+      {/* ===== AI Feature Showcase ===== */}
+      <section className="relative z-10 mx-auto max-w-6xl px-6 py-24">
+        <FadeIn>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">AI 让你的文件更智能</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-gray-400">不只是存储，更是理解。AI Drive 让每个文件都成为可交互的知识。</p>
+          <div className="mt-16 grid gap-6 sm:grid-cols-3">
+            <div className="group rounded-2xl border border-gray-800 bg-gray-900/60 p-8 backdrop-blur transition hover:border-blue-500/30 hover:bg-gray-900/80">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 mb-4">
+                <Brain className="h-6 w-6 text-blue-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">AI 智能摘要</h3>
+              <p className="text-gray-400 leading-relaxed">上传文件自动生成摘要，不用阅读全文就能了解核心内容</p>
+            </div>
+            <div className="group rounded-2xl border border-gray-800 bg-gray-900/60 p-8 backdrop-blur transition hover:border-blue-500/30 hover:bg-gray-900/80">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 mb-4">
+                <MessageSquare className="h-6 w-6 text-purple-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">跨文件问答</h3>
+              <p className="text-gray-400 leading-relaxed">同时问 AI 多个文件的内容，获得跨文档的综合分析</p>
+            </div>
+            <div className="group rounded-2xl border border-gray-800 bg-gray-900/60 p-8 backdrop-blur transition hover:border-blue-500/30 hover:bg-gray-900/80">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 mb-4">
+                <Globe className="h-6 w-6 text-cyan-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Web Clipper</h3>
+              <p className="text-gray-400 leading-relaxed">一键保存网页到 AI 记忆，浏览器扩展让知识自动积累</p>
+            </div>
+          </div>
+        </FadeIn>
+      </section>
+
       {/* ===== How It Works ===== */}
-      <section className="relative z-10 mx-auto max-w-5xl px-6 py-24">
+      <section className="relative z-10 mx-auto max-w-5xl px-6 py-20">
         <FadeIn>
           <h2 className="text-center text-3xl font-bold sm:text-4xl">看看 AI Drive 如何工作</h2>
           <div className="mt-16 grid gap-8 sm:grid-cols-3">
