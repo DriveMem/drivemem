@@ -94,7 +94,7 @@ export default function LandingPage() {
               <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
               <span className="ml-2 text-xs text-gray-500">drive.verrrnm.cloud</span>
             </div>
-            <img src="/screenshots/dashboard.png" alt="AI Drive Dashboard" className="w-full rounded-lg" />
+                        <img src="/screenshots/dashboard.png" alt="AI Drive Dashboard" className="w-full rounded-b-lg" />
           </div>
         </div>
       </section>
@@ -167,7 +167,7 @@ export default function LandingPage() {
                 <p className="text-gray-400 leading-relaxed">{f.desc}</p>
               </div>
               {/* real screenshot */}
-              <div className="w-full flex-1 overflow-hidden rounded-2xl border border-gray-800">
+              <div className="w-full flex-1 overflow-hidden rounded-2xl border border-white/10 ring-1 ring-white/5 shadow-lg">
                 <img
                   src={f.title === "AI 对话" || f.title === "引用来源" ? "/screenshots/chat.png" : "/screenshots/dashboard.png"}
                   alt={f.title}
