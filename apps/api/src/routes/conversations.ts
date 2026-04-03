@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { eq, and, desc, asc, sql } from 'drizzle-orm';
+import { eq, and, desc, asc, sql, isNotNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { conversations, messages, users } from '../db/schema.js';
+import { conversations, messages, users, files } from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
 import { AppError, ErrorCodes } from '../lib/errors.js';
 import { searchSimilar } from '../services/vector.service.js';
@@ -20,6 +20,32 @@ const messageSchema = z.object({
 });
 
 export default async function conversationRoutes(app: FastifyInstance) {
+  // GET /suggestions — AI 推荐问题
+  app.get('/suggestions', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+
+    const recentFiles = await db.select({ name: files.name, summary: files.summary })
+      .from(files)
+      .where(and(eq(files.userId, userId), isNotNull(files.summary)))
+      .orderBy(desc(files.createdAt))
+      .limit(3);
+
+    if (recentFiles.length === 0) {
+      return reply.send({ suggestions: ['上传一个文件，让 AI 记住它', '试试拖拽文件到页面上传', '支持 PDF、Word、TXT、Markdown 格式'] });
+    }
+
+    const fileInfo = recentFiles.map(f => `${f.name}: ${f.summary?.substring(0, 100)}`).join('\n');
+    const prompt = `用户有以下文件：\n${fileInfo}\n\n请基于这些文件内容，生成 3 个用户可能想问的问题。每行一个问题，不要编号，不要引号，直接输出问题文本。`;
+
+    try {
+      const result = await chat([{ role: 'user', content: prompt }]);
+      const suggestions = result.split('\n').filter((s: string) => s.trim()).slice(0, 3);
+      return reply.send({ suggestions });
+    } catch {
+      return reply.send({ suggestions: recentFiles.map(f => `总结一下 ${f.name} 的主要内容`) });
+    }
+  });
+
   // POST / — create conversation
   app.post('/', { preHandler: [requireAuth] }, async (request, reply) => {
     const body = createSchema.parse(request.body);
