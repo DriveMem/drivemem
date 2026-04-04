@@ -89,6 +89,9 @@ export default function LandingPage() {
             <Button asChild variant="outline" size="lg" className="h-12 border-gray-700 px-8 text-base text-gray-300 hover:bg-gray-800 hover:text-white">
               <Link href="#features">了解更多</Link>
             </Button>
+            <Button asChild variant="ghost" size="lg" className="h-12 px-8 text-base text-gray-400 hover:text-white">
+              <Link href="/login">体验 Demo →</Link>
+            </Button>
           </div>
         </FadeIn>
       </section>
