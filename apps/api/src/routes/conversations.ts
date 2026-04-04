@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { eq, and, desc, asc, sql, isNotNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
+import * as schema from '../db/schema.js';
 import { conversations, messages, users, files } from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
 import { AppError, ErrorCodes } from '../lib/errors.js';
@@ -232,12 +233,23 @@ export default async function conversationRoutes(app: FastifyInstance) {
 [文档片段]
 ${citationSources.length > 0 ? citationSources.join('\n\n') : '（未找到相关文档内容。请告诉用户在他们的文件中没有找到相关信息，或者提醒他们先上传文件。）'}`;
 
+    // Get user memories for context
+    const userMemories = await db.select({ key: schema.userMemory.key, value: schema.userMemory.value })
+      .from(schema.userMemory)
+      .where(eq(schema.userMemory.userId, user.id))
+      .orderBy(desc(schema.userMemory.createdAt))
+      .limit(10);
+
+    const memoryContext = userMemories.length > 0
+      ? `\n\n[用户记忆]\n你记住了关于这个用户的以下信息：\n${userMemories.map(m => `- ${m.key}: ${m.value}`).join('\n')}\n在回答时自然地运用这些记忆，让用户感觉你了解他们。不要刻意提及"我记得你..."。`
+      : '';
+
     // Enhance prompt for comparison queries
     const compareKeywords = ['对比', '比较', '异同', '区别', '差异', 'compare', 'vs'];
     const isCompare = compareKeywords.some(k => body.content.includes(k));
-    const finalSystemPrompt = isCompare
+    const finalSystemPrompt = (isCompare
       ? systemPrompt + `\n\n【对比分析模式】\n用户正在进行文件对比分析。请使用以下结构化格式输出：\n## 📋 相同点\n列出两份文档的共同之处\n## 🔍 不同点\n列出两份文档的差异\n## 🤝 互补之处\n分析两份文档如何互相补充\n## 💡 建议\n基于对比结果给出 1-2 条有价值的建议`
-      : systemPrompt;
+      : systemPrompt) + memoryContext;
 
     // Build chat history for LLM
     const chatHistory = recentMessages.map((m) => ({
@@ -332,6 +344,39 @@ AI回答：${fullContent.substring(0, 300)}`;
         }
       } catch {
         // Non-blocking — skip suggestions on failure
+      }
+
+      // Extract user memory from conversation (non-blocking)
+      try {
+        const memoryPrompt = `从以下对话中提取用户的关键偏好、关注点或记忆点。只提取真正有价值的信息（如用户的专业领域、关注的话题、偏好的回答风格等）。
+如果没有值得记忆的信息，返回空数组。
+返回JSON数组格式：[{"key":"简短标签","value":"具体描述"}]
+只返回JSON，不要其他文本。
+
+用户问：${body.content}
+AI答：${fullContent.substring(0, 300)}`;
+
+        const memoryResult = await chat([{ role: 'user', content: memoryPrompt }]);
+        const memJsonMatch = memoryResult.match(/\[[\s\S]*?\]/);
+        if (memJsonMatch) {
+          const memories = JSON.parse(memJsonMatch[0]);
+          for (const mem of memories.slice(0, 3)) {
+            if (mem.key && mem.value) {
+              const existing = await db.select().from(schema.userMemory)
+                .where(and(eq(schema.userMemory.userId, user.id), eq(schema.userMemory.key, mem.key)));
+              if (existing.length === 0) {
+                await db.insert(schema.userMemory).values({
+                  userId: user.id,
+                  key: mem.key,
+                  value: mem.value,
+                  source: id,
+                });
+              }
+            }
+          }
+        }
+      } catch {
+        // Non-blocking
       }
 
       reply.raw.write(

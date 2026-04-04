@@ -118,3 +118,13 @@ export const shares = pgTable('shares', {
   expiresAt: timestamp('expires_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// --- User Memory ---
+export const userMemory = pgTable('user_memory', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  key: text('key').notNull(),
+  value: text('value').notNull(),
+  source: uuid('source'), // conversationId
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});

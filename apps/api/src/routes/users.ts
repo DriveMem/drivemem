@@ -209,6 +209,23 @@ export default async function userRoutes(fastify: FastifyInstance) {
     });
   });
 
+  // GET /me/memories — 查看 AI 记忆
+  fastify.get('/me/memories', { preHandler: [requireAuth] }, async (request, reply) => {
+    const memories = await db.select()
+      .from(schema.userMemory)
+      .where(eq(schema.userMemory.userId, request.user!.id))
+      .orderBy(desc(schema.userMemory.createdAt));
+    return reply.send({ memories });
+  });
+
+  // DELETE /me/memories/:id — 删除单条记忆
+  fastify.delete('/me/memories/:id', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    await db.delete(schema.userMemory)
+      .where(and(eq(schema.userMemory.id, id), eq(schema.userMemory.userId, request.user!.id)));
+    return reply.status(204).send();
+  });
+
   // PATCH /me/password — 修改密码
   fastify.patch('/me/password', { preHandler: [requireAuth] }, async (request, reply) => {
     const body = request.body as { currentPassword: string; newPassword: string };
