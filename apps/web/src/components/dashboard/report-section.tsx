@@ -25,7 +25,7 @@ export function ReportSection() {
       .catch(() => {})
   }, [])
 
-  const handleGenerate = async (type: "analysis" | "study" = "analysis") => {
+  const handleGenerate = async (type: "analysis" | "study" | "competitive" = "analysis") => {
     setGenerating(true)
     try {
       const data = await apiFetch("/api/reports/generate", { method: "POST", body: JSON.stringify({ type }) })
