@@ -15,7 +15,7 @@ export function FeedbackButton() {
     if (!text.trim()) return
     setSending(true)
     try {
-      await apiFetch("/api/feedback", { method: "POST", body: JSON.stringify({ message: text.trim() }) })
+      await apiFetch("/api/feedback", { method: "POST", body: JSON.stringify({ content: text.trim() }) })
       toast.success("感谢你的反馈！")
       setText("")
       setOpen(false)
