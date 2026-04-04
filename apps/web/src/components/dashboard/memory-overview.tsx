@@ -53,6 +53,7 @@ export function MemoryOverview() {
   const { data: filesData } = useFiles()
   const { data: convsData } = useConversations()
   const [profile, setProfile] = useState<KnowledgeProfile | null>(null)
+  const [weeklyStats, setWeeklyStats] = useState<any>(null)
 
   const files = Array.isArray(filesData) ? filesData : (filesData?.files || [])
   const convs = Array.isArray(convsData) ? convsData : (convsData?.conversations || [])
@@ -63,7 +64,10 @@ export function MemoryOverview() {
   useEffect(() => {
     apiFetch("/api/users/me/knowledge-profile")
       .then((data: KnowledgeProfile) => setProfile(data))
-      .catch(() => {/* fallback to file-based extraction */})
+      .catch(() => {})
+    apiFetch("/api/users/me/stats")
+      .then((data: any) => setWeeklyStats(data))
+      .catch(() => {})
   }, [])
 
   if (totalFiles === 0 && !profile) return null
@@ -136,6 +140,11 @@ export function MemoryOverview() {
             <span className="flex items-center gap-1">
               <MessageSquare className="h-3.5 w-3.5" /> {totalConvs} 次对话
             </span>
+            {weeklyStats && (
+              <span className="flex items-center gap-1 text-blue-400">
+                📊 本周 {weeklyStats.filesThisWeek} 文件 · {weeklyStats.conversationsThisWeek} 对话
+              </span>
+            )}
             <Link href="/chat" className="ml-auto text-xs text-blue-500 hover:underline">
               问你的 AI →
             </Link>
