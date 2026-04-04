@@ -109,8 +109,8 @@ export default async function sharesRoutes(fastify: FastifyInstance) {
     });
   });
 
-  // GET /report/:token — 公开查看分享的报告
-  fastify.get('/report/:token', async (request, reply) => {
+  // GET /shares/report/:token — 公开查看分享的报告
+  fastify.get('/shares/report/:token', async (request, reply) => {
     const { token } = request.params as { token: string };
 
     const [share] = await db.select().from(schema.shares)
