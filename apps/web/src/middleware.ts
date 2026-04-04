@@ -28,13 +28,19 @@ export default auth((req) => {
     return Response.redirect(new URL("/dashboard", req.nextUrl))
   }
 
+  // Known app routes that require auth
+  const appRoutes = ["/dashboard", "/chat", "/settings", "/timeline", "/files", "/search"]
+  const isAppRoute = appRoutes.some(r => req.nextUrl.pathname.startsWith(r))
+
   // Landing page is public
   if (isLandingPage || isAuthPage) return
 
-  // Everything else requires auth
-  if (!isLoggedIn) {
+  // Only redirect to login for known app routes
+  if (!isLoggedIn && isAppRoute) {
     return Response.redirect(new URL("/login", req.nextUrl))
   }
+
+  // Unknown routes: let Next.js handle (will show 404)
 })
 
 export const config = {
