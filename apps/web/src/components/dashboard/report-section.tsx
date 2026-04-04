@@ -16,14 +16,7 @@ export function ReportSection() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  useEffect(() => {
-    apiFetch("/api/reports/latest")
-      .then((data: any) => {
-        if (data?.report) setReport(data.report)
-        if (data?.id) setReportId(data.id)
-      })
-      .catch(() => {})
-  }, [])
+  // Reports only shown after user clicks generate (no auto-load to avoid stale/test data)
 
   const handleGenerate = async (type: "analysis" | "study" | "competitive" = "analysis") => {
     setGenerating(true)
