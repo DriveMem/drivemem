@@ -12,6 +12,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { apiFetch } from "@/lib/api"
 import { useLayoutStore } from "@/stores/layout-store"
 import { useFiles, useDeleteFile, useRenameFile, useMoveFile } from "@/hooks/use-files"
+import { useQueryClient } from "@tanstack/react-query"
+import { apiFetch } from "@/lib/api"
 import { useCreateFolder, useFolders } from "@/hooks/use-folders"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -96,6 +98,7 @@ export function FileList() {
   const router = useRouter()
   const { data, isLoading, error } = useFiles(currentFolderId)
   const deleteFile = useDeleteFile()
+  const queryClient = useQueryClient()
   const renameFile = useRenameFile()
   const moveFile = useMoveFile()
   const createFolder = useCreateFolder()
@@ -286,6 +289,16 @@ export function FileList() {
           ))}
         </div>
         <div className="flex items-center gap-1">
+          <Button size="sm" onClick={async () => {
+            try {
+              const { toast } = await import("sonner")
+              toast.info("AI 正在整理文件...")
+              const data = await apiFetch("/api/files/auto-organize", { method: "POST" })
+              toast.success(data?.message || "整理完成")
+              queryClient.invalidateQueries({ queryKey: ["files"] })
+              queryClient.invalidateQueries({ queryKey: ["folders"] })
+            } catch (e: any) { const { toast } = await import("sonner"); toast.error(e.message || "整理失败") }
+          }} variant="outline" className="gap-1">✨ 一键整理</Button>
           <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />新建文件夹</Button>
           <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
           <div className="flex items-center rounded-md border border-border ml-2">
