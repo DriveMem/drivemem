@@ -384,7 +384,7 @@ export function FileList() {
                   </TooltipProvider>
                 )}
                 <StatusIcon status={file.status} error={file.errorMessage} compact />
-                <span className="w-20 text-right text-xs text-muted-foreground shrink-0">{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
+                <span className="w-20 text-right text-xs text-muted-foreground shrink-0" suppressHydrationWarning>{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
                 <span className="w-16 text-right text-xs text-muted-foreground shrink-0">{fmtSize(file.size)}</span>
                 <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 shrink-0" onClick={(e) => handleDownload(file.id, e)}>
                   <Download className="h-3.5 w-3.5" />
