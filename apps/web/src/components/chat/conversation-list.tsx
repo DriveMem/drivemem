@@ -32,6 +32,7 @@ export function ConversationList() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
   const editInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -56,7 +57,9 @@ export function ConversationList() {
 
     const sorted = (() => {
     const list = Array.isArray(conversations) ? conversations : (conversations?.conversations || [])
-    return [...list].sort((a: Conversation, b: Conversation) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    const s = [...list].sort((a: Conversation, b: Conversation) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    if (!searchQuery.trim()) return s
+    return s.filter((c: Conversation) => c.title?.toLowerCase().includes(searchQuery.toLowerCase()))
   })()
 
   return (
@@ -66,6 +69,14 @@ export function ConversationList() {
         <Button size="sm" variant="outline" onClick={() => router.push("/chat?new=" + Date.now())}>
           + 新对话
         </Button>
+      </div>
+      <div className="px-3 py-2 border-b">
+        <input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="搜索对话..."
+          className="w-full rounded-md bg-muted/50 px-3 py-1.5 text-xs outline-none placeholder-muted-foreground"
+        />
       </div>
 
       {isLoading ? (
