@@ -1,3 +1,5 @@
+export const metadata = { title: "使用条款 - AI Drive" }
+
 export default function TermsPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">

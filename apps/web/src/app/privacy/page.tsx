@@ -1,3 +1,5 @@
+export const metadata = { title: "隐私政策 - AI Drive" }
+
 export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-16">
