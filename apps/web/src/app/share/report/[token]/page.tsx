@@ -39,7 +39,7 @@ export default function ShareReportPage() {
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || ""
-    fetch(`${apiUrl}/api/shares/report/${token}`)
+    fetch(`${apiUrl}/api/report/${token}`)
       .then((res) => {
         if (res.status === 410) throw new Error("expired")
         if (!res.ok) throw new Error("not_found")
