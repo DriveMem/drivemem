@@ -14,7 +14,7 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().min(1),
   LLM_BASE_URL: z.string().optional(),
   EMBEDDING_BASE_URL: z.string().optional(),
-  EMBEDDING_MODEL: z.string().default("jina-embeddings-v3"),
+  EMBEDDING_MODEL: z.string().default("text-embedding-v3"),
   EMBEDDING_API_KEY: z.string().optional(),
   SMTP_HOST: z.string().min(1),
   SMTP_PORT: z.coerce.number().default(587),
