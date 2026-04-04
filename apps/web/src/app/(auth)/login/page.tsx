@@ -54,15 +54,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="rounded-lg border bg-card p-6 shadow-sm">
-      <h2 className="mb-4 text-xl font-semibold">登录</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div className="p-8">
+      {/* Mobile-only header */}
+      <div className="lg:hidden text-center mb-8">
+        <h1 className="text-3xl font-bold">AI Drive</h1>
+        <p className="mt-2 text-sm text-muted-foreground">让 AI 记住你的一切</p>
+      </div>
+
+      <h2 className="mb-6 text-2xl font-semibold">登录</h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">邮箱</Label>
           <Input
             id="email"
             type="email"
             placeholder="your@email.com"
+            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             {...register("email")}
           />
           {errors.email && (
@@ -84,6 +91,7 @@ export default function LoginPage() {
             id="password"
             type="password"
             placeholder="••••••••"
+            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             {...register("password")}
           />
           {errors.password && (
@@ -95,25 +103,16 @@ export default function LoginPage() {
           <p className="text-sm text-destructive">{error}</p>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button
+          type="submit"
+          className="bg-blue-600 hover:bg-blue-700 rounded-xl h-12 w-full text-white font-medium"
+          disabled={loading}
+        >
           {loading ? "登录中..." : "登录"}
         </Button>
       </form>
 
-      {/* Google OAuth placeholder */}
-      {/* <div className="relative my-4">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">或</span>
-        </div>
-      </div>
-      <Button variant="outline" className="w-full" onClick={() => signIn("google")}>
-        使用 Google 登录
-      </Button> */}
-
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         没有账号？{" "}
         <Link href="/signup" className="text-primary hover:underline">
           注册

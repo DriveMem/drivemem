@@ -10,7 +10,14 @@ import { toast } from "sonner"
 
 interface UploadItem { id: string; name: string; progress: number; status: "pending" | "uploading" | "done" | "error"; error?: string }
 
-const ACCEPTED = { "application/pdf": [".pdf"], "text/plain": [".txt"], "text/markdown": [".md"] }
+const ACCEPTED = {
+  "application/pdf": [".pdf"],
+  "text/plain": [".txt"],
+  "text/markdown": [".md"],
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": [".pptx"],
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+}
 const MAX_SIZE = 50 * 1024 * 1024
 
 export function FileUpload({ onClose, folderId }: { onClose: () => void; folderId?: string | null }) {

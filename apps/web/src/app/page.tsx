@@ -60,6 +60,15 @@ const FEATURES = [
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-gray-950 text-white selection:bg-blue-500/30">
+      <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-gray-800 bg-gray-950/80 px-6 py-4 backdrop-blur">
+        <Link href="/" className="text-lg font-bold text-white">AI Drive</Link>
+        <div className="flex items-center gap-4">
+          <a href="#features" className="text-sm text-gray-400 hover:text-white transition">功能</a>
+          <Link href="/login" className="text-sm text-gray-400 hover:text-white transition">登录</Link>
+          <Link href="/signup" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">免费开始</Link>
+        </div>
+      </nav>
+
       {/* ===== grid bg ===== */}
       <div className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(rgba(255,255,255,.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,.15),transparent)]" />
@@ -193,7 +202,7 @@ export default function LandingPage() {
 
       {/* ===== Footer ===== */}
       <footer className="relative z-10 border-t border-gray-800 px-6 py-8 text-center text-sm text-gray-500">
-        © 2026 AI Drive
+        © 2026 AI Drive · <Link href="/privacy" className="text-gray-500 hover:text-gray-400 text-sm">隐私政策</Link>
       </footer>
     </main>
   )

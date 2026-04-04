@@ -64,6 +64,8 @@
 .prose table { @apply w-full border-collapse text-sm; }
 .prose th, .prose td { @apply border border-border px-3 py-2; }
 .prose th { @apply bg-muted font-medium; }
+.prose li { @apply mb-1; }
+.prose ul, .prose ol { @apply my-2 space-y-1; }
 
 /* Smooth transitions */
 * { @apply transition-colors duration-150; }

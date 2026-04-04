@@ -3,11 +3,13 @@
 import { useState, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2 } from "lucide-react"
 import { Lightbulb } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { apiFetch } from "@/lib/api"
 import { useLayoutStore } from "@/stores/layout-store"
 import { useFiles, useDeleteFile, useRenameFile, useMoveFile } from "@/hooks/use-files"
 import { useCreateFolder, useFolders } from "@/hooks/use-folders"
@@ -22,6 +24,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { FileUpload } from "./file-upload"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
+import { toast } from "sonner"
 
 type SortKey = "name" | "createdAt" | "size"
 type SortDir = "asc" | "desc"
@@ -64,6 +67,8 @@ function TypeIcon({ type, name, className }: { type: string; name?: string; clas
     doc: "text-blue-600", docx: "text-blue-600",
     md: "text-green-500", markdown: "text-green-500",
     txt: "text-gray-500",
+    pptx: "text-orange-500", ppt: "text-orange-500",
+    xlsx: "text-emerald-600", xls: "text-emerald-600",
   }
   const colorByType: Record<string, string> = {
     pdf: "text-red-500",
@@ -82,8 +87,8 @@ function StatusIcon({ status, error, compact }: { status: string; error?: string
     return <span className="flex items-center gap-1 text-xs text-yellow-500"><Loader2 className="h-3 w-3 animate-spin" />AI 正在记住...</span>
   }
   if (status === "indexed") return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-  if (compact) return <XCircle className="h-3.5 w-3.5 text-red-500" />
-  return <span title="解析失败，请重新上传" className="flex items-center gap-1 text-xs text-red-500"><XCircle className="h-3.5 w-3.5" />解析失败</span>
+  if (compact) return <span title={error || "索引失败，请重新上传"} className="cursor-help"><XCircle className="h-3.5 w-3.5 text-red-500" /></span>
+  return <span title={error || "解析失败"} className="flex items-center gap-1 text-xs text-red-500 cursor-help"><XCircle className="h-3.5 w-3.5" />索引失败</span>
 }
 
 export function FileList() {
@@ -105,6 +110,7 @@ export function FileList() {
   const [renameValue, setRenameValue] = useState("")
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [moveTarget, setMoveTarget] = useState<string | null>(null)
+  const [batchMoveOpen, setBatchMoveOpen] = useState(false)
   const [moveFolderId, setMoveFolderId] = useState("")
   const [sortKey, setSortKey] = useState<SortKey>("createdAt")
   const [sortDir, setSortDir] = useState<SortDir>("desc")
@@ -112,7 +118,53 @@ export function FileList() {
   const [showUpload, setShowUpload] = useState(false)
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [shareUrl, setShareUrl] = useState("")
+  const [shareLoading, setShareLoading] = useState(false)
   const parentRef = useRef<HTMLDivElement>(null)
+
+  const handleShare = useCallback(async (fileId: string) => {
+    setShareLoading(true)
+    setShareDialogOpen(true)
+    try {
+      const data = await apiFetch(`/api/files/${fileId}/share`, { method: "POST" })
+      setShareUrl(data.url || "")
+    } catch (err) {
+      console.error("Share failed:", err)
+      toast.error("分享失败，请重试")
+      setShareDialogOpen(false)
+    } finally {
+      setShareLoading(false)
+    }
+  }, [])
+
+  const handleDownload = useCallback(async (fileId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    try {
+      const data = await apiFetch(`/api/files/${fileId}/preview-url`)
+      const url = typeof data === 'string' ? data : data?.url || data?.previewUrl
+      if (url) window.open(url, '_blank')
+    } catch (err) {
+      console.error('Download failed:', err)
+    }
+  }, [])
+
+  const handleBatchDelete = useCallback(() => {
+    selected.forEach(id => deleteFile.mutate(id))
+    setSelected(new Set())
+  }, [selected, deleteFile])
+
+  const handleBatchDownload = useCallback(async () => {
+    for (const id of selected) {
+      await handleDownload(id)
+    }
+  }, [selected, handleDownload])
+
+  const handleBatchMove = useCallback((folderId: string | null) => {
+    selected.forEach(id => moveFile.mutate({ fileId: id, folderId }))
+    setSelected(new Set())
+    setBatchMoveOpen(false)
+  }, [selected, moveFile])
 
   const rawFiles: FileItem[] = Array.isArray(data) ? data : (data?.files || [])
 
@@ -129,6 +181,8 @@ export function FileList() {
     { key: "all", label: "全部" },
     { key: "pdf", label: "PDF" },
     { key: "word", label: "Word" },
+    { key: "ppt", label: "PPT" },
+    { key: "excel", label: "Excel" },
     { key: "md", label: "Markdown" },
     { key: "txt", label: "文本" },
     { key: "image", label: "图片" },
@@ -140,6 +194,8 @@ export function FileList() {
     switch (typeFilter) {
       case "pdf": return ext === "pdf" || mime.includes("pdf")
       case "word": return ext === "docx" || ext === "doc" || mime.includes("word")
+      case "ppt": return ext === "pptx" || ext === "ppt" || mime.includes("presentation")
+      case "excel": return ext === "xlsx" || ext === "xls" || mime.includes("spreadsheet")
       case "md": return ext === "md" || ext === "markdown"
       case "txt": return ext === "txt" || mime === "text/plain"
       case "image": return mime.startsWith("image/") || ["png","jpg","jpeg","gif","webp"].includes(ext || "")
@@ -206,6 +262,14 @@ export function FileList() {
       {/* Toolbar: filters left, actions right */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-1">
+          <Checkbox
+            checked={filteredFiles.length > 0 && filteredFiles.every(f => selected.has(f.id))}
+            onCheckedChange={(checked) => {
+              if (checked) setSelected(new Set(filteredFiles.map(f => f.id)))
+              else setSelected(new Set())
+            }}
+            className="mr-2"
+          />
           {FILTERS.map(({ key, label }) => (
             <button
               key={key}
@@ -256,7 +320,7 @@ export function FileList() {
       {viewMode === "grid" && visibleFolders.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4 border-b border-border">
           {visibleFolders.map((folder: any) => (
-            <div key={folder.id} className="rounded-xl border p-4 hover:bg-accent/50 transition cursor-pointer flex flex-col gap-2" onClick={() => setCurrentFolder(folder.id)}>
+            <div key={folder.id} className="rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2" onClick={() => setCurrentFolder(folder.id)}>
               <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
                 <Folder className="h-10 w-10 text-amber-500" />
               </div>
@@ -293,6 +357,14 @@ export function FileList() {
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                 className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
+                <Checkbox
+                  checked={selected.has(file.id)}
+                  onCheckedChange={(checked) => {
+                    setSelected(p => { const n = new Set(p); checked ? n.add(file.id) : n.delete(file.id); return n })
+                  }}
+                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                  className="shrink-0"
+                />
                 <TypeIcon type={file.type} name={file.name} />
                 <span className="truncate text-sm flex-1 min-w-0">{file.name}</span>
                 {file.suggestedFolder && !file.folderId && (
@@ -314,6 +386,9 @@ export function FileList() {
                 <StatusIcon status={file.status} error={file.errorMessage} compact />
                 <span className="w-20 text-right text-xs text-muted-foreground shrink-0">{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
                 <span className="w-16 text-right text-xs text-muted-foreground shrink-0">{fmtSize(file.size)}</span>
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 shrink-0" onClick={(e) => handleDownload(file.id, e)}>
+                  <Download className="h-3.5 w-3.5" />
+                </Button>
               </div>
             )
           })}
@@ -330,7 +405,7 @@ export function FileList() {
                   onClick={(e) => handleClick(file.id, e)}
                   onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
                   onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
-                  className={cn("rounded-xl border p-4 hover:bg-accent/50 transition cursor-pointer flex flex-col gap-2", isSel && "bg-accent ring-2 ring-primary")}
+                  className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", isSel && "bg-accent ring-2 ring-primary")}
                 >
                   <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
                     <TypeIcon type={file.type} name={file.name} className="h-10 w-10" />
@@ -373,16 +448,22 @@ export function FileList() {
               setMoveFolderId("")
               setContextMenu(null)
             }}>移动到文件夹</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              handleShare(contextMenu.fileId)
+              setContextMenu(null)
+            }}>
+              <Share2 className="h-4 w-4 mr-2" />分享
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )}
-      {selected.size > 1 && (
-        <div className="flex items-center justify-between border-t border-border bg-muted px-4 py-2">
-          <span className="text-sm">已选择 {selected.size} 个文件</span>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setSelected(new Set())}>取消</Button>
-            <Button variant="destructive" size="sm" onClick={() => { selected.forEach(id => deleteFile.mutate(id)); setSelected(new Set()) }}>删除</Button>
-          </div>
+      {selected.size > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-background border shadow-lg px-4 py-3 z-50">
+          <span className="text-sm font-medium">已选 {selected.size} 个文件</span>
+          <Button variant="outline" size="sm" onClick={handleBatchDelete}>删除</Button>
+          <Button variant="outline" size="sm" onClick={() => setBatchMoveOpen(true)}>移动</Button>
+          <Button variant="outline" size="sm" onClick={handleBatchDownload}>下载</Button>
+          <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>取消</Button>
         </div>
       )}
       <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
@@ -425,6 +506,45 @@ export function FileList() {
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>取消</Button>
             <Button variant="destructive" onClick={() => { if (deleteTarget) { deleteFile.mutate(deleteTarget); setDeleteTarget(null) } }}>删除</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Batch Move Dialog */}
+      <Dialog open={batchMoveOpen} onOpenChange={(open) => { if (!open) setBatchMoveOpen(false) }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>批量移动到文件夹</DialogTitle></DialogHeader>
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            <button onClick={() => setMoveFolderId("")} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent", moveFolderId === "" && "bg-accent font-medium")}>
+              <FileText className="h-4 w-4" /> 根目录
+            </button>
+            {allFolders.map((f: any) => (
+              <button key={f.id} onClick={() => setMoveFolderId(f.id)} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent", moveFolderId === f.id && "bg-accent font-medium")}>
+                <Folder className="h-4 w-4 text-amber-500" /> {f.name}
+              </button>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBatchMoveOpen(false)}>取消</Button>
+            <Button onClick={() => handleBatchMove(moveFolderId || null)}>移动</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Dialog */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>分享链接</DialogTitle></DialogHeader>
+          {shareLoading ? (
+            <div className="flex items-center justify-center py-4"><Loader2 className="h-5 w-5 animate-spin" /></div>
+          ) : (
+            <div className="space-y-4">
+              <Input value={shareUrl} readOnly onClick={(e) => (e.target as HTMLInputElement).select()} />
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShareDialogOpen(false)}>关闭</Button>
+                <Button onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success("已复制") }}>复制</Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

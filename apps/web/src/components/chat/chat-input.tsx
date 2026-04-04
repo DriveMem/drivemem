@@ -36,21 +36,21 @@ export function ChatInput({ onSend, disabled, dailyLimitReached }: { onSend: (me
   }
 
   return (
-    <div className="border-t border-border px-4 py-3">
-      <div className="flex items-end gap-2">
+    <div className="max-w-3xl mx-auto w-full px-4 pb-4">
+      <div className="flex items-center gap-2 rounded-2xl shadow-lg bg-muted/30 border border-border/50 px-4 py-3">
         <textarea
           ref={textareaRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="问你的 AI..."
+          placeholder="问 AI 任何问题，或探索你的知识库..."
           disabled={disabled}
           rows={1}
-          className={cn("flex-1 resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50")}
+          className="flex-1 bg-transparent resize-none outline-none text-sm placeholder-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
         />
-        <Button size="icon" onClick={handleSend} disabled={disabled || !value.trim()} className="h-10 w-10 flex-shrink-0">
+        <button onClick={handleSend} disabled={disabled || !value.trim()} className="rounded-full bg-blue-600 hover:bg-blue-700 p-2 text-white disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0">
           <Send className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
     </div>
   )

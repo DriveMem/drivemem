@@ -10,8 +10,13 @@ export default auth((req) => {
   const isLandingPage = req.nextUrl.pathname === "/"
   const isApiRoute = req.nextUrl.pathname.startsWith("/api")
 
+  const isSharePage = req.nextUrl.pathname.startsWith("/share")
+
   // API routes always pass through
   if (isApiRoute) return
+
+  // Share pages are public
+  if (isSharePage) return
 
   // Logged-in user on landing page → redirect to /dashboard (files)
   if (isLoggedIn && isLandingPage) {
@@ -33,5 +38,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon|screenshots).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon|screenshots|share|privacy).*)"],
 }

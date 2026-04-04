@@ -5,10 +5,14 @@ import { ChatView } from "@/components/chat/chat-view"
 import { useConversations } from "@/hooks/use-conversations"
 
 function ChatPageInner() {
+  useEffect(() => { document.title = "AI 对话 - AI Drive" }, [])
   const searchParams = useSearchParams()
   const router = useRouter()
   const fileId = searchParams.get("file") || undefined
   const presetQuestion = searchParams.get("q") || undefined
+  const compareMode = searchParams.get("mode") === "compare"
+  const fileA = searchParams.get("fileA") || undefined
+  const fileB = searchParams.get("fileB") || undefined
   const { data: convsData, isLoading } = useConversations()
 
   useEffect(() => {
@@ -19,7 +23,7 @@ function ChatPageInner() {
     }
   }, [convsData, isLoading, fileId, presetQuestion, router])
 
-  return <ChatView fileScope={fileId} presetQuestion={presetQuestion} />
+  return <ChatView fileScope={fileId} presetQuestion={presetQuestion} compareMode={compareMode} fileA={fileA} fileB={fileB} />
 }
 
 export default function ChatPage() {

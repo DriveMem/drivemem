@@ -1,6 +1,6 @@
 "use client"
 import { useState, useCallback, useEffect } from "react"
-import { MessageSquare, FileText, Folder, Files, ChevronDown } from "lucide-react"
+import { MessageSquare, FileText, Folder, Files, ChevronDown, Link2, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
 import { ChatInput } from "@/components/chat/chat-input"
@@ -72,13 +72,29 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
   )
 }
 
-export function ChatView({ conversationId: initialConversationId, fileScope, presetQuestion }: { conversationId?: string; fileScope?: string; presetQuestion?: string }) {
+export function ChatView({ conversationId: initialConversationId, fileScope, presetQuestion, compareMode, fileA, fileB }: { conversationId?: string; fileScope?: string; presetQuestion?: string; compareMode?: boolean; fileA?: string; fileB?: string }) {
   const [conversationId, setConversationId] = useState<string | undefined>(initialConversationId)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [streaming, setStreaming] = useState<string | undefined>(undefined)
   const [scope, setScope] = useState<ScopeType>(fileScope ? "file" : "all")
   const [scopeId, setScopeId] = useState<string | undefined>(fileScope || undefined)
+
+  // Compare mode: force scope to "all" and extract file names from query
+  const compareFileNames = compareMode && presetQuestion
+    ? (() => {
+        const match = presetQuestion.match(/对比「(.+?)」和「(.+?)」/)
+        return match ? { a: match[1], b: match[2] } : null
+      })()
+    : null
+
+  useEffect(() => {
+    if (compareMode) {
+      setScope("all")
+      setScopeId(undefined)
+    }
+  }, [compareMode])
   const [scopeLabel, setScopeLabel] = useState<string | undefined>(undefined)
+  const [followUpSuggestions, setFollowUpSuggestions] = useState<string[]>([])
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const queryClient = useQueryClient()
@@ -112,6 +128,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
 
   const handleSend = useCallback(async (content: string) => {
     setError(null)
+    setFollowUpSuggestions([])
     const userMsg: ChatMessage = { id: "u-" + Date.now(), role: "user", content, createdAt: new Date().toISOString() }
     setMessages((prev) => [...prev, userMsg])
     setSending(true)
@@ -173,6 +190,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       let buffer = ""
       let fullContent = ""
       let assistantCitations: any[] = []
+      let currentEventType = ""
 
       if (!reader) throw new Error("No reader")
 
@@ -185,10 +203,16 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         buffer = lines.pop() || ""
 
         for (const line of lines) {
-          if (line.startsWith("data: ")) {
+          if (line.startsWith("event: ")) {
+            currentEventType = line.slice(7).trim()
+          } else if (line.startsWith("data: ")) {
             try {
               const data = JSON.parse(line.slice(6))
-              if (data.content !== undefined) {
+              if (currentEventType === "suggestions") {
+                if (Array.isArray(data.suggestions)) {
+                  setFollowUpSuggestions(data.suggestions)
+                }
+              } else if (data.content !== undefined) {
                 fullContent += data.content
                 setStreaming(fullContent)
               } else if (data.messageId) {
@@ -197,6 +221,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
                 setError(data.message || "生成失败")
               }
             } catch {}
+            currentEventType = ""
           }
         }
       }
@@ -241,7 +266,6 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
 
   return (
     <div className="flex h-full flex-col">
-      {/* Scope selector */}
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <span className="text-xs text-muted-foreground">AI 记忆范围：</span>
         <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined) }} className="gap-1 text-xs">
@@ -281,7 +305,38 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {messages.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto gap-1 text-xs"
+            onClick={() => {
+              const md = messages.map(m => {
+                const role = m.role === "user" ? "## 👤 用户" : "## 🤖 AI"
+                return `${role}\n\n${m.content}\n`
+              }).join("\n---\n\n")
+              const blob = new Blob([md], { type: "text/markdown" })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement("a")
+              a.href = url
+              a.download = `对话-${new Date().toISOString().slice(0, 10)}.md`
+              a.click()
+              URL.revokeObjectURL(url)
+            }}
+          >
+            <Download className="h-3 w-3" />导出
+          </Button>
+        )}
       </div>
+
+      {compareMode && compareFileNames && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 border-b border-purple-500/20 text-sm">
+          <Link2 className="h-4 w-4 text-purple-400" />
+          <span className="font-medium">对比分析</span>
+          <span className="text-muted-foreground">· {compareFileNames.a} vs {compareFileNames.b}</span>
+        </div>
+      )}
 
       {error && (
         <div className="px-4 py-2 text-sm text-destructive bg-destructive/10 border-b border-border">
@@ -293,6 +348,19 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         <EmptyState indexedCount={indexedCount} onSend={handleSend} />
       )}
       {messages.length > 0 && <MessageList messages={messages} streaming={streaming} />}
+      {followUpSuggestions.length > 0 && (
+        <div className="flex flex-wrap gap-2 px-4 py-2">
+          {followUpSuggestions.map((q, i) => (
+            <button
+              key={i}
+              onClick={() => { handleSend(q); setFollowUpSuggestions([]) }}
+              className="rounded-full border border-border/50 bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      )}
       <ChatInput onSend={handleSend} disabled={sending} />
     </div>
   )
