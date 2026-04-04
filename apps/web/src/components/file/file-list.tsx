@@ -67,6 +67,8 @@ function TypeIcon({ type, name, className }: { type: string; name?: string; clas
     doc: "text-blue-600", docx: "text-blue-600",
     md: "text-green-500", markdown: "text-green-500",
     txt: "text-gray-500",
+    pptx: "text-orange-500", ppt: "text-orange-500",
+    xlsx: "text-emerald-600", xls: "text-emerald-600",
   }
   const colorByType: Record<string, string> = {
     pdf: "text-red-500",
@@ -179,6 +181,8 @@ export function FileList() {
     { key: "all", label: "全部" },
     { key: "pdf", label: "PDF" },
     { key: "word", label: "Word" },
+    { key: "ppt", label: "PPT" },
+    { key: "excel", label: "Excel" },
     { key: "md", label: "Markdown" },
     { key: "txt", label: "文本" },
     { key: "image", label: "图片" },
@@ -190,6 +194,8 @@ export function FileList() {
     switch (typeFilter) {
       case "pdf": return ext === "pdf" || mime.includes("pdf")
       case "word": return ext === "docx" || ext === "doc" || mime.includes("word")
+      case "ppt": return ext === "pptx" || ext === "ppt" || mime.includes("presentation")
+      case "excel": return ext === "xlsx" || ext === "xls" || mime.includes("spreadsheet")
       case "md": return ext === "md" || ext === "markdown"
       case "txt": return ext === "txt" || mime === "text/plain"
       case "image": return mime.startsWith("image/") || ["png","jpg","jpeg","gif","webp"].includes(ext || "")
