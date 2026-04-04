@@ -174,6 +174,41 @@ export default async function userRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // GET /me/stats — 活动统计
+  fastify.get('/me/stats', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    const [fileStats] = await db.select({ count: sql<number>`count(*)` })
+      .from(schema.files)
+      .where(and(eq(schema.files.userId, userId), sql`${schema.files.createdAt} > ${weekAgo.toISOString()}`));
+
+    const [convStats] = await db.select({ count: sql<number>`count(*)` })
+      .from(schema.conversations)
+      .where(and(eq(schema.conversations.userId, userId), sql`${schema.conversations.createdAt} > ${weekAgo.toISOString()}`));
+
+    const [totalFiles] = await db.select({ count: sql<number>`count(*)` })
+      .from(schema.files)
+      .where(eq(schema.files.userId, userId));
+
+    const [totalConvs] = await db.select({ count: sql<number>`count(*)` })
+      .from(schema.conversations)
+      .where(eq(schema.conversations.userId, userId));
+
+    const [linkCount] = await db.select({ count: sql<number>`count(*)` })
+      .from(schema.knowledgeLinks)
+      .where(eq(schema.knowledgeLinks.userId, userId));
+
+    return reply.send({
+      filesThisWeek: Number(fileStats?.count || 0),
+      conversationsThisWeek: Number(convStats?.count || 0),
+      totalFiles: Number(totalFiles?.count || 0),
+      totalConversations: Number(totalConvs?.count || 0),
+      knowledgeLinks: Number(linkCount?.count || 0),
+    });
+  });
+
   // PATCH /me/password — 修改密码
   fastify.patch('/me/password', { preHandler: [requireAuth] }, async (request, reply) => {
     const body = request.body as { currentPassword: string; newPassword: string };
