@@ -469,7 +469,7 @@ export function FileList() {
       <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
       {filteredFiles.length < 5 && filteredFiles.length > 0 && (
         <div className="flex items-center justify-center py-8 text-xs text-muted-foreground/50">
-          拖拽文件到这里上传，或使用 Web Clipper 保存网页
+          拖拽文件到这里上传
         </div>
       )}
       <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
