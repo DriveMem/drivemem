@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, bigint, integer, timestamp, pgEnum, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, bigint, integer, timestamp, pgEnum, jsonb, boolean } from 'drizzle-orm/pg-core';
 
 export const authProviderEnum = pgEnum('auth_provider', ['credentials', 'google', 'github']);
 
@@ -60,6 +60,7 @@ export const conversations = pgTable('conversations', {
   scopeType: scopeTypeEnum('scope_type').notNull().default('all'),
   scopeId: uuid('scope_id'),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  isPinned: boolean('is_pinned').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

@@ -71,7 +71,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
       .select()
       .from(conversations)
       .where(eq(conversations.userId, user.id))
-      .orderBy(desc(conversations.updatedAt));
+      .orderBy(desc(conversations.isPinned), desc(conversations.updatedAt));
 
     return { conversations: result };
   });
@@ -97,6 +97,29 @@ export default async function conversationRoutes(app: FastifyInstance) {
       .orderBy(asc(messages.createdAt));
 
     return { ...conversation, messages: msgs };
+  });
+
+  // PATCH /:id — update conversation (pin/unpin, rename)
+  app.patch('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const user = request.user!;
+    const body = request.body as { isPinned?: boolean; title?: string };
+
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(and(eq(conversations.id, id), eq(conversations.userId, user.id)));
+
+    if (!conversation) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'Conversation not found', status: 404 } });
+    }
+
+    const updates: Record<string, unknown> = { updatedAt: new Date() };
+    if (typeof body.isPinned === 'boolean') updates.isPinned = body.isPinned;
+    if (body.title) updates.title = body.title;
+
+    const [updated] = await db.update(conversations).set(updates).where(eq(conversations.id, id)).returning();
+    return reply.send(updated);
   });
 
   // DELETE /:id — delete conversation
