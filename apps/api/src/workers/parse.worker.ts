@@ -101,6 +101,14 @@ const worker = new Worker<ParseJobData>(
 
       console.log('[file-parse] File ' + fileId + ' indexed with ' + chunks.length + ' chunks');
 
+      // Notification: file indexed
+      await db.insert(schema.notifications).values({
+        userId,
+        type: 'file_indexed',
+        title: '📄 文件已索引',
+        message: `「${file?.name}」已完成 AI 解析，可以开始提问了`,
+      });
+
       // Clear insight cache so it regenerates with new file data
       await db.update(schema.users).set({ insight: null }).where(eq(schema.users.id, userId));
 
@@ -113,6 +121,14 @@ const worker = new Worker<ParseJobData>(
       if (summary) {
         await db.update(files).set({ summary }).where(eq(files.id, fileId));
         console.log('[file-parse] Summary generated for ' + fileId);
+
+        // Notification: summary generated
+        await db.insert(schema.notifications).values({
+          userId,
+          type: 'summary_generated',
+          title: '📝 AI 摘要已生成',
+          message: `「${file?.name}」的 AI 摘要已自动生成`,
+        });
       }
     } catch (summaryErr) {
       console.warn('[file-parse] Summary generation failed (non-blocking):', (summaryErr as Error).message);
@@ -189,6 +205,16 @@ const worker = new Worker<ParseJobData>(
               console.log(`[file-parse] Knowledge link: ${fileId} <-> ${matchedFile.id} (${relType})`);
             }
           }
+        }
+
+        // Notification: knowledge links found (one per file)
+        if (lines.length > 0) {
+          await db.insert(schema.notifications).values({
+            userId,
+            type: 'knowledge_link_found',
+            title: '🔗 发现知识关联',
+            message: `AI 发现「${file?.name}」和其他文件存在关联`,
+          });
         }
       }
     } catch (linkErr) {

@@ -54,6 +54,7 @@ import exportRoutes from './routes/export.js';
 import clipRoutes from './routes/clips.js';
 import sharesRoutes from './routes/shares.js';
 import reportsRoutes from './routes/reports.js';
+import notificationRoutes from './routes/notifications.js';
 
 import demoGuard from './plugins/demo-guard.js';
 
@@ -69,6 +70,7 @@ await app.register(exportRoutes, { prefix: '/api/users/me' });
 await app.register(clipRoutes, { prefix: '/api/clips' });
 await app.register(sharesRoutes, { prefix: '/api' });
 await app.register(reportsRoutes, { prefix: '/api/reports' });
+await app.register(notificationRoutes, { prefix: '/api/notifications' });
 
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {

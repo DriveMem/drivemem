@@ -119,6 +119,17 @@ export const shares = pgTable('shares', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// --- Notifications ---
+export const notifications = pgTable('notifications', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: text('type').notNull(), // 'file_indexed' | 'summary_generated' | 'knowledge_link_found' | 'insight_updated'
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  read: boolean('read').notNull().default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // --- User Memory ---
 export const userMemory = pgTable('user_memory', {
   id: uuid('id').defaultRandom().primaryKey(),
