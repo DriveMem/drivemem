@@ -78,10 +78,11 @@ export default function SharedReportPage() {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{data.report}</ReactMarkdown>
           </div>
         </div>
-        <div className="mt-8 text-center">
-          <p className="text-muted-foreground">用 AI Drive 生成你自己的分析报告</p>
-          <Button asChild className="mt-3">
-            <Link href="/signup">免费开始</Link>
+        <div className="mt-8 rounded-2xl bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 border border-blue-500/20 p-8 text-center">
+          <h2 className="text-xl font-bold">🚀 免费创建你的 AI 知识库</h2>
+          <p className="mt-2 text-sm text-muted-foreground">上传文件即可开始 — AI 自动生成分析报告</p>
+          <Button asChild className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-8">
+            <Link href="/signup">免费注册</Link>
           </Button>
         </div>
       </div>
