@@ -72,7 +72,7 @@ const worker = new Worker<ParseJobData>(
       const buffer = await getObject(s3Key);
       const text = await parseDocument(buffer, mimeType);
 
-      const [file] = await db.select({ name: files.name, folderId: files.folderId })
+      const [file] = await db.select({ name: files.name, folderId: files.folderId, previousVersionId: files.previousVersionId })
         .from(files).where(eq(files.id, fileId));
 
       const chunks = chunkText(text, file?.name ?? 'unknown');
@@ -132,6 +132,34 @@ const worker = new Worker<ParseJobData>(
       }
     } catch (summaryErr) {
       console.warn('[file-parse] Summary generation failed (non-blocking):', (summaryErr as Error).message);
+    }
+
+    // File version comparison
+    if (file?.previousVersionId) {
+      try {
+        const [oldFile] = await db.select({ summary: files.summary, name: files.name })
+          .from(files)
+          .where(eq(files.id, file.previousVersionId));
+
+        const [currentFile] = await db.select({ summary: files.summary }).from(files).where(eq(files.id, fileId));
+        const currentSummary = currentFile?.summary;
+
+        if (oldFile?.summary && currentSummary) {
+          const { chat } = await import('../services/llm.service.js');
+          const diffPrompt = `对比以下两个版本的变化，50字以内：\n旧版本摘要：${oldFile.summary.substring(0, 200)}\n新版本摘要：${currentSummary.substring(0, 200)}`;
+          const diff = await chat([{ role: 'user', content: diffPrompt }]);
+
+          await db.insert(schema.notifications).values({
+            userId,
+            type: 'file_updated',
+            title: '📄 文件已更新',
+            message: `「${file.name}」更新了 — ${diff.trim().slice(0, 100)}`,
+          });
+          console.log('[file-parse] Version diff notification created for ' + fileId);
+        }
+      } catch (diffErr) {
+        console.warn('[file-parse] Version diff failed (non-blocking):', (diffErr as Error).message);
+      }
     }
 
 // Auto-suggest folder classification

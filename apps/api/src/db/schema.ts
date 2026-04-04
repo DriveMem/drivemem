@@ -47,6 +47,7 @@ export const files = pgTable('files', {
   summary: text('summary'),
   suggestedFolder: text('suggested_folder'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  previousVersionId: uuid('previous_version_id'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

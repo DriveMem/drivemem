@@ -115,6 +115,22 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       if (!folder) throw new AppError(ErrorCodes.NOT_FOUND, 'Folder not found', 404);
     }
 
+    // Check for existing file with same name (version detection)
+    const existingFiles = await db.select({ id: schema.files.id, name: schema.files.name })
+      .from(schema.files)
+      .where(and(eq(schema.files.userId, userId), eq(schema.files.name, body.fileName)));
+
+    let previousVersionId: string | null = null;
+    if (existingFiles.length > 0) {
+      const old = existingFiles[0];
+      previousVersionId = old.id;
+      const ext = old.name.lastIndexOf('.') > -1 ? old.name.substring(old.name.lastIndexOf('.')) : '';
+      const baseName = old.name.lastIndexOf('.') > -1 ? old.name.substring(0, old.name.lastIndexOf('.')) : old.name;
+      const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const newOldName = `${baseName}_${timestamp}${ext}`;
+      await db.update(schema.files).set({ name: newOldName }).where(eq(schema.files.id, old.id));
+    }
+
     // Create file record
     const s3Key = `users/${userId}/files/${crypto.randomUUID()}/${body.fileName}`;
     const uniqueName = await resolveUniqueName(body.fileName, body.folderId, userId);
@@ -128,6 +144,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       folderId: body.folderId,
       userId,
       s3Key,
+      previousVersionId,
     }).returning();
 
     const uploadUrl = await generateUploadUrl(s3Key, body.mimeType);
@@ -340,6 +357,22 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       ContentType: mimeType,
     }));
 
+    // Check for existing file with same name (version detection)
+    const existingUploadFiles = await db.select({ id: schema.files.id, name: schema.files.name })
+      .from(schema.files)
+      .where(and(eq(schema.files.userId, userId), eq(schema.files.name, fileName)));
+
+    let previousVersionId: string | null = null;
+    if (existingUploadFiles.length > 0) {
+      const old = existingUploadFiles[0];
+      previousVersionId = old.id;
+      const ext = old.name.lastIndexOf('.') > -1 ? old.name.substring(old.name.lastIndexOf('.')) : '';
+      const baseName = old.name.lastIndexOf('.') > -1 ? old.name.substring(0, old.name.lastIndexOf('.')) : old.name;
+      const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const newOldName = `${baseName}_${timestamp}${ext}`;
+      await db.update(schema.files).set({ name: newOldName }).where(eq(schema.files.id, old.id));
+    }
+
     // Create file record
     const [file] = await db.insert(schema.files).values({
       id: fileId,
@@ -351,6 +384,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       folderId: folderId && folderId !== '' ? folderId : null,
       userId,
       s3Key,
+      previousVersionId,
     }).returning();
 
     // Update storage
