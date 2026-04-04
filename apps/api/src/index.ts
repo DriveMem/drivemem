@@ -55,7 +55,10 @@ import clipRoutes from './routes/clips.js';
 import sharesRoutes from './routes/shares.js';
 import reportsRoutes from './routes/reports.js';
 
+import demoGuard from './plugins/demo-guard.js';
+
 await app.register(authPlugin);
+await app.register(demoGuard);
 await app.register(authRoutes, { prefix: '/api/auth' });
 await app.register(userRoutes, { prefix: '/api/users' });
 await app.register(fileRoutes, { prefix: '/api/files' });
