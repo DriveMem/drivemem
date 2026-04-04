@@ -1,6 +1,6 @@
 "use client"
 
-import { FileText, MessageSquare, Settings, PanelLeftClose, PanelLeft } from "lucide-react"
+import { FileText, MessageSquare, CalendarDays, Settings, PanelLeftClose, PanelLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useLayoutStore } from "@/stores/layout-store"
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 const navItems = [
   { href: "/dashboard", icon: FileText, label: "我的文件" },
   { href: "/chat", icon: MessageSquare, label: "AI 对话" },
+  { href: "/timeline", icon: CalendarDays, label: "时间线" },
   { href: "/settings", icon: Settings, label: "设置" },
 ] as const
 
