@@ -25,10 +25,10 @@ export function ReportSection() {
       .catch(() => {})
   }, [])
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (type: "analysis" | "study" = "analysis") => {
     setGenerating(true)
     try {
-      const data = await apiFetch("/api/reports/generate", { method: "POST" })
+      const data = await apiFetch("/api/reports/generate", { method: "POST", body: JSON.stringify({ type }) })
       if (data?.report) setReport(data.report)
       if (data?.id) setReportId(data.id)
     } catch {} finally { setGenerating(false) }
@@ -66,9 +66,14 @@ export function ReportSection() {
 
   return (
     <div className="mx-4 mb-4 space-y-3">
-      <Button onClick={handleGenerate} disabled={generating} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-        {generating ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />正在生成分析报告...</> : <>📊 生成分析报告</>}
-      </Button>
+      <div className="flex gap-2">
+        <Button onClick={() => handleGenerate("analysis")} disabled={generating} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+          {generating ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />生成中...</> : <>📊 分析报告</>}
+        </Button>
+        <Button onClick={() => handleGenerate("study")} disabled={generating} variant="outline" className="flex-1">
+          {generating ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />生成中...</> : <>📝 学习笔记</>}
+        </Button>
+      </div>
       {report && (
         <div className="rounded-xl border p-6 relative">
           <div className="absolute top-4 right-4 flex gap-2">
