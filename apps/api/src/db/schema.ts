@@ -140,3 +140,13 @@ export const userMemory = pgTable('user_memory', {
   source: uuid('source'), // conversationId
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// --- Feedback ---
+export const feedback = pgTable('feedback', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  content: text('content').notNull(),
+  email: text('email'),
+  page: text('page'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
