@@ -9,6 +9,8 @@ export default async function reportsRoutes(fastify: FastifyInstance) {
   // POST /generate — 生成分析报告
   fastify.post('/generate', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;
+    const body = (request.body || {}) as { type?: string };
+    const reportType = body.type || 'analysis'; // 'analysis' | 'study'
     
     // Get all user's indexed files with summaries
     const userFiles = await db.select({ 
@@ -44,7 +46,7 @@ export default async function reportsRoutes(fastify: FastifyInstance) {
       ? links.map(l => `- ${l.relationType}: ${l.description}`).join('\n')
       : '暂无文件间关联';
     
-    const prompt = `你是专业的文档分析师。基于用户知识库中的文件信息，生成一份结构化的文档分析报告。
+    const analysisPrompt = `你是专业的文档分析师。基于用户知识库中的文件信息，生成一份结构化的文档分析报告。
 
 ## 用户文件（${userFiles.length} 个）
 ${fileSummaries}
@@ -67,6 +69,29 @@ ${linkInfo}
 基于分析结果，给出 2-3 条具体的、可执行的建议（如：可以深入研究某个方向、某些文件可以合并整理、知识库有哪些空白需要补充等）。
 
 用中文，语气专业友好。报告应有实际价值，不要空话。`;
+
+    const studyPrompt = `你是专业的学习助手。基于用户上传的文件内容，生成一份结构化的学习笔记。
+
+## 用户文件（${userFiles.length} 个）
+${fileSummaries}
+
+请生成以下格式的学习笔记：
+
+## 📝 核心知识点
+列出所有文件中的核心知识点，按主题分组，每个知识点用简洁的一句话概括。
+
+## 🔑 重点难点
+标注哪些知识点是重点（必须掌握）和难点（容易混淆或理解困难），给出理解提示。
+
+## ❓ 模拟测试题
+基于文件内容出 5 道测试题（选择题或简答题），每题附标准答案和解析。
+
+## 📋 学习建议
+给出 2-3 条具体的学习路径建议，包括学习顺序、重点关注方向、拓展阅读方向。
+
+用中文，语气友好鼓励。内容要有实际学习价值。`;
+
+    const prompt = reportType === 'study' ? studyPrompt : analysisPrompt;
     
     try {
       const report = await chat([{ role: 'user', content: prompt }]);
