@@ -205,7 +205,7 @@ export default function LandingPage() {
 
       {/* ===== Footer ===== */}
       <footer className="relative z-10 border-t border-gray-800 px-6 py-8 text-center text-sm text-gray-500">
-        © 2026 AI Drive · <Link href="/privacy" className="text-gray-500 hover:text-gray-400 text-sm">隐私政策</Link>
+        © 2026 AI Drive · <Link href="/privacy" className="text-gray-500 hover:text-gray-400 text-sm">隐私政策</Link> · <Link href="/terms" className="text-gray-500 hover:text-gray-400 text-sm">使用条款</Link>
       </footer>
     </main>
   )
