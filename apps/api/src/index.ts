@@ -30,6 +30,14 @@ app.addHook('onRequest', async (request) => {
 await app.register(cors, { origin: [config.FRONTEND_URL, 'http://localhost', 'http://localhost:3000', 'https://drive.verrrnm.cloud', 'https://verrrnm.cloud', 'https://web-indol-omega-43.vercel.app', /\.vercel\.app$/], credentials: true });
 await app.register(sensible);
 
+// Rate limiting — 100 req/min per IP, stricter for auth endpoints
+import rateLimit from '@fastify/rate-limit';
+await app.register(rateLimit, {
+  max: 100,
+  timeWindow: '1 minute',
+  keyGenerator: (request) => request.ip,
+});
+
 import multipart from '@fastify/multipart';
 await app.register(multipart, { limits: { fileSize: 52428800 } }); // 50MB
 
