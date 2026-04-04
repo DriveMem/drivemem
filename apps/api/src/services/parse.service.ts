@@ -1,5 +1,6 @@
 import { PDFParse } from 'pdf-parse';
 import mammoth from 'mammoth';
+import { parseOffice } from 'officeparser';
 import { AppError } from '../lib/errors.js';
 
 const MAX_TEXT_LENGTH = 500_000;
@@ -42,6 +43,12 @@ export async function parseDocument(buffer: Buffer, mimeType: string): Promise<s
       case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
         const result = await mammoth.extractRawText({ buffer });
         text = result.value;
+        break;
+      }
+      case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+      case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+        const ast = await parseOffice(buffer);
+        text = ast.toText();
         break;
       }
       default:
