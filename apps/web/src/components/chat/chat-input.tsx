@@ -43,7 +43,7 @@ export function ChatInput({ onSend, disabled, dailyLimitReached }: { onSend: (me
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="问 AI 任何关于你文件的问题..."
+          placeholder="问 AI 任何问题，或探索你的知识库..."
           disabled={disabled}
           rows={1}
           className="flex-1 bg-transparent resize-none outline-none text-sm placeholder-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"

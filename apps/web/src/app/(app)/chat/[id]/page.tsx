@@ -1,3 +1,5 @@
+export const metadata = { title: "AI 对话 - AI Drive" }
+
 import { ChatView } from "@/components/chat/chat-view"
 export default function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
   // In Next.js 15, params is a Promise in server components

@@ -5,6 +5,7 @@ import { ChatView } from "@/components/chat/chat-view"
 import { useConversations } from "@/hooks/use-conversations"
 
 function ChatPageInner() {
+  useEffect(() => { document.title = "AI 对话 - AI Drive" }, [])
   const searchParams = useSearchParams()
   const router = useRouter()
   const fileId = searchParams.get("file") || undefined
