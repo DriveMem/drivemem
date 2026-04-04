@@ -4,6 +4,16 @@ import { apiFetch } from "@/lib/api"
 import { FileText, Clock } from "lucide-react"
 import Link from "next/link"
 
+function getFileColor(name: string): string {
+  const ext = name.split(".").pop()?.toLowerCase()
+  if (ext === "pdf") return "text-red-500"
+  if (ext === "docx" || ext === "doc") return "text-blue-600"
+  if (ext === "pptx" || ext === "ppt") return "text-orange-500"
+  if (ext === "xlsx" || ext === "xls") return "text-emerald-600"
+  if (ext === "md" || ext === "markdown") return "text-green-500"
+  return "text-muted-foreground"
+}
+
 export default function TimelinePage() {
   useEffect(() => { document.title = "知识时间线 - AI Drive" }, [])
   const [files, setFiles] = useState<any[]>([])
@@ -46,7 +56,7 @@ export default function TimelinePage() {
                     <div className="absolute -left-[1.625rem] top-1 h-3 w-3 rounded-full bg-blue-500 ring-4 ring-background" />
                     <Link href={`/files/${f.id}/preview`} className="block rounded-lg border p-4 hover:bg-accent/50 transition">
                       <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <FileText className={`h-4 w-4 ${getFileColor(f.name || f.originalName || "")}`} />
                         <span className="font-medium text-sm">{f.name || f.originalName}</span>
                       </div>
                       {f.summary && (
