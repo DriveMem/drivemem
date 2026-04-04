@@ -75,6 +75,9 @@ await app.register(notificationRoutes, { prefix: '/api/notifications' });
 import feedbackRoutes from './routes/feedback.js';
 await app.register(feedbackRoutes, { prefix: '/api/feedback' });
 
+import adminRoutes from './routes/admin.js';
+await app.register(adminRoutes, { prefix: '/api/admin' });
+
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {
   return reply.send({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
