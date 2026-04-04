@@ -1,9 +1,11 @@
 "use client"
 
-import { FileText, MessageSquare, Loader2, AlertCircle } from "lucide-react"
+import { useState, useEffect } from "react"
+import { FileText, MessageSquare, Loader2, AlertCircle, Link2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useFile, useMoveFile } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
+import { apiFetch } from "@/lib/api"
 import Link from "next/link"
 
 function formatSize(bytes: number): string {
@@ -78,9 +80,37 @@ export function FileInspector({ fileId }: { fileId: string }) {
           </Button>
         </div>
       )}
+      <KnowledgeLinksForFile fileId={fileId} />
       <Button className="w-full gap-2" asChild>
         <Link href={"/chat?file=" + file.id}><MessageSquare className="h-4 w-4" />问 AI 关于这个文件</Link>
       </Button>
+    </div>
+  )
+}
+
+function KnowledgeLinksForFile({ fileId }: { fileId: string }) {
+  const [links, setLinks] = useState<any[]>([])
+  useEffect(() => {
+    apiFetch("/api/users/me/knowledge-links")
+      .then((data: any) => {
+        const all = data?.links || []
+        setLinks(all.filter((l: any) => l.fileAId === fileId || l.fileBId === fileId))
+      })
+      .catch(() => {})
+  }, [fileId])
+  if (links.length === 0) return null
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-medium text-muted-foreground">🔗 知识关联</p>
+      {links.map((l: any) => {
+        const otherName = l.fileAId === fileId ? l.fileBName : l.fileAName
+        const otherIdVal = l.fileAId === fileId ? l.fileBId : l.fileAId
+        return (
+          <Link key={l.id} href={`/files/${otherIdVal}/preview`} className="block text-xs text-blue-400 hover:underline truncate">
+            {l.relationType === "similar" ? "🔗" : l.relationType === "complementary" ? "🤝" : "⚡"} {otherName} — {l.description}
+          </Link>
+        )
+      })}
     </div>
   )
 }
