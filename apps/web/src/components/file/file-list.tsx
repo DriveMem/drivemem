@@ -42,6 +42,7 @@ interface FileItem {
   errorMessage?: string
   summary?: string | null
   suggestedFolder?: string | null
+  previousVersionId?: string | null
 }
 
 function fmtSize(b: number) { return !b ? "—" : b < 1024 ? "< 1 KB" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
@@ -379,6 +380,7 @@ export function FileList() {
                 />
                 <TypeIcon type={file.type} name={file.name} />
                 <span className="truncate text-sm flex-1 min-w-0">{file.name}</span>
+                {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">已更新</span>}
                 {file.suggestedFolder && !file.folderId && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
