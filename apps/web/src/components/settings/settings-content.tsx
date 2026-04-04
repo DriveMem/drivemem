@@ -32,6 +32,27 @@ export default function SettingsContent() {
     })
   }, [])
 
+  const [memories, setMemories] = useState<any[]>([])
+
+  const fetchMemories = async () => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const data = await apiFetch("/api/users/me/memories")
+      setMemories(data.memories || [])
+    } catch { /* ignore */ }
+  }
+
+  useEffect(() => { fetchMemories() }, [])
+
+  const handleDeleteMemory = async (id: string) => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/users/me/memories/${id}`, { method: "DELETE" })
+      toast.success("已删除")
+      fetchMemories()
+    } catch { toast.error("删除失败") }
+  }
+
   const [storageUsed, setStorageUsed] = useState<string>("—")
   const [storageTotal, setStorageTotal] = useState<string>("—")
   const [chatUsedToday, setChatUsedToday] = useState<string>("—")
@@ -132,6 +153,34 @@ export default function SettingsContent() {
           <p className="text-sm text-muted-foreground">
             今日对话：{chatUsedToday} / {chatLimitToday} 次
           </p>
+        </CardContent>
+      </Card>
+
+      {/* AI Memory */}
+      <Card>
+        <CardHeader>
+          <CardTitle>🧠 AI 记忆</CardTitle>
+          <p className="text-sm text-muted-foreground">AI 从你的对话中学到的偏好和关注点</p>
+        </CardHeader>
+        <CardContent>
+          {memories.length === 0 ? (
+            <p className="text-sm text-muted-foreground">AI 还没有记住任何内容。多聊聊试试。</p>
+          ) : (
+            <ul className="space-y-3">
+              {memories.map(m => (
+                <li key={m.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
+                  <div>
+                    <p className="text-sm font-medium">{m.key}</p>
+                    <p className="text-xs text-muted-foreground">{m.value}</p>
+                    <p className="text-xs text-muted-foreground/50 mt-1">{new Date(m.createdAt).toLocaleDateString("zh-CN")}</p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => handleDeleteMemory(m.id)}>
+                    ✕
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
 
