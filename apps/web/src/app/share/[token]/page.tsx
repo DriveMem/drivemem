@@ -71,6 +71,7 @@ export default function SharePage() {
             </CardContent>
           </Card>
         ) : (
+          <>
           <Card>
             <CardContent className="p-8">
               <h1 className="text-2xl font-bold">{data.file.name}</h1>
@@ -91,7 +92,6 @@ export default function SharePage() {
             </CardContent>
           </Card>
 
-          {/* CTA */}
           <div className="mt-8 rounded-2xl bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 border border-blue-500/20 p-8 text-center">
             <h2 className="text-xl font-bold">🚀 免费创建你的 AI 知识库</h2>
             <p className="mt-2 text-sm text-muted-foreground">上传文件即可开始 — AI 自动理解、记忆、分析</p>
@@ -99,6 +99,7 @@ export default function SharePage() {
               <Link href="/signup">免费注册</Link>
             </Button>
           </div>
+        </>
         )}
       </div>
     </div>
