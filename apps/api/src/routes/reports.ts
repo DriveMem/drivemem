@@ -1,7 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, desc, sql, and } from 'drizzle-orm';
+import { eq, desc, sql, and, isNotNull } from 'drizzle-orm';
+import { randomBytes } from 'crypto';
 import { requireAuth } from '../plugins/auth.js';
 
 export default async function reportsRoutes(fastify: FastifyInstance) {
@@ -97,5 +98,36 @@ ${linkInfo}
     }
     
     return reply.send({ id: latest.id, report: latest.content, createdAt: latest.createdAt });
+  });
+
+  // POST /:id/share — 创建报告分享链接
+  fastify.post('/:id/share', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = request.user!.id;
+
+    const [report] = await db.select().from(schema.reports).where(and(eq(schema.reports.id, id), eq(schema.reports.userId, userId)));
+    if (!report) {
+      return reply.status(404).send({ error: 'Report not found' });
+    }
+
+    // Check if share already exists
+    const [existing] = await db.select().from(schema.shares).where(and(eq(schema.shares.reportId, id), eq(schema.shares.userId, userId)));
+    if (existing) {
+      return reply.send({ token: existing.token, url: `${process.env.FRONTEND_URL || 'https://drive.verrrnm.cloud'}/share/report/${existing.token}` });
+    }
+
+    const token = randomBytes(16).toString('hex');
+
+    await db.insert(schema.shares).values({
+      token,
+      userId,
+      type: 'report',
+      reportId: id,
+    });
+
+    return reply.status(201).send({
+      token,
+      url: `${process.env.FRONTEND_URL || 'https://drive.verrrnm.cloud'}/share/report/${token}`,
+    });
   });
 }

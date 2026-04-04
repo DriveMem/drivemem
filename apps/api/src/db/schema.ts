@@ -110,8 +110,10 @@ export const reports = pgTable('reports', {
 export const shares = pgTable('shares', {
   id: uuid('id').defaultRandom().primaryKey(),
   token: text('token').notNull().unique(),
-  fileId: uuid('file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  fileId: uuid('file_id').references(() => files.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: text('type').notNull().default('file'),
+  reportId: uuid('report_id').references(() => reports.id, { onDelete: 'cascade' }),
   expiresAt: timestamp('expires_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

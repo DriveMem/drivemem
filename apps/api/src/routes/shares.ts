@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { randomBytes } from 'crypto';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { requireAuth } from '../plugins/auth.js';
 import { generatePreviewUrl } from '../services/s3.service.js';
 
@@ -65,6 +65,15 @@ export default async function sharesRoutes(fastify: FastifyInstance) {
       return reply.status(410).send({ error: 'Share link has expired' });
     }
 
+    // If this is a report share, redirect to report endpoint
+    if (share.type === 'report') {
+      return reply.status(404).send({ error: 'Use /shares/report/:token for report shares' });
+    }
+
+    if (!share.fileId) {
+      return reply.status(404).send({ error: 'File not found' });
+    }
+
     // Get file info
     const [file] = await db.select({
       id: schema.files.id,
@@ -97,6 +106,40 @@ export default async function sharesRoutes(fastify: FastifyInstance) {
       },
       downloadUrl,
       sharedBy: owner?.name || 'Unknown',
+    });
+  });
+
+  // GET /report/:token — 公开查看分享的报告
+  fastify.get('/report/:token', async (request, reply) => {
+    const { token } = request.params as { token: string };
+
+    const [share] = await db.select().from(schema.shares)
+      .where(and(eq(schema.shares.token, token), eq(schema.shares.type, 'report')));
+
+    if (!share || !share.reportId) {
+      return reply.status(404).send({ error: 'Report share not found' });
+    }
+
+    if (share.expiresAt && new Date() > share.expiresAt) {
+      return reply.status(410).send({ error: 'Share link has expired' });
+    }
+
+    const [report] = await db.select().from(schema.reports).where(eq(schema.reports.id, share.reportId));
+    if (!report) {
+      return reply.status(404).send({ error: 'Report not found' });
+    }
+
+    const [fileCount] = await db.select({ count: sql<number>`count(*)` })
+      .from(schema.files)
+      .where(and(eq(schema.files.userId, share.userId), sql`${schema.files.summary} IS NOT NULL`));
+
+    const [owner] = await db.select({ name: schema.users.name }).from(schema.users).where(eq(schema.users.id, share.userId));
+
+    return reply.send({
+      report: report.content,
+      createdAt: report.createdAt,
+      fileCount: Number(fileCount?.count || 0),
+      sharedBy: owner?.name || 'AI Drive 用户',
     });
   });
 }
