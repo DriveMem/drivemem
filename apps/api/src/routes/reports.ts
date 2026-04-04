@@ -91,7 +91,35 @@ ${fileSummaries}
 
 用中文，语气友好鼓励。内容要有实际学习价值。`;
 
-    const prompt = reportType === 'study' ? studyPrompt : analysisPrompt;
+    const competitivePrompt = `你是专业的竞品分析师。基于用户上传的产品和竞品相关文件，生成一份结构化的竞品分析报告。
+
+## 用户文件（${userFiles.length} 个）
+${fileSummaries}
+
+## 文件间关联
+${linkInfo}
+
+请生成以下格式的竞品分析报告：
+
+## 📊 产品概览
+简要介绍每个涉及的产品/公司，一句话概括其核心定位。
+
+## 🔍 功能对比矩阵
+用表格对比各产品的核心功能、特色能力、定价模式、目标用户等维度。
+
+## ⚡ 差异化分析
+深入分析各产品的独特优势和劣势，指出真正的差异化壁垒。
+
+## 📈 市场洞察
+基于文件内容分析市场趋势、竞争格局、潜在机会和风险。
+
+## 💡 行动建议
+给出 3-5 条具体的、可执行的战略建议（产品定位、功能优先级、市场策略等）。
+
+用中文，语气专业。报告应有战略价值，适合管理层阅读。`;
+
+    const prompts: Record<string, string> = { analysis: analysisPrompt, study: studyPrompt, competitive: competitivePrompt };
+    const prompt = prompts[reportType] || analysisPrompt;
     
     try {
       const report = await chat([{ role: 'user', content: prompt }]);
