@@ -35,7 +35,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
     }
 
     const fileInfo = recentFiles.map(f => `${f.name}: ${f.summary?.substring(0, 100)}`).join('\n');
-    const prompt = `用户有以下文件：\n${fileInfo}\n\n请基于这些文件内容，生成 3 个用户可能想问的问题。每行一个问题，不要编号，不要引号，直接输出问题文本。`;
+    const prompt = `用户有以下文件：\n${fileInfo}\n\n生成3个用户可能想问的问题。要求：每个问题不超过15字，用日常口语，不要学术句。每行一个，不要编号。`;
 
     try {
       const result = await chat([{ role: 'user', content: prompt }]);
@@ -320,7 +320,7 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : '（未找到相�
 
       // Generate follow-up suggestions (non-blocking)
       try {
-        const suggestPrompt = `基于以下AI回答，生成3个用户可能想追问的简短问题（每个不超过20字）。只返回JSON数组格式：["问题1","问题2","问题3"]
+        const suggestPrompt = `基于以下AI回答，生成3个追问问题。要求：每个不超过15字，日常口语，不要学术句。只返回JSON数组：["问题1","问题2","问题3"]
 
 AI回答：${fullContent.substring(0, 300)}`;
         const suggestResult = await chat([{ role: 'user', content: suggestPrompt }]);
