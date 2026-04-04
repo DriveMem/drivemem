@@ -173,4 +173,32 @@ export default async function userRoutes(fastify: FastifyInstance) {
       return reply.send({ insight: null });
     }
   });
+
+  // PATCH /me/password — 修改密码
+  fastify.patch('/me/password', { preHandler: [requireAuth] }, async (request, reply) => {
+    const body = request.body as { currentPassword: string; newPassword: string };
+    if (!body.currentPassword || !body.newPassword) {
+      return reply.status(400).send({ error: { code: 'VALIDATION_ERROR', message: '请填写当前密码和新密码', status: 400 } });
+    }
+    if (body.newPassword.length < 6) {
+      return reply.status(400).send({ error: { code: 'VALIDATION_ERROR', message: '新密码至少 6 位', status: 400 } });
+    }
+
+    const userId = request.user!.id;
+    const [user] = await db.select({ passwordHash: users.passwordHash }).from(users).where(eq(users.id, userId));
+    if (!user?.passwordHash) {
+      return reply.status(400).send({ error: { code: 'NO_PASSWORD', message: '当前账号未设置密码（可能使用第三方登录）', status: 400 } });
+    }
+
+    const bcrypt = await import('bcryptjs');
+    const valid = await bcrypt.compare(body.currentPassword, user.passwordHash);
+    if (!valid) {
+      return reply.status(403).send({ error: { code: 'WRONG_PASSWORD', message: '当前密码不正确', status: 403 } });
+    }
+
+    const newHash = await bcrypt.hash(body.newPassword, 10);
+    await db.update(users).set({ passwordHash: newHash, updatedAt: new Date() }).where(eq(users.id, userId));
+
+    return reply.send({ message: '密码修改成功' });
+  });
 }
