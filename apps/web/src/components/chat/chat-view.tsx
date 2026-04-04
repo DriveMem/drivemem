@@ -97,6 +97,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   const [followUpSuggestions, setFollowUpSuggestions] = useState<string[]>([])
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
   const queryClient = useQueryClient()
 
   const { data: filesData } = useFiles()
@@ -133,6 +134,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
     setMessages((prev) => [...prev, userMsg])
     setSending(true)
     setStreaming("")
+    setFollowUpSuggestions([])
 
     try {
       // Create conversation if needed
@@ -190,9 +192,9 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       let buffer = ""
       let fullContent = ""
       let assistantCitations: any[] = []
-      let currentEventType = ""
-
       if (!reader) throw new Error("No reader")
+
+      setFollowUpSuggestions([])
 
       while (true) {
         const { done, value } = await reader.read()
@@ -202,15 +204,16 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         const lines = buffer.split("\n")
         buffer = lines.pop() || ""
 
+        let currentEvent = ""
         for (const line of lines) {
           if (line.startsWith("event: ")) {
-            currentEventType = line.slice(7).trim()
+            currentEvent = line.slice(7).trim()
           } else if (line.startsWith("data: ")) {
             try {
               const data = JSON.parse(line.slice(6))
-              if (currentEventType === "suggestions") {
-                if (Array.isArray(data.suggestions)) {
-                  setFollowUpSuggestions(data.suggestions)
+              if (currentEvent === "suggestions") {
+                if (data.suggestions?.length) {
+                  setFollowUpSuggestions(data.suggestions.slice(0, 3))
                 }
               } else if (data.content !== undefined) {
                 fullContent += data.content
@@ -221,7 +224,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
                 setError(data.message || "生成失败")
               }
             } catch {}
-            currentEventType = ""
+            currentEvent = ""
           }
         }
       }
@@ -348,14 +351,11 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         <EmptyState indexedCount={indexedCount} onSend={handleSend} />
       )}
       {messages.length > 0 && <MessageList messages={messages} streaming={streaming} />}
-      {followUpSuggestions.length > 0 && (
-        <div className="flex flex-wrap gap-2 px-4 py-2">
+      {followUpSuggestions.length > 0 && !sending && (
+        <div className="flex flex-wrap gap-2 px-4 py-2 border-t border-border">
           {followUpSuggestions.map((q, i) => (
-            <button
-              key={i}
-              onClick={() => { handleSend(q); setFollowUpSuggestions([]) }}
-              className="rounded-full border border-border/50 bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition"
-            >
+            <button key={i} onClick={() => { handleSend(q); setFollowUpSuggestions([]) }}
+              className="rounded-full border border-border/50 bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition">
               {q}
             </button>
           ))}
