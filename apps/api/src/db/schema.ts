@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, bigint, integer, timestamp, pgEnum, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, bigint, integer, timestamp, pgEnum, jsonb, boolean } from 'drizzle-orm/pg-core';
 
 export const authProviderEnum = pgEnum('auth_provider', ['credentials', 'google', 'github']);
 
@@ -60,6 +60,7 @@ export const conversations = pgTable('conversations', {
   scopeType: scopeTypeEnum('scope_type').notNull().default('all'),
   scopeId: uuid('scope_id'),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  isPinned: boolean('is_pinned').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -99,11 +100,21 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// --- Reports ---
+export const reports = pgTable('reports', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 export const shares = pgTable('shares', {
   id: uuid('id').defaultRandom().primaryKey(),
   token: text('token').notNull().unique(),
-  fileId: uuid('file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  fileId: uuid('file_id').references(() => files.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: text('type').notNull().default('file'),
+  reportId: uuid('report_id').references(() => reports.id, { onDelete: 'cascade' }),
   expiresAt: timestamp('expires_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

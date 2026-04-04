@@ -1,52 +1,40 @@
-import { pipeline } from '@xenova/transformers';
+import { config } from '../lib/config.js';
 
-const MODEL_NAME = 'Xenova/bge-small-zh-v1.5';
-const EMBEDDING_DIM = 512;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let embedder: any = null;
-let releaseTimer: ReturnType<typeof setTimeout> | null = null;
-
-const RELEASE_DELAY_MS = 60_000; // Release model 60s after last use
-
-async function getEmbedder() {
-  // Cancel pending release
-  if (releaseTimer) {
-    clearTimeout(releaseTimer);
-    releaseTimer = null;
-  }
-  if (!embedder) {
-    console.log(`[embedding] Loading model ${MODEL_NAME}...`);
-    embedder = await pipeline('feature-extraction', MODEL_NAME, { quantized: true });
-    console.log(`[embedding] Model loaded. Dimension: ${EMBEDDING_DIM}`);
-  }
-  return embedder;
-}
-
-function scheduleRelease() {
-  if (releaseTimer) clearTimeout(releaseTimer);
-  releaseTimer = setTimeout(() => {
-    console.log('[embedding] Releasing model to free memory');
-    embedder = null;
-    releaseTimer = null;
-    if (global.gc) global.gc();
-  }, RELEASE_DELAY_MS);
-}
+const EMBEDDING_DIM = 1024; // text-embedding-v3 outputs 1024 dimensions
 
 export async function embedTexts(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
-
-  const model = await getEmbedder();
+  
+  const baseUrl = config.EMBEDDING_BASE_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+  const model = config.EMBEDDING_MODEL || 'text-embedding-v3';
+  const apiKey = config.EMBEDDING_API_KEY || config.OPENAI_API_KEY;
+  
   const results: number[][] = [];
-
-  for (const text of texts) {
-    const output = await model(text, { pooling: 'cls', normalize: true });
-    results.push(Array.from(output.data as Float32Array));
+  
+  // Process in batches of 10 (API limit)
+  for (let i = 0; i < texts.length; i += 10) {
+    const batch = texts.slice(i, i + 10);
+    const response = await fetch(`${baseUrl}/embeddings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        input: batch,
+      }),
+    });
+    
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Embedding API error ${response.status}: ${errText}`);
+    }
+    
+    const data = await response.json() as { data: Array<{ embedding: number[] }> };
+    results.push(...data.data.map((d: { embedding: number[] }) => d.embedding));
   }
-
-  // Schedule model release after batch completes
-  scheduleRelease();
-
+  
   return results;
 }
 

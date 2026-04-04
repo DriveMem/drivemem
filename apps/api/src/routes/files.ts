@@ -361,4 +361,78 @@ export default async function fileRoutes(fastify: FastifyInstance) {
 
     return reply.status(201).send({ fileId: file.id, status: 'parsing' });
   });
+
+  // POST /auto-organize — 一键 AI 整理文件到文件夹
+  fastify.post('/auto-organize', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+
+    // Get all root-level files (no folder)
+    const rootFiles = await db.select({
+      id: schema.files.id,
+      name: schema.files.name,
+      suggestedFolder: schema.files.suggestedFolder,
+      summary: schema.files.summary,
+    })
+      .from(schema.files)
+      .where(and(eq(schema.files.userId, userId), sql`${schema.files.folderId} IS NULL`, eq(schema.files.status, 'indexed')));
+
+    if (rootFiles.length === 0) {
+      return reply.send({ organized: [], created: [], message: '没有需要整理的文件' });
+    }
+
+    // For files without suggestedFolder, generate one
+    const { chat } = await import('../services/llm.service.js');
+    const userFolders = await db.select({ id: schema.folders.id, name: schema.folders.name })
+      .from(schema.folders)
+      .where(eq(schema.folders.userId, userId));
+    const existingNames = userFolders.map(f => f.name);
+
+    for (const f of rootFiles) {
+      if (!f.suggestedFolder && f.summary) {
+        const folderNames = existingNames.length > 0 ? existingNames.join('、') : '工作文档、学习资料、个人文件';
+        const prompt = `文件：${f.name}\n摘要：${f.summary.substring(0, 100)}\n\n现有文件夹：${folderNames}\n\n这个文件最适合放入哪个文件夹？规则：只输出文件夹名称本身，禁止输出解释。如果现有文件夹都不合适，建议一个新的2-4字文件夹名。`;
+        try {
+          const suggested = await chat([{ role: 'user', content: prompt }]);
+          const trimmed = suggested?.trim().replace(/["""]/g, '').split('（')[0]?.trim();
+          if (trimmed && trimmed !== '无') {
+            f.suggestedFolder = trimmed;
+            await db.update(schema.files).set({ suggestedFolder: trimmed }).where(eq(schema.files.id, f.id));
+          }
+        } catch { /* skip */ }
+      }
+    }
+
+    // Group by suggestedFolder
+    const groups: Record<string, typeof rootFiles> = {};
+    for (const f of rootFiles) {
+      const folder = f.suggestedFolder || '未分类';
+      if (!groups[folder]) groups[folder] = [];
+      groups[folder].push(f);
+    }
+
+    const organized: Array<{ folderName: string; fileCount: number }> = [];
+    const created: string[] = [];
+
+    for (const [folderName, files] of Object.entries(groups)) {
+      if (folderName === '未分类') continue;
+
+      // Find or create folder
+      let folder = userFolders.find(f => f.name === folderName);
+      if (!folder) {
+        const [newFolder] = await db.insert(schema.folders).values({ name: folderName, userId }).returning();
+        folder = newFolder;
+        created.push(folderName);
+        existingNames.push(folderName);
+      }
+
+      // Move files
+      for (const f of files) {
+        await db.update(schema.files).set({ folderId: folder.id }).where(eq(schema.files.id, f.id));
+      }
+
+      organized.push({ folderName, fileCount: files.length });
+    }
+
+    return reply.send({ organized, created, message: `AI 整理了 ${organized.reduce((s, o) => s + o.fileCount, 0)} 个文件到 ${organized.length} 个文件夹` });
+  });
 }

@@ -15,6 +15,20 @@
       "when": 1775158622780,
       "tag": "0001_gigantic_omega_sentinel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775306843032,
+      "tag": "0002_stale_swordsman",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775309055017,
+      "tag": "0003_nervous_skreet",
+      "breakpoints": true
     }
   ]
 }

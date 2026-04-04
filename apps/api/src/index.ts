@@ -30,6 +30,14 @@ app.addHook('onRequest', async (request) => {
 await app.register(cors, { origin: [config.FRONTEND_URL, 'http://localhost', 'http://localhost:3000', 'https://drive.verrrnm.cloud', 'https://verrrnm.cloud', 'https://web-indol-omega-43.vercel.app', /\.vercel\.app$/], credentials: true });
 await app.register(sensible);
 
+// Rate limiting — 100 req/min per IP, stricter for auth endpoints
+import rateLimit from '@fastify/rate-limit';
+await app.register(rateLimit, {
+  max: 100,
+  timeWindow: '1 minute',
+  keyGenerator: (request) => request.ip,
+});
+
 import multipart from '@fastify/multipart';
 await app.register(multipart, { limits: { fileSize: 52428800 } }); // 50MB
 
@@ -45,8 +53,12 @@ import searchRoutes from './routes/search.js';
 import exportRoutes from './routes/export.js';
 import clipRoutes from './routes/clips.js';
 import sharesRoutes from './routes/shares.js';
+import reportsRoutes from './routes/reports.js';
+
+import demoGuard from './plugins/demo-guard.js';
 
 await app.register(authPlugin);
+await app.register(demoGuard);
 await app.register(authRoutes, { prefix: '/api/auth' });
 await app.register(userRoutes, { prefix: '/api/users' });
 await app.register(fileRoutes, { prefix: '/api/files' });
@@ -56,6 +68,7 @@ await app.register(searchRoutes, { prefix: '/api/search' });
 await app.register(exportRoutes, { prefix: '/api/users/me' });
 await app.register(clipRoutes, { prefix: '/api/clips' });
 await app.register(sharesRoutes, { prefix: '/api' });
+await app.register(reportsRoutes, { prefix: '/api/reports' });
 
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {

@@ -159,7 +159,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
       ? links.map(l => `${l.relationType}: ${l.description}`).join('\n')
       : '暂无关联';
 
-    const prompt = `用户有以下文件：\n${fileSummaries}\n\n文件间关联：\n${linkInfo}\n\n基于这些信息，生成2-3句话的综合洞察，告诉用户他的知识库有什么特点、文件之间有什么有趣的关系、以及可以做什么深入探索。用中文，语气友好专业，不要用"你好"开头。直接输出洞察文本。`;
+    const prompt = `用户有以下文件：\n${fileSummaries}\n\n文件间关联：\n${linkInfo}\n\n用80字以内总结用户知识库的特点和文件间关系。简洁直白，不要学术语气，不要用"你好"开头。直接输出。`;
 
     try {
       const insight = await chat([{ role: 'user', content: prompt }]);
@@ -172,5 +172,33 @@ export default async function userRoutes(fastify: FastifyInstance) {
     } catch {
       return reply.send({ insight: null });
     }
+  });
+
+  // PATCH /me/password — 修改密码
+  fastify.patch('/me/password', { preHandler: [requireAuth] }, async (request, reply) => {
+    const body = request.body as { currentPassword: string; newPassword: string };
+    if (!body.currentPassword || !body.newPassword) {
+      return reply.status(400).send({ error: { code: 'VALIDATION_ERROR', message: '请填写当前密码和新密码', status: 400 } });
+    }
+    if (body.newPassword.length < 6) {
+      return reply.status(400).send({ error: { code: 'VALIDATION_ERROR', message: '新密码至少 6 位', status: 400 } });
+    }
+
+    const userId = request.user!.id;
+    const [user] = await db.select({ passwordHash: users.passwordHash }).from(users).where(eq(users.id, userId));
+    if (!user?.passwordHash) {
+      return reply.status(400).send({ error: { code: 'NO_PASSWORD', message: '当前账号未设置密码（可能使用第三方登录）', status: 400 } });
+    }
+
+    const bcrypt = await import('bcryptjs');
+    const valid = await bcrypt.compare(body.currentPassword, user.passwordHash);
+    if (!valid) {
+      return reply.status(403).send({ error: { code: 'WRONG_PASSWORD', message: '当前密码不正确', status: 403 } });
+    }
+
+    const newHash = await bcrypt.hash(body.newPassword, 10);
+    await db.update(users).set({ passwordHash: newHash, updatedAt: new Date() }).where(eq(users.id, userId));
+
+    return reply.send({ message: '密码修改成功' });
   });
 }

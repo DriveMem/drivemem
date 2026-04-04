@@ -130,7 +130,7 @@ const worker = new Worker<ParseJobData>(
       if (userFolders.length > 0 && fileSummary) {
         const { chat } = await import('../services/llm.service.js');
         const folderNames = userFolders.map(f => f.name).join('、');
-        const classifyPrompt = `文件摘要：${fileSummary}\n\n用户的文件夹列表：${folderNames}\n\n这个文件最适合放入哪个文件夹？只返回文件夹名称。如果都不合适，返回"无"。`;
+        const classifyPrompt = `文件摘要：${fileSummary}\n\n用户的文件夹列表：${folderNames}\n\n这个文件最适合放入哪个文件夹？规则：只输出文件夹名称本身，禁止输出任何解释、括号、推理过程。如果都不合适，只输出"无"。`;
         const suggested = await chat([{ role: 'user', content: classifyPrompt }]);
         const trimmed = suggested?.trim().replace(/["""]/g, '');
 
