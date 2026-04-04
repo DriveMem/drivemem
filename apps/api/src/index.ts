@@ -45,6 +45,7 @@ import searchRoutes from './routes/search.js';
 import exportRoutes from './routes/export.js';
 import clipRoutes from './routes/clips.js';
 import sharesRoutes from './routes/shares.js';
+import reportsRoutes from './routes/reports.js';
 
 await app.register(authPlugin);
 await app.register(authRoutes, { prefix: '/api/auth' });
@@ -56,6 +57,7 @@ await app.register(searchRoutes, { prefix: '/api/search' });
 await app.register(exportRoutes, { prefix: '/api/users/me' });
 await app.register(clipRoutes, { prefix: '/api/clips' });
 await app.register(sharesRoutes, { prefix: '/api' });
+await app.register(reportsRoutes, { prefix: '/api/reports' });
 
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {

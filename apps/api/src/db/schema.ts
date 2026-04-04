@@ -99,6 +99,14 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// --- Reports ---
+export const reports = pgTable('reports', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 export const shares = pgTable('shares', {
   id: uuid('id').defaultRandom().primaryKey(),
   token: text('token').notNull().unique(),
