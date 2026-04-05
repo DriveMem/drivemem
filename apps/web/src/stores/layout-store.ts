@@ -16,10 +16,12 @@ interface LayoutState {
   inspectorOpen: boolean
   selectedFileId: string | null
   currentFolderId: string | null
+  filterTagId: string | null
   toggleSidebar: () => void
   openInspector: (fileId: string) => void
   closeInspector: () => void
   setCurrentFolder: (folderId: string | null) => void
+  setFilterTag: (tagId: string | null) => void
 }
 
 export const useLayoutStore = create<LayoutState>((set) => ({
@@ -27,6 +29,7 @@ export const useLayoutStore = create<LayoutState>((set) => ({
   inspectorOpen: false,
   selectedFileId: null,
   currentFolderId: null,
+  filterTagId: null,
   toggleSidebar: () => set((s) => {
     const next = !s.sidebarCollapsed
     try { localStorage.setItem(SIDEBAR_KEY, String(next)) } catch {}
@@ -35,4 +38,5 @@ export const useLayoutStore = create<LayoutState>((set) => ({
   openInspector: (fileId) => set({ inspectorOpen: true, selectedFileId: fileId }),
   closeInspector: () => set({ inspectorOpen: false, selectedFileId: null }),
   setCurrentFolder: (folderId) => set({ currentFolderId: folderId }),
+  setFilterTag: (tagId) => set({ filterTagId: tagId }),
 }))

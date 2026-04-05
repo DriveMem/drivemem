@@ -28,6 +28,7 @@ import { FileListSkeleton } from "@/components/skeletons/file-list-skeleton"
 import { FileUpload } from "./file-upload"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
 import { toast } from "sonner"
+import { useTagFileIds, useFileTags, TAG_COLOR_MAP, type Tag } from "@/hooks/use-tags"
 
 type SortKey = "name" | "createdAt" | "size"
 type SortDir = "asc" | "desc"
@@ -80,8 +81,25 @@ function StatusIcon({ status, error, compact }: { status: string; error?: string
   return <span title={error || "解析失败"} className="flex items-center gap-1 text-xs text-red-500 cursor-help"><XCircle className="h-3.5 w-3.5" />索引失败</span>
 }
 
+function FileTagPills({ fileId }: { fileId: string }) {
+  const { data: tags = [] } = useFileTags(fileId)
+  if (tags.length === 0) return null
+  return (
+    <span className="flex items-center gap-1 shrink-0">
+      {tags.slice(0, 3).map((tag: Tag) => {
+        const colors = TAG_COLOR_MAP[tag.color] || TAG_COLOR_MAP.blue
+        return (
+          <span key={tag.id} className={`rounded-full px-1.5 py-0 text-[10px] border ${colors.bg} ${colors.text} ${colors.border}`}>
+            {tag.name}
+          </span>
+        )
+      })}
+    </span>
+  )
+}
+
 export function FileList() {
-  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId } = useLayoutStore()
+  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId, filterTagId } = useLayoutStore()
   const router = useRouter()
   const { data, isLoading, error } = useFiles(currentFolderId)
   const deleteFile = useDeleteFile()
@@ -90,6 +108,7 @@ export function FileList() {
   const moveFile = useMoveFile()
   const createFolder = useCreateFolder()
   const { data: foldersData } = useFolders()
+  const { data: tagFileIds } = useTagFileIds(filterTagId || "")
   const allFolders = foldersData?.folders || []
   const currentFolder = allFolders.find((f: any) => f.id === currentFolderId) || null
   const visibleFolders = allFolders.filter((f: any) => currentFolderId ? f.parentId === currentFolderId : !f.parentId)
@@ -217,7 +236,8 @@ export function FileList() {
     { key: "image", label: "图片" },
   ]
 
-  const filteredFiles = typeFilter === "all" ? files : files.filter((f: any) => {
+  const filteredFiles = useMemo(() => {
+    let result = typeFilter === "all" ? files : files.filter((f: any) => {
     const ext = (f.name || f.originalName || "").split(".").pop()?.toLowerCase()
     const mime = f.mimeType || ""
     switch (typeFilter) {
@@ -231,6 +251,11 @@ export function FileList() {
       default: return true
     }
   })
+    if (filterTagId && tagFileIds) {
+      result = result.filter((f: any) => tagFileIds.includes(f.id))
+    }
+    return result
+  }, [typeFilter, files, filterTagId, tagFileIds])
 
   const virt = useVirtualizer({ count: filteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 48, overscan: 5 })
 
@@ -451,6 +476,7 @@ export function FileList() {
                 />
                 <TypeIcon type={file.type} name={file.name} />
                 <span className="truncate text-sm flex-1 min-w-0">{file.name}</span>
+                <FileTagPills fileId={file.id} />
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">已更新</span>}
                 {file.suggestedFolder && !file.folderId && (
                   <TooltipProvider delayDuration={300}>

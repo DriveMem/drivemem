@@ -10,6 +10,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
+import { useTags, useCreateTag, useDeleteTag, TAG_COLORS, TAG_COLOR_MAP, type Tag } from "@/hooks/use-tags"
 
 const navItems = [
   { href: "/dashboard", icon: FileText, label: "我的文件" },
@@ -18,6 +19,58 @@ const navItems = [
   { href: "/trash", icon: Trash2, label: "🗑️ 回收站" },
   { href: "/settings", icon: Settings, label: "设置" },
 ] as const
+
+function TagSection() {
+  const { data: tags = [] } = useTags()
+  const createTag = useCreateTag()
+  const deleteTag = useDeleteTag()
+  const { filterTagId, setFilterTag } = useLayoutStore()
+  const [showCreate, setShowCreate] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [newColor, setNewColor] = useState("blue")
+
+  return (
+    <div className="mt-3">
+      <div className="flex items-center justify-between px-2 py-1">
+        <p className="text-xs font-medium text-muted-foreground">🏷️ 标签</p>
+        <button onClick={() => setShowCreate(!showCreate)} className="text-xs text-muted-foreground hover:text-foreground">+</button>
+      </div>
+      {showCreate && (
+        <div className="px-2 py-1 space-y-1.5">
+          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="标签名称" className="w-full text-xs bg-transparent border border-border rounded px-2 py-1 outline-none focus:border-primary" onKeyDown={e => {
+            if (e.key === "Enter" && newName.trim()) { createTag.mutate({ name: newName.trim(), color: newColor }); setNewName(""); setShowCreate(false) }
+            if (e.key === "Escape") setShowCreate(false)
+          }} autoFocus />
+          <div className="flex gap-1">
+            {TAG_COLORS.map(c => (
+              <button key={c.value} onClick={() => setNewColor(c.value)}
+                className={cn("w-5 h-5 rounded-full border-2 transition-all", TAG_COLOR_MAP[c.value]?.bg, newColor === c.value ? "border-foreground scale-110" : "border-transparent")} />
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="space-y-0.5">
+        {filterTagId && (
+          <button onClick={() => setFilterTag(null)} className="w-full text-left px-2 py-1 text-xs text-blue-500 hover:bg-accent/50 rounded">
+            ✕ 清除筛选
+          </button>
+        )}
+        {tags.map((tag: Tag) => {
+          const colors = TAG_COLOR_MAP[tag.color] || TAG_COLOR_MAP.blue
+          const isActive = filterTagId === tag.id
+          return (
+            <div key={tag.id} className={cn("group flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer hover:bg-accent/50 text-xs", isActive && "bg-accent")}
+              onClick={() => setFilterTag(isActive ? null : tag.id)}>
+              <span className={cn("w-2.5 h-2.5 rounded-full", colors.bg, colors.border, "border")} />
+              <span className="flex-1 truncate">{tag.name}</span>
+              <button onClick={(e) => { e.stopPropagation(); deleteTag.mutate(tag.id) }} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive">✕</button>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"
@@ -109,6 +162,7 @@ export function Sidebar() {
           <div className="flex-1 overflow-auto border-t border-border p-2">
             <p className="px-2 py-1 text-xs font-medium text-muted-foreground">文件夹</p>
             <FolderTree />
+            <TagSection />
           </div>
         )}
         <StorageBar />

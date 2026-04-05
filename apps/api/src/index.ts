@@ -74,6 +74,9 @@ await app.register(sharesRoutes, { prefix: '/api' });
 await app.register(reportsRoutes, { prefix: '/api/reports' });
 await app.register(notificationRoutes, { prefix: '/api/notifications' });
 
+import tagRoutes from './routes/tags.js';
+await app.register(tagRoutes, { prefix: '/api/tags' });
+
 import feedbackRoutes from './routes/feedback.js';
 await app.register(feedbackRoutes, { prefix: '/api/feedback' });
 
