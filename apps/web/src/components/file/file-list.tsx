@@ -567,6 +567,12 @@ export function FileList() {
             }}>
               <Share2 className="h-4 w-4 mr-2" />分享
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              window.location.href = `/files/${contextMenu.fileId}/preview#versions`
+              setContextMenu(null)
+            }}>
+              📋 版本历史
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )}
