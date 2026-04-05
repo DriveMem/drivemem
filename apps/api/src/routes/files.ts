@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc, sql, isNull, isNotNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
@@ -197,7 +197,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     const userId = request.user!.id;
     const query = listQuerySchema.parse(request.query);
 
-    const conditions = [eq(schema.files.userId, userId)];
+    const conditions = [eq(schema.files.userId, userId), isNull(schema.files.deletedAt)];
     if (query.folderId) {
       conditions.push(eq(schema.files.folderId, query.folderId));
     }
@@ -239,22 +239,16 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     return reply.send(updated);
   });
 
-  // DELETE /:id
+  // DELETE /:id — soft delete (move to trash)
   fastify.delete('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const userId = request.user!.id;
-    const file = await getOwnedFile(id, userId);
+    await getOwnedFile(id, userId);
 
-    // Delete S3 object
-    await deleteObject(file.s3Key);
-
-    // Delete DB record
-    await db.delete(schema.files).where(eq(schema.files.id, id));
-
-    // Update storage
-    await db.update(schema.users)
-      .set({ storageUsed: sql`GREATEST(${schema.users.storageUsed} - ${file.size}, 0)` })
-      .where(eq(schema.users.id, userId));
+    // Soft delete — set deletedAt timestamp
+    await db.update(schema.files)
+      .set({ deletedAt: new Date() })
+      .where(eq(schema.files.id, id));
 
     return reply.send({ success: true });
   });

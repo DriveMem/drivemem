@@ -50,6 +50,7 @@ export const files = pgTable('files', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   previousVersionId: uuid('previous_version_id'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
 });
 
 // --- Conversation scope enum ---
@@ -63,6 +64,7 @@ export const conversations = pgTable('conversations', {
   scopeId: uuid('scope_id'),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   isPinned: boolean('is_pinned').notNull().default(false),
+  pinnedAt: timestamp('pinned_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
