@@ -1,8 +1,15 @@
+import Link from "next/link"
+
 export const metadata = { title: "使用条款 - AI Drive" }
 
 export default function TermsPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16">
+    <div className="min-h-screen">
+      <nav className="flex items-center justify-between border-b px-6 py-4">
+        <Link href="/" className="text-lg font-bold">AI Drive</Link>
+        <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← 返回首页</Link>
+      </nav>
+      <div className="mx-auto max-w-3xl px-6 py-16">
       <h1 className="text-3xl font-bold">使用条款</h1>
       <p className="mt-4 text-muted-foreground">最后更新：2026 年 4 月 · AI Drive</p>
 
@@ -36,6 +43,7 @@ export default function TermsPage() {
           <h2 className="text-lg font-semibold text-foreground">联系方式</h2>
           <p>如有任何问题，请联系 support@verrrnm.cloud。</p>
         </section>
+      </div>
       </div>
     </div>
   )
