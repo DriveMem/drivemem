@@ -13,7 +13,7 @@ import { useConversations, useDeleteConversation } from "@/hooks/use-conversatio
 import { useQueryClient } from "@tanstack/react-query"
 import { apiFetch } from "@/lib/api"
 import { ConversationListSkeleton } from "@/components/skeletons/conversation-list-skeleton"
-import { Loader2, Pin } from "lucide-react"
+import { Loader2, Pin, Search, MessageSquare } from "lucide-react"
 
 interface Conversation {
   id: string
@@ -72,21 +72,26 @@ export function ConversationList() {
         </Button>
       </div>
       <div className="px-3 py-2 border-b">
-        <input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="搜索对话..."
-          className="w-full rounded-md bg-muted/50 px-3 py-1.5 text-xs outline-none placeholder-muted-foreground"
-        />
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="搜索对话..."
+            className="w-full rounded-md bg-muted/50 pl-8 pr-3 py-1.5 text-xs outline-none placeholder-muted-foreground"
+          />
+        </div>
       </div>
 
       {isLoading ? (
         <ConversationListSkeleton />
       ) : sorted.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 p-4">
-          <p className="text-sm text-muted-foreground">暂无对话</p>
-          <Button variant="ghost" size="sm" onClick={() => router.push("/chat?new=" + Date.now())}>
-            开始对话 →
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+          <MessageSquare className="h-10 w-10 text-muted-foreground/50" />
+          <p className="text-sm font-medium">💬 开始第一次 AI 对话</p>
+          <p className="text-xs text-muted-foreground">上传文件后，与 AI 一起分析</p>
+          <Button size="sm" className="mt-1 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => router.push("/chat?new=" + Date.now())}>
+            新建对话
           </Button>
         </div>
       ) : (
