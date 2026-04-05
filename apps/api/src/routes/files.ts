@@ -12,6 +12,8 @@ import { config } from '../lib/config.js';
 import { deleteByFileId } from '../services/vector.service.js';
 import { MAX_FILE_SIZE, SUPPORTED_MIME_TYPES } from '@ai-drive/shared';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const PARSE_JOB_OPTIONS = {
   attempts: 3,
   backoff: { type: 'exponential' as const, delay: 30_000 },
@@ -216,6 +218,9 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   // GET /:id — file detail
   fastify.get('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!UUID_REGEX.test(id)) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'File not found' } });
+    }
     const file = await getOwnedFile(id, request.user!.id);
     // Update lastAccessedAt for recent files sorting
     await db.update(schema.files).set({ updatedAt: new Date() }).where(eq(schema.files.id, id));
@@ -225,6 +230,9 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   // PATCH /:id — rename
   fastify.patch('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!UUID_REGEX.test(id)) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'File not found' } });
+    }
     const { name } = renameSchema.parse(request.body);
     const userId = request.user!.id;
 
@@ -242,6 +250,9 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   // DELETE /:id — soft delete (move to trash)
   fastify.delete('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!UUID_REGEX.test(id)) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'File not found' } });
+    }
     const userId = request.user!.id;
     await getOwnedFile(id, userId);
 
@@ -256,6 +267,9 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   // POST /:id/move — move file to another folder
   fastify.post('/:id/move', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!UUID_REGEX.test(id)) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'File not found' } });
+    }
     const { folderId } = moveSchema.parse(request.body);
     const userId = request.user!.id;
 
@@ -280,6 +294,9 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   // GET /:id/preview-url
   fastify.get('/:id/preview-url', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!UUID_REGEX.test(id)) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'File not found' } });
+    }
     const file = await getOwnedFile(id, request.user!.id);
     // Update lastAccessedAt (updatedAt) for recent files sorting
     await db.update(schema.files).set({ updatedAt: new Date() }).where(eq(schema.files.id, id));
@@ -291,6 +308,9 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   // POST /:id/retry-parse
   fastify.post('/:id/retry-parse', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!UUID_REGEX.test(id)) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'File not found' } });
+    }
     const userId = request.user!.id;
 
     const file = await getOwnedFile(id, userId);
@@ -397,6 +417,9 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   // GET /:id/versions — file version history
   fastify.get('/:id/versions', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!UUID_REGEX.test(id)) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'File not found' } });
+    }
     const userId = request.user!.id;
     const file = await getOwnedFile(id, userId);
 
