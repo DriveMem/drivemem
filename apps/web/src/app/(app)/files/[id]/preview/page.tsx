@@ -289,6 +289,7 @@ export default function FilePreviewPage() {
 
 function RelatedFiles({ fileId }: { fileId: string }) {
   const [links, setLinks] = useState<any[]>([])
+  const [fallbackFiles, setFallbackFiles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -300,13 +301,25 @@ function RelatedFiles({ fileId }: { fileId: string }) {
           .filter((l: any) => l.fileAId === fileId || l.fileBId === fileId)
           .slice(0, 5)
         setLinks(related)
+        // If no knowledge links, fallback to /api/files
+        if (related.length === 0) {
+          return apiFetch(`/api/files`).then((filesData: any) => {
+            const files = Array.isArray(filesData) ? filesData : (filesData?.files || [])
+            setFallbackFiles(files.filter((f: any) => f.id !== fileId).slice(0, 4))
+          })
+        }
       })
-      .catch(() => {})
+      .catch(() => {
+        // On error, try fallback
+        apiFetch(`/api/files`).then((filesData: any) => {
+          const files = Array.isArray(filesData) ? filesData : (filesData?.files || [])
+          setFallbackFiles(files.filter((f: any) => f.id !== fileId).slice(0, 4))
+        }).catch(() => {})
+      })
       .finally(() => setLoading(false))
   }, [fileId])
 
   if (loading) return null
-  if (links.length === 0) return null
 
   const relationLabels: Record<string, string> = {
     similar: "相似",
@@ -322,11 +335,23 @@ function RelatedFiles({ fileId }: { fileId: string }) {
     reference: "📎",
   }
 
+  const hasLinks = links.length > 0
+  const hasFallback = fallbackFiles.length > 0
+
+  if (!hasLinks && !hasFallback) {
+    return (
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">📎 相关文件</h2>
+        <p className="text-sm text-muted-foreground">暂无相关文件</p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-3">
-      <h2 className="text-lg font-semibold">📂 相关文件</h2>
+      <h2 className="text-lg font-semibold">📎 相关文件</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {links.map((l: any) => {
+        {hasLinks ? links.map((l: any) => {
           const isA = l.fileAId === fileId
           const otherName = isA ? l.fileBName : l.fileAName
           const otherId = isA ? l.fileBId : l.fileAId
@@ -349,6 +374,22 @@ function RelatedFiles({ fileId }: { fileId: string }) {
                 {l.description && (
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{l.description}</p>
                 )}
+              </div>
+            </Link>
+          )
+        }) : fallbackFiles.map((f: any) => {
+          const name = f.name || f.originalName || "未命名文件"
+          const ext = name.split(".").pop()?.toLowerCase() || ""
+          return (
+            <Link
+              key={f.id}
+              href={`/files/${f.id}/preview`}
+              className="flex items-start gap-3 rounded-lg border border-border p-3 hover:bg-muted/50 transition group"
+            >
+              <FileText className="h-8 w-8 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate group-hover:text-primary transition">{name}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{ext.toUpperCase() || "文件"}</p>
               </div>
             </Link>
           )

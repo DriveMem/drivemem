@@ -147,8 +147,10 @@ export function MessageList({
         <div key={msg.id} className={cn(
           "flex gap-3 group",
           msg.role === "user" ? "justify-end" : "",
-          // Add extra spacing between user→assistant and assistant→user transitions
-          idx > 0 && messages[idx - 1].role !== msg.role ? "mt-6" : ""
+          // Different role → gap-6, same role → gap-3
+          idx > 0 && messages[idx - 1].role !== msg.role ? "mt-6" : idx > 0 ? "mt-3" : "",
+          // Timeline vertical line for assistant messages
+          msg.role === "assistant" && "border-l-2 border-border/30 pl-3"
         )}>
           {msg.role === "assistant" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>}
           <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-blue-600 text-white rounded-2xl rounded-br-sm px-4 py-3" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>

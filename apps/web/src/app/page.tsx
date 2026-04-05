@@ -93,6 +93,7 @@ export default function LandingPage() {
               <Link href="/login">体验 Demo →</Link>
             </Button>
           </div>
+          <p className="mt-4 text-sm text-gray-500 text-center">✨ 免费计划 · 50MB 存储 · 无限 AI 对话 · 无需信用卡</p>
         </FadeIn>
       </section>
 
@@ -200,6 +201,7 @@ export default function LandingPage() {
               <Link href="/signup">免费开始 <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>
+          <p className="mt-4 text-sm text-gray-500">✨ 免费计划 · 50MB 存储 · 无限 AI 对话 · 无需信用卡</p>
         </FadeIn>
       </section>
 
