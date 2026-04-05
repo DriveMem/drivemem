@@ -154,6 +154,16 @@ export default function SignupPage() {
           登录
         </Link>
       </p>
+
+      <p className="mt-3 text-center text-xs text-muted-foreground/60">
+        注册即同意《<Link href="/terms" className="underline hover:text-foreground">使用条款</Link>》和《<Link href="/privacy" className="underline hover:text-foreground">隐私政策</Link>》
+      </p>
+
+      <div className="mt-4 text-center">
+        <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition underline">
+          体验 Demo →
+        </Link>
+      </div>
     </div>
   )
 }
