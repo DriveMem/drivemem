@@ -95,7 +95,7 @@ export default function DashboardPage() {
               </p>
               <button
                 onClick={() => { setActiveTab("files"); setShowUpload(true) }}
-                className="mt-6 rounded-lg bg-blue-600 px-6 py-2.5 text-sm text-white hover:bg-blue-700 transition"
+                className="mt-6 rounded-lg bg-[#4F5BD5] px-6 py-2.5 text-sm text-white hover:bg-[#3D49C4] transition"
               >
                 上传第一个文件
               </button>

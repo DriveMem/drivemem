@@ -68,7 +68,7 @@ export function ConversationList() {
         <h2 className="text-sm font-semibold">对话历史</h2>
       </div>
       <div className="px-3 pt-3">
-        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2.5 text-sm font-medium" onClick={() => router.push("/chat?new=" + Date.now())}>
+        <Button className="w-full bg-[#4F5BD5] hover:bg-[#3D49C4] text-white rounded-lg py-2.5 text-sm font-medium" onClick={() => router.push("/chat?new=" + Date.now())}>
           + 新对话
         </Button>
       </div>

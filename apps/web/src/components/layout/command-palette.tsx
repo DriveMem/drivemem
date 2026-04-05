@@ -123,7 +123,7 @@ export function CommandPalette() {
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate(`/chat?q=关于${encodeURIComponent(r.fileName)}的问题`) }}
-                    className="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] text-white hover:bg-blue-700 transition"
+                    className="rounded bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white hover:bg-[#3D49C4] transition"
                   >
                     💬 问 AI
                   </button>

@@ -282,7 +282,7 @@ export function FileList() {
               className={cn(
                 "rounded-full px-3 py-1 text-xs transition",
                 typeFilter === key
-                  ? "bg-blue-600 text-white"
+                  ? "bg-[#4F5BD5] text-white"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               )}
             >
@@ -302,7 +302,7 @@ export function FileList() {
             } catch (e: any) { const { toast } = await import("sonner"); toast.error(e.message || "整理失败") }
           }} variant="outline" className="gap-1">✨ 一键整理</Button>
           <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />新建文件夹</Button>
-          <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
+          <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
           <div className="flex items-center rounded-md border border-border ml-2">
             <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-r-none", viewMode === "list" && "bg-accent")} onClick={() => setViewMode("list")}><List className="h-3.5 w-3.5" /></Button>
             <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-l-none", viewMode === "grid" && "bg-accent")} onClick={() => setViewMode("grid")}><LayoutGrid className="h-3.5 w-3.5" /></Button>
@@ -389,7 +389,7 @@ export function FileList() {
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <button className="shrink-0 text-blue-500 hover:text-blue-600 transition-colors" onClick={(e) => {
+                        <button className="shrink-0 text-[#4F5BD5] hover:text-[#3D49C4] transition-colors" onClick={(e) => {
                           e.stopPropagation()
                           const matched = allFolders.find((f: any) => f.name === file.suggestedFolder)
                           if (matched) { moveFile.mutate({ fileId: file.id, folderId: matched.id }) } else { alert("请先创建此文件夹") }
@@ -531,7 +531,7 @@ export function FileList() {
               const ids = Array.from(selected).join(",")
               router.push(`/chat?fileIds=${ids}`)
             }}
-            className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700"
+            className="flex items-center gap-1.5 rounded-lg bg-[#4F5BD5] px-3 py-1.5 text-xs text-white hover:bg-[#3D49C4]"
           >
             💬 问 AI
           </button>

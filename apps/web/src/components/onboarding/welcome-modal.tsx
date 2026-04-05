@@ -61,7 +61,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
           </div>
         </div>
         <div className="mt-4 flex flex-col gap-2">
-          <Button onClick={handleUpload} className="bg-blue-600 hover:bg-blue-700">上传第一个文件</Button>
+          <Button onClick={handleUpload} className="bg-[#4F5BD5] hover:bg-[#3D49C4]">上传第一个文件</Button>
           <Button variant="ghost" onClick={handleSkip} className="text-muted-foreground">跳过</Button>
         </div>
       </DialogContent>

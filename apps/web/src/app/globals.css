@@ -26,6 +26,33 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
+
+    /* === AI Drive Design System === */
+    /* 背景 */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F8F7F5;
+    --bg-tertiary: #F1F0EE;
+    --bg-elevated: #FFFFFF;
+    --bg-sunken: #EFEEED;
+    /* 文字 */
+    --text-primary: #1C1B18;
+    --text-secondary: #6B6966;
+    --text-tertiary: #9B9893;
+    --text-inverse: #FFFFFF;
+    /* 品牌强调色 */
+    --ad-accent: #4F5BD5;
+    --ad-accent-hover: #3D49C4;
+    --ad-accent-light: #ECEEFB;
+    --ad-accent-subtle: #F4F5FD;
+    /* 边框 */
+    --border-default: #E5E4E1;
+    --border-subtle: #EEEDEB;
+    --border-strong: #D0CFCC;
+    /* 语义色 */
+    --success: #30A46C;
+    --warning: #F5A623;
+    --error: #E5484D;
+    --info: #3B82F6;
   }
 
   .dark {

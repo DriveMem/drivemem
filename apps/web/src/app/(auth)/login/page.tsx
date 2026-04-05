@@ -70,7 +70,7 @@ export default function LoginPage() {
             id="email"
             type="email"
             placeholder="your@email.com"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-[#4F5BD5] focus:border-[#4F5BD5]"
             {...register("email")}
           />
           {errors.email && (
@@ -92,7 +92,7 @@ export default function LoginPage() {
             id="password"
             type="password"
             placeholder="••••••••"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-[#4F5BD5] focus:border-[#4F5BD5]"
             {...register("password")}
           />
           {errors.password && (
@@ -106,7 +106,7 @@ export default function LoginPage() {
 
         <Button
           type="submit"
-          className="bg-blue-600 hover:bg-blue-700 rounded-xl h-12 w-full text-white font-medium"
+          className="bg-[#4F5BD5] hover:bg-[#3D49C4] rounded-xl h-12 w-full text-white font-medium"
           disabled={loading}
         >
           {loading ? "登录中..." : "登录"}
