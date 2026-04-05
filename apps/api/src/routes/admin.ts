@@ -46,9 +46,11 @@ export default async function adminRoutes(fastify: FastifyInstance) {
   fastify.get('/public-stats', async (_request, reply) => {
     const [totalUsers] = await db.select({ count: sql<number>`count(*)` }).from(schema.users);
     const [totalFiles] = await db.select({ count: sql<number>`count(*)` }).from(schema.files);
+    const [totalConversations] = await db.select({ count: sql<number>`count(*)` }).from(schema.conversations);
     return reply.send({
       users: Number(totalUsers?.count || 0),
       files: Number(totalFiles?.count || 0),
+      conversations: Number(totalConversations?.count || 0),
     });
   });
 }

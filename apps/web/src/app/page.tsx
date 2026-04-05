@@ -17,6 +17,18 @@ import {
   Globe,
 } from "lucide-react"
 
+function useSocialProofStats() {
+  const [stats, setStats] = useState<{ users: number; files: number; conversations: number } | null>(null)
+  useEffect(() => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
+    fetch(apiBase + "/api/admin/public-stats")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d && setStats(d))
+      .catch(() => {})
+  }, [])
+  return stats
+}
+
 function FadeIn({ children, className = "" }: { children: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
@@ -58,6 +70,7 @@ const FEATURES = [
 ] as const
 
 export default function LandingPage() {
+  const stats = useSocialProofStats()
   return (
     <main className="min-h-screen bg-gray-950 text-white selection:bg-blue-500/30">
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-gray-800 bg-gray-950/80 px-6 py-4 backdrop-blur">
@@ -190,6 +203,17 @@ export default function LandingPage() {
             </div>
           </FadeIn>
         ))}
+      </section>
+
+      {/* ===== Social Proof ===== */}
+      <section className="relative z-10 px-6 py-16">
+        <FadeIn>
+          <p className="text-center text-lg text-gray-400">
+            {stats
+              ? `已有 ${stats.users.toLocaleString()} 位用户 · 已分析 ${stats.files.toLocaleString()} 份文档 · ${stats.conversations.toLocaleString()} 次 AI 对话`
+              : "信任千+ 用户"}
+          </p>
+        </FadeIn>
       </section>
 
       {/* ===== Final CTA ===== */}
