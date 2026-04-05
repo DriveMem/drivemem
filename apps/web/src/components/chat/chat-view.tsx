@@ -377,7 +377,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
           ))}
         </div>
       )}
-      <ChatInput onSend={handleSend} disabled={sending} />
+      <ChatInput onSend={handleSend} disabled={sending} scopeHint={multiFileIds ? `基于 ${multiFileIds.length} 个文件对话` : scope === "file" ? `基于 ${scopeLabel || "指定文件"} 对话` : scope === "folder" ? `基于 ${scopeLabel || "指定文件夹"} 对话` : "基于全部知识库对话"} />
     </div>
   )
 }

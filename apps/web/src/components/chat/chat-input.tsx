@@ -4,7 +4,7 @@ import { Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-export function ChatInput({ onSend, disabled, dailyLimitReached }: { onSend: (message: string) => void; disabled?: boolean; dailyLimitReached?: boolean }) {
+export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint }: { onSend: (message: string) => void; disabled?: boolean; dailyLimitReached?: boolean; scopeHint?: string }) {
   const [value, setValue] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -37,6 +37,9 @@ export function ChatInput({ onSend, disabled, dailyLimitReached }: { onSend: (me
 
   return (
     <div className="max-w-3xl mx-auto w-full px-4 pb-4">
+      {scopeHint && (
+        <p className="text-xs text-muted-foreground/70 text-center mb-2">🔍 {scopeHint}</p>
+      )}
       <div className="flex items-center gap-2 rounded-2xl shadow-lg bg-muted/30 border border-border/50 px-4 py-3">
         <textarea
           ref={textareaRef}
