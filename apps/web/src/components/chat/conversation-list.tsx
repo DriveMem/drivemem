@@ -63,6 +63,105 @@ export function ConversationList() {
     return s.filter((c: Conversation) => c.title?.toLowerCase().includes(searchQuery.toLowerCase()))
   })()
 
+  const groups = (() => {
+    const now = new Date()
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const yesterdayStart = todayStart - 86400000
+    const weekStart = todayStart - 6 * 86400000
+
+    const result: { label: string; items: Conversation[] }[] = [
+      { label: "今天", items: [] },
+      { label: "昨天", items: [] },
+      { label: "过去 7 天", items: [] },
+      { label: "更早", items: [] },
+    ]
+
+    for (const c of sorted) {
+      const t = new Date(c.updatedAt).getTime()
+      if (t >= todayStart) result[0].items.push(c)
+      else if (t >= yesterdayStart) result[1].items.push(c)
+      else if (t >= weekStart) result[2].items.push(c)
+      else result[3].items.push(c)
+    }
+
+    return result.filter((g) => g.items.length > 0)
+  })()
+
+  const renderItem = (c: Conversation) => (
+    <li
+      key={c.id}
+      className={`group flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-accent ${
+        activeId === c.id ? "bg-accent" : ""
+      }`}
+      onClick={() => router.push(`/chat/${c.id}`)}
+    >
+      <div className="min-w-0 flex-1">
+        {editingId === c.id ? (
+          <input
+            ref={editInputRef}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                const trimmed = editValue.trim()
+                if (trimmed && trimmed !== c.title) {
+                  apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ title: trimmed }) })
+                }
+                setEditingId(null)
+              } else if (e.key === "Escape") {
+                setEditingId(null)
+              }
+            }}
+            onBlur={() => {
+              const trimmed = editValue.trim()
+              if (trimmed && trimmed !== c.title) {
+                apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ title: trimmed }) })
+              }
+              setEditingId(null)
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full text-sm font-medium bg-transparent border-b border-primary outline-none"
+          />
+        ) : (
+          <p
+            className="truncate text-sm font-medium"
+            onDoubleClick={(e) => {
+              e.stopPropagation()
+              setEditingId(c.id)
+              setEditValue(c.title || "新对话")
+            }}
+          >{c.title || "新对话"}</p>
+        )}
+        <p className="text-xs text-muted-foreground">{formatTime(c.updatedAt)}</p>
+      </div>
+      {c.isPinned && <Pin className="h-3 w-3 text-blue-400 shrink-0" />}
+      <Button
+        size="icon"
+        variant="ghost"
+        className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
+        onClick={(e) => {
+          e.stopPropagation()
+          apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ isPinned: !c.isPinned }) })
+            .then(() => queryClient.invalidateQueries({ queryKey: ["conversations"] }))
+        }}
+      >
+        <Pin className={`h-3 w-3 ${c.isPinned ? "text-blue-400" : ""}`} />
+      </Button>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
+        onClick={(e) => {
+          e.stopPropagation()
+          setDeleteTarget(c.id)
+        }}
+      >
+        ✕
+      </Button>
+    </li>
+  )
+
   return (
     <div className="flex h-full flex-col border-r">
       <div className="flex items-center justify-between border-b p-3">
@@ -95,82 +194,18 @@ export function ConversationList() {
           </Button>
         </div>
       ) : (
-        <ul className="flex-1 overflow-y-auto">
-          {sorted.map((c: Conversation) => (
-            <li
-              key={c.id}
-              className={`group flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-accent ${
-                activeId === c.id ? "bg-accent" : ""
-              }`}
-              onClick={() => router.push(`/chat/${c.id}`)}
-            >
-              <div className="min-w-0 flex-1">
-                {editingId === c.id ? (
-                  <input
-                    ref={editInputRef}
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        const trimmed = editValue.trim()
-                        if (trimmed && trimmed !== c.title) {
-                          apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ title: trimmed }) })
-                        }
-                        setEditingId(null)
-                      } else if (e.key === "Escape") {
-                        setEditingId(null)
-                      }
-                    }}
-                    onBlur={() => {
-                      const trimmed = editValue.trim()
-                      if (trimmed && trimmed !== c.title) {
-                        apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ title: trimmed }) })
-                      }
-                      setEditingId(null)
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-full text-sm font-medium bg-transparent border-b border-primary outline-none"
-                  />
-                ) : (
-                  <p
-                    className="truncate text-sm font-medium"
-                    onDoubleClick={(e) => {
-                      e.stopPropagation()
-                      setEditingId(c.id)
-                      setEditValue(c.title || "新对话")
-                    }}
-                  >{c.title || "新对话"}</p>
-                )}
-                <p className="text-xs text-muted-foreground">{formatTime(c.updatedAt)}</p>
+        <div className="flex-1 overflow-y-auto">
+          {groups.map((group) => (
+            <div key={group.label}>
+              <div className="text-xs text-muted-foreground uppercase tracking-wide px-3 py-2">
+                {group.label}
               </div>
-              {c.isPinned && <Pin className="h-3 w-3 text-blue-400 shrink-0" />}
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ isPinned: !c.isPinned }) })
-                    .then(() => queryClient.invalidateQueries({ queryKey: ["conversations"] }))
-                }}
-              >
-                <Pin className={`h-3 w-3 ${c.isPinned ? "text-blue-400" : ""}`} />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setDeleteTarget(c.id)
-                }}
-              >
-                ✕
-              </Button>
-            </li>
+              <ul>
+                {group.items.map((c) => renderItem(c))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
 
       <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
