@@ -25,6 +25,7 @@ function formatBytes(bytes: number): string {
 }
 
 function StorageBar() {
+  const { sidebarCollapsed } = useLayoutStore()
   const [storageUsed, setStorageUsed] = useState<number>(0)
   const [storageLimit, setStorageLimit] = useState<number>(5 * 1024 * 1024 * 1024) // 5 GB default
 
@@ -42,10 +43,12 @@ function StorageBar() {
 
   return (
     <div className="px-3 py-3 border-t border-border">
-      <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-        <span>存储用量</span>
-        <span>{formatBytes(storageUsed)} / {formatBytes(storageLimit)}</span>
-      </div>
+      {!sidebarCollapsed && (
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+          <span>存储用量</span>
+          <span>{formatBytes(storageUsed)} / {formatBytes(storageLimit)}</span>
+        </div>
+      )}
       <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
         <div
           className={cn("h-full rounded-full transition-all", barColor)}
