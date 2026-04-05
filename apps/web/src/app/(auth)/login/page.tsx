@@ -26,6 +26,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -118,6 +119,20 @@ export default function LoginPage() {
           注册
         </Link>
       </p>
+
+      <div className="mt-4 text-center">
+        <button
+          type="button"
+          onClick={() => {
+            setValue("email", "demo@ai-drive.com")
+            setValue("password", "demo123")
+            handleSubmit(onSubmit)()
+          }}
+          className="text-sm text-muted-foreground hover:text-foreground transition underline"
+        >
+          体验 Demo →
+        </button>
+      </div>
     </div>
   )
 }

@@ -4,6 +4,7 @@
   "/page": "app/page.js",
   "/privacy/page": "app/privacy/page.js",
   "/share/[token]/page": "app/share/[token]/page.js",
+  "/share/report/[token]/page": "app/share/report/[token]/page.js",
   "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
   "/(app)/files/[id]/preview/page": "app/(app)/files/[id]/preview/page.js",
   "/(app)/files/page": "app/(app)/files/page.js",

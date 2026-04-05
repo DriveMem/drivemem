@@ -26,7 +26,12 @@ export async function apiFetch(path: string, options?: RequestInit) {
 
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({ error: { message: res.statusText } }))
-    throw new Error(errBody?.error?.message || res.statusText)
+    const errMsg = errBody?.error?.message || res.statusText
+    if (res.status === 403 && errBody?.error?.code === "DEMO_READONLY") {
+      const { toast } = await import("sonner")
+      toast.error("Demo 账号为只读模式，注册后可使用完整功能")
+    }
+    throw new Error(errMsg)
   }
 
   if (res.status === 204) return null

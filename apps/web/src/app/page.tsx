@@ -14,7 +14,7 @@ import {
   Quote,
   ArrowRight,
   ChevronRight,
-
+  Globe,
 } from "lucide-react"
 
 function FadeIn({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -45,7 +45,7 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
 /* ---------- page ---------- */
 
 const STEPS = [
-  { icon: Upload, title: "上传文件", desc: "拖拽或选择 PDF、Word、PPT、Excel、Markdown 等文件" },
+  { icon: Upload, title: "上传文件", desc: "拖拽或选择你的 PDF、Word、PPT、Excel、TXT、Markdown 文件" },
   { icon: Search, title: "AI 自动索引", desc: "AI 自动解析文件内容，建立知识图谱" },
   { icon: MessageSquare, title: "对话提问", desc: "用自然语言提问，获得精准答案" },
 ] as const
@@ -88,6 +88,9 @@ export default function LandingPage() {
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 border-gray-700 px-8 text-base text-gray-300 hover:bg-gray-800 hover:text-white">
               <Link href="#features">了解更多</Link>
+            </Button>
+            <Button asChild variant="ghost" size="lg" className="h-12 px-8 text-base text-gray-400 hover:text-white">
+              <Link href="/login">体验 Demo →</Link>
             </Button>
           </div>
         </FadeIn>
@@ -132,10 +135,10 @@ export default function LandingPage() {
             </div>
             <div className="group rounded-2xl border border-gray-800 bg-gray-900/60 p-8 backdrop-blur transition hover:border-blue-500/30 hover:bg-gray-900/80">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 mb-4">
-                <History className="h-6 w-6 text-cyan-400" />
+                <Globe className="h-6 w-6 text-cyan-400" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">知识时间线</h3>
-              <p className="text-gray-400 leading-relaxed">AI 自动按时间整理你的知识积累，直观查看学习轨迹</p>
+              <h3 className="text-xl font-semibold mb-2">Web Clipper</h3>
+              <p className="text-gray-400 leading-relaxed">一键保存网页到 AI 记忆，浏览器扩展让知识自动积累</p>
             </div>
           </div>
         </FadeIn>
@@ -202,7 +205,7 @@ export default function LandingPage() {
 
       {/* ===== Footer ===== */}
       <footer className="relative z-10 border-t border-gray-800 px-6 py-8 text-center text-sm text-gray-500">
-        © 2026 AI Drive · <Link href="/privacy" className="text-gray-500 hover:text-gray-400 text-sm">隐私政策</Link>
+        © 2026 AI Drive · <Link href="/privacy" className="text-gray-500 hover:text-gray-400 text-sm">隐私政策</Link> · <Link href="/terms" className="text-gray-500 hover:text-gray-400 text-sm">使用条款</Link>
       </footer>
     </main>
   )

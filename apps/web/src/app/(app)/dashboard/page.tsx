@@ -6,6 +6,7 @@ import { FileList } from "@/components/file/file-list"
 import { MemoryOverview } from "@/components/dashboard/memory-overview"
 import { KnowledgeLinks } from "@/components/dashboard/knowledge-links"
 import { AiInsights } from "@/components/dashboard/ai-insights"
+import { ReportSection } from "@/components/dashboard/report-section"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 
 export default function FilesPage() {
@@ -21,6 +22,7 @@ export default function FilesPage() {
       <MemoryOverview />
       <AiInsights />
       <KnowledgeLinks />
+      <ReportSection />
       <div className="flex-1 min-h-0">
         <FileList />
       </div>

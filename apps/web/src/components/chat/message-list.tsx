@@ -3,11 +3,12 @@ import { useRef, useEffect, useState } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
-import { Loader2, Bot, User, Copy, Check } from "lucide-react"
+import { Loader2, Bot, User, Copy, Check, ThumbsUp, ThumbsDown } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import type { ChatMessage } from "@/lib/mock-chat"
 import { Citation } from "./citation"
+import { apiFetch } from "@/lib/api"
 
 function CodeBlock({ children, ...props }: any) {
   const ref = useRef<HTMLPreElement>(null)
@@ -34,13 +35,53 @@ function CodeBlock({ children, ...props }: any) {
 
 const markdownComponents = { pre: CodeBlock }
 
-export function MessageList({ messages, streaming }: { messages: ChatMessage[]; streaming?: string }) {
+function MessageRating({ conversationId, messageId }: { conversationId?: string; messageId: string }) {
+  const [rating, setRating] = useState<"thumbs_up" | "thumbs_down" | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleRate = async (value: "thumbs_up" | "thumbs_down") => {
+    if (!conversationId || loading) return
+    setLoading(true)
+    try {
+      await apiFetch(`/api/conversations/${conversationId}/messages/${messageId}/rating`, {
+        method: "POST",
+        body: JSON.stringify({ rating: value }),
+      })
+      setRating(value)
+    } catch {
+      toast.error("评分失败")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition">
+      <button
+        onClick={() => handleRate("thumbs_up")}
+        className={cn("p-1 rounded hover:bg-accent", rating === "thumbs_up" && "text-green-500 opacity-100")}
+        title="有帮助"
+      >
+        <ThumbsUp className={cn("h-3.5 w-3.5", rating === "thumbs_up" ? "fill-current" : "")} />
+      </button>
+      <button
+        onClick={() => handleRate("thumbs_down")}
+        className={cn("p-1 rounded hover:bg-accent", rating === "thumbs_down" && "text-red-500 opacity-100")}
+        title="没帮助"
+      >
+        <ThumbsDown className={cn("h-3.5 w-3.5", rating === "thumbs_down" ? "fill-current" : "")} />
+      </button>
+    </div>
+  )
+}
+
+export function MessageList({ messages, streaming, conversationId }: { messages: ChatMessage[]; streaming?: string; conversationId?: string }) {
   const bottomRef = useRef<HTMLDivElement>(null)
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }) }, [messages, streaming])
   return (
     <div className="flex-1 overflow-auto px-4 py-6 space-y-6">
       {messages.map((msg) => (
-        <div key={msg.id} className={cn("flex gap-3", msg.role === "user" ? "justify-end" : "")}>
+        <div key={msg.id} className={cn("flex gap-3 group", msg.role === "user" ? "justify-end" : "")}>
           {msg.role === "assistant" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>}
           <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-blue-600 text-white rounded-2xl rounded-br-sm px-4 py-3" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>
             {msg.role === "assistant" ? (
@@ -54,6 +95,7 @@ export function MessageList({ messages, streaming }: { messages: ChatMessage[]; 
                     </div>
                   </details>
                 )}
+                {!msg.id.startsWith("a-") && <MessageRating conversationId={conversationId} messageId={msg.id} />}
               </div>
             ) : <p>{msg.content}</p>}
           </div>

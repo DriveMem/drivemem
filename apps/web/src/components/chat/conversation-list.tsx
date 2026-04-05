@@ -10,13 +10,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useConversations, useDeleteConversation } from "@/hooks/use-conversations"
+import { useQueryClient } from "@tanstack/react-query"
 import { apiFetch } from "@/lib/api"
-import { Loader2 } from "lucide-react"
+import { Loader2, Pin } from "lucide-react"
 
 interface Conversation {
   id: string
   title: string
   updatedAt: string
+  isPinned?: boolean
 }
 
 export function ConversationList() {
@@ -26,9 +28,11 @@ export function ConversationList() {
 
   const { data: conversations, isLoading } = useConversations()
   const deleteMutation = useDeleteConversation()
+  const queryClient = useQueryClient()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
   const editInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -53,7 +57,9 @@ export function ConversationList() {
 
     const sorted = (() => {
     const list = Array.isArray(conversations) ? conversations : (conversations?.conversations || [])
-    return [...list].sort((a: Conversation, b: Conversation) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    const s = [...list].sort((a: Conversation, b: Conversation) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    if (!searchQuery.trim()) return s
+    return s.filter((c: Conversation) => c.title?.toLowerCase().includes(searchQuery.toLowerCase()))
   })()
 
   return (
@@ -63,6 +69,14 @@ export function ConversationList() {
         <Button size="sm" variant="outline" onClick={() => router.push("/chat?new=" + Date.now())}>
           + 新对话
         </Button>
+      </div>
+      <div className="px-3 py-2 border-b">
+        <input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="搜索对话..."
+          className="w-full rounded-md bg-muted/50 px-3 py-1.5 text-xs outline-none placeholder-muted-foreground"
+        />
       </div>
 
       {isLoading ? (
@@ -126,6 +140,19 @@ export function ConversationList() {
                 )}
                 <p className="text-xs text-muted-foreground">{formatTime(c.updatedAt)}</p>
               </div>
+              {c.isPinned && <Pin className="h-3 w-3 text-blue-400 shrink-0" />}
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ isPinned: !c.isPinned }) })
+                    .then(() => queryClient.invalidateQueries({ queryKey: ["conversations"] }))
+                }}
+              >
+                <Pin className={`h-3 w-3 ${c.isPinned ? "text-blue-400" : ""}`} />
+              </Button>
               <Button
                 size="icon"
                 variant="ghost"

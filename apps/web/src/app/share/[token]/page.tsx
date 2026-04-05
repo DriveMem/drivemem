@@ -71,6 +71,7 @@ export default function SharePage() {
             </CardContent>
           </Card>
         ) : (
+          <>
           <Card>
             <CardContent className="p-8">
               <h1 className="text-2xl font-bold">{data.file.name}</h1>
@@ -88,15 +89,17 @@ export default function SharePage() {
               <Button className="mt-6 w-full" onClick={() => window.open(data.downloadUrl)}>
                 下载文件
               </Button>
-
-              <div className="mt-8 text-center">
-                <p className="text-sm text-muted-foreground">用 AI Drive 管理你的文件，让 AI 记住一切</p>
-                <Button variant="outline" asChild className="mt-2">
-                  <Link href="/signup">免费开始</Link>
-                </Button>
-              </div>
             </CardContent>
           </Card>
+
+          <div className="mt-8 rounded-2xl bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 border border-blue-500/20 p-8 text-center">
+            <h2 className="text-xl font-bold">🚀 免费创建你的 AI 知识库</h2>
+            <p className="mt-2 text-sm text-muted-foreground">上传文件即可开始 — AI 自动理解、记忆、分析</p>
+            <Button asChild className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-8">
+              <Link href="/signup">免费注册</Link>
+            </Button>
+          </div>
+        </>
         )}
       </div>
     </div>

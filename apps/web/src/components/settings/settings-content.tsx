@@ -19,6 +19,8 @@ export default function SettingsContent() {
   const [session, setSession] = useState<any>(null)
   const [name, setName] = useState("用户")
   const [deleteConfirm, setDeleteConfirm] = useState("")
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   useEffect(() => {
@@ -29,6 +31,27 @@ export default function SettingsContent() {
       }
     })
   }, [])
+
+  const [memories, setMemories] = useState<any[]>([])
+
+  const fetchMemories = async () => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const data = await apiFetch("/api/users/me/memories")
+      setMemories(data.memories || [])
+    } catch { /* ignore */ }
+  }
+
+  useEffect(() => { fetchMemories() }, [])
+
+  const handleDeleteMemory = async (id: string) => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/users/me/memories/${id}`, { method: "DELETE" })
+      toast.success("已删除")
+      fetchMemories()
+    } catch { toast.error("删除失败") }
+  }
 
   const [storageUsed, setStorageUsed] = useState<string>("—")
   const [storageTotal, setStorageTotal] = useState<string>("—")
@@ -130,6 +153,67 @@ export default function SettingsContent() {
           <p className="text-sm text-muted-foreground">
             今日对话：{chatUsedToday} / {chatLimitToday} 次
           </p>
+        </CardContent>
+      </Card>
+
+      {/* AI Memory */}
+      <Card>
+        <CardHeader>
+          <CardTitle>🧠 AI 记忆</CardTitle>
+          <p className="text-sm text-muted-foreground">AI 从你的对话中学到的偏好和关注点</p>
+        </CardHeader>
+        <CardContent>
+          {memories.length === 0 ? (
+            <p className="text-sm text-muted-foreground">AI 还没有记住任何内容。多聊聊试试。</p>
+          ) : (
+            <ul className="space-y-3">
+              {memories.map(m => (
+                <li key={m.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
+                  <div>
+                    <p className="text-sm font-medium">{m.key}</p>
+                    <p className="text-xs text-muted-foreground">{m.value}</p>
+                    <p className="text-xs text-muted-foreground/50 mt-1">{new Date(m.createdAt).toLocaleDateString("zh-CN")}</p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => handleDeleteMemory(m.id)}>
+                    ✕
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Password */}
+      <Card>
+        <CardHeader>
+          <CardTitle>修改密码</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="currentPassword">当前密码</Label>
+            <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="rounded-xl h-12" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">新密码</Label>
+            <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="rounded-xl h-12" />
+          </div>
+          <Button
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={!currentPassword || !newPassword || newPassword.length < 6}
+            onClick={async () => {
+              try {
+                const { apiFetch } = await import("@/lib/api")
+                await apiFetch("/api/users/me/password", { method: "PATCH", body: JSON.stringify({ currentPassword, newPassword }) })
+                toast.success("密码已修改")
+                setCurrentPassword("")
+                setNewPassword("")
+              } catch (e: any) { toast.error(e.message || "修改失败") }
+            }}
+          >
+            修改密码
+          </Button>
         </CardContent>
       </Card>
 
