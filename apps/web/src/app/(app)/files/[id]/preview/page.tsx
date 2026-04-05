@@ -281,6 +281,79 @@ export default function FilePreviewPage() {
           </CardContent>
         </Card>
       </div>
+      {/* Related Files */}
+      <RelatedFiles fileId={params.id} />
+    </div>
+  )
+}
+
+function RelatedFiles({ fileId }: { fileId: string }) {
+  const [links, setLinks] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setLoading(true)
+    apiFetch(`/api/users/me/knowledge-links`)
+      .then((data: any) => {
+        const all = data?.links || []
+        const related = all
+          .filter((l: any) => l.fileAId === fileId || l.fileBId === fileId)
+          .slice(0, 5)
+        setLinks(related)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [fileId])
+
+  if (loading) return null
+  if (links.length === 0) return null
+
+  const relationLabels: Record<string, string> = {
+    similar: "相似",
+    complementary: "互补",
+    contradictory: "矛盾",
+    reference: "引用",
+  }
+
+  const relationIcons: Record<string, string> = {
+    similar: "🔗",
+    complementary: "🤝",
+    contradictory: "⚡",
+    reference: "📎",
+  }
+
+  return (
+    <div className="space-y-3">
+      <h2 className="text-lg font-semibold">📂 相关文件</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {links.map((l: any) => {
+          const isA = l.fileAId === fileId
+          const otherName = isA ? l.fileBName : l.fileAName
+          const otherId = isA ? l.fileBId : l.fileAId
+          const icon = relationIcons[l.relationType] || "🔗"
+          const label = relationLabels[l.relationType] || l.relationType
+
+          return (
+            <Link
+              key={l.id}
+              href={`/files/${otherId}/preview`}
+              className="flex items-start gap-3 rounded-lg border border-border p-3 hover:bg-muted/50 transition group"
+            >
+              <FileText className="h-8 w-8 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate group-hover:text-primary transition">{otherName}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {icon} {label}
+                  {l.score != null && <span className="ml-2">相似度 {Math.round(l.score * 100)}%</span>}
+                </p>
+                {l.description && (
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{l.description}</p>
+                )}
+              </div>
+            </Link>
+          )
+        })}
+      </div>
     </div>
   )
 }
