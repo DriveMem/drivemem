@@ -44,7 +44,7 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
         {
           onSuccess: () => {
             setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "done" as const, progress: 100 } : u))
-            toast.success(`${file.name} 已添加到 AI 知识库`, { duration: 4000 })
+            toast.success(`✅ ${file.name} 已添加到对话上下文`, { duration: 3000 })
           },
           onError: (err: any) => {
             setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "error" as const, error: err.message || "记住失败" } : u))
