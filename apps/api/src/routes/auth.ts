@@ -60,10 +60,11 @@ export default async function authRoutes(fastify: FastifyInstance) {
 
     // Sign a plain JWT for the frontend to use in API calls
     const jwtSecret = new TextEncoder().encode(config.JWT_SECRET);
+    const rememberMe = (request.body as any)?.rememberMe === true;
     const token = await new SignJWT({ sub: user.id, email: user.email, name: user.name })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
-      .setExpirationTime('7d')
+      .setExpirationTime(rememberMe ? '30d' : '7d')
       .sign(jwtSecret);
 
     return reply.send({
