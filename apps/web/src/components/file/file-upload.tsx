@@ -32,7 +32,9 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
       setUploads((p) => [...p, { id: crypto.randomUUID(), name: r.file.name, progress: 0, status: "error" as const, error: msg }])
     })
 
-    // Upload accepted files
+    // Upload accepted files with progress tracking
+    const total = accepted.length
+    let doneCount = 0
     accepted.forEach((file) => {
       const itemId = crypto.randomUUID()
       setUploads((p) => [...p, { id: itemId, name: file.name, progress: 0, status: "uploading" as const }])
@@ -44,15 +46,26 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
         {
           onSuccess: () => {
             setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "done" as const, progress: 100 } : u))
+            doneCount++
+            if (total > 1) {
+              toast(`文件上传完成 (${doneCount}/${total})`)
+            }
+            if (doneCount === total) {
+              toast.success("AI 正在理解你的文件...")
+            }
           },
           onError: (err: any) => {
             setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "error" as const, error: err.message || "记住失败" } : u))
+            doneCount++
+            if (doneCount === total) {
+              toast.success("AI 正在理解你的文件...")
+            }
           },
         }
       )
     })
 
-    // Auto-close modal and show toast after uploads start
+    // Auto-close modal after uploads start
     if (accepted.length > 0) {
       toast("正在让 AI 记住...", { duration: 3000 })
       onClose()

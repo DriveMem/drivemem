@@ -60,6 +60,15 @@ const markdownComponents = {
   ),
 }
 
+function formatTime(dateStr: string): string {
+  const d = new Date(dateStr)
+  return d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false })
+}
+
+function formatFullTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleString("zh-CN")
+}
+
 function MessageRating({ conversationId, messageId }: { conversationId?: string; messageId: string }) {
   const [rating, setRating] = useState<"thumbs_up" | "thumbs_down" | null>(null)
   const [loading, setLoading] = useState(false)
@@ -121,8 +130,17 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
                   </details>
                 )}
                 {!msg.id.startsWith("a-") && <MessageRating conversationId={conversationId} messageId={msg.id} />}
+                {msg.createdAt && (
+                  <p className="text-[10px] text-muted-foreground/50 mt-1 text-right" title={formatFullTime(msg.createdAt)}>
+                    {formatTime(msg.createdAt)}
+                  </p>
+                )}
               </div>
-            ) : <p>{msg.content}</p>}
+            ) : (<><p>{msg.content}</p>{msg.createdAt && (
+                  <p className="text-[10px] text-white/50 mt-1 text-right" title={formatFullTime(msg.createdAt)}>
+                    {formatTime(msg.createdAt)}
+                  </p>
+                )}</>)}
           </div>
           {msg.role === "user" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#4F5BD5] flex items-center justify-center text-white text-xs font-bold">U</div>}
         </div>
