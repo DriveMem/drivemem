@@ -352,7 +352,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       {messages.length === 0 && (
         <EmptyState indexedCount={indexedCount} onSend={handleSend} />
       )}
-      {messages.length > 0 && <MessageList messages={messages} streaming={streaming} />}
+      {messages.length > 0 && <MessageList messages={messages} streaming={streaming} conversationId={conversationId} />}
       {followUpSuggestions.length > 0 && !sending && (
         <div className="flex flex-wrap gap-2 px-4 py-2 border-t border-border">
           {followUpSuggestions.map((q, i) => (
