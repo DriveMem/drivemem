@@ -11,7 +11,8 @@ export default async function sharesRoutes(fastify: FastifyInstance) {
   fastify.post('/files/:fileId/share', { preHandler: [requireAuth] }, async (request, reply) => {
     const { fileId } = request.params as { fileId: string };
     const userId = request.user!.id;
-    const body = request.body as { expiresIn?: number } || {};
+    const body = request.body as { expiresIn?: number; permission?: string } || {};
+    const permission = body.permission === 'download' ? 'download' : 'view';
 
     // Verify file belongs to user
     const [file] = await db.select().from(schema.files).where(and(eq(schema.files.id, fileId), eq(schema.files.userId, userId)));
@@ -19,10 +20,13 @@ export default async function sharesRoutes(fastify: FastifyInstance) {
       return reply.status(404).send({ error: 'File not found' });
     }
 
-    // Check if share already exists for this file
+    // Check if share already exists for this file — update permission if changed
     const [existing] = await db.select().from(schema.shares).where(and(eq(schema.shares.fileId, fileId), eq(schema.shares.userId, userId)));
     if (existing) {
-      return reply.send({ token: existing.token, url: `${process.env.FRONTEND_URL || 'https://drive.verrrnm.cloud'}/share/${existing.token}` });
+      if (existing.permission !== permission) {
+        await db.update(schema.shares).set({ permission }).where(eq(schema.shares.id, existing.id));
+      }
+      return reply.send({ token: existing.token, permission, url: `${process.env.FRONTEND_URL || 'https://drive.verrrnm.cloud'}/share/${existing.token}` });
     }
 
     // Generate token
@@ -34,10 +38,12 @@ export default async function sharesRoutes(fastify: FastifyInstance) {
       fileId,
       userId,
       expiresAt,
+      permission,
     });
 
     return reply.status(201).send({
       token,
+      permission,
       url: `${process.env.FRONTEND_URL || 'https://drive.verrrnm.cloud'}/share/${token}`,
     });
   });
@@ -105,6 +111,7 @@ export default async function sharesRoutes(fastify: FastifyInstance) {
         createdAt: file.createdAt,
       },
       downloadUrl,
+      permission: share.permission || 'view',
       sharedBy: owner?.name || 'Unknown',
     });
   });

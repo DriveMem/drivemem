@@ -115,6 +115,7 @@ export const shares = pgTable('shares', {
   fileId: uuid('file_id').references(() => files.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   type: text('type').notNull().default('file'),
+  permission: text('permission').notNull().default('view'), // 'view' | 'download'
   reportId: uuid('report_id').references(() => reports.id, { onDelete: 'cascade' }),
   expiresAt: timestamp('expires_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),

@@ -125,6 +125,8 @@ export function FileList() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
   const [shareLoading, setShareLoading] = useState(false)
+  const [sharePermission, setSharePermission] = useState<"view" | "download">("view")
+  const [shareFileId, setShareFileId] = useState<string | null>(null)
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
   const [inlineNewFolder, setInlineNewFolder] = useState(false)
   const [inlineNewFolderName, setInlineNewFolderName] = useState("新建文件夹")
@@ -166,8 +168,9 @@ export function FileList() {
   const handleShare = useCallback(async (fileId: string) => {
     setShareLoading(true)
     setShareDialogOpen(true)
+    setShareFileId(fileId)
     try {
-      const data = await apiFetch(`/api/files/${fileId}/share`, { method: "POST" })
+      const data = await apiFetch(`/api/files/${fileId}/share`, { method: "POST", body: JSON.stringify({ permission: sharePermission }) })
       setShareUrl(data.url || "")
     } catch (err) {
       console.error("Share failed:", err)
@@ -176,7 +179,7 @@ export function FileList() {
     } finally {
       setShareLoading(false)
     }
-  }, [])
+  }, [sharePermission])
 
   const handleDownload = useCallback(async (fileId: string, e?: React.MouseEvent) => {
     e?.stopPropagation()
@@ -636,9 +639,23 @@ export function FileList() {
             <div className="flex items-center justify-center py-4"><Loader2 className="h-5 w-5 animate-spin" /></div>
           ) : (
             <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">权限设置</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="sharePermission" value="view" checked={sharePermission === "view"} onChange={() => setSharePermission("view")} className="accent-blue-600" />
+                    <span className="text-sm">仅查看</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="sharePermission" value="download" checked={sharePermission === "download"} onChange={() => setSharePermission("download")} className="accent-blue-600" />
+                    <span className="text-sm">可下载</span>
+                  </label>
+                </div>
+              </div>
               <Input value={shareUrl} readOnly onClick={(e) => (e.target as HTMLInputElement).select()} />
               <DialogFooter>
                 <Button variant="outline" onClick={() => setShareDialogOpen(false)}>关闭</Button>
+                <Button variant="outline" onClick={() => { if (shareFileId) handleShare(shareFileId) }}>更新权限</Button>
                 <Button onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success("已复制") }}>复制</Button>
               </DialogFooter>
             </div>
