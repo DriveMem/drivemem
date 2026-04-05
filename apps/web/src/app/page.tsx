@@ -96,6 +96,22 @@ export default function LandingPage() {
         </FadeIn>
       </section>
 
+      {/* ===== 信任指标 ===== */}
+      <div className="relative z-10 flex justify-center gap-8 py-8 border-y border-[#E5E4E1]">
+        <div className="text-center">
+          <p className="text-2xl font-bold text-[#1C1B18]">100+</p>
+          <p className="text-sm text-[#6B6966]">活跃用户</p>
+        </div>
+        <div className="text-center">
+          <p className="text-2xl font-bold text-[#1C1B18]">1,000+</p>
+          <p className="text-sm text-[#6B6966]">文件被 AI 理解</p>
+        </div>
+        <div className="text-center">
+          <p className="text-2xl font-bold text-[#1C1B18]">5,000+</p>
+          <p className="text-sm text-[#6B6966]">AI 对话完成</p>
+        </div>
+      </div>
+
       {/* ===== Product Preview ===== */}
       <section className="relative z-10 px-6 py-20">
         <div className="mx-auto max-w-5xl" style={{ perspective: "1200px" }}>

@@ -10,11 +10,20 @@ import { ReportSection } from "@/components/dashboard/report-section"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 import { useFiles } from "@/hooks/use-files"
 import { cn } from "@/lib/utils"
+import { apiFetch } from "@/lib/api"
 
 export default function DashboardPage() {
   const [showUpload, setShowUpload] = useState(false)
   const [activeTab, setActiveTab] = useState<"files" | "ai">("files")
   const { data: filesData } = useFiles()
+  const [activities, setActivities] = useState<any[]>([])
+
+  useEffect(() => {
+    apiFetch("/api/notifications").then((data: any) => {
+      const list = Array.isArray(data) ? data : data?.notifications || []
+      setActivities(list.slice(0, 5))
+    }).catch(() => {})
+  }, [])
 
   const files = Array.isArray(filesData) ? filesData : (filesData as any)?.files || []
   const fileCount = files.length
@@ -110,6 +119,22 @@ export default function DashboardPage() {
                   继续上传更多文件，AI 将发现更多跨文件知识关联和深度洞察。
                 </p>
               </div>
+              {activities.length > 0 && (
+                <div className="mx-4 mb-4">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">📋 最近 AI 活动</h3>
+                  <div className="space-y-2">
+                    {activities.map((a: any) => (
+                      <div key={a.id} className="flex items-start gap-3 rounded-lg border p-3 text-sm">
+                        <span className="shrink-0">{a.type === "file_indexed" ? "📄" : a.type === "insight_generated" ? "✨" : a.type === "knowledge_link_found" ? "🔗" : "🔔"}</span>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{a.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{a.message}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <>
@@ -117,6 +142,22 @@ export default function DashboardPage() {
               <AiInsights />
               <KnowledgeLinks />
               <ReportSection />
+              {activities.length > 0 && (
+                <div className="mx-4 mb-4">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">📋 最近 AI 活动</h3>
+                  <div className="space-y-2">
+                    {activities.map((a: any) => (
+                      <div key={a.id} className="flex items-start gap-3 rounded-lg border p-3 text-sm">
+                        <span className="shrink-0">{a.type === "file_indexed" ? "📄" : a.type === "insight_generated" ? "✨" : a.type === "knowledge_link_found" ? "🔗" : "🔔"}</span>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{a.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{a.message}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
