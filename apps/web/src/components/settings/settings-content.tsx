@@ -33,6 +33,44 @@ export default function SettingsContent() {
   }, [])
 
   const [memories, setMemories] = useState<any[]>([])
+  const [notifPrefs, setNotifPrefs] = useState({
+    fileUpdates: true,
+    aiAnalysis: true,
+    storageWarning: true,
+    systemAnnouncements: true,
+  })
+  const [notifLoading, setNotifLoading] = useState(true)
+  const [notifSaving, setNotifSaving] = useState(false)
+
+  useEffect(() => {
+    import("@/lib/api").then(({ apiFetch }) => {
+      apiFetch("/api/notifications/preferences")
+        .then((data: any) => {
+          if (data?.preferences) setNotifPrefs(data.preferences)
+        })
+        .catch(() => {})
+        .finally(() => setNotifLoading(false))
+    })
+  }, [])
+
+  const handleNotifToggle = async (key: string, value: boolean) => {
+    const updated = { ...notifPrefs, [key]: value }
+    setNotifPrefs(updated)
+    setNotifSaving(true)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch("/api/notifications/preferences", {
+        method: "PUT",
+        body: JSON.stringify(updated),
+      })
+      toast.success("通知设置已保存")
+    } catch {
+      toast.error("保存失败")
+      setNotifPrefs(notifPrefs) // revert
+    } finally {
+      setNotifSaving(false)
+    }
+  }
 
   const fetchMemories = async () => {
     try {
@@ -153,6 +191,50 @@ export default function SettingsContent() {
           <p className="text-sm text-muted-foreground">
             今日对话：{chatUsedToday} / {chatLimitToday} 次
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Notification Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle>🔔 通知设置</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {notifLoading ? (
+            <p className="text-sm text-muted-foreground">加载中...</p>
+          ) : (
+            <>
+              {([
+                { key: "fileUpdates", label: "文件更新通知", desc: "文件上传、解析完成时通知" },
+                { key: "aiAnalysis", label: "AI 分析完成通知", desc: "AI 摘要、知识图谱生成完成时通知" },
+                { key: "storageWarning", label: "存储用量预警", desc: "存储空间即将用完时通知" },
+                { key: "systemAnnouncements", label: "系统公告", desc: "产品更新、维护公告等" },
+              ] as const).map((item) => (
+                <div key={item.key} className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium">{item.label}</p>
+                    <p className="text-xs text-muted-foreground">{item.desc}</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={notifPrefs[item.key]}
+                    disabled={notifSaving}
+                    onClick={() => handleNotifToggle(item.key, !notifPrefs[item.key])}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      notifPrefs[item.key] ? "bg-blue-600" : "bg-muted-foreground/30"
+                    } ${notifSaving ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+                        notifPrefs[item.key] ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
         </CardContent>
       </Card>
 

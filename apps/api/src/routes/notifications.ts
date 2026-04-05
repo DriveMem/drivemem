@@ -1,10 +1,45 @@
 import { FastifyInstance } from 'fastify';
+import { z } from 'zod';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { requireAuth } from '../plugins/auth.js';
 
+const DEFAULT_PREFERENCES = {
+  fileUpdates: true,
+  aiAnalysis: true,
+  storageWarning: true,
+  systemAnnouncements: true,
+};
+
+const preferencesSchema = z.object({
+  fileUpdates: z.boolean(),
+  aiAnalysis: z.boolean(),
+  storageWarning: z.boolean(),
+  systemAnnouncements: z.boolean(),
+});
+
 export default async function notificationRoutes(fastify: FastifyInstance) {
+  // GET /preferences — 获取通知偏好
+  fastify.get('/preferences', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const [user] = await db.select({ notificationPreferences: schema.users.notificationPreferences })
+      .from(schema.users)
+      .where(eq(schema.users.id, userId));
+    const prefs = (user?.notificationPreferences as any) || DEFAULT_PREFERENCES;
+    return reply.send({ preferences: { ...DEFAULT_PREFERENCES, ...prefs } });
+  });
+
+  // PUT /preferences — 更新通知偏好
+  fastify.put('/preferences', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const prefs = preferencesSchema.parse(request.body);
+    await db.update(schema.users)
+      .set({ notificationPreferences: prefs, updatedAt: new Date() })
+      .where(eq(schema.users.id, userId));
+    return reply.send({ preferences: prefs });
+  });
+
   // GET / — 获取通知列表
   fastify.get('/', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;

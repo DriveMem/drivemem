@@ -16,6 +16,7 @@ export const users = pgTable('users', {
   lastChatResetAt: timestamp('last_chat_reset_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   insight: text('insight'),
+  notificationPreferences: jsonb('notification_preferences'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
