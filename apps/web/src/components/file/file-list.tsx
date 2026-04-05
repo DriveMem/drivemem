@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback, useRef } from "react"
+import { useState, useMemo, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2 } from "lucide-react"
@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
+import { FileListSkeleton } from "@/components/skeletons/file-list-skeleton"
 import { FileUpload } from "./file-upload"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
 import { toast } from "sonner"
@@ -125,7 +126,42 @@ export function FileList() {
   const [shareUrl, setShareUrl] = useState("")
   const [shareLoading, setShareLoading] = useState(false)
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
+  const [inlineNewFolder, setInlineNewFolder] = useState(false)
+  const [inlineNewFolderName, setInlineNewFolderName] = useState("新建文件夹")
+  const inlineFolderInputRef = useRef<HTMLInputElement>(null)
   const parentRef = useRef<HTMLDivElement>(null)
+
+  // Ctrl+Shift+N shortcut for quick folder creation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "N") {
+        e.preventDefault()
+        setInlineNewFolderName("新建文件夹")
+        setInlineNewFolder(true)
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
+
+  // Auto-focus inline folder input
+  useEffect(() => {
+    if (inlineNewFolder && inlineFolderInputRef.current) {
+      inlineFolderInputRef.current.focus()
+      inlineFolderInputRef.current.select()
+    }
+  }, [inlineNewFolder])
+
+  const handleInlineFolderSave = useCallback(() => {
+    const name = inlineNewFolderName.trim()
+    if (name) {
+      createFolder.mutate({ name, parentId: currentFolderId }, {
+        onSuccess: () => toast.success(`文件夹「${name}」已创建`),
+        onError: (err: any) => toast.error(err?.message || "创建文件夹失败"),
+      })
+    }
+    setInlineNewFolder(false)
+  }, [inlineNewFolderName, createFolder, currentFolderId])
 
   const handleShare = useCallback(async (fileId: string) => {
     setShareLoading(true)
@@ -223,20 +259,7 @@ export function FileList() {
   }, [files, selected, openInspector])
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col gap-3 p-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3">
-            <Skeleton className="h-8 w-8 rounded" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3 w-1/2" />
-            </div>
-            <Skeleton className="h-4 w-16" />
-          </div>
-        ))}
-      </div>
-    )
+    return <FileListSkeleton />
   }
 
   if (error) {
@@ -318,7 +341,7 @@ export function FileList() {
               queryClient.invalidateQueries({ queryKey: ["folders"] })
             } catch (e: any) { const { toast } = await import("sonner"); toast.error(e.message || "整理失败") }
           }} variant="outline" className="gap-1">✨ 一键整理</Button>
-          <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />新建文件夹</Button>
+          <Button size="sm" onClick={() => { setInlineNewFolderName("新建文件夹"); setInlineNewFolder(true) }} variant="outline" className="gap-1" title="Ctrl+Shift+N"><FolderPlus className="h-3.5 w-3.5" />📁 新建文件夹</Button>
           <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
           <div className="flex items-center rounded-md border border-border ml-2">
             <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-r-none", viewMode === "list" && "bg-accent")} onClick={() => setViewMode("list")}><List className="h-3.5 w-3.5" /></Button>
@@ -349,8 +372,23 @@ export function FileList() {
           ))
         })()}
       </div>
-      {viewMode === "grid" && visibleFolders.length > 0 && (
+      {viewMode === "grid" && (visibleFolders.length > 0 || inlineNewFolder) && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4 border-b border-border">
+          {inlineNewFolder && (
+            <div className="rounded-xl border-2 border-dashed border-blue-400 p-4 flex flex-col gap-2 bg-blue-500/5">
+              <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
+                <Folder className="h-10 w-10 text-amber-500" />
+              </div>
+              <input
+                ref={inlineFolderInputRef}
+                value={inlineNewFolderName}
+                onChange={(e) => setInlineNewFolderName(e.target.value)}
+                onBlur={handleInlineFolderSave}
+                onKeyDown={(e) => { if (e.key === "Enter") handleInlineFolderSave(); if (e.key === "Escape") setInlineNewFolder(false) }}
+                className="text-sm font-medium bg-transparent border-b border-blue-400 outline-none px-1"
+              />
+            </div>
+          )}
           {visibleFolders.map((folder: any) => (
             <div key={folder.id} className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", dragOverFolderId === folder.id && "ring-2 ring-blue-500 bg-blue-500/10")}
               onClick={() => setCurrentFolder(folder.id)}
@@ -369,8 +407,21 @@ export function FileList() {
           ))}
         </div>
       )}
-      {viewMode === "list" && visibleFolders.length > 0 && (
+      {viewMode === "list" && (visibleFolders.length > 0 || inlineNewFolder) && (
         <div className="border-b border-border">
+          {inlineNewFolder && (
+            <div className="flex items-center gap-3 px-4 py-2.5 bg-blue-500/5 border-b border-dashed border-blue-400">
+              <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
+              <input
+                ref={viewMode === "list" ? inlineFolderInputRef : undefined}
+                value={inlineNewFolderName}
+                onChange={(e) => setInlineNewFolderName(e.target.value)}
+                onBlur={handleInlineFolderSave}
+                onKeyDown={(e) => { if (e.key === "Enter") handleInlineFolderSave(); if (e.key === "Escape") setInlineNewFolder(false) }}
+                className="text-sm bg-transparent border-b border-blue-400 outline-none flex-1"
+              />
+            </div>
+          )}
           {visibleFolders.map((folder: any) => (
             <div key={folder.id} className={cn("flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors", dragOverFolderId === folder.id && "ring-2 ring-blue-500 bg-blue-500/10")}
               onClick={() => setCurrentFolder(folder.id)}
