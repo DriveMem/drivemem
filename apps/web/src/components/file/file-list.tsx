@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2 } from "lucide-react"
 import { Lightbulb } from "lucide-react"
+import { getFileIcon } from "@/lib/get-file-icon"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -64,23 +65,8 @@ function formatRelativeTime(date: string): string {
 }
 
 function TypeIcon({ type, name, className }: { type: string; name?: string; className?: string }) {
-  const ext = name?.split(".").pop()?.toLowerCase()
-  const colorByExt: Record<string, string> = {
-    pdf: "text-red-500",
-    doc: "text-blue-600", docx: "text-blue-600",
-    md: "text-green-500", markdown: "text-green-500",
-    txt: "text-gray-500",
-    pptx: "text-orange-500", ppt: "text-orange-500",
-    xlsx: "text-emerald-600", xls: "text-emerald-600",
-  }
-  const colorByType: Record<string, string> = {
-    pdf: "text-red-500",
-    txt: "text-gray-500",
-    md: "text-green-500",
-    image: "text-blue-400",
-  }
-  const color = (ext && colorByExt[ext]) || colorByType[type] || "text-muted-foreground"
-  return <FileText className={cn("h-4 w-4 flex-shrink-0", className, color)} />
+  const { icon: Icon, colorClass } = getFileIcon(name || type, type)
+  return <Icon className={cn("h-4 w-4 flex-shrink-0", className, colorClass)} />
 }
 
 function StatusIcon({ status, error, compact }: { status: string; error?: string; compact?: boolean }) {

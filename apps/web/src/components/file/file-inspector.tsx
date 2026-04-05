@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FileText, MessageSquare, Loader2, AlertCircle, Link2 } from "lucide-react"
+import { MessageSquare, Loader2, AlertCircle, Link2 } from "lucide-react"
+import { getFileIcon } from "@/lib/get-file-icon"
 import { Button } from "@/components/ui/button"
 import { useFile, useMoveFile } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
@@ -43,7 +44,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
   return (
     <div className="p-4 space-y-6">
       <div className="flex items-center gap-3">
-        <FileText className="h-8 w-8 text-muted-foreground" />
+        {(() => { const { icon: Icon, colorClass } = getFileIcon(file.name, file.type); return <Icon className={`h-8 w-8 ${colorClass}`} /> })()}
         <div>
           <p className="font-medium text-sm">{file.name}</p>
           <p className="text-xs text-muted-foreground">{typeLabels[file.type] || file.type}</p>
