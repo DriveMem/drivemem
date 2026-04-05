@@ -46,6 +46,7 @@ function LoginForm() {
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
+        rememberMe: rememberMe ? "true" : "false",
         redirect: false,
       })
       if (result?.error) {
