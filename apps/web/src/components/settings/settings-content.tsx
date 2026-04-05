@@ -103,7 +103,7 @@ export default function SettingsContent() {
   }
 
   const handleDelete = () => {
-    if (deleteConfirm === "DELETE") {
+    if (deleteConfirm === "确认删除") {
       alert("账号已删除（mock）")
       setDeleteOpen(false)
     }
@@ -238,16 +238,16 @@ export default function SettingsContent() {
                 <DialogTitle>确认删除账号</DialogTitle>
               </DialogHeader>
               <p className="text-sm text-muted-foreground">
-                此操作不可撤销。请输入 <strong>DELETE</strong> 确认。
+                此操作不可撤销。请输入 <strong>确认删除</strong> 以继续。
               </p>
               <Input
                 value={deleteConfirm}
                 onChange={(e) => setDeleteConfirm(e.target.value)}
-                placeholder='输入 "DELETE"'
+                placeholder='输入「确认删除」'
               />
               <Button
                 variant="destructive"
-                disabled={deleteConfirm !== "DELETE"}
+                disabled={deleteConfirm !== "确认删除"}
                 onClick={handleDelete}
               >
                 确认删除

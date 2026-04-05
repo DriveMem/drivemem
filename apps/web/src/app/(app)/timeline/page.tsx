@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import { apiFetch } from "@/lib/api"
-import { FileText, Clock } from "lucide-react"
+import { FileText, Clock, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 function getFileColor(name: string): string {
@@ -17,6 +17,7 @@ function getFileColor(name: string): string {
 export default function TimelinePage() {
   useEffect(() => { document.title = "知识时间线 - AI Drive" }, [])
   const [files, setFiles] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   
   useEffect(() => {
     apiFetch("/api/files")
@@ -25,6 +26,7 @@ export default function TimelinePage() {
         setFiles(list.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
   // Group by date
@@ -43,7 +45,11 @@ export default function TimelinePage() {
       <h1 className="text-2xl font-bold mb-6">📅 知识时间线</h1>
       <p className="text-sm text-muted-foreground mb-8">你的 AI 知识积累过程</p>
       
-      {Object.entries(groups).length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : Object.entries(groups).length === 0 ? (
         <p className="text-center text-muted-foreground py-12">还没有上传文件</p>
       ) : (
         <div className="space-y-8">

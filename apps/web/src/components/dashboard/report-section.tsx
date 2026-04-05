@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Loader2, Download, Share2, Copy, Check } from "lucide-react"
+import { toast } from "sonner"
 
 export function ReportSection() {
   const [report, setReport] = useState<string | null>(null)
@@ -24,7 +25,7 @@ export function ReportSection() {
       const data = await apiFetch("/api/reports/generate", { method: "POST", body: JSON.stringify({ type }) })
       if (data?.report) setReport(data.report)
       if (data?.id) setReportId(data.id)
-    } catch {} finally { setGenerating(false) }
+    } catch { toast.error("报告生成失败，请稍后重试") } finally { setGenerating(false) }
   }
 
   const handleExport = () => {
@@ -47,7 +48,7 @@ export function ReportSection() {
         setShareUrl(data.url)
         setShareDialogOpen(true)
       }
-    } catch {} finally { setSharing(false) }
+    } catch { toast.error("分享失败") } finally { setSharing(false) }
   }
 
   const handleCopy = async () => {
