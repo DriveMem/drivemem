@@ -103,8 +103,9 @@ export default function DashboardPage() {
           ) : fileCount <= 3 ? (
             <div>
               <MemoryOverview />
+              <ReportSection />
               <div className="mx-4 mb-4 rounded-xl border bg-muted/30 p-6 text-center">
-                <Sparkles className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                <Sparkles className="h-6 w-6 text-indigo-500 mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">
                   继续上传更多文件，AI 将发现更多跨文件知识关联和深度洞察。
                 </p>

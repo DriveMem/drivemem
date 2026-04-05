@@ -89,7 +89,7 @@ function OfficePreview({ fileId, fileName }: { fileId: string; fileName: string 
         const res = await apiFetch(`/api/files/${fileId}/preview-url`) as { previewUrl: string }
         if (!cancelled && res.previewUrl) {
           // Try Microsoft Office Online Viewer first (more reliable with presigned URLs)
-          setPreviewUrl(`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(res.previewUrl)}`)
+          setPreviewUrl(`https://docs.google.com/viewer?url=${encodeURIComponent(res.previewUrl)}&embedded=true`)
         } else {
           if (!cancelled) setError(true)
         }

@@ -106,7 +106,7 @@ export function MemoryOverview() {
           {profile && profile.topics.length > 0 ? (
             <>
               <p className="mt-1 text-sm text-muted-foreground">
-                AI 了解你关注的 <strong className="text-foreground">{profile.topics.length}</strong> 个领域
+                AI 整理了 <strong className="text-foreground">{profile.topics.length}</strong> 个知识分类
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {profile.topics.map((t) => (

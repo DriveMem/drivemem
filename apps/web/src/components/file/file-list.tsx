@@ -339,7 +339,7 @@ export function FileList() {
             <div key={folder.id} className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", dragOverFolderId === folder.id && "ring-2 ring-[#4F5BD5] bg-[#4F5BD5]/5")} onClick={() => setCurrentFolder(folder.id)}
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverFolderId(folder.id) }}
               onDragLeave={() => setDragOverFolderId(null)}
-              onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { try { await apiFetch(`/api/files/${fileId}`, { method: "PATCH", body: JSON.stringify({ folderId: folder.id }) }); queryClient.invalidateQueries({ queryKey: ["files"] }); toast.success("已移动到 " + folder.name) } catch { toast.error("移动失败") } } }}>
+              onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success("已移入 " + folder.name) } }}>
               <div className="flex h-28 items-center justify-center rounded-lg bg-muted/50">
                 <Folder className="h-14 w-14 text-amber-500" />
               </div>
@@ -357,7 +357,7 @@ export function FileList() {
             <div key={folder.id} className={cn("flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors", dragOverFolderId === folder.id && "ring-2 ring-[#4F5BD5] bg-[#4F5BD5]/5")} onClick={() => setCurrentFolder(folder.id)}
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverFolderId(folder.id) }}
               onDragLeave={() => setDragOverFolderId(null)}
-              onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { try { await apiFetch(`/api/files/${fileId}`, { method: "PATCH", body: JSON.stringify({ folderId: folder.id }) }); queryClient.invalidateQueries({ queryKey: ["files"] }); toast.success("已移动到 " + folder.name) } catch { toast.error("移动失败") } } }}>
+              onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success("已移入 " + folder.name) } }}>
               <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
               <span className="text-sm truncate">{folder.name}</span>
               {typeof folder.fileCount === "number" && (
