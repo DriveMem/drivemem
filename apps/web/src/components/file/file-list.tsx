@@ -124,6 +124,7 @@ export function FileList() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
   const [shareLoading, setShareLoading] = useState(false)
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
   const parentRef = useRef<HTMLDivElement>(null)
 
   const handleShare = useCallback(async (fileId: string) => {
@@ -333,7 +334,12 @@ export function FileList() {
       {viewMode === "grid" && visibleFolders.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4 border-b border-border">
           {visibleFolders.map((folder: any) => (
-            <div key={folder.id} className="rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2" onClick={() => setCurrentFolder(folder.id)}>
+            <div key={folder.id} className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", dragOverFolderId === folder.id && "ring-2 ring-blue-500 bg-blue-500/10")}
+              onClick={() => setCurrentFolder(folder.id)}
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverFolderId(folder.id) }}
+              onDragLeave={() => setDragOverFolderId(null)}
+              onDrop={(e) => { e.preventDefault(); e.stopPropagation(); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success(`已移入 ${folder.name}`) } setDragOverFolderId(null) }}
+            >
               <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
                 <Folder className="h-10 w-10 text-amber-500" />
               </div>
@@ -348,7 +354,12 @@ export function FileList() {
       {viewMode === "list" && visibleFolders.length > 0 && (
         <div className="border-b border-border">
           {visibleFolders.map((folder: any) => (
-            <div key={folder.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setCurrentFolder(folder.id)}>
+            <div key={folder.id} className={cn("flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors", dragOverFolderId === folder.id && "ring-2 ring-blue-500 bg-blue-500/10")}
+              onClick={() => setCurrentFolder(folder.id)}
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverFolderId(folder.id) }}
+              onDragLeave={() => setDragOverFolderId(null)}
+              onDrop={(e) => { e.preventDefault(); e.stopPropagation(); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success(`已移入 ${folder.name}`) } setDragOverFolderId(null) }}
+            >
               <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
               <span className="text-sm truncate">{folder.name}</span>
               {typeof folder.fileCount === "number" && (
@@ -368,7 +379,9 @@ export function FileList() {
             return (
               <div key={file.id} onClick={(e) => handleClick(file.id, e)} onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
-                className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
+                draggable
+                onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
+                className={cn("group absolute left-0 top-0 flex w-full cursor-grab items-center gap-3 border-b border-border px-4 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <Checkbox
                   checked={selected.has(file.id)}
@@ -419,7 +432,9 @@ export function FileList() {
                   onClick={(e) => handleClick(file.id, e)}
                   onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
                   onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
-                  className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", isSel && "bg-accent ring-2 ring-primary")}
+                  draggable
+                  onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
+                  className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-grab flex flex-col gap-2", isSel && "bg-accent ring-2 ring-primary")}
                 >
                   <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
                     <TypeIcon type={file.type} name={file.name} className="h-10 w-10" />

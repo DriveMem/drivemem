@@ -16,6 +16,7 @@ function getFileType(name: string): string {
   if (ext === "md" || ext === "markdown") return "md"
   if (ext === "txt") return "txt"
   if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image"
+  if (["docx", "doc", "pptx", "ppt", "xlsx", "xls"].includes(ext)) return "office"
   return "other"
 }
 
@@ -42,7 +43,7 @@ function useFileContent(fileId: string, fileType: string) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!fileId || !["md", "txt", "pdf"].includes(fileType)) return
+    if (!fileId || !["md", "txt", "pdf", "office"].includes(fileType)) return
 
     let cancelled = false
     setLoading(true)
@@ -53,8 +54,8 @@ function useFileContent(fileId: string, fileType: string) {
         const res = await apiFetch(`/api/files/${fileId}/preview-url`)
         const { previewUrl: url } = res as { previewUrl: string; mimeType: string }
         if (!cancelled) setPreviewUrl(url)
-        if (fileType === "pdf") {
-          // For PDF, we only need the URL for iframe
+        if (fileType === "pdf" || fileType === "office") {
+          // For PDF and Office, we only need the URL for iframe
           if (!cancelled) setLoading(false)
           return
         }
@@ -183,6 +184,25 @@ export default function FilePreviewPage() {
                 </div>
               )}
             </>
+          )}
+          {fileType === "office" && (
+            previewUrl ? (
+              <iframe
+                src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewUrl)}&embedded=true`}
+                className="w-full h-[600px] rounded border"
+                title="Office 文件预览"
+              />
+            ) : contentLoading ? (
+              <div className="flex h-96 items-center justify-center rounded border bg-muted">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
+                <FileText className="h-12 w-12" />
+                <p>Office 文件 — AI 已记住内容</p>
+                <p className="text-xs">可在 AI 对话中询问此文件相关问题</p>
+              </div>
+            )
           )}
           {fileType === "other" && (
             <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
