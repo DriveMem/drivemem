@@ -91,32 +91,37 @@ export default function SettingsContent() {
     } catch { toast.error("删除失败") }
   }
 
-  const [storageUsed, setStorageUsed] = useState<string>("—")
-  const [storageTotal, setStorageTotal] = useState<string>("—")
-  const [chatUsedToday, setChatUsedToday] = useState<string>("—")
-  const [chatLimitToday, setChatLimitToday] = useState<string>("—")
+  const [storageUsed, setStorageUsed] = useState<string | null>(null)
+  const [storageTotal, setStorageTotal] = useState<string | null>(null)
+  const [chatUsedToday, setChatUsedToday] = useState<string | null>(null)
+  const [chatLimitToday, setChatLimitToday] = useState<string | null>(null)
+  const [usageLoading, setUsageLoading] = useState(true)
+  const [usageError, setUsageError] = useState(false)
 
-  useEffect(() => {
-    const fetchUsage = async () => {
-      try {
-        const s = await getSession()
-        const token = (s as any)?.accessToken
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
-        const res = await fetch(apiBase + "/api/users/me", {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        })
-        if (!res.ok) throw new Error("not ok")
-        const data = await res.json()
-        setStorageUsed(((data.storageUsed || 0) / 1073741824).toFixed(2))
-        setStorageTotal(((data.storageLimit || 5368709120) / 1073741824).toFixed(1))
-        setChatUsedToday(String(data.dailyChatCount ?? "—"))
-        setChatLimitToday(String(data.dailyChatLimit ?? 20))
-      } catch {
-        // API not available, keep fallback "—"
-      }
+  const fetchUsage = async () => {
+    setUsageLoading(true)
+    setUsageError(false)
+    try {
+      const s = await getSession()
+      const token = (s as any)?.accessToken
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
+      const res = await fetch(apiBase + "/api/users/me", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) throw new Error("not ok")
+      const data = await res.json()
+      setStorageUsed(((data.storageUsed || 0) / 1073741824).toFixed(2))
+      setStorageTotal(((data.storageLimit || 5368709120) / 1073741824).toFixed(1))
+      setChatUsedToday(String(data.dailyChatCount ?? 0))
+      setChatLimitToday(String(data.dailyChatLimit ?? 20))
+    } catch {
+      setUsageError(true)
+    } finally {
+      setUsageLoading(false)
     }
-    fetchUsage()
-  }, [])
+  }
+
+  useEffect(() => { fetchUsage() }, [])
 
   const handleExport = async () => {
     try {
@@ -177,20 +182,35 @@ export default function SettingsContent() {
           <CardTitle>用量</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <p className="mb-1 text-sm text-muted-foreground">
-              存储空间：{storageUsed} GB / {storageTotal} GB
-            </p>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${storageUsed !== "—" && storageTotal !== "—" ? (parseFloat(storageUsed) / parseFloat(storageTotal)) * 100 : 0}%` }}
-              />
+          {usageLoading ? (
+            <div className="space-y-3">
+              <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+              <div className="h-2 w-full animate-pulse rounded-full bg-muted" />
+              <div className="h-4 w-36 animate-pulse rounded bg-muted" />
             </div>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            今日对话：{chatUsedToday} / {chatLimitToday} 次
-          </p>
+          ) : usageError ? (
+            <div className="flex flex-col items-center gap-2 py-4">
+              <p className="text-sm text-destructive">获取数据失败，请刷新重试</p>
+              <Button size="sm" variant="outline" onClick={fetchUsage}>重试</Button>
+            </div>
+          ) : (
+            <>
+              <div>
+                <p className="mb-1 text-sm text-muted-foreground">
+                  存储空间：{storageUsed} GB / {storageTotal} GB
+                </p>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all"
+                    style={{ width: `${storageUsed && storageTotal ? (parseFloat(storageUsed) / parseFloat(storageTotal)) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                今日对话：{chatUsedToday} / {chatLimitToday} 次
+              </p>
+            </>
+          )}
         </CardContent>
       </Card>
 
