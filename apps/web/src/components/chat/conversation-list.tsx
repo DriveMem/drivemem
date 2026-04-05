@@ -12,7 +12,7 @@ import {
 import { useConversations, useDeleteConversation } from "@/hooks/use-conversations"
 import { useQueryClient } from "@tanstack/react-query"
 import { apiFetch } from "@/lib/api"
-import { Loader2, Pin } from "lucide-react"
+import { Loader2, Pin, Search, MessageCircle } from "lucide-react"
 
 interface Conversation {
   id: string
@@ -73,12 +73,15 @@ export function ConversationList() {
         </Button>
       </div>
       <div className="px-3 py-2 border-b">
-        <input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="搜索对话..."
-          className="w-full rounded-md bg-muted/50 px-3 py-1.5 text-xs outline-none placeholder-muted-foreground"
-        />
+        <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-1.5">
+          <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="搜索对话..."
+            className="w-full bg-transparent text-xs outline-none placeholder-muted-foreground"
+          />
+        </div>
       </div>
 
       {isLoading ? (
@@ -86,11 +89,12 @@ export function ConversationList() {
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : sorted.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 p-4">
-          <p className="text-sm text-muted-foreground">暂无对话</p>
-          <Button variant="ghost" size="sm" onClick={() => router.push("/chat?new=" + Date.now())}>
-            开始对话 →
-          </Button>
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+          <div className="rounded-full bg-[#4F5BD5]/10 p-3">
+            <MessageCircle className="h-5 w-5 text-[#4F5BD5]" />
+          </div>
+          <p className="text-sm text-muted-foreground">还没有对话</p>
+          <p className="text-xs text-muted-foreground/60">点击上方按钮开始第一次 AI 对话</p>
         </div>
       ) : (
         <ul className="flex-1 overflow-y-auto">
