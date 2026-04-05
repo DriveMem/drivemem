@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { FileText, MessageSquare, CalendarDays, Settings, PanelLeftClose, PanelLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -8,6 +9,7 @@ import { FolderTree } from "@/components/file/folder-tree"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { apiFetch } from "@/lib/api"
 
 const navItems = [
   { href: "/dashboard", icon: FileText, label: "我的文件" },
@@ -15,6 +17,44 @@ const navItems = [
   { href: "/timeline", icon: CalendarDays, label: "时间线" },
   { href: "/settings", icon: Settings, label: "设置" },
 ] as const
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"
+  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB"
+  return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB"
+}
+
+function StorageBar() {
+  const [storageUsed, setStorageUsed] = useState<number>(0)
+  const [storageLimit, setStorageLimit] = useState<number>(5 * 1024 * 1024 * 1024) // 5 GB default
+
+  useEffect(() => {
+    apiFetch("/api/users/me")
+      .then((data: any) => {
+        if (data?.storageUsed != null) setStorageUsed(Number(data.storageUsed))
+        if (data?.storageLimit != null) setStorageLimit(Number(data.storageLimit))
+      })
+      .catch(() => {})
+  }, [])
+
+  const pct = storageLimit > 0 ? (storageUsed / storageLimit) * 100 : 0
+  const barColor = pct > 95 ? "bg-red-500" : pct > 80 ? "bg-orange-500" : "bg-blue-500"
+
+  return (
+    <div className="px-3 py-3 border-t border-border">
+      <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+        <span>存储用量</span>
+        <span>{formatBytes(storageUsed)} / {formatBytes(storageLimit)}</span>
+      </div>
+      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+        <div
+          className={cn("h-full rounded-full transition-all", barColor)}
+          style={{ width: `${Math.min(pct, 100)}%` }}
+        />
+      </div>
+    </div>
+  )
+}
 
 export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar } = useLayoutStore()
@@ -67,6 +107,7 @@ export function Sidebar() {
             <FolderTree />
           </div>
         )}
+        <StorageBar />
       </div>
     </TooltipProvider>
   )
