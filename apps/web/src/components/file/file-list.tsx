@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback, useRef } from "react"
+import { useState, useMemo, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2, MoreHorizontal, BotMessageSquare, Link2 } from "lucide-react"
@@ -29,7 +29,7 @@ import { FileUpload } from "./file-upload"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
 import { toast } from "sonner"
 
-type SortKey = "name" | "createdAt" | "size"
+type SortKey = "name" | "createdAt" | "size" | "type"
 type SortDir = "asc" | "desc"
 
 interface FileItem {
@@ -179,6 +179,7 @@ export function FileList() {
       const m = sortDir === "asc" ? 1 : -1
       if (sortKey === "name") return a.name.localeCompare(b.name) * m
       if (sortKey === "size") return (a.size - b.size) * m
+      if (sortKey === "type") return (a.type || "").localeCompare(b.type || "") * m
       return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * m
     })
   }, [rawFiles, sortKey, sortDir])
@@ -212,6 +213,23 @@ export function FileList() {
   const virt = useVirtualizer({ count: filteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 52, overscan: 5 })
 
   const toggleSort = (k: SortKey) => { if (sortKey === k) setSortDir((d) => d === "asc" ? "desc" : "asc"); else { setSortKey(k); setSortDir("asc") } }
+
+  // F2 rename shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "F2" && selectedFileId) {
+        e.preventDefault()
+        const file = rawFiles?.find((f: any) => f.id === selectedFileId)
+        if (file) {
+          const dotIdx = file.name.lastIndexOf(".")
+          setRenameTarget({ fileId: file.id, currentName: file.name })
+          setRenameValue(dotIdx > 0 ? file.name.slice(0, dotIdx) : file.name)
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [selectedFileId, rawFiles])
 
   const handleClick = useCallback((id: string, e: React.MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
