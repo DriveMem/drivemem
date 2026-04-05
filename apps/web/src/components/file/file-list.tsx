@@ -261,6 +261,24 @@ export function FileList() {
     )
   }
 
+  if (files.length === 0 && !showUpload && currentFolderId && visibleFolders.length === 0) {
+    return (
+      <div
+        className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground"
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
+        onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setShowUpload(true) }}
+      >
+        <Folder className="h-12 w-12 text-muted-foreground/50" />
+        <p className="text-lg font-medium text-foreground">这个文件夹还是空的</p>
+        <p className="text-sm">拖拽文件到这里，或点击上传</p>
+        <Button onClick={() => setShowUpload(true)} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+          <Upload className="h-4 w-4" />上传文件
+        </Button>
+        {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
+      </div>
+    )
+  }
+
   return (
     <div className="flex h-full flex-col" onDragOver={(e) => { e.preventDefault() }} onDrop={(e) => { e.preventDefault(); setShowUpload(true) }}>
       {/* Toolbar: filters left, actions right */}
