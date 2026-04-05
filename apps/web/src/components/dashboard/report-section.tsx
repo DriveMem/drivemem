@@ -64,10 +64,10 @@ export function ReportSection() {
         <Button onClick={() => handleGenerate("analysis")} disabled={generating} className="bg-gradient-to-r from-[#4F5BD5] to-purple-600 hover:from-[#3D49C4] hover:to-purple-700">
           {generating ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />生成中...</> : <>📊 分析报告</>}
         </Button>
-        <Button onClick={() => handleGenerate("study")} disabled={generating} variant="outline">
+        <Button onClick={() => handleGenerate("study")} disabled={generating} variant="outline" className="border-[#4F5BD5]/30 text-[#4F5BD5] hover:bg-[#4F5BD5]/5">
           {generating ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />生成中...</> : <>📝 学习笔记</>}
         </Button>
-        <Button onClick={() => handleGenerate("competitive")} disabled={generating} variant="outline">
+        <Button onClick={() => handleGenerate("competitive")} disabled={generating} variant="outline" className="border-[#4F5BD5]/30 text-[#4F5BD5] hover:bg-[#4F5BD5]/5">
           {generating ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />生成中...</> : <>🔍 竞品分析</>}
         </Button>
       </div>
