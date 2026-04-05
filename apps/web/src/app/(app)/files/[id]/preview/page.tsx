@@ -222,38 +222,29 @@ export default function FilePreviewPage() {
         <Card className="w-72 shrink-0">
           <CardContent className="space-y-4 p-4">
             <h2 className="font-semibold">文件信息</h2>
-            <dl className="space-y-2 text-sm">
-              <div>
-                <dt className="text-muted-foreground">文件名</dt>
-                <dd className="break-all">{fileName}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">类型</dt>
-                <dd>{file.mimeType || fileType.toUpperCase()}</dd>
-              </div>
-              {file.size && (
-                <div>
-                  <dt className="text-muted-foreground">大小</dt>
-                  <dd>{formatSize(file.size)}</dd>
-                </div>
-              )}
-              <div>
-                <dt className="text-muted-foreground">状态</dt>
-                <dd>{statusLabel(file.status || file.parseStatus)}</dd>
-              </div>
+            <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-3 text-sm">
+              <span className="text-muted-foreground">📎 文件类型</span>
+              <span>{file.mimeType || fileType.toUpperCase()}</span>
+
+              <span className="text-muted-foreground">📦 文件大小</span>
+              <span>{file.size ? formatSize(file.size) : "未知"}</span>
+
+              <span className="text-muted-foreground">📅 上传时间</span>
+              <span>{file.createdAt ? new Date(file.createdAt).toLocaleString("zh-CN") : "未知"}</span>
+
+              <span className="text-muted-foreground">🕐 最近访问</span>
+              <span>{file.updatedAt ? new Date(file.updatedAt).toLocaleString("zh-CN") : "未知"}</span>
+
+              <span className="text-muted-foreground">🤖 AI 状态</span>
+              <span>{statusLabel(file.status || file.parseStatus)}</span>
+
               {file.errorMessage && (
-                <div>
-                  <dt className="text-muted-foreground">错误</dt>
-                  <dd className="text-destructive">{file.errorMessage}</dd>
-                </div>
+                <>
+                  <span className="text-muted-foreground">❌ 错误</span>
+                  <span className="text-destructive">{file.errorMessage}</span>
+                </>
               )}
-              {file.createdAt && (
-                <div>
-                  <dt className="text-muted-foreground">上传时间</dt>
-                  <dd>{new Date(file.createdAt).toLocaleString("zh-CN")}</dd>
-                </div>
-              )}
-            </dl>
+            </div>
             <div className="flex gap-2">
               <Button className="flex-1" asChild>
                 <Link href={`/chat?file=${file.id}`}>对此文件提问</Link>
