@@ -18,6 +18,7 @@ import Link from "next/link"
 import { getSession } from "next-auth/react"
 import { useConversation } from "@/hooks/use-conversations"
 import { useQueryClient } from "@tanstack/react-query"
+import { CONVERSATION_TEMPLATES, type ConversationTemplate } from "@/lib/templates"
 
 type ScopeType = "all" | "folder" | "file"
 
@@ -38,7 +39,7 @@ const DEFAULT_SUGGESTIONS = [
   "📊 帮我分析文件内容",
 ]
 
-function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (msg: string) => void }) {
+function EmptyState({ indexedCount, onSend, onSelectTemplate }: { indexedCount: number; onSend: (msg: string) => void; onSelectTemplate: (template: ConversationTemplate) => void }) {
   const [suggestions, setSuggestions] = useState<string[]>([])
 
   useEffect(() => {
@@ -59,8 +60,18 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
       {indexedCount > 0 ? (
         <>
           <p className="text-lg font-medium text-foreground">AI 已记住 {indexedCount} 个文件</p>
-          <p className="text-sm text-muted-foreground">问问 AI 关于你的文件：</p>
-          <div className="mt-1 flex flex-wrap justify-center gap-2 max-w-lg">
+          <p className="text-sm text-muted-foreground">选择模板开始对话，或直接提问：</p>
+          <div className="grid grid-cols-2 gap-3 max-w-lg mt-2">
+            {CONVERSATION_TEMPLATES.map((t) => (
+              <button key={t.id} onClick={() => onSelectTemplate(t)}
+                className="flex flex-col items-start gap-1.5 rounded-xl border border-border p-4 text-left hover:bg-accent/50 hover:border-primary/30 hover:shadow-sm transition-all">
+                <span className="text-2xl">{t.emoji}</span>
+                <span className="text-sm font-medium text-foreground">{t.title}</span>
+                <span className="text-xs text-muted-foreground line-clamp-2">{t.description}</span>
+              </button>
+            ))}
+          </div>
+          <div className="mt-3 flex flex-wrap justify-center gap-2 max-w-lg">
             {chips.map((q, i) => (
               <button key={i} onClick={() => onSend(q)}
                 className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground/80 hover:bg-primary/10 hover:shadow-sm hover:scale-[1.02] transition-all cursor-pointer">
@@ -104,6 +115,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   const [followUpSuggestions, setFollowUpSuggestions] = useState<string[]>([])
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [activeTemplate, setActiveTemplate] = useState<ConversationTemplate | null>(null)
 
   const queryClient = useQueryClient()
 
@@ -372,7 +384,10 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       )}
 
       {messages.length === 0 && (
-        <EmptyState indexedCount={indexedCount} onSend={handleSend} />
+        <EmptyState indexedCount={indexedCount} onSend={handleSend} onSelectTemplate={(template) => {
+          setActiveTemplate(template)
+          handleSend(`[${template.emoji} ${template.title}] ${template.systemPrompt}`)
+        }} />
       )}
       {messages.length > 0 && <MessageList messages={messages} streaming={streaming} conversationId={conversationId} onRegenerate={messages.length >= 2 && !sending ? () => {
         // Find the last user message and resend it
