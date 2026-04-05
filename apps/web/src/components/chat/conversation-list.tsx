@@ -12,6 +12,7 @@ import {
 import { useConversations, useDeleteConversation } from "@/hooks/use-conversations"
 import { useQueryClient } from "@tanstack/react-query"
 import { apiFetch } from "@/lib/api"
+import { ConversationListSkeleton } from "@/components/skeletons/conversation-list-skeleton"
 import { Loader2, Pin } from "lucide-react"
 
 interface Conversation {
@@ -80,9 +81,7 @@ export function ConversationList() {
       </div>
 
       {isLoading ? (
-        <div className="flex flex-1 items-center justify-center">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-        </div>
+        <ConversationListSkeleton />
       ) : sorted.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-4">
           <p className="text-sm text-muted-foreground">暂无对话</p>
