@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2 } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2, MoreHorizontal, BotMessageSquare, Link2 } from "lucide-react"
 import { Lightbulb } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
@@ -403,9 +404,29 @@ export function FileList() {
                 <StatusIcon status={file.status} error={file.errorMessage} compact />
                 <span className="w-20 text-right text-xs text-muted-foreground shrink-0" suppressHydrationWarning>{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
                 <span className="w-16 text-right text-xs text-muted-foreground shrink-0">{fmtSize(file.size)}</span>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 shrink-0" onClick={(e) => handleDownload(file.id, e)}>
-                  <Download className="h-3.5 w-3.5" />
-                </Button>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDownload(file.id, e) }}
+                    className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
+                    title="下载"
+                  >
+                    <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleShare(file.id) }}
+                    className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
+                    title="分享"
+                  >
+                    <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
+                    className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
+                    title="更多"
+                  >
+                    <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </div>
               </div>
               </HoverCardTrigger>
               {file.summary && (
@@ -482,6 +503,19 @@ export function FileList() {
               setContextMenu(null)
             }}>
               <Share2 className="h-4 w-4 mr-2" />分享
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => {
+              router.push(`/chat?fileIds=${contextMenu.fileId}`)
+              setContextMenu(null)
+            }}>
+              <BotMessageSquare className="h-4 w-4 mr-2" />💬 问 AI 关于这个文件
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              router.push(`/files/${contextMenu.fileId}/preview`)
+              setContextMenu(null)
+            }}>
+              <Link2 className="h-4 w-4 mr-2" />🔗 查看知识关联
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
