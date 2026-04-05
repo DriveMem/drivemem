@@ -158,12 +158,12 @@ export function MessageList({
               <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={markdownComponents}>{msg.content}</ReactMarkdown>
                 {msg.citations && msg.citations.length > 0 && (
-                  <details className="mt-3 pt-3 border-t border-border">
-                    <summary className="text-xs text-muted-foreground font-medium cursor-pointer select-none hover:text-foreground">📎 {msg.citations.length} 个来源引用</summary>
-                    <div className="mt-2 space-y-1">
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium mb-2">📎 引用文件</div>
+                    <div className="flex flex-wrap gap-2">
                       {msg.citations.map((c, i) => <Citation key={i} citation={c} idx={i} />)}
                     </div>
-                  </details>
+                  </div>
                 )}
                 <MessageActionBar
                   conversationId={conversationId}
