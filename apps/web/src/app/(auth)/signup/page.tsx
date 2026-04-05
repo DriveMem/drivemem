@@ -10,6 +10,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const signupSchema = z
   .object({
@@ -20,6 +21,9 @@ const signupSchema = z
       .regex(/[a-zA-Z]/, "密码必须包含字母")
       .regex(/[0-9]/, "密码必须包含数字"),
     confirmPassword: z.string(),
+    agreeTerms: z.literal(true, {
+      errorMap: () => ({ message: "请先同意使用条款和隐私政策" }),
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "两次密码不一致",
@@ -34,10 +38,12 @@ export default function SignupPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [agreed, setAgreed] = useState(false)
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
@@ -135,6 +141,28 @@ export default function SignupPage() {
           )}
         </div>
 
+        <div className="flex items-start space-x-2">
+          <Checkbox
+            id="agreeTerms"
+            checked={agreed}
+            onCheckedChange={(checked) => {
+              const val = checked === true
+              setAgreed(val)
+              setValue("agreeTerms", val as unknown as true, { shouldValidate: true })
+            }}
+            className="mt-0.5"
+          />
+          <label htmlFor="agreeTerms" className="text-sm text-muted-foreground leading-snug cursor-pointer">
+            注册即表示同意{" "}
+            <Link href="/terms" className="text-primary hover:underline" target="_blank">使用条款</Link>
+            {" "}和{" "}
+            <Link href="/privacy" className="text-primary hover:underline" target="_blank">隐私政策</Link>
+          </label>
+        </div>
+        {errors.agreeTerms && (
+          <p className="text-sm text-destructive">{errors.agreeTerms.message}</p>
+        )}
+
         {error && (
           <p className="text-sm text-destructive">{error}</p>
         )}
@@ -154,6 +182,15 @@ export default function SignupPage() {
           登录
         </Link>
       </p>
+
+      <div className="mt-3 text-center">
+        <Link
+          href="/login"
+          className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+        >
+          🎮 先体验 Demo →
+        </Link>
+      </div>
     </div>
   )
 }
