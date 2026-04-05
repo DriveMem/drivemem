@@ -13,6 +13,23 @@ import {
 import { useFiles } from "@/hooks/use-files"
 import { apiFetch } from "@/lib/api"
 
+function HighlightText({ text, query }: { text: string; query: string }) {
+  if (!query.trim() || !text) return <>{text}</>
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi")
+  const parts = text.split(regex)
+  return (
+    <>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark key={i} className="bg-yellow-500/30 text-foreground rounded-sm px-0.5">{part}</mark>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  )
+}
+
 interface SearchResult {
   type: "file" | "chunk"
   fileId: string
@@ -100,9 +117,9 @@ export function CommandPalette() {
                 onSelect={() => navigate(`/files/${r.fileId}/preview`)}
               >
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-sm">{r.fileName}</span>
+                  <span className="text-sm"><HighlightText text={r.fileName} query={inputValue} /></span>
                   {r.type === "chunk" && r.text && (
-                    <span className="text-xs text-muted-foreground line-clamp-1">{r.text.slice(0, 80)}</span>
+                    <span className="text-xs text-muted-foreground line-clamp-1"><HighlightText text={r.text.slice(0, 80)} query={inputValue} /></span>
                   )}
                 </div>
                 {r.type === "chunk" && (
