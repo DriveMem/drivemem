@@ -505,12 +505,12 @@ export function FileList() {
         </DropdownMenu>
       )}
       {selected.size > 0 && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-background border shadow-lg px-4 py-3 z-50">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-background/80 backdrop-blur-md border shadow-lg px-5 py-3 z-50">
           <span className="text-sm font-medium">已选 {selected.size} 个文件</span>
-          <Button variant="outline" size="sm" onClick={handleBatchDelete}>删除</Button>
+          <Button variant="outline" size="sm" onClick={handleBatchDelete} className="gap-1">🗑️ 批量删除</Button>
+          <Button variant="outline" size="sm" onClick={handleBatchDownload} className="gap-1">📥 批量下载</Button>
           <Button variant="outline" size="sm" onClick={() => setBatchMoveOpen(true)}>移动</Button>
-          <Button variant="outline" size="sm" onClick={handleBatchDownload}>下载</Button>
-          <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>取消</Button>
+          <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>❌ 取消选择</Button>
         </div>
       )}
       <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
