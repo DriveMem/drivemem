@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
 import { FileUpload } from "./file-upload"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
 import { toast } from "sonner"
@@ -206,7 +207,7 @@ export function FileList() {
     }
   })
 
-  const virt = useVirtualizer({ count: filteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 48, overscan: 5 })
+  const virt = useVirtualizer({ count: filteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 52, overscan: 5 })
 
   const toggleSort = (k: SortKey) => { if (sortKey === k) setSortDir((d) => d === "asc" ? "desc" : "asc"); else { setSortKey(k); setSortDir("asc") } }
 
@@ -366,9 +367,11 @@ export function FileList() {
             const file = filteredFiles[row.index]
             const isSel = selected.has(file.id) || selectedFileId === file.id
             return (
-              <div key={file.id} onClick={(e) => handleClick(file.id, e)} onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
+              <HoverCard openDelay={400} closeDelay={100} key={file.id}>
+              <HoverCardTrigger asChild>
+              <div onClick={(e) => handleClick(file.id, e)} onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
-                className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
+                className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border/50 px-4 py-3 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <Checkbox
                   checked={selected.has(file.id)}
@@ -404,13 +407,25 @@ export function FileList() {
                   <Download className="h-3.5 w-3.5" />
                 </Button>
               </div>
+              </HoverCardTrigger>
+              {file.summary && (
+                <HoverCardContent side="right" className="w-80">
+                  <p className="text-xs text-muted-foreground line-clamp-4">{file.summary}</p>
+                  <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground/70">
+                    <span>{fmtSize(file.size)}</span>
+                    <span>·</span>
+                    <span>{formatRelativeTime(file.createdAt)}</span>
+                  </div>
+                </HoverCardContent>
+              )}
+              </HoverCard>
             )
           })}
         </div>
       </div>
       ) : (
         <div className="flex-1 overflow-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 p-5">
             {filteredFiles.map((file) => {
               const isSel = selected.has(file.id) || selectedFileId === file.id
               return (
@@ -419,7 +434,7 @@ export function FileList() {
                   onClick={(e) => handleClick(file.id, e)}
                   onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
                   onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
-                  className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", isSel && "bg-accent ring-2 ring-primary")}
+                  className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-3", isSel && "bg-accent ring-2 ring-primary")}
                 >
                   <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
                     <TypeIcon type={file.type} name={file.name} className="h-10 w-10" />
