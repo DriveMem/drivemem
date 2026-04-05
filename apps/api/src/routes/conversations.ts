@@ -393,4 +393,33 @@ AI答：${fullContent.substring(0, 300)}`;
 
     reply.raw.end();
   });
+
+  // POST /:convId/messages/:msgId/rating — 对话评分
+  app.post('/:convId/messages/:msgId/rating', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { msgId } = request.params as { convId: string; msgId: string };
+    const userId = request.user!.id;
+    const body = request.body as { rating: string };
+
+    if (!body.rating || !['thumbs_up', 'thumbs_down'].includes(body.rating)) {
+      return reply.status(400).send({ error: 'rating must be thumbs_up or thumbs_down' });
+    }
+
+    // Upsert — same user same message overwrites
+    const existing = await db.select().from(schema.messageRatings)
+      .where(and(eq(schema.messageRatings.messageId, msgId), eq(schema.messageRatings.userId, userId)));
+
+    if (existing.length > 0) {
+      await db.update(schema.messageRatings)
+        .set({ rating: body.rating })
+        .where(eq(schema.messageRatings.id, existing[0].id));
+    } else {
+      await db.insert(schema.messageRatings).values({
+        messageId: msgId,
+        userId,
+        rating: body.rating,
+      });
+    }
+
+    return reply.send({ success: true, rating: body.rating });
+  });
 }

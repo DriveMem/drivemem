@@ -150,3 +150,12 @@ export const feedback = pgTable('feedback', {
   page: text('page'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// --- Message Ratings ---
+export const messageRatings = pgTable('message_ratings', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  messageId: uuid('message_id').notNull().references(() => messages.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  rating: text('rating').notNull(), // 'thumbs_up' | 'thumbs_down'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
