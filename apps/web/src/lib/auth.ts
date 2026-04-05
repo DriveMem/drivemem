@@ -21,7 +21,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         const { email, password } = loginSchema.parse(credentials)
-        const rememberMe = credentials?.rememberMe === "true"
+        const rememberMe = (credentials as any)?.rememberMe === "true"
 
         const res = await fetch(`${API_BASE}/api/auth/login`, {
           method: "POST",
