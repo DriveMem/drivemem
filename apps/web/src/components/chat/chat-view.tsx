@@ -387,10 +387,11 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         }
       } : undefined} />}
       {followUpSuggestions.length > 0 && !sending && (
-        <div className="flex flex-wrap gap-2 px-4 py-2 border-t border-border">
+        <div className="flex flex-wrap gap-2 px-4 py-3 border-t border-border bg-background/50">
+          <span className="text-xs text-muted-foreground self-center mr-1">💡 继续追问：</span>
           {followUpSuggestions.map((q, i) => (
             <button key={i} onClick={() => { handleSend(q); setFollowUpSuggestions([]) }}
-              className="rounded-full border border-border/50 bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition">
+              className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground/80 hover:bg-primary/15 hover:border-primary/40 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer">
               {q}
             </button>
           ))}
