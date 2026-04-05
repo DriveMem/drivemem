@@ -177,7 +177,7 @@ export function FileList() {
       const m = sortDir === "asc" ? 1 : -1
       if (sortKey === "name") return a.name.localeCompare(b.name) * m
       if (sortKey === "size") return (a.size - b.size) * m
-      return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * m
+      return (new Date(a.updatedAt || a.createdAt).getTime() - new Date(b.updatedAt || b.createdAt).getTime()) * m
     })
   }, [rawFiles, sortKey, sortDir])
 

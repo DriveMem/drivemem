@@ -217,6 +217,8 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   fastify.get('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const file = await getOwnedFile(id, request.user!.id);
+    // Update lastAccessedAt for recent files sorting
+    await db.update(schema.files).set({ updatedAt: new Date() }).where(eq(schema.files.id, id));
     return reply.send(file);
   });
 
@@ -285,6 +287,8 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   fastify.get('/:id/preview-url', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const file = await getOwnedFile(id, request.user!.id);
+    // Update lastAccessedAt (updatedAt) for recent files sorting
+    await db.update(schema.files).set({ updatedAt: new Date() }).where(eq(schema.files.id, id));
     const previewUrl = await generatePreviewUrl(file.s3Key);
     const publicPreviewUrl = previewUrl.replace('http://localhost:9000', 'https://api.verrrnm.cloud/s3');
     return reply.send({ previewUrl: publicPreviewUrl, mimeType: file.mimeType });
