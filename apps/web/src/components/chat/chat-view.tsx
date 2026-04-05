@@ -220,6 +220,14 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
               const data = JSON.parse(line.slice(6))
               if (currentEvent === "thinking") {
                 // Backend is searching knowledge base — keep thinking animation
+              } else if (currentEvent === "title") {
+                // Title was auto-generated — update conversation list immediately
+                if (data.title) {
+                  queryClient.setQueryData(["conversations"], (old: any) => {
+                    if (!old?.conversations) return old
+                    return { ...old, conversations: old.conversations.map((c: any) => c.id === conversationId ? { ...c, title: data.title } : c) }
+                  })
+                }
               } else if (currentEvent === "suggestions") {
                 if (data.suggestions?.length) {
                   setFollowUpSuggestions(data.suggestions.slice(0, 3))

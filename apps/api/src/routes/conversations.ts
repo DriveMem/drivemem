@@ -323,12 +323,14 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : '（未找到相�
             { role: 'system', content: '你是标题生成器。根据用户消息生成一个10字以内的中文短标题。规则：只输出标题本身，禁止输出解释、引号、标点、前缀。' },
             { role: 'user', content: body.content },
           ]);
-          const title = titleResponse.slice(0, 50).trim() || body.content.slice(0, 30);
+          const title = titleResponse.slice(0, 50).trim().replace(/^["'「」《》]+|["'「」《》]+$/g, '') || body.content.slice(0, 30);
           await db.update(conversations).set({ title }).where(eq(conversations.id, id));
+          reply.raw.write(`event: title\ndata: ${JSON.stringify({ title })}\n\n`);
         } catch {
           // Fallback: use first message content as title
           const title = body.content.slice(0, 30) + (body.content.length > 30 ? '...' : '');
           await db.update(conversations).set({ title }).where(eq(conversations.id, id));
+          reply.raw.write(`event: title\ndata: ${JSON.stringify({ title })}\n\n`);
         }
       }
 

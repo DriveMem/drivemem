@@ -5,8 +5,9 @@
   "/register/page": "app/register/page.js",
   "/share/[token]/page": "app/share/[token]/page.js",
   "/share/report/[token]/page": "app/share/report/[token]/page.js",
-  "/privacy/page": "app/privacy/page.js",
   "/terms/page": "app/terms/page.js",
+  "/privacy/page": "app/privacy/page.js",
+  "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
   "/(app)/files/[id]/preview/page": "app/(app)/files/[id]/preview/page.js",
   "/(app)/files/page": "app/(app)/files/page.js",
   "/(app)/search/page": "app/(app)/search/page.js",
@@ -16,7 +17,6 @@
   "/(auth)/login/page": "app/(auth)/login/page.js",
   "/(auth)/reset-password/page": "app/(auth)/reset-password/page.js",
   "/(auth)/signup/page": "app/(auth)/signup/page.js",
-  "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
   "/(app)/chat/page": "app/(app)/chat/page.js",
   "/(app)/chat/[id]/page": "app/(app)/chat/[id]/page.js"
 }
