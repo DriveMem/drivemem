@@ -211,7 +211,9 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
           } else if (line.startsWith("data: ")) {
             try {
               const data = JSON.parse(line.slice(6))
-              if (currentEvent === "suggestions") {
+              if (currentEvent === "thinking") {
+                // Backend is searching knowledge base — keep thinking animation
+              } else if (currentEvent === "suggestions") {
                 if (data.suggestions?.length) {
                   setFollowUpSuggestions(data.suggestions.slice(0, 3))
                 }
