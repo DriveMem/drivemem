@@ -64,27 +64,37 @@ export function ConversationList() {
   })()
 
   const groups = (() => {
+    const pinned = sorted.filter((c: Conversation) => c.isPinned)
+    const unpinned = sorted.filter((c: Conversation) => !c.isPinned)
+
     const now = new Date()
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
     const yesterdayStart = todayStart - 86400000
     const weekStart = todayStart - 6 * 86400000
 
-    const result: { label: string; items: Conversation[] }[] = [
+    const result: { label: string; items: Conversation[] }[] = []
+
+    if (pinned.length > 0) {
+      result.push({ label: "📌 置顶", items: pinned })
+    }
+
+    const timeGroups: { label: string; items: Conversation[] }[] = [
       { label: "今天", items: [] },
       { label: "昨天", items: [] },
       { label: "过去 7 天", items: [] },
       { label: "更早", items: [] },
     ]
 
-    for (const c of sorted) {
+    for (const c of unpinned) {
       const t = new Date(c.updatedAt).getTime()
-      if (t >= todayStart) result[0].items.push(c)
-      else if (t >= yesterdayStart) result[1].items.push(c)
-      else if (t >= weekStart) result[2].items.push(c)
-      else result[3].items.push(c)
+      if (t >= todayStart) timeGroups[0].items.push(c)
+      else if (t >= yesterdayStart) timeGroups[1].items.push(c)
+      else if (t >= weekStart) timeGroups[2].items.push(c)
+      else timeGroups[3].items.push(c)
     }
 
-    return result.filter((g) => g.items.length > 0)
+    result.push(...timeGroups.filter((g) => g.items.length > 0))
+    return result
   })()
 
   const renderItem = (c: Conversation) => (
@@ -195,14 +205,28 @@ export function ConversationList() {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto">
-          {groups.map((group) => (
+          {groups.map((group, idx) => (
             <div key={group.label}>
-              <div className="text-xs text-muted-foreground uppercase tracking-wide px-3 py-2">
-                {group.label}
-              </div>
-              <ul>
-                {group.items.map((c) => renderItem(c))}
-              </ul>
+              {group.label === "📌 置顶" && idx === 0 && groups.length > 1 ? (
+                <>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide px-3 py-2">
+                    {group.label}
+                  </div>
+                  <ul>
+                    {group.items.map((c) => renderItem(c))}
+                  </ul>
+                  <div className="border-b border-border mx-3 my-1" />
+                </>
+              ) : (
+                <>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide px-3 py-2">
+                    {group.label}
+                  </div>
+                  <ul>
+                    {group.items.map((c) => renderItem(c))}
+                  </ul>
+                </>
+              )}
             </div>
           ))}
         </div>

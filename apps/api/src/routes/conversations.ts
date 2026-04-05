@@ -72,7 +72,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
       .select()
       .from(conversations)
       .where(eq(conversations.userId, user.id))
-      .orderBy(desc(conversations.isPinned), desc(conversations.updatedAt));
+      .orderBy(desc(conversations.isPinned), desc(conversations.pinnedAt), desc(conversations.updatedAt));
 
     return { conversations: result };
   });
@@ -116,10 +116,57 @@ export default async function conversationRoutes(app: FastifyInstance) {
     }
 
     const updates: Record<string, unknown> = { updatedAt: new Date() };
-    if (typeof body.isPinned === 'boolean') updates.isPinned = body.isPinned;
+    if (typeof body.isPinned === 'boolean') {
+      updates.isPinned = body.isPinned;
+      updates.pinnedAt = body.isPinned ? new Date() : null;
+    }
     if (body.title) updates.title = body.title;
 
     const [updated] = await db.update(conversations).set(updates).where(eq(conversations.id, id)).returning();
+    return reply.send(updated);
+  });
+
+  // PUT /:id/pin — pin conversation
+  app.put('/:id/pin', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const user = request.user!;
+
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(and(eq(conversations.id, id), eq(conversations.userId, user.id)));
+
+    if (!conversation) {
+      throw new AppError(ErrorCodes.NOT_FOUND, 'Conversation not found', 404);
+    }
+
+    const [updated] = await db.update(conversations)
+      .set({ isPinned: true, pinnedAt: new Date(), updatedAt: new Date() })
+      .where(eq(conversations.id, id))
+      .returning();
+
+    return reply.send(updated);
+  });
+
+  // DELETE /:id/pin — unpin conversation
+  app.delete('/:id/pin', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const user = request.user!;
+
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(and(eq(conversations.id, id), eq(conversations.userId, user.id)));
+
+    if (!conversation) {
+      throw new AppError(ErrorCodes.NOT_FOUND, 'Conversation not found', 404);
+    }
+
+    const [updated] = await db.update(conversations)
+      .set({ isPinned: false, pinnedAt: null, updatedAt: new Date() })
+      .where(eq(conversations.id, id))
+      .returning();
+
     return reply.send(updated);
   });
 
