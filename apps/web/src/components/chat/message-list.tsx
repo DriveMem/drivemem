@@ -33,7 +33,32 @@ function CodeBlock({ children, ...props }: any) {
   )
 }
 
-const markdownComponents = { pre: CodeBlock }
+const markdownComponents = {
+  pre: CodeBlock,
+  table: ({ children, ...props }: any) => (
+    <div className="overflow-x-auto my-3">
+      <table className="w-full border-collapse border border-border text-sm" {...props}>{children}</table>
+    </div>
+  ),
+  thead: ({ children, ...props }: any) => (
+    <thead className="bg-muted/50" {...props}>{children}</thead>
+  ),
+  th: ({ children, ...props }: any) => (
+    <th className="border border-border px-3 py-2 text-left font-medium text-sm" {...props}>{children}</th>
+  ),
+  td: ({ children, ...props }: any) => (
+    <td className="border border-border px-3 py-2 text-sm" {...props}>{children}</td>
+  ),
+  blockquote: ({ children, ...props }: any) => (
+    <blockquote className="border-l-4 border-blue-500 pl-4 my-3 text-muted-foreground italic" {...props}>{children}</blockquote>
+  ),
+  ul: ({ children, ...props }: any) => (
+    <ul className="list-disc pl-6 my-2 space-y-1" {...props}>{children}</ul>
+  ),
+  ol: ({ children, ...props }: any) => (
+    <ol className="list-decimal pl-6 my-2 space-y-1" {...props}>{children}</ol>
+  ),
+}
 
 function MessageRating({ conversationId, messageId }: { conversationId?: string; messageId: string }) {
   const [rating, setRating] = useState<"thumbs_up" | "thumbs_down" | null>(null)

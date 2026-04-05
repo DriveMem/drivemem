@@ -66,7 +66,9 @@ export function ConversationList() {
     <div className="flex h-full flex-col border-r">
       <div className="flex items-center justify-between border-b p-3">
         <h2 className="text-sm font-semibold">对话历史</h2>
-        <Button size="sm" variant="outline" onClick={() => router.push("/chat?new=" + Date.now())}>
+      </div>
+      <div className="px-3 pt-3">
+        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2.5 text-sm font-medium" onClick={() => router.push("/chat?new=" + Date.now())}>
           + 新对话
         </Button>
       </div>
@@ -138,7 +140,7 @@ export function ConversationList() {
                     }}
                   >{c.title || "新对话"}</p>
                 )}
-                <p className="text-xs text-muted-foreground">{formatTime(c.updatedAt)}</p>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">{formatTime(c.updatedAt)}</p>
               </div>
               {c.isPinned && <Pin className="h-3 w-3 text-blue-400 shrink-0" />}
               <Button
