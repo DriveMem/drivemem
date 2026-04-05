@@ -477,6 +477,15 @@ export function FileList() {
           <Button variant="outline" size="sm" onClick={handleBatchDelete}>删除</Button>
           <Button variant="outline" size="sm" onClick={() => setBatchMoveOpen(true)}>移动</Button>
           <Button variant="outline" size="sm" onClick={handleBatchDownload}>下载</Button>
+          <button
+            onClick={() => {
+              const ids = Array.from(selected).join(",")
+              router.push(`/chat?fileIds=${ids}`)
+            }}
+            className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700"
+          >
+            💬 问 AI
+          </button>
           <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>取消</Button>
         </div>
       )}

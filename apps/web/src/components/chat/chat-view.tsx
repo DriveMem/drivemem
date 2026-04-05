@@ -76,8 +76,11 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   const [conversationId, setConversationId] = useState<string | undefined>(initialConversationId)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [streaming, setStreaming] = useState<string | undefined>(undefined)
-  const [scope, setScope] = useState<ScopeType>(fileScope ? "file" : "all")
-  const [scopeId, setScopeId] = useState<string | undefined>(fileScope || undefined)
+  const [scope, setScope] = useState<ScopeType>(fileScope ? (fileScope.startsWith("files:") ? "file" : "file") : "all")
+  const [scopeId, setScopeId] = useState<string | undefined>(fileScope?.startsWith("files:") ? undefined : (fileScope || undefined))
+  const [multiFileIds, setMultiFileIds] = useState<string[] | undefined>(
+    fileScope?.startsWith("files:") ? fileScope.slice(6).split(",").filter(Boolean) : undefined
+  )
 
   // Compare mode: force scope to "all" and extract file names from query
   const compareFileNames = compareMode && presetQuestion
@@ -142,7 +145,11 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       if (!convId) {
         const conv = await apiFetch("/api/conversations", {
           method: "POST",
-          body: JSON.stringify({ scopeType: scope, scopeId: scopeId || undefined }),
+          body: JSON.stringify({
+            scopeType: multiFileIds ? "file" : scope,
+            scopeId: scopeId || undefined,
+            ...(multiFileIds ? { fileIds: multiFileIds } : {}),
+          }),
         })
         convId = conv.id
         setConversationId(convId)
@@ -310,6 +317,13 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {multiFileIds && multiFileIds.length > 0 && (
+          <div className="flex items-center gap-1 text-xs text-blue-400">
+            <Files className="h-3 w-3" />
+            已选 {multiFileIds.length} 个文件
+          </div>
+        )}
 
         {messages.length > 0 && (
           <Button
