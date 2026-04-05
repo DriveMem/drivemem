@@ -50,7 +50,7 @@ const markdownComponents = {
     <td className="border border-border px-3 py-2 text-sm" {...props}>{children}</td>
   ),
   blockquote: ({ children, ...props }: any) => (
-    <blockquote className="border-l-4 border-blue-500 pl-4 my-3 text-muted-foreground italic" {...props}>{children}</blockquote>
+    <blockquote className="border-l-4 border-indigo-500 pl-4 my-3 text-muted-foreground italic" {...props}>{children}</blockquote>
   ),
   ul: ({ children, ...props }: any) => (
     <ul className="list-disc pl-6 my-2 space-y-1" {...props}>{children}</ul>

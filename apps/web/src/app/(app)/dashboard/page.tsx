@@ -86,7 +86,7 @@ export default function DashboardPage() {
         <div className="flex-1 min-h-0 overflow-auto px-2">
           {fileCount === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="rounded-full bg-blue-500/10 p-4 mb-4">
+              <div className="rounded-full bg-indigo-500/10 p-4 mb-4">
                 <Upload className="h-8 w-8 text-blue-500" />
               </div>
               <h3 className="text-lg font-semibold mb-2">上传文件，开启 AI 知识库</h3>

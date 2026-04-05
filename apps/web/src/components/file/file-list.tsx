@@ -465,7 +465,7 @@ export function FileList() {
                     <p className="text-xs text-muted-foreground line-clamp-2">{file.summary}</p>
                   )}
                   {file.suggestedFolder && !file.folderId && (
-                    <span className="text-xs text-blue-500">💡 {file.suggestedFolder}</span>
+                    <span className="text-xs text-indigo-500">💡 {file.suggestedFolder}</span>
                   )}
                   <div className="flex items-center justify-between mt-auto">
                     <StatusIcon status={file.status} error={file.errorMessage} />

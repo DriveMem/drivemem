@@ -61,7 +61,7 @@ export function ReportSection() {
   return (
     <div className="mx-4 mb-4 space-y-3">
       <div className="grid grid-cols-3 gap-2">
-        <Button onClick={() => handleGenerate("analysis")} disabled={generating} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+        <Button onClick={() => handleGenerate("analysis")} disabled={generating} className="bg-gradient-to-r from-[#4F5BD5] to-purple-600 hover:from-[#3D49C4] hover:to-purple-700">
           {generating ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />生成中...</> : <>📊 分析报告</>}
         </Button>
         <Button onClick={() => handleGenerate("study")} disabled={generating} variant="outline">

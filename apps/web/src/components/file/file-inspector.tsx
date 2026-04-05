@@ -62,7 +62,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
         </div>
       )}
       {file.suggestedFolder && !file.folderId && (
-        <div className="space-y-2 rounded-lg bg-blue-500/5 border border-blue-500/20 p-3">
+        <div className="space-y-2 rounded-lg bg-indigo-500/5 border border-indigo-500/20 p-3">
           <p className="text-sm">🧠 AI 分类建议：{file.suggestedFolder}</p>
           <Button
             size="sm"
