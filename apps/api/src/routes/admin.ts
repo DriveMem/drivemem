@@ -41,4 +41,14 @@ export default async function adminRoutes(fastify: FastifyInstance) {
       timestamp: new Date().toISOString(),
     });
   });
+
+  // GET /public-stats — 公开统计（官网用，无需认证）
+  fastify.get('/public-stats', async (_request, reply) => {
+    const [totalUsers] = await db.select({ count: sql<number>`count(*)` }).from(schema.users);
+    const [totalFiles] = await db.select({ count: sql<number>`count(*)` }).from(schema.files);
+    return reply.send({
+      users: Number(totalUsers?.count || 0),
+      files: Number(totalFiles?.count || 0),
+    });
+  });
 }

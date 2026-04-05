@@ -1,8 +1,8 @@
 /** 5 GB in bytes */
 export const STORAGE_LIMIT = 5_368_709_120;
 
-/** Max daily chat messages for free tier (产品 Spec: 20次/天) */
-export const DAILY_CHAT_LIMIT = 20;
+/** Max daily chat messages for free tier */
+export const DAILY_CHAT_LIMIT = 50;
 
 /** 50 MB in bytes */
 export const MAX_FILE_SIZE = 52_428_800;
