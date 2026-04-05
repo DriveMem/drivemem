@@ -400,6 +400,54 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     return reply.status(201).send({ fileId: file.id, status: 'parsing' });
   });
 
+  // GET /:id/versions — file version history
+  fastify.get('/:id/versions', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = request.user!.id;
+    const file = await getOwnedFile(id, userId);
+
+    // Strategy 1: follow previousVersionId chain
+    const versions: typeof file[] = [];
+    const visited = new Set<string>();
+
+    // Walk backward via previousVersionId
+    let current = file;
+    while (current.previousVersionId && !visited.has(current.previousVersionId)) {
+      visited.add(current.previousVersionId);
+      const [prev] = await db.select().from(schema.files)
+        .where(and(eq(schema.files.id, current.previousVersionId), eq(schema.files.userId, userId)));
+      if (!prev) break;
+      versions.push(prev);
+      current = prev;
+    }
+
+    // Strategy 2: if no versions found via chain, fallback to name prefix matching
+    if (versions.length === 0) {
+      const baseName = file.originalName || file.name;
+      const dotIdx = baseName.lastIndexOf('.');
+      const nameWithoutExt = dotIdx > 0 ? baseName.slice(0, dotIdx) : baseName;
+
+      const similar = await db.select().from(schema.files)
+        .where(and(
+          eq(schema.files.userId, userId),
+          sql`${schema.files.name} LIKE ${nameWithoutExt + '%'}`,
+          sql`${schema.files.id} != ${id}`,
+        ))
+        .orderBy(desc(schema.files.createdAt));
+
+      versions.push(...similar);
+    }
+
+    return reply.send({ versions: versions.map((v, i) => ({
+      id: v.id,
+      name: v.name,
+      size: v.size,
+      createdAt: v.createdAt,
+      version: versions.length - i,
+      mimeType: v.mimeType,
+    })) });
+  });
+
   // POST /auto-organize — 一键 AI 整理文件到文件夹
   fastify.post('/auto-organize', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;

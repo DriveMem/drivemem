@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useFile, useMoveFile } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
 import { apiFetch } from "@/lib/api"
-import { Loader2, FileText, ArrowLeft, AlertCircle, Download } from "lucide-react"
+import { Loader2, FileText, ArrowLeft, AlertCircle, Download, History, ChevronDown, ChevronUp, Eye } from "lucide-react"
 import Link from "next/link"
 
 function getFileType(name: string): string {
@@ -281,8 +281,90 @@ export default function FilePreviewPage() {
           </CardContent>
         </Card>
       </div>
+      {/* Version History */}
+      <VersionHistory fileId={params.id} />
       {/* Related Files */}
       <RelatedFiles fileId={params.id} />
+    </div>
+  )
+}
+
+function VersionHistory({ fileId }: { fileId: string }) {
+  const [versions, setVersions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    setLoading(true)
+    apiFetch(`/api/files/${fileId}/versions`)
+      .then((data: any) => setVersions(data?.versions || []))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [fileId])
+
+  if (loading) return null
+
+  return (
+    <div className="space-y-3">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition"
+      >
+        <History className="h-5 w-5" />
+        📋 版本历史
+        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        {versions.length > 0 && (
+          <span className="text-xs font-normal text-muted-foreground">({versions.length} 个历史版本)</span>
+        )}
+      </button>
+      {open && (
+        <div className="space-y-2">
+          {versions.length === 0 ? (
+            <p className="text-sm text-muted-foreground">暂无历史版本</p>
+          ) : (
+            versions.map((v: any) => (
+              <div
+                key={v.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 hover:bg-muted/50 transition"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{v.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    v{v.version} · {new Date(v.createdAt).toLocaleString("zh-CN")} · {formatSize(v.size)}
+                  </p>
+                </div>
+                <div className="flex gap-1.5 shrink-0">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="预览">
+                    <Link href={`/files/${v.id}/preview`}>
+                      <Eye className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    title="下载"
+                    onClick={async () => {
+                      try {
+                        const res = await apiFetch(`/api/files/${v.id}/preview-url`) as { previewUrl: string }
+                        const a = document.createElement("a")
+                        a.href = res.previewUrl
+                        a.download = v.name
+                        a.target = "_blank"
+                        a.click()
+                      } catch {
+                        alert("获取下载链接失败")
+                      }
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   )
 }
