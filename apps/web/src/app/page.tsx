@@ -199,6 +199,7 @@ export default function LandingPage() {
             <Button asChild size="lg" className="h-12 px-10 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
               <Link href="/signup">免费开始 <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
+            <p className="mt-3 text-sm text-[#9B9893]">免费 5GB 存储 · 每天 20 次 AI 对话 · 无需信用卡</p>
           </div>
         </FadeIn>
       </section>
