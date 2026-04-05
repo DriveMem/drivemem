@@ -123,6 +123,7 @@ export function FileList() {
   const [showUpload, setShowUpload] = useState(false)
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
   const [shareLoading, setShareLoading] = useState(false)
@@ -335,7 +336,10 @@ export function FileList() {
       {viewMode === "grid" && visibleFolders.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4 border-b border-border">
           {visibleFolders.map((folder: any) => (
-            <div key={folder.id} className="rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2" onClick={() => setCurrentFolder(folder.id)}>
+            <div key={folder.id} className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", dragOverFolderId === folder.id && "ring-2 ring-[#4F5BD5] bg-[#4F5BD5]/5")} onClick={() => setCurrentFolder(folder.id)}
+              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverFolderId(folder.id) }}
+              onDragLeave={() => setDragOverFolderId(null)}
+              onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { try { await apiFetch(`/api/files/${fileId}`, { method: "PATCH", body: JSON.stringify({ folderId: folder.id }) }); queryClient.invalidateQueries({ queryKey: ["files"] }); toast.success("已移动到 " + folder.name) } catch { toast.error("移动失败") } } }}>
               <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
                 <Folder className="h-10 w-10 text-amber-500" />
               </div>
@@ -350,7 +354,10 @@ export function FileList() {
       {viewMode === "list" && visibleFolders.length > 0 && (
         <div className="border-b border-border">
           {visibleFolders.map((folder: any) => (
-            <div key={folder.id} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setCurrentFolder(folder.id)}>
+            <div key={folder.id} className={cn("flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors", dragOverFolderId === folder.id && "ring-2 ring-[#4F5BD5] bg-[#4F5BD5]/5")} onClick={() => setCurrentFolder(folder.id)}
+              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverFolderId(folder.id) }}
+              onDragLeave={() => setDragOverFolderId(null)}
+              onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { try { await apiFetch(`/api/files/${fileId}`, { method: "PATCH", body: JSON.stringify({ folderId: folder.id }) }); queryClient.invalidateQueries({ queryKey: ["files"] }); toast.success("已移动到 " + folder.name) } catch { toast.error("移动失败") } } }}>
               <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
               <span className="text-sm truncate">{folder.name}</span>
               {typeof folder.fileCount === "number" && (
@@ -372,6 +379,8 @@ export function FileList() {
               <HoverCardTrigger asChild>
               <div onClick={(e) => handleClick(file.id, e)} onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
+                draggable
+                onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
                 className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border/50 px-4 py-3 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <Checkbox
@@ -455,6 +464,8 @@ export function FileList() {
                   onClick={(e) => handleClick(file.id, e)}
                   onDoubleClick={() => router.push(`/files/${file.id}/preview`)}
                   onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
+                  draggable
+                  onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
                   className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-3", isSel && "bg-accent ring-2 ring-primary")}
                 >
                   <div className="flex h-20 items-center justify-center rounded-lg bg-muted">

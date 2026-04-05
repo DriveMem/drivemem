@@ -10,12 +10,14 @@ import { apiFetch } from "@/lib/api"
 import { Loader2, FileText, ArrowLeft, AlertCircle, Download } from "lucide-react"
 import Link from "next/link"
 
-function getFileType(name: string): string {
+function getFileType(name: string, mimeType?: string): string {
   const ext = name?.split(".").pop()?.toLowerCase() || ""
   if (ext === "pdf") return "pdf"
   if (ext === "md" || ext === "markdown") return "md"
   if (ext === "txt") return "txt"
   if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image"
+  if (/^(docx?|pptx?|xlsx?)$/.test(ext)) return "office"
+  if (mimeType && (mimeType.includes("officedocument") || mimeType.includes("msword") || mimeType.includes("ms-powerpoint") || mimeType.includes("ms-excel"))) return "office"
   return "other"
 }
 
@@ -75,6 +77,80 @@ function useFileContent(fileId: string, fileType: string) {
   return { content, previewUrl, loading, error }
 }
 
+function OfficePreview({ fileId, fileName }: { fileId: string; fileName: string }) {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await apiFetch(`/api/files/${fileId}/preview-url`) as { previewUrl: string }
+        if (!cancelled && res.previewUrl) {
+          // Try Microsoft Office Online Viewer first (more reliable with presigned URLs)
+          setPreviewUrl(`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(res.previewUrl)}`)
+        } else {
+          if (!cancelled) setError(true)
+        }
+      } catch {
+        if (!cancelled) setError(true)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [fileId])
+
+  if (loading) {
+    return (
+      <div className="flex h-[600px] items-center justify-center rounded border bg-muted">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (error || !previewUrl) {
+    return (
+      <div className="flex h-96 flex-col items-center justify-center gap-4 rounded-xl border bg-muted/50">
+        <FileText className="h-16 w-16 text-muted-foreground/50" />
+        <div className="text-center">
+          <p className="text-sm font-medium">Office 文件预览</p>
+          <p className="text-xs text-muted-foreground mt-1">暂时无法在线预览此文件，请下载后查看</p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={async () => {
+            try {
+              const res = await apiFetch(`/api/files/${fileId}/preview-url`) as { previewUrl: string }
+              if (res.previewUrl) {
+                const a = document.createElement("a")
+                a.href = res.previewUrl
+                a.download = fileName
+                a.target = "_blank"
+                a.click()
+              }
+            } catch {
+              alert("获取下载链接失败")
+            }
+          }}
+        >
+          <Download className="h-4 w-4 mr-2" />下载文件
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <iframe
+      src={previewUrl}
+      className="w-full h-[600px] rounded border-0"
+      title={fileName}
+      sandbox="allow-scripts allow-same-origin allow-popups"
+    />
+  )
+}
+
 export default function FilePreviewPage() {
   const params = useParams<{ id: string }>()
   const { data, isLoading, error } = useFile(params.id)
@@ -103,7 +179,7 @@ export default function FilePreviewPage() {
     )
   }
 
-  const fileType = getFileType(file.name || file.originalName || "")
+  const fileType = getFileType(file.name || file.originalName || "", file.mimeType)
   const fileName = file.name || file.originalName || "未命名文件"
   const { content, previewUrl, loading: contentLoading, error: contentError } = useFileContent(params.id, fileType)
 
@@ -183,6 +259,9 @@ export default function FilePreviewPage() {
                 </div>
               )}
             </>
+          )}
+          {fileType === "office" && (
+            <OfficePreview fileId={params.id} fileName={fileName} />
           )}
           {fileType === "other" && (
             <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
