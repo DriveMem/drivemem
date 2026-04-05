@@ -37,7 +37,9 @@ export default auth((req) => {
 
   // Only redirect to login for known app routes
   if (!isLoggedIn && isAppRoute) {
-    return Response.redirect(new URL("/login", req.nextUrl))
+    const loginUrl = new URL("/login", req.nextUrl)
+    loginUrl.searchParams.set("returnUrl", req.nextUrl.pathname)
+    return Response.redirect(loginUrl)
   }
 
   // Unknown routes: let Next.js handle (will show 404)
