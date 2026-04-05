@@ -202,6 +202,22 @@ export default async function conversationRoutes(app: FastifyInstance) {
     const contextRounds = config.CHAT_CONTEXT_ROUNDS;
     const recentMessages = existingMsgs.slice(-(contextRounds * 2));
 
+    // Start SSE immediately so client knows we're working
+    const origin = request.headers.origin;
+    const allowedOrigins = ['https://drive.verrrnm.cloud', 'https://verrrnm.cloud', 'http://localhost', 'http://localhost:3000'];
+    const corsOrigin = origin && (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) ? origin : '';
+
+    reply.raw.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+      'Access-Control-Allow-Origin': corsOrigin,
+      'Access-Control-Allow-Credentials': 'true',
+    });
+
+    // Send thinking event immediately
+    reply.raw.write(`event: thinking\ndata: ${JSON.stringify({ status: 'searching' })}\n\n`);
+
     // RAG: embed query and search
     const [queryEmbedding] = await embedTexts([body.content]);
     const chunks = await searchSimilar({
@@ -257,21 +273,7 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : '（未找到相�
       content: m.content,
     }));
 
-    // SSE response
-    // Get CORS origin from request
-    const origin = request.headers.origin;
-    const allowedOrigins = ['https://drive.verrrnm.cloud', 'https://verrrnm.cloud', 'http://localhost', 'http://localhost:3000'];
-    const corsOrigin = origin && (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) ? origin : '';
-
-    reply.raw.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-      'Access-Control-Allow-Origin': corsOrigin,
-      'Access-Control-Allow-Credentials': 'true',
-    });
-
-    let fullContent = '';
+        let fullContent = '';
 
     try {
       const llmMessages = [
