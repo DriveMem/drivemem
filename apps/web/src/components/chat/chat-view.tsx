@@ -31,36 +31,43 @@ interface ChatMessage {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
+const DEFAULT_SUGGESTIONS = [
+  "📄 总结我最近上传的文件",
+  "🔍 这些文件之间有什么关联？",
+  "💡 从我的文件中提取关键信息",
+  "📊 帮我分析文件内容",
+]
+
 function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (msg: string) => void }) {
   const [suggestions, setSuggestions] = useState<string[]>([])
 
   useEffect(() => {
     apiFetch("/api/conversations/suggestions")
       .then((data: any) => {
-        if (data?.suggestions?.length) setSuggestions(data.suggestions.slice(0, 3))
+        if (data?.suggestions?.length) setSuggestions(data.suggestions.slice(0, 4))
       })
-      .catch(() => {/* fallback to default text */})
+      .catch(() => {/* fallback to defaults */})
   }, [])
 
+  const chips = suggestions.length > 0 ? suggestions : DEFAULT_SUGGESTIONS
+
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-3 text-muted-foreground">
-      <MessageSquare className="h-12 w-12" />
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 text-muted-foreground px-4">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#4F5BD5]/20 to-[#4F5BD5]/5">
+        <MessageSquare className="h-8 w-8 text-[#4F5BD5]" />
+      </div>
       {indexedCount > 0 ? (
         <>
           <p className="text-lg font-medium text-foreground">AI 已记住 {indexedCount} 个文件</p>
-          {suggestions.length > 0 ? (
-            <div className="mt-2 flex flex-col gap-2 w-full max-w-md px-4">
-              <p className="text-xs text-center text-muted-foreground">试试问这些问题：</p>
-              {suggestions.map((q, i) => (
-                <button key={i} onClick={() => onSend(q)}
-                  className="rounded-lg border px-4 py-3 text-left text-sm hover:bg-accent transition">
-                  {q}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm">问任何关于你文件的问题</p>
-          )}
+          <p className="text-sm text-muted-foreground">问问 AI 关于你的文件：</p>
+          <div className="mt-1 flex flex-wrap justify-center gap-2 max-w-lg">
+            {chips.map((q, i) => (
+              <button key={i} onClick={() => onSend(q)}
+                className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground/80 hover:bg-primary/10 hover:shadow-sm hover:scale-[1.02] transition-all cursor-pointer">
+                {suggestions.length > 0 ? `✨ ${q}` : q}
+              </button>
+            ))}
+          </div>
         </>
       ) : (
         <>
@@ -262,9 +269,11 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   if (!hasFiles) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
-        <MessageSquare className="h-12 w-12" />
-        <p className="text-lg">你还没有让 AI 记住任何文件</p>
-        <Button asChild><Link href="/dashboard">去上传文件</Link></Button>
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#4F5BD5]/20 to-[#4F5BD5]/5">
+          <MessageSquare className="h-8 w-8 text-[#4F5BD5]" />
+        </div>
+        <p className="text-lg font-medium text-foreground">你还没有让 AI 记住任何文件</p>
+        <Button asChild className="bg-[#4F5BD5] hover:bg-[#4F5BD5]/90 text-white rounded-xl px-6"><Link href="/dashboard">去上传文件</Link></Button>
       </div>
     )
   }
@@ -352,7 +361,18 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       {messages.length === 0 && (
         <EmptyState indexedCount={indexedCount} onSend={handleSend} />
       )}
-      {messages.length > 0 && <MessageList messages={messages} streaming={streaming} conversationId={conversationId} />}
+      {messages.length > 0 && <MessageList messages={messages} streaming={streaming} conversationId={conversationId} onRegenerate={messages.length >= 2 && !sending ? () => {
+        // Find the last user message and resend it
+        const lastUserMsg = [...messages].reverse().find(m => m.role === "user")
+        if (lastUserMsg) {
+          // Remove the last assistant message, then resend
+          setMessages(prev => {
+            const idx = prev.length - 1
+            return prev[idx]?.role === "assistant" ? prev.slice(0, idx) : prev
+          })
+          handleSend(lastUserMsg.content)
+        }
+      } : undefined} />}
       {followUpSuggestions.length > 0 && !sending && (
         <div className="flex flex-wrap gap-2 px-4 py-2 border-t border-border">
           {followUpSuggestions.map((q, i) => (
