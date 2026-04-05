@@ -340,8 +340,8 @@ export function FileList() {
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverFolderId(folder.id) }}
               onDragLeave={() => setDragOverFolderId(null)}
               onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { try { await apiFetch(`/api/files/${fileId}`, { method: "PATCH", body: JSON.stringify({ folderId: folder.id }) }); queryClient.invalidateQueries({ queryKey: ["files"] }); toast.success("已移动到 " + folder.name) } catch { toast.error("移动失败") } } }}>
-              <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
-                <Folder className="h-10 w-10 text-amber-500" />
+              <div className="flex h-28 items-center justify-center rounded-lg bg-muted/50">
+                <Folder className="h-14 w-14 text-amber-500" />
               </div>
               <p className="text-sm font-medium truncate">{folder.name}</p>
               {typeof folder.fileCount === "number" && (
@@ -468,8 +468,8 @@ export function FileList() {
                   onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
                   className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-3", isSel && "bg-accent ring-2 ring-primary")}
                 >
-                  <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
-                    <TypeIcon type={file.type} name={file.name} className="h-10 w-10" />
+                  <div className="flex h-28 items-center justify-center rounded-lg bg-muted/50">
+                    <TypeIcon type={file.type} name={file.name} className="h-14 w-14" />
                   </div>
                   <p className="text-sm font-medium truncate">{file.name}</p>
                   {file.summary && (
