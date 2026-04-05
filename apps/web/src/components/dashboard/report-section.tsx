@@ -74,10 +74,10 @@ export function ReportSection() {
       {report && (
         <div className="rounded-xl border p-6 relative">
           <div className="absolute top-4 right-4 flex gap-2">
-            <button onClick={handleShare} disabled={sharing || !reportId} className="rounded-md bg-muted p-2 hover:bg-muted/80 disabled:opacity-50">
+            <button onClick={handleShare} disabled={sharing || !reportId} className="rounded-md bg-muted p-2 hover:bg-muted/80 disabled:opacity-50 transition-colors duration-150">
               {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
             </button>
-            <button onClick={handleExport} className="rounded-md bg-muted p-2 hover:bg-muted/80">
+            <button onClick={handleExport} className="rounded-md bg-muted p-2 hover:bg-muted/80 transition-colors duration-150">
               <Download className="h-4 w-4" />
             </button>
           </div>

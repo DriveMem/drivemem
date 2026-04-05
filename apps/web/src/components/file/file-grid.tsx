@@ -59,7 +59,7 @@ export function FileGrid({ files = [] }: { files?: FileItem[] }) {
         <ul className="divide-y rounded border">
           {files.map((f) => (
             <li key={f.id}>
-              <Link href={`/files/${f.id}/preview`} className="flex items-center gap-3 px-4 py-3 hover:bg-accent">
+              <Link href={`/files/${f.id}/preview`} className="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors duration-150">
                 <span className="text-xl">{TYPE_ICONS[f.type] || "📄"}</span>
                 <span className="flex-1 truncate text-sm font-medium">{f.name}</span>
                 <span className={`text-xs ${f.parseStatus === "error" ? "text-destructive" : f.parseStatus === "parsing" ? "text-yellow-600" : "text-muted-foreground"}`}>

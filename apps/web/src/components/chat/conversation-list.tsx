@@ -97,7 +97,7 @@ export function ConversationList() {
           {sorted.map((c: Conversation) => (
             <li
               key={c.id}
-              className={`group flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-accent ${
+              className={`group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 transition-colors duration-150 hover:bg-accent ${
                 activeId === c.id ? "bg-accent" : ""
               }`}
               onClick={() => router.push(`/chat/${c.id}`)}
