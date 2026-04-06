@@ -24,17 +24,18 @@ function saveConfig(config: Config) {
 
 async function apiCall(path: string, options: RequestInit = {}) {
   const config = loadConfig();
-  if (!config.apiKey) {
-    console.error('Error: No API key configured. Run: aidrive config set-key <your-api-key>');
+  const apiKey = process.env.AIDRIVE_API_KEY || config.apiKey;
+  if (!apiKey) {
+    console.error('Error: No API key. Set AIDRIVE_API_KEY env var or run: aidrive config set-key <key>');
     process.exit(1);
   }
-  const baseUrl = config.apiUrl || 'https://api.verrrnm.cloud';
+  const baseUrl = process.env.AIDRIVE_API_URL || config.apiUrl || 'https://api.verrrnm.cloud';
   const url = `${baseUrl}/api/v1${path}`;
   
   const res = await fetch(url, {
     ...options,
     headers: {
-      'Authorization': `Bearer ${config.apiKey}`,
+      'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       ...options.headers,
     },
@@ -49,7 +50,17 @@ async function apiCall(path: string, options: RequestInit = {}) {
   return res.json();
 }
 
-const [,, command, ...args] = process.argv;
+const [,, command, ...rawArgs] = process.argv;
+const jsonMode = rawArgs.includes('--json');
+const args = rawArgs.filter(a => a !== '--json');
+
+function output(data: unknown, humanText: string) {
+  if (jsonMode) {
+    console.log(JSON.stringify(data, null, 2));
+  } else {
+    console.log(humanText);
+  }
+}
 
 switch (command) {
   case 'config': {
@@ -81,6 +92,7 @@ switch (command) {
   case 'ls': {
     const detail = args.includes('--brief') ? 'brief' : 'full';
     const data = await apiCall(`/files?detail=${detail}`);
+    if (jsonMode) { console.log(JSON.stringify(data, null, 2)); break; }
     if (data.files?.length === 0) {
       console.log('📂 知识库为空');
     } else {
@@ -88,6 +100,7 @@ switch (command) {
         console.log(`📄 ${f.name} (${f.status}) ${f.summary ? '— ' + f.summary.slice(0, 60) : ''}`);
       }
       console.log(`\n共 ${data.files.length} 个文件`);
+    if (jsonMode) { console.log(JSON.stringify(data, null, 2)); }
     }
     break;
   }
@@ -96,6 +109,7 @@ switch (command) {
     const query = args.join(' ');
     if (!query) { console.error('Usage: aidrive search <query>'); break; }
     const data = await apiCall(`/search?q=${encodeURIComponent(query)}`);
+    if (jsonMode) { console.log(JSON.stringify(data, null, 2)); break; }
     if (data.results?.length === 0) {
       console.log('🔍 未找到相关内容');
     } else {
@@ -115,6 +129,7 @@ switch (command) {
       method: 'POST',
       body: JSON.stringify({ question }),
     });
+    if (jsonMode) { console.log(JSON.stringify(data, null, 2)); break; }
     console.log(`\n💡 ${data.answer}`);
     if (data.sources?.length > 0) {
       console.log('\n📎 来源:');
@@ -127,6 +142,7 @@ switch (command) {
 
   case 'insights': {
     const data = await apiCall('/insights');
+    if (jsonMode) { console.log(JSON.stringify(data, null, 2)); break; }
     if (data.insights?.length === 0) {
       console.log('💡 暂无 AI 洞察');
     } else {
@@ -145,7 +161,8 @@ switch (command) {
     if (!existsSync(filePath)) { console.error(`File not found: ${filePath}`); break; }
     
     const config = loadConfig();
-    const baseUrl = config.apiUrl || 'https://api.verrrnm.cloud';
+    const apiKey = process.env.AIDRIVE_API_KEY || config.apiKey;
+    const baseUrl = process.env.AIDRIVE_API_URL || config.apiUrl || 'https://api.verrrnm.cloud';
     
     // Use FormData for multipart upload
     const fileContent = readFileSync(filePath);
@@ -156,7 +173,7 @@ switch (command) {
     
     const res = await fetch(`${baseUrl}/api/files/upload`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${config.apiKey}` },
+      headers: { 'Authorization': `Bearer ${apiKey}` },
       body: formData,
     });
     
