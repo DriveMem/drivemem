@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { UserAvatar } from "@/components/user/user-avatar"
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,8 @@ export default function SettingsContent() {
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     getSession().then((s) => {
@@ -37,7 +40,40 @@ export default function SettingsContent() {
         setName(s.user?.name || "用户")
       }
     })
+    // Fetch avatar
+    import("@/lib/api").then(({ apiFetch }) => {
+      apiFetch("/api/users/me").then((data: any) => {
+        if (data?.avatarUrl) setAvatarUrl(data.avatarUrl)
+      }).catch(() => {})
+    })
   }, [])
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    // Preview immediately
+    const previewUrl = URL.createObjectURL(file)
+    setAvatarUrl(previewUrl)
+
+    try {
+      const s = await getSession()
+      const token = (s as any)?.accessToken
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
+      const formData = new FormData()
+      formData.append("file", file)
+      const res = await fetch(apiBase + "/api/users/me/avatar", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      })
+      if (!res.ok) throw new Error("上传失败")
+      const data = await res.json()
+      if (data.avatarUrl) setAvatarUrl(data.avatarUrl)
+      toast.success("头像已更新")
+    } catch {
+      toast.error("头像上传失败")
+    }
+  }
 
   // AI Memories
   const [memories, setMemories] = useState<any[]>([])
@@ -195,6 +231,29 @@ export default function SettingsContent() {
             <h2 className="text-lg font-semibold mb-1">👤 个人信息</h2>
             <p className="text-sm text-muted-foreground mb-4">用户名、头像、邮箱等基础信息</p>
             <div className="space-y-4">
+              {/* Avatar */}
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="relative group cursor-pointer"
+                >
+                  <UserAvatar name={name} avatarUrl={avatarUrl} size={64} />
+                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-white text-xs">更换</span>
+                  </div>
+                </button>
+                <div>
+                  <p className="text-sm font-medium">头像</p>
+                  <p className="text-xs text-muted-foreground">点击更换头像</p>
+                </div>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="name">名称</Label>
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />

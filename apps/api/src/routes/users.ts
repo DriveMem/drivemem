@@ -99,6 +99,54 @@ export default async function userRoutes(fastify: FastifyInstance) {
     });
   });
 
+  // POST /me/avatar
+  fastify.post('/me/avatar', { preHandler: [requireAuth] }, async (request, reply) => {
+    const data = await request.file();
+    if (!data) {
+      throw new AppError(ErrorCodes.VALIDATION_ERROR, 'No file uploaded', 400);
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(data.mimetype)) {
+      throw new AppError(ErrorCodes.VALIDATION_ERROR, 'Only JPEG, PNG, GIF, WebP images are allowed', 400);
+    }
+
+    const { s3Client } = await import('../services/s3.service.js');
+    const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+    const { config } = await import('../lib/config.js');
+    const { generatePreviewUrl } = await import('../services/s3.service.js');
+
+    const ext = data.filename?.split('.').pop() || 'jpg';
+    const s3Key = `avatars/${request.user!.id}.${ext}`;
+
+    const buffer = await data.toBuffer();
+    await s3Client.send(new PutObjectCommand({
+      Bucket: config.AWS_S3_BUCKET,
+      Key: s3Key,
+      Body: buffer,
+      ContentType: data.mimetype,
+    }));
+
+    const avatarUrl = await generatePreviewUrl(s3Key);
+    // Store the s3Key so we can regenerate signed URLs
+    const storedUrl = `/api/users/me/avatar-image?key=${encodeURIComponent(s3Key)}`;
+
+    await db.update(users).set({ avatarUrl: storedUrl, updatedAt: new Date() }).where(eq(users.id, request.user!.id));
+
+    return reply.send({ avatarUrl: storedUrl });
+  });
+
+  // GET /me/avatar-image — serve avatar via signed URL redirect
+  fastify.get('/me/avatar-image', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { key } = request.query as { key?: string };
+    if (!key) {
+      return reply.status(400).send({ error: 'Missing key' });
+    }
+    const { generatePreviewUrl } = await import('../services/s3.service.js');
+    const url = await generatePreviewUrl(key);
+    return reply.redirect(url);
+  });
+
   // PATCH /me
   fastify.patch('/me', { preHandler: [requireAuth] }, async (request, reply) => {
     const body = updateProfileSchema.parse(request.body);

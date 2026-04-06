@@ -10,6 +10,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
+import { UserAvatar } from "@/components/user/user-avatar"
 import { useTags, useCreateTag, useDeleteTag, TAG_COLORS, TAG_COLOR_MAP, type Tag } from "@/hooks/use-tags"
 
 const navItems = [
@@ -76,6 +77,34 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"
   if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB"
   return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB"
+}
+
+function UserInfo() {
+  const { sidebarCollapsed } = useLayoutStore()
+  const [userName, setUserName] = useState<string>("")
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    apiFetch("/api/users/me")
+      .then((data: any) => {
+        if (data?.name) setUserName(data.name)
+        if (data?.avatarUrl) setAvatarUrl(data.avatarUrl)
+      })
+      .catch(() => {})
+  }, [])
+
+  if (!userName && !avatarUrl) return null
+
+  return (
+    <div className="px-3 py-2 border-t border-border">
+      <div className={cn("flex items-center gap-2", sidebarCollapsed && "justify-center")}>
+        <UserAvatar name={userName} avatarUrl={avatarUrl} size={sidebarCollapsed ? 28 : 24} />
+        {!sidebarCollapsed && (
+          <span className="text-xs font-medium truncate">{userName}</span>
+        )}
+      </div>
+    </div>
+  )
 }
 
 function StorageBar() {
@@ -165,6 +194,7 @@ export function Sidebar() {
             <TagSection />
           </div>
         )}
+        <UserInfo />
         <StorageBar />
       </div>
     </TooltipProvider>
