@@ -9,9 +9,12 @@ import { searchSimilar } from '../services/vector.service.js';
 export default async function v1Routes(fastify: FastifyInstance) {
   fastify.addHook('preHandler', requireApiKey);
 
-  // GET /files
+  // GET /files — detail=brief|full (default: full)
   fastify.get('/files', async (request, reply) => {
     const userId = request.user!.id;
+    const query = request.query as { detail?: string };
+    const brief = query.detail === 'brief';
+
     const files = await db.select({
       id: schema.files.id,
       name: schema.files.name,
@@ -19,12 +22,16 @@ export default async function v1Routes(fastify: FastifyInstance) {
       size: schema.files.size,
       status: schema.files.status,
       summary: schema.files.summary,
-      suggestedFolder: schema.files.suggestedFolder,
+      ...(brief ? {} : { suggestedFolder: schema.files.suggestedFolder }),
       createdAt: schema.files.createdAt,
     })
       .from(schema.files)
       .where(eq(schema.files.userId, userId))
       .orderBy(desc(schema.files.createdAt));
+
+    if (brief) {
+      return reply.send({ files: files.map(f => ({ id: f.id, name: f.name, status: f.status, summary: f.summary?.slice(0, 100) })) });
+    }
     return reply.send({ files });
   });
 
@@ -48,11 +55,12 @@ export default async function v1Routes(fastify: FastifyInstance) {
     return reply.status(204).send();
   });
 
-  // GET /search
+  // GET /search — max_tokens limits snippet length
   fastify.get('/search', async (request, reply) => {
-    const query = request.query as { q: string };
+    const query = request.query as { q: string; max_tokens?: string };
     if (!query.q) return reply.status(400).send({ error: 'q parameter required' });
     const userId = request.user!.id;
+    const maxChars = Math.min(parseInt(query.max_tokens || '300') * 4, 2000); // ~4 chars per token
 
     const [queryVec] = await embedTexts([query.q]);
     const chunks = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: 10 });
@@ -61,7 +69,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
       results: chunks.map(c => ({
         fileId: c.fileId,
         fileName: c.fileName,
-        text: c.text.slice(0, 300),
+        text: c.text.slice(0, maxChars),
         score: c.score,
       })),
     });
