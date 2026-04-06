@@ -124,7 +124,7 @@ switch (command) {
   case 'ask': {
     const question = args.join(' ');
     if (!question) { console.error('Usage: aidrive ask <question>'); break; }
-    console.log('🤔 AI 正在思考...');
+    if (!jsonMode) console.log('🤔 AI 正在思考...');
     const data = await apiCall('/ask', {
       method: 'POST',
       body: JSON.stringify({ question }),
