@@ -8,6 +8,7 @@ import { FileList } from "@/components/file/file-list"
 import { AiHub } from "@/components/dashboard/ai-hub"
 import { KnowledgeLinks } from "@/components/dashboard/knowledge-links"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
+import { OnboardingGuide } from "@/components/onboarding/onboarding-guide"
 import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton"
 import { useFiles } from "@/hooks/use-files"
 import { FileUpload } from "@/components/file/file-upload"
@@ -99,6 +100,7 @@ export default function FilesPage() {
   return (
     <div className="flex flex-col h-full">
       <WelcomeModal onUpload={() => setShowUpload(true)} />
+      <OnboardingGuide onUpload={() => setShowUpload(true)} />
       <AiHub />
       <QuickActions onUpload={() => setShowUpload(true)} />
       {showUpload && <div className="px-4"><FileUpload onClose={() => setShowUpload(false)} /></div>}
