@@ -158,7 +158,7 @@ export function Sidebar() {
             return <div key={item.href}>{btn}</div>
           })}
         </nav>
-        {!sidebarCollapsed && (
+        {!sidebarCollapsed && !pathname?.startsWith("/chat") && !pathname?.startsWith("/trash") && !pathname?.startsWith("/settings") && (
           <div className="flex-1 overflow-auto border-t border-border p-2">
             <p className="px-2 py-1 text-xs font-medium text-muted-foreground">文件夹</p>
             <FolderTree />
