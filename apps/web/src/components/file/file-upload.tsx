@@ -28,12 +28,21 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
   const onDrop = useCallback((accepted: File[], rejected: FileRejection[]) => {
     // Add rejected files with error
     rejected.forEach((r) => {
-      const msg = r.errors[0]?.code === "file-too-large" ? "文件超过 50MB 限制" : "不支持的文件格式"
+      const isTooLarge = r.errors[0]?.code === "file-too-large"
+      const msg = isTooLarge ? "文件超过 50MB 限制" : "不支持的文件格式"
+      if (isTooLarge) {
+        toast.error(`文件过大：最大支持 50MB（${r.file.name}）`)
+      }
       setUploads((p) => [...p, { id: crypto.randomUUID(), name: r.file.name, progress: 0, status: "error" as const, error: msg }])
     })
 
-    // Upload accepted files
+    // Upload accepted files (double-check size limit)
     accepted.forEach((file) => {
+      if (file.size > MAX_SIZE) {
+        toast.error(`文件过大：最大支持 50MB（${file.name}）`)
+        setUploads((p) => [...p, { id: crypto.randomUUID(), name: file.name, progress: 0, status: "error" as const, error: "文件超过 50MB 限制" }])
+        return
+      }
       const itemId = crypto.randomUUID()
       setUploads((p) => [...p, { id: itemId, name: file.name, progress: 0, status: "uploading" as const }])
 
