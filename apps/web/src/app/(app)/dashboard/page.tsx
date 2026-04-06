@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useCallback } from "react"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Upload, FolderPlus, MessageSquare, Sparkles } from "lucide-react"
@@ -87,10 +87,45 @@ function QuickActions({ onUpload }: { onUpload: () => void }) {
 
 export default function FilesPage() {
   const [showUpload, setShowUpload] = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const dragCounter = useRef(0)
   const { isLoading } = useFiles()
 
   useEffect(() => {
     document.title = "我的文件 - AI Drive"
+  }, [])
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current++
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDragOver(true)
+    }
+  }, [])
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }, [])
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current--
+    if (dragCounter.current === 0) {
+      setIsDragOver(false)
+    }
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current = 0
+    setIsDragOver(false)
+    if (e.dataTransfer.files?.length) {
+      setShowUpload(true)
+    }
   }, [])
 
   if (isLoading) {
@@ -98,7 +133,18 @@ export default function FilesPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div
+      className="flex flex-col h-full relative"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragOver && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#4F5BD5]/10 border-2 border-dashed border-[#4F5BD5] pointer-events-none">
+          <span className="text-xl font-medium text-[#4F5BD5]">📤 释放文件上传</span>
+        </div>
+      )}
       <WelcomeModal onUpload={() => setShowUpload(true)} />
       <OnboardingGuide onUpload={() => setShowUpload(true)} />
       <AiHub />
