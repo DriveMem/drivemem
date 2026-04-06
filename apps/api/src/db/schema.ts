@@ -12,7 +12,7 @@ export const users = pgTable('users', {
   storageUsed: bigint('storage_used', { mode: 'number' }).notNull().default(0),
   storageLimit: bigint('storage_limit', { mode: 'number' }).notNull().default(5_368_709_120), // 5 GB
   dailyChatCount: integer('daily_chat_count').notNull().default(0),
-  dailyChatLimit: integer('daily_chat_limit').notNull().default(20), // 产品 Spec: 20次/天
+  dailyChatLimit: integer('daily_chat_limit').notNull().default(50), // 产品 Spec: 50次/天
   lastChatResetAt: timestamp('last_chat_reset_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   insight: text('insight'),

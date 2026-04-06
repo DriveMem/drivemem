@@ -160,7 +160,7 @@ export default function SettingsContent() {
       setStorageUsed(((data.storageUsed || 0) / 1073741824).toFixed(2))
       setStorageTotal(((data.storageLimit || 5368709120) / 1073741824).toFixed(1))
       setChatUsedToday(String(data.dailyChatCount ?? 0))
-      setChatLimitToday(String(data.dailyChatLimit ?? 20))
+      setChatLimitToday(String(data.dailyChatLimit ?? 50))
     } catch {
       setUsageError(true)
     } finally {
