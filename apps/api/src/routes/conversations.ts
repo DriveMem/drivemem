@@ -14,6 +14,7 @@ import { config } from '../lib/config.js';
 const createSchema = z.object({
   scopeType: z.enum(['all', 'folder', 'file']),
   scopeId: z.string().uuid().optional(),
+  title: z.string().max(255).optional(),
 });
 
 const messageSchema = z.object({
@@ -58,6 +59,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
         userId: user.id,
         scopeType: body.scopeType,
         scopeId: body.scopeId ?? null,
+        ...(body.title ? { title: body.title } : {}),
       })
       .returning();
 
