@@ -243,7 +243,7 @@ export function ConversationList() {
               取消
             </Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? "删除中..." : "删除"}
+              {deleteMutation.isPending ? "删除中..." : "确定删除"}
             </Button>
           </div>
         </DialogContent>
