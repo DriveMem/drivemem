@@ -179,6 +179,17 @@ export const messageRatings = pgTable('message_ratings', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// --- API Keys ---
+export const apiKeys = pgTable('api_keys', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  keyHash: text('key_hash').notNull(),
+  keyPrefix: text('key_prefix').notNull(),
+  lastUsedAt: timestamp('last_used_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // --- Insights ---
 export const insights = pgTable('insights', {
   id: uuid('id').defaultRandom().primaryKey(),

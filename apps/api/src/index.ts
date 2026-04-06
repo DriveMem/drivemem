@@ -86,6 +86,12 @@ await app.register(adminRoutes, { prefix: '/api/admin' });
 import insightRoutes from './routes/insights.js';
 await app.register(insightRoutes, { prefix: '/api/insights' });
 
+import apiKeyRoutes from './routes/api-keys.js';
+await app.register(apiKeyRoutes, { prefix: '/api/api-keys' });
+
+import v1Routes from './routes/v1.js';
+await app.register(v1Routes, { prefix: '/api/v1' });
+
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {
   return reply.send({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
