@@ -1,4 +1,4 @@
-import { Worker, Job, UnrecoverableError } from 'bullmq';
+import { Worker, Job, UnrecoverableError, Queue } from 'bullmq';
 import { eq, and, sql } from 'drizzle-orm';
 import { config } from '../lib/config.js';
 import { AppError } from '../lib/errors.js';
@@ -248,6 +248,13 @@ const worker = new Worker<ParseJobData>(
     } catch (linkErr) {
       console.warn('[file-parse] Knowledge link discovery failed (non-blocking):', (linkErr as Error).message);
     }
+
+    // Dispatch insight generation job
+    try {
+      const insightQueue = new Queue('insight-generate', { connection: { host: 'localhost', port: 6379 } });
+      await insightQueue.add('generate', { fileId, userId });
+      await insightQueue.close();
+    } catch { /* non-blocking */ }
 
     } catch (err) {
       if (err instanceof AppError && err.code === 'PARSE_FAILED') {

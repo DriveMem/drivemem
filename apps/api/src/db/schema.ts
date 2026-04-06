@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, bigint, integer, timestamp, pgEnum, jsonb, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, bigint, integer, timestamp, pgEnum, jsonb, boolean, real } from 'drizzle-orm/pg-core';
 
 export const authProviderEnum = pgEnum('auth_provider', ['credentials', 'google', 'github']);
 
@@ -176,5 +176,20 @@ export const messageRatings = pgTable('message_ratings', {
   messageId: uuid('message_id').notNull().references(() => messages.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   rating: text('rating').notNull(), // 'thumbs_up' | 'thumbs_down'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// --- Insights ---
+export const insights = pgTable('insights', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  sourceFileId: uuid('source_file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  relatedFileId: uuid('related_file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  type: text('type').notNull(), // 'relation' | 'contradiction' | 'trend'
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  similarityScore: real('similarity_score'),
+  metadata: jsonb('metadata'),
+  read: boolean('read').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
