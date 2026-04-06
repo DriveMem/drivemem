@@ -137,6 +137,8 @@ export function FileList() {
   const [inlineNewFolderName, setInlineNewFolderName] = useState("新建文件夹")
   const inlineFolderInputRef = useRef<HTMLInputElement>(null)
   const parentRef = useRef<HTMLDivElement>(null)
+  const [focusedIndex, setFocusedIndex] = useState(-1)
+  const [kbDeleteTarget, setKbDeleteTarget] = useState<string | null>(null)
 
   // Ctrl+Shift+N shortcut for quick folder creation
   useEffect(() => {
@@ -256,6 +258,32 @@ export function FileList() {
     }
     return result
   }, [typeFilter, files, filterTagId, tagFileIds])
+
+  // Keyboard navigation for file list
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (document.activeElement?.tagName || "").toLowerCase()
+      if (tag === "input" || tag === "textarea" || tag === "select" || (document.activeElement as HTMLElement)?.isContentEditable) return
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault()
+        setFocusedIndex(prev => Math.min(prev + 1, filteredFiles.length - 1))
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault()
+        setFocusedIndex(prev => Math.max(prev - 1, 0))
+      } else if (e.key === "Enter" && focusedIndex >= 0 && focusedIndex < filteredFiles.length) {
+        e.preventDefault()
+        router.push(`/files/${filteredFiles[focusedIndex].id}/preview`)
+      } else if (e.key === "Delete" && focusedIndex >= 0 && focusedIndex < filteredFiles.length) {
+        e.preventDefault()
+        setKbDeleteTarget(filteredFiles[focusedIndex].id)
+      } else if (e.key === "Escape") {
+        setFocusedIndex(-1)
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [focusedIndex, filteredFiles, router])
 
   const virt = useVirtualizer({ count: filteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 48, overscan: 5 })
 
@@ -464,7 +492,7 @@ export function FileList() {
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                 draggable
                 onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
-                className={cn("group absolute left-0 top-0 flex w-full cursor-grab items-center gap-3 border-b border-border px-4 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
+                className={cn("group absolute left-0 top-0 flex w-full cursor-grab items-center gap-3 border-b border-border px-4 hover:bg-accent/50 transition-colors", isSel && "bg-accent", focusedIndex === row.index && "ring-2 ring-primary")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <Checkbox
                   checked={selected.has(file.id)}
@@ -518,7 +546,7 @@ export function FileList() {
                   onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                   draggable
                   onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
-                  className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-grab flex flex-col gap-2", isSel && "bg-accent ring-2 ring-primary")}
+                  className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-grab flex flex-col gap-2", isSel && "bg-accent ring-2 ring-primary", focusedIndex === filteredFiles.indexOf(file) && "ring-2 ring-primary")}
                 >
                   <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
                     <TypeIcon type={file.type} name={file.name} className="h-10 w-10" />
@@ -678,6 +706,18 @@ export function FileList() {
               </DialogFooter>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Keyboard Delete Confirm Dialog */}
+      <Dialog open={!!kbDeleteTarget} onOpenChange={(open) => { if (!open) setKbDeleteTarget(null) }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>确定删除？</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">确定要删除此文件吗？此操作不可撤销。</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setKbDeleteTarget(null)}>取消</Button>
+            <Button variant="destructive" onClick={() => { if (kbDeleteTarget) { deleteFile.mutate(kbDeleteTarget); setKbDeleteTarget(null); setFocusedIndex(-1) } }}>确定</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
