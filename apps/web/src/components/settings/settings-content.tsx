@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { ErrorState } from "@/components/ui/error-state"
 
 const sections = [
   { id: "profile", emoji: "👤", title: "个人信息", desc: "用户名、头像、邮箱等基础信息" },
@@ -387,10 +388,7 @@ export default function SettingsContent() {
                   <div className="h-4 w-36 animate-pulse rounded bg-muted" />
                 </div>
               ) : usageError ? (
-                <div className="flex flex-col items-center gap-2 py-4">
-                  <p className="text-sm text-destructive">获取数据失败，请刷新重试</p>
-                  <Button size="sm" variant="outline" onClick={fetchUsage}>重试</Button>
-                </div>
+                <ErrorState type="server" onRetry={fetchUsage} />
               ) : (
                 <>
                   <div>
