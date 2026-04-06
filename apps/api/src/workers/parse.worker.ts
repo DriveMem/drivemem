@@ -101,6 +101,12 @@ const worker = new Worker<ParseJobData>(
 
       console.log('[file-parse] File ' + fileId + ' indexed with ' + chunks.length + ' chunks');
 
+      // Dispatch webhook: file.indexed
+      try {
+        const { dispatchWebhook } = await import('../services/webhook.service.js');
+        await dispatchWebhook(userId, 'file.indexed', { fileId, fileName: file?.name });
+      } catch { /* non-blocking */ }
+
       // Notification: file indexed
       await db.insert(schema.notifications).values({
         userId,
@@ -121,6 +127,12 @@ const worker = new Worker<ParseJobData>(
       if (summary) {
         await db.update(files).set({ summary }).where(eq(files.id, fileId));
         console.log('[file-parse] Summary generated for ' + fileId);
+
+        // Dispatch webhook: summary.generated
+        try {
+          const { dispatchWebhook } = await import('../services/webhook.service.js');
+          await dispatchWebhook(userId, 'summary.generated', { fileId, fileName: file?.name, summary });
+        } catch { /* non-blocking */ }
 
         // Notification: summary generated
         await db.insert(schema.notifications).values({

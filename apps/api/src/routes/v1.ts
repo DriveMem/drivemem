@@ -1,10 +1,15 @@
 import { FastifyInstance } from 'fastify';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { requireApiKey } from '../plugins/api-key-auth.js';
 import { embedTexts } from '../services/embedding.service.js';
 import { searchSimilar } from '../services/vector.service.js';
+import { s3Client } from '../services/s3.service.js';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { config } from '../lib/config.js';
+import crypto from 'crypto';
+import { Queue } from 'bullmq';
 
 export default async function v1Routes(fastify: FastifyInstance) {
   fastify.addHook('preHandler', requireApiKey);
@@ -98,6 +103,69 @@ export default async function v1Routes(fastify: FastifyInstance) {
         relatedFileName: fileNames[r.relatedFileId] || 'Unknown',
       })),
     });
+  });
+
+  // POST /files/upload — direct file upload (multipart)
+  fastify.post('/files/upload', async (request, reply) => {
+    const userId = request.user!.id;
+    const data = await request.file();
+    if (!data) return reply.status(400).send({ error: 'No file provided' });
+
+    const filename = data.filename;
+    const mimeType = data.mimetype;
+    const chunks: Buffer[] = [];
+    for await (const chunk of data.file) chunks.push(chunk as Buffer);
+    const buffer = Buffer.concat(chunks);
+    const size = buffer.length;
+
+    const fileId = crypto.randomUUID();
+    const s3Key = `users/${userId}/files/${fileId}/${filename}`;
+
+    // Upload to S3/MinIO
+    await s3Client.send(new PutObjectCommand({
+      Bucket: config.AWS_S3_BUCKET,
+      Key: s3Key,
+      Body: buffer,
+      ContentType: mimeType,
+    }));
+
+    // Check existing same-name file for version detection
+    const existingFiles = await db.select({ id: schema.files.id, name: schema.files.name })
+      .from(schema.files)
+      .where(and(eq(schema.files.userId, userId), eq(schema.files.name, filename)));
+
+    let previousVersionId: string | null = null;
+    if (existingFiles.length > 0) {
+      const old = existingFiles[0];
+      previousVersionId = old.id;
+      const ext = old.name.lastIndexOf('.') > -1 ? old.name.substring(old.name.lastIndexOf('.')) : '';
+      const baseName = old.name.lastIndexOf('.') > -1 ? old.name.substring(0, old.name.lastIndexOf('.')) : old.name;
+      const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      await db.update(schema.files).set({ name: `${baseName}_${timestamp}${ext}` }).where(eq(schema.files.id, old.id));
+    }
+
+    // Insert file record
+    await db.insert(schema.files).values({
+      id: fileId,
+      name: filename,
+      originalName: filename,
+      mimeType,
+      size,
+      status: 'parsing',
+      userId,
+      s3Key,
+      previousVersionId,
+    });
+
+    // Update storage
+    await db.update(schema.users).set({ storageUsed: sql`${schema.users.storageUsed} + ${size}` }).where(eq(schema.users.id, userId));
+
+    // Enqueue parse job
+    const queue = new Queue('file-parse', { connection: { host: 'localhost', port: 6379 } });
+    await queue.add('parse', { fileId, userId, s3Key, mimeType });
+    await queue.close();
+
+    return reply.status(201).send({ fileId, name: filename, status: 'parsing' });
   });
 
   // POST /ask — sync AI Q&A

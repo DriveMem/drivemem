@@ -41,6 +41,39 @@ await app.register(rateLimit, {
 import multipart from '@fastify/multipart';
 await app.register(multipart, { limits: { fileSize: 52428800 } }); // 50MB
 
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+
+await app.register(swagger, {
+  openapi: {
+    info: {
+      title: 'AI Drive Open API',
+      description: 'AI 知识操作系统 — 让任何 AI agent 接入你的个人知识库',
+      version: '1.0.0',
+    },
+    servers: [{ url: 'https://api.verrrnm.cloud' }],
+    components: {
+      securitySchemes: {
+        apiKey: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'API Key (ak_xxx)',
+          description: 'API Key 认证。在设置页创建 Key。',
+        },
+      },
+    },
+    security: [{ apiKey: [] }],
+  },
+});
+
+await app.register(swaggerUi, {
+  routePrefix: '/api/docs',
+  uiConfig: {
+    docExpansion: 'list',
+    deepLinking: false,
+  },
+});
+
 await app.register(errorHandler);
 
 import authPlugin from './plugins/auth.js';
@@ -91,6 +124,9 @@ await app.register(apiKeyRoutes, { prefix: '/api/api-keys' });
 
 import v1Routes from './routes/v1.js';
 await app.register(v1Routes, { prefix: '/api/v1' });
+
+import webhookRoutes from './routes/webhooks.js';
+await app.register(webhookRoutes, { prefix: '/api/webhooks' });
 
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {
