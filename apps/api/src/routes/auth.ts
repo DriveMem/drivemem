@@ -9,6 +9,7 @@ import { db } from '../db/index.js';
 import { users, passwordResetTokens } from '../db/schema.js';
 import { AppError, ErrorCodes } from '../lib/errors.js';
 import { config } from '../lib/config.js';
+import { seedFilesForUser } from '../services/seed-files.service.js';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -101,6 +102,9 @@ export default async function authRoutes(fastify: FastifyInstance) {
         authProvider: 'credentials',
       })
       .returning({ id: users.id, email: users.email, name: users.name });
+
+    // Fire-and-forget: seed sample files for the new user
+    seedFilesForUser(user.id).catch(() => {});
 
     return reply.status(201).send(user);
   });
