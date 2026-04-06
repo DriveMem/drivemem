@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { apiFetch } from "@/lib/api"
 import { Trash2, RotateCcw, Loader2 } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 
 interface TrashedFile {
   id: string
@@ -87,11 +88,11 @@ export default function TrashPage() {
       </div>
 
       {files.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <Trash2 className="h-12 w-12 text-muted-foreground/40 mb-3" />
-          <p className="text-lg font-medium text-muted-foreground">回收站为空</p>
-          <p className="text-sm text-muted-foreground/70 mt-1">删除的文件会在此保留 30 天</p>
-        </div>
+        <EmptyState
+          icon={<Trash2 className="h-12 w-12" />}
+          title="回收站为空"
+          description="删除的文件会在此保留 30 天"
+        />
       ) : (
         <div className="space-y-2">
           {files.map(file => {

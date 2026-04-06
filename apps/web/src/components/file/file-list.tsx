@@ -27,6 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { FileListSkeleton } from "@/components/skeletons/file-list-skeleton"
 import { FileUpload } from "./file-upload"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
+import { EmptyState } from "@/components/ui/empty-state"
 import { toast } from "sonner"
 import { useTagFileIds, useFileTags, TAG_COLOR_MAP, type Tag } from "@/hooks/use-tags"
 
@@ -315,12 +316,16 @@ export function FileList() {
   if (files.length === 0 && !showUpload && !currentFolderId && visibleFolders.length === 0) {
     return (
       <div
-        className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground"
+        className="h-full"
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setShowUpload(true) }}
       >
-        <Upload className="h-12 w-12" /><p className="text-lg">把文件拖到这里，让 AI 记住它</p>
-        <Button onClick={() => setShowUpload(true)}>让 AI 记住文件</Button>
+        <EmptyState
+          icon={<Upload className="h-12 w-12" />}
+          title="把文件拖到这里，让 AI 记住它"
+          description=""
+          action={<Button onClick={() => setShowUpload(true)}>让 AI 记住文件</Button>}
+        />
         {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
       </div>
     )
@@ -329,16 +334,20 @@ export function FileList() {
   if (files.length === 0 && !showUpload && currentFolderId && visibleFolders.length === 0) {
     return (
       <div
-        className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground"
+        className="h-full"
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setShowUpload(true) }}
       >
-        <Folder className="h-12 w-12 text-muted-foreground/50" />
-        <p className="text-lg font-medium text-foreground">这个文件夹还是空的</p>
-        <p className="text-sm">拖拽文件到这里，或点击上传</p>
-        <Button onClick={() => setShowUpload(true)} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
-          <Upload className="h-4 w-4" />上传文件
-        </Button>
+        <EmptyState
+          icon={<Folder className="h-12 w-12" />}
+          title="这个文件夹还是空的"
+          description="拖拽文件到这里，或点击上传"
+          action={
+            <Button onClick={() => setShowUpload(true)} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+              <Upload className="h-4 w-4" />上传文件
+            </Button>
+          }
+        />
         {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
       </div>
     )

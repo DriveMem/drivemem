@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { apiFetch } from "@/lib/api"
 import { ConversationListSkeleton } from "@/components/skeletons/conversation-list-skeleton"
 import { Loader2, Pin, Search, MessageSquare } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 
 interface Conversation {
   id: string
@@ -195,14 +196,16 @@ export function ConversationList() {
       {isLoading ? (
         <ConversationListSkeleton />
       ) : sorted.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-          <MessageSquare className="h-10 w-10 text-muted-foreground/50" />
-          <p className="text-sm font-medium">💬 开始第一次 AI 对话</p>
-          <p className="text-xs text-muted-foreground">上传文件后，与 AI 一起分析</p>
-          <Button size="sm" className="mt-1 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => router.push("/chat?new=" + Date.now())}>
-            新建对话
-          </Button>
-        </div>
+        <EmptyState
+          icon={<MessageSquare className="h-10 w-10" />}
+          title="💬 开始第一次 AI 对话"
+          description="上传文件后，与 AI 一起分析"
+          action={
+            <Button size="sm" className="mt-1 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => router.push("/chat?new=" + Date.now())}>
+              新建对话
+            </Button>
+          }
+        />
       ) : (
         <div className="flex-1 overflow-y-auto">
           {groups.map((group, idx) => (
