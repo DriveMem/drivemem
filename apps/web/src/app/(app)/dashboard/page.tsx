@@ -7,6 +7,7 @@ import { FileList } from "@/components/file/file-list"
 import { MemoryOverview } from "@/components/dashboard/memory-overview"
 import { KnowledgeLinks } from "@/components/dashboard/knowledge-links"
 import { AiInsights } from "@/components/dashboard/ai-insights"
+import { InsightCard } from "@/components/dashboard/insight-card"
 import { ReportSection, type ReportSectionHandle } from "@/components/dashboard/report-section"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 import { useFiles } from "@/hooks/use-files"
@@ -107,7 +108,14 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<"files" | "ai">("files")
   const { data: filesData } = useFiles()
   const [activities, setActivities] = useState<any[]>([])
+  const [insights, setInsights] = useState<any[]>([])
   const reportRef = useRef<ReportSectionHandle>(null)
+
+  useEffect(() => {
+    apiFetch("/api/insights?limit=5").then((data: any) => {
+      setInsights(data?.insights || [])
+    }).catch(() => {})
+  }, [])
 
   useEffect(() => {
     apiFetch("/api/notifications").then((data: any) => {
@@ -216,6 +224,27 @@ export default function DashboardPage() {
             <div>
               <QuickActions onGenerate={handleQuickGenerate} onOrganize={handleAutoOrganize} />
               <MemoryOverview />
+              {insights.length > 0 && (
+                <div className="mx-4 mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold flex items-center gap-2">
+                      💡 AI 主动洞察
+                      {insights.filter(i => !i.read).length > 0 && (
+                        <span className="rounded-full bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white">
+                          {insights.filter(i => !i.read).length} 条新
+                        </span>
+                      )}
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    {insights.map(insight => (
+                      <InsightCard key={insight.id} insight={insight} onRead={() => {
+                        setInsights(prev => prev.map(i => i.id === insight.id ? { ...i, read: true } : i))
+                      }} />
+                    ))}
+                  </div>
+                </div>
+              )}
               <SectionLabel>AI 报告</SectionLabel>
               <ReportSection ref={reportRef} />
               <div className="mx-3 mb-3 rounded-xl border bg-muted/30 p-4 text-center">
@@ -230,6 +259,27 @@ export default function DashboardPage() {
             <>
               <QuickActions onGenerate={handleQuickGenerate} onOrganize={handleAutoOrganize} />
               <MemoryOverview />
+              {insights.length > 0 && (
+                <div className="mx-4 mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold flex items-center gap-2">
+                      💡 AI 主动洞察
+                      {insights.filter(i => !i.read).length > 0 && (
+                        <span className="rounded-full bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white">
+                          {insights.filter(i => !i.read).length} 条新
+                        </span>
+                      )}
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    {insights.map(insight => (
+                      <InsightCard key={insight.id} insight={insight} onRead={() => {
+                        setInsights(prev => prev.map(i => i.id === insight.id ? { ...i, read: true } : i))
+                      }} />
+                    ))}
+                  </div>
+                </div>
+              )}
               <AiInsights />
               <KnowledgeLinks />
               <SectionLabel>AI 报告</SectionLabel>
