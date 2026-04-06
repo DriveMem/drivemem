@@ -3,9 +3,10 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2, MoreHorizontal, BotMessageSquare, Link2 } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2, MoreHorizontal, BotMessageSquare, Link2, Info, X } from "lucide-react"
 import { Lightbulb } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -124,6 +125,7 @@ export function FileList() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
+  const [drawerFileId, setDrawerFileId] = useState<string | null>(null)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
   const [shareLoading, setShareLoading] = useState(false)
@@ -447,6 +449,13 @@ export function FileList() {
                     <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
                   <button
+                    onClick={(e) => { e.stopPropagation(); setDrawerFileId(file.id) }}
+                    className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
+                    title="文件详情"
+                  >
+                    <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                  <button
                     onClick={(e) => { e.stopPropagation(); e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                     className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
                     title="更多"
@@ -648,6 +657,69 @@ export function FileList() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* File Detail Drawer Backdrop */}
+      {drawerFileId && (
+        <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setDrawerFileId(null)} />
+      )}
+      {/* File Detail Drawer */}
+      {(() => {
+        const drawerFile = rawFiles?.find((f: any) => f.id === drawerFileId)
+        if (!drawerFile) return null
+        return (
+          <div className="fixed inset-y-0 right-0 z-50 w-[400px] border-l bg-background shadow-xl">
+            <div className="flex items-center justify-between border-b px-4 py-3">
+              <h3 className="text-sm font-semibold">文件详情</h3>
+              <button onClick={() => setDrawerFileId(null)} className="h-8 w-8 rounded-md hover:bg-accent flex items-center justify-center">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="overflow-auto p-4 space-y-4" style={{ height: "calc(100vh - 56px)" }}>
+              <div className="flex justify-center py-4">
+                <TypeIcon type={drawerFile.type} name={drawerFile.name} className="h-16 w-16" />
+              </div>
+              <h2 className="text-lg font-semibold text-center">{drawerFile.name}</h2>
+              {drawerFile.summary && (
+                <div className="rounded-lg border p-3">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">🧠 AI 摘要</p>
+                  <p className="text-sm">{drawerFile.summary}</p>
+                </div>
+              )}
+              <div className="rounded-lg border p-3 space-y-2">
+                <p className="text-xs font-medium text-muted-foreground mb-1">📋 文件信息</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">大小</span>
+                  <span>{fmtSize(drawerFile.size)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">类型</span>
+                  <span>{drawerFile.type}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">上传时间</span>
+                  <span>{new Date(drawerFile.createdAt).toLocaleDateString("zh-CN")}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">状态</span>
+                  <span>{drawerFile.status === "indexed" ? "✅ 已索引" : drawerFile.status}</span>
+                </div>
+              </div>
+              <Link
+                href={`/chat?fileIds=${drawerFile.id}`}
+                className="flex items-center justify-center gap-2 w-full rounded-lg bg-[#4F5BD5] hover:bg-[#3D49C4] text-white py-2.5 text-sm transition"
+              >
+                💬 问 AI 关于这个文件
+              </Link>
+              <Link
+                href={`/files/${drawerFile.id}/preview`}
+                className="flex items-center justify-center gap-2 w-full rounded-lg border hover:bg-accent py-2.5 text-sm transition"
+              >
+                👁️ 预览文件
+              </Link>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Move Dialog */}
       <Dialog open={!!moveTarget} onOpenChange={(open) => { if (!open) setMoveTarget(null) }}>
