@@ -121,6 +121,15 @@ export function OnboardingGuide({ onUpload }: OnboardingGuideProps) {
                 上传文件
               </button>
               <button
+                onClick={() => {
+                  complete()
+                  router.push("/dashboard?highlight=sample")
+                }}
+                className="w-full rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                📎 先用示例文件体验
+              </button>
+              <button
                 onClick={() => setCurrentStep(1)}
                 className="w-full rounded-xl px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
