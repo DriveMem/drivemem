@@ -106,7 +106,7 @@ export default function LandingPage() {
               <Link href="/login">体验 Demo →</Link>
             </Button>
           </div>
-          <p className="mt-4 text-sm text-gray-500 text-center">✨ 免费计划 · 50MB 存储 · 无限 AI 对话 · 无需信用卡</p>
+          <p className="mt-4 text-sm text-gray-500 text-center">✨ 免费 5GB 存储 · 每天 50 次 AI 对话 · 无需信用卡</p>
         </FadeIn>
       </section>
 
@@ -151,8 +151,8 @@ export default function LandingPage() {
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 mb-4">
                 <Globe className="h-6 w-6 text-cyan-400" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Web Clipper</h3>
-              <p className="text-gray-400 leading-relaxed">一键保存网页到 AI 记忆，浏览器扩展让知识自动积累</p>
+              <h3 className="text-xl font-semibold mb-2">知识时间线</h3>
+              <p className="text-gray-400 leading-relaxed">文件上传、AI 分析、知识关联自动形成时间线，回顾你的知识积累过程</p>
             </div>
           </div>
         </FadeIn>
@@ -225,7 +225,7 @@ export default function LandingPage() {
               <Link href="/signup">免费开始 <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>
-          <p className="mt-4 text-sm text-gray-500">✨ 免费计划 · 50MB 存储 · 无限 AI 对话 · 无需信用卡</p>
+          <p className="mt-4 text-sm text-gray-500">✨ 免费 5GB 存储 · 每天 50 次 AI 对话 · 无需信用卡</p>
         </FadeIn>
       </section>
 
