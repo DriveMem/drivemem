@@ -33,9 +33,9 @@ interface ChatMessage {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
 const DEFAULT_SUGGESTIONS = [
-  "📄 总结我最近上传的文件",
-  "🔍 这些文件之间有什么关联？",
-  "💡 从我的文件中提取关键信息",
+  "📄 帮我总结 AI Drive 使用指南的要点",
+  "🔍 这份竞品分析报告的关键发现是什么？",
+  "💡 比较两个示例文件的内容差异",
   "📊 帮我分析文件内容",
 ]
 
