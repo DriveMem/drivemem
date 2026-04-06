@@ -412,6 +412,21 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
           ))}
         </div>
       )}
+      {scope === "file" && scopeId && (() => {
+        const contextFile = indexedFiles.find((f: any) => f.id === scopeId)
+        if (!contextFile) return null
+        return (
+          <div className="flex items-center gap-2 px-4 py-2 border-t border-border bg-muted/30">
+            <div className="flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-sm max-w-[240px]">
+              <FileText className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
+              <span className="truncate text-foreground/80">{contextFile.name}</span>
+              <button onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined) }} className="ml-0.5 flex-shrink-0 rounded-full hover:bg-destructive/20 p-0.5 transition-colors">
+                <span className="text-muted-foreground hover:text-destructive text-xs">✕</span>
+              </button>
+            </div>
+          </div>
+        )
+      })()}
       <ChatInput onSend={handleSend} disabled={sending} />
     </div>
   )
