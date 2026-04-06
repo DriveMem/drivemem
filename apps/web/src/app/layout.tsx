@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/providers/theme-provider'
 import { AuthProvider } from '@/providers/auth-provider'
 import { QueryProvider } from '@/providers/query-provider'
+import { NProgressProvider } from '@/providers/nprogress-provider'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
@@ -29,7 +30,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <QueryProvider>
-              {children}
+              <NProgressProvider>
+                {children}
+              </NProgressProvider>
             </QueryProvider>
           </AuthProvider>
           <Toaster />

@@ -72,3 +72,8 @@
 
 /* Card hover */
 .card-hover { @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5; }
+
+/* NProgress overrides */
+#nprogress .bar { background: #4F5BD5; height: 2px; }
+#nprogress .peg { display: none; }
+#nprogress .spinner { display: none; }
