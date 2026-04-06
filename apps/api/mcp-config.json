@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "ai-drive": {
+      "command": "node",
+      "args": ["--env-file=/home/ubuntu/repos/ai-drive/apps/api/.env", "/home/ubuntu/repos/ai-drive/apps/api/dist/mcp/server.js"],
+      "env": {
+        "MCP_USER_ID": "<your-user-id>"
+      }
+    }
+  }
+}
