@@ -503,7 +503,12 @@ export function FileList() {
                   className="shrink-0"
                 />
                 <TypeIcon type={file.type} name={file.name} />
-                <span className="truncate text-sm flex-1 min-w-0">{file.name}</span>
+                <span className="truncate text-sm flex-1 min-w-0">
+                  {file.name.startsWith("📎 ") ? file.name.slice(3) : file.name}
+                </span>
+                {file.name.startsWith("📎 ") && (
+                  <span className="shrink-0 rounded-full bg-blue-500/10 border border-blue-500/20 px-1.5 py-0 text-[10px] text-blue-500 font-medium">示例</span>
+                )}
                 <FileTagPills fileId={file.id} />
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">已更新</span>}
                 {file.suggestedFolder && !file.folderId && (
@@ -551,7 +556,12 @@ export function FileList() {
                   <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
                     <TypeIcon type={file.type} name={file.name} className="h-10 w-10" />
                   </div>
-                  <p className="text-sm font-medium truncate">{file.name}</p>
+                  <p className="text-sm font-medium truncate">
+                    {file.name.startsWith("📎 ") ? file.name.slice(3) : file.name}
+                  </p>
+                  {file.name.startsWith("📎 ") && (
+                    <span className="self-start rounded-full bg-blue-500/10 border border-blue-500/20 px-1.5 py-0 text-[10px] text-blue-500 font-medium">示例</span>
+                  )}
                   {file.summary && (
                     <p className="text-xs text-muted-foreground line-clamp-2">{file.summary}</p>
                   )}

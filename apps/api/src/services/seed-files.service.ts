@@ -14,7 +14,7 @@ interface SeedFile {
 
 const SEED_FILES: SeedFile[] = [
   {
-    name: 'AI Drive 使用指南.md',
+    name: '📎 AI Drive 使用指南.md',
     mimeType: 'text/markdown',
     content: `# AI Drive 使用指南
 
@@ -57,7 +57,7 @@ const SEED_FILES: SeedFile[] = [
 `,
   },
   {
-    name: '示例：竞品分析报告.md',
+    name: '📎 示例：竞品分析报告.md',
     mimeType: 'text/markdown',
     content: `# 竞品分析报告：AI 文档助手市场
 
