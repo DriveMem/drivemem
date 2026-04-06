@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,107 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+
+function ApiKeysCard() {
+  const [keys, setKeys] = useState<any[]>([])
+  const [keyName, setKeyName] = useState("")
+  const [newKey, setNewKey] = useState<string | null>(null)
+  const [creating, setCreating] = useState(false)
+
+  useEffect(() => {
+    const fetchKeys = async () => {
+      try {
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/api-keys")
+        setKeys(data?.keys || [])
+      } catch { /* ignore */ }
+    }
+    fetchKeys()
+  }, [])
+
+  const createKey = async () => {
+    setCreating(true)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const data = await apiFetch("/api/api-keys", { method: "POST", body: JSON.stringify({ name: keyName.trim() }) })
+      setNewKey(data.key)
+      setKeyName("")
+      const list = await apiFetch("/api/api-keys")
+      setKeys(list?.keys || [])
+      toast.success("API Key 已创建")
+    } catch {
+      toast.error("创建失败")
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const deleteKey = async (id: string) => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/api-keys/${id}`, { method: "DELETE" })
+      setKeys(prev => prev.filter(k => k.id !== id))
+      toast.success("已删除")
+    } catch {
+      toast.error("删除失败")
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>🔑 API Keys</CardTitle>
+        <CardDescription>创建 API Key 让 AI agent 接入你的知识库</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-2 mb-4">
+          <Input placeholder="Key 名称（如 My Agent）" value={keyName} onChange={(e) => setKeyName(e.target.value)} />
+          <Button onClick={createKey} disabled={!keyName.trim() || creating}>
+            {creating ? "创建中..." : "创建 Key"}
+          </Button>
+        </div>
+
+        {newKey && (
+          <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+            <p className="text-sm font-medium text-amber-600 mb-2">⚠️ 请保存你的 API Key — 只显示一次</p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 rounded bg-muted px-3 py-2 text-sm font-mono select-all">{newKey}</code>
+              <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newKey); toast.success("已复制") }}>
+                复制
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {keys.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">还没有 API Key</p>
+        ) : (
+          <div className="space-y-2">
+            {keys.map(k => (
+              <div key={k.id} className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <p className="text-sm font-medium">{k.name}</p>
+                  <p className="text-xs text-muted-foreground font-mono">{k.keyPrefix}••••••••</p>
+                  <p className="text-xs text-muted-foreground">
+                    创建于 {new Date(k.createdAt).toLocaleDateString("zh-CN")}
+                    {k.lastUsedAt && ` · 最后使用 ${new Date(k.lastUsedAt).toLocaleDateString("zh-CN")}`}
+                  </p>
+                </div>
+                <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteKey(k.id)}>
+                  删除
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p className="mt-4 text-xs text-muted-foreground">
+          📖 <a href="/developers" className="text-[#4F5BD5] hover:underline">查看 API 文档</a> — 上传文件、搜索知识、AI 问答
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function SettingsContent() {
   const [session, setSession] = useState<any>(null)
@@ -183,6 +284,9 @@ export default function SettingsContent() {
           )}
         </CardContent>
       </Card>
+
+      {/* API Keys */}
+      <ApiKeysCard />
 
       {/* Password */}
       <Card>
