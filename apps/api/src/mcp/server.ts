@@ -27,7 +27,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     {
       name: 'aidrive_search',
-      description: '在 AI Drive 知识库中语义搜索。返回最相关的文件片段。',
+      description: '在用户的个人知识库中进行语义搜索。适用场景：查找历史决策和结论、对比不同文件的观点、验证数据一致性、寻找相关资料辅助写作、回忆之前讨论过的话题。支持自然语言查询，返回最相关的文件片段和相似度分数。当你需要参考用户已有知识时，优先使用此工具。',
       inputSchema: {
         type: 'object' as const,
         properties: {
@@ -38,7 +38,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: 'aidrive_ask',
-      description: '基于 AI Drive 知识库回答问题。AI 会参考用户上传的所有文件来回答。',
+      description: '基于用户知识库中的所有文件回答问题（RAG 问答）。AI 会检索最相关的文档片段并生成有引用来源的回答。适用场景：需要基于用户文件给出准确回答、做跨文件综合分析、回答需要事实依据的问题。与 search 的区别：search 返回原始片段，ask 返回 AI 理解后的结构化回答。',
       inputSchema: {
         type: 'object' as const,
         properties: {
@@ -49,7 +49,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: 'aidrive_list_files',
-      description: '列出 AI Drive 知识库中的所有文件，包含文件名、类型、AI 摘要等信息。',
+      description: '列出用户知识库中的所有文件，包含文件名、类型、状态和 AI 自动生成的摘要。适用场景：了解用户知识库全貌、查看有哪些可用资料、检查文件索引状态、获取文件 ID 用于后续操作。建议在使用 search 或 ask 之前先调用此工具了解知识库内容。',
       inputSchema: {
         type: 'object' as const,
         properties: {},
@@ -57,7 +57,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: 'aidrive_get_insights',
-      description: '获取 AI 主动发现的知识洞察（文件间关联、矛盾、趋势等）。',
+      description: '获取 AI 主动发现的知识洞察——文件之间的关联、矛盾观点和共同趋势。这些洞察由 AI 在文件索引时自动生成，无需用户提问。适用场景：发现用户可能没注意到的知识联系、找出文档间的矛盾点、识别跨文件的共同趋势、为用户提供知识库的全局视角。',
       inputSchema: {
         type: 'object' as const,
         properties: {},
@@ -65,13 +65,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: 'aidrive_file_detail',
-      description: '获取某个文件的详细信息，包括 AI 摘要。',
+      description: '获取某个文件的详细信息，包括 AI 自动生成的摘要、文件类型、状态等。适用场景：深入了解某个特定文件的内容、获取 AI 对文件的理解、在搜索到文件后查看详情。需要文件 ID（可通过 list_files 获取）。',
       inputSchema: {
         type: 'object' as const,
         properties: {
           fileId: { type: 'string', description: '文件 ID' },
         },
         required: ['fileId'],
+      },
+    },
+    {
+      name: 'aidrive_suggest_workflow',
+      description: '根据用户知识库的当前内容，AI 主动建议 3-5 个可以执行的操作或分析方向。当你不确定知识库能做什么、或想帮用户发现知识价值时调用。常见建议：对比两份文件观点、生成分析报告、检查数据一致性、发现知识盲点等。',
+      inputSchema: {
+        type: 'object' as const,
+        properties: {},
       },
     },
   ],
@@ -137,6 +145,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return { content: [{ type: 'text' as const, text }] };
       }
 
+
+      case 'aidrive_suggest_workflow': {
+        const files = await db.select({ name: schema.files.name, summary: schema.files.summary })
+          .from(schema.files).where(eq(schema.files.userId, USER_ID)).orderBy(desc(schema.files.createdAt)).limit(10);
+        if (files.length === 0) return { content: [{ type: 'text' as const, text: '知识库为空。上传文件后 AI 会自动分析并生成操作建议。' }] };
+        const fileSummaries = files.map(f => `- ${f.name}: ${f.summary?.slice(0, 80) || '无摘要'}`).join('\n');
+        const prompt = `用户知识库有以下文件：\n${fileSummaries}\n\n基于这些文件内容，建议 3-5 个有价值的操作。每条建议一行，格式：emoji + 具体建议（含涉及的文件名）。不要空话。`;
+        const suggestions = await chat([{ role: 'user', content: prompt }]);
+        return { content: [{ type: 'text' as const, text: suggestions }] };
+      }
       default:
         return { content: [{ type: 'text' as const, text: `未知工具: ${name}` }], isError: true };
     }
