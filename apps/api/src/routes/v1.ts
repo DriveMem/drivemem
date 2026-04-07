@@ -86,8 +86,14 @@ export default async function v1Routes(fastify: FastifyInstance) {
     const [queryVec] = await embedTexts([query.q]);
     const chunks = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: 10 });
 
+    // Filter archived files from search results
+    const searchFiles = await db.select({ id: schema.files.id, archivedAt: schema.files.archivedAt })
+      .from(schema.files).where(eq(schema.files.userId, userId));
+    const searchArchivedIds = new Set(searchFiles.filter(f => f.archivedAt).map(f => f.id));
+    const searchResults = chunks.filter(c => !searchArchivedIds.has(c.fileId));
+
     return reply.send({
-      results: chunks.map(c => ({
+      results: searchResults.map(c => ({
         fileId: c.fileId,
         fileName: c.fileName,
         text: c.text.slice(0, maxChars),
@@ -211,7 +217,15 @@ export default async function v1Routes(fastify: FastifyInstance) {
       limit: 10,
     });
 
-    const citationSources = chunks.map(
+    // Filter out archived + old version files
+    const userFiles = await db.select({ id: schema.files.id, previousVersionId: schema.files.previousVersionId, archivedAt: schema.files.archivedAt })
+      .from(schema.files).where(eq(schema.files.userId, userId));
+    const oldVersionIds = new Set(userFiles.filter(f => f.previousVersionId).map(f => f.previousVersionId));
+    const archivedIds = new Set(userFiles.filter(f => f.archivedAt).map(f => f.id));
+    const filteredChunks = chunks.filter(c => !oldVersionIds.has(c.fileId) && !archivedIds.has(c.fileId));
+    const finalChunks = filteredChunks.length > 0 ? filteredChunks : chunks;
+
+    const citationSources = finalChunks.map(
       (c, i) => `来源 ${i + 1} (${c.fileName} 第${c.chunkIndex + 1}段): ${c.text}`,
     );
 
@@ -225,7 +239,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
 
     return reply.send({
       answer,
-      sources: chunks.map(c => ({
+      sources: finalChunks.map(c => ({
         fileId: c.fileId,
         fileName: c.fileName,
         chunkIndex: c.chunkIndex,
