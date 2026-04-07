@@ -16,7 +16,6 @@ interface ShareData {
     createdAt: string
   }
   downloadUrl: string
-  permission: string
   sharedBy: string
 }
 
@@ -46,17 +45,13 @@ export default function SharePage() {
   }, [token])
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header with branding */}
+    <div className="min-h-screen bg-background">
       <nav className="flex items-center justify-between border-b px-6 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-sm">AI</div>
-          <span className="text-lg font-bold">AI Drive</span>
-        </Link>
+        <Link href="/" className="text-lg font-bold">AI Drive</Link>
         <Button asChild><Link href="/signup">免费注册</Link></Button>
       </nav>
 
-      <div className="flex-1 mx-auto max-w-2xl px-6 py-12">
+      <div className="mx-auto max-w-2xl px-6 py-12">
         {loading ? (
           <Card>
             <CardContent className="p-8 space-y-4">
@@ -81,7 +76,7 @@ export default function SharePage() {
             <CardContent className="p-8">
               <h1 className="text-2xl font-bold">{data.file.name}</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                {fmtSize(data.file.size)} · {data.file.mimeType} · 分享者: {data.sharedBy}
+                {fmtSize(data.file.size)} · {data.file.mimeType}
               </p>
 
               {data.file.summary && (
@@ -91,15 +86,9 @@ export default function SharePage() {
                 </div>
               )}
 
-              {data.permission === 'download' ? (
-                <Button className="mt-6 w-full" onClick={() => window.open(data.downloadUrl)}>
-                  下载文件
-                </Button>
-              ) : (
-                <div className="mt-6 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-center text-sm text-muted-foreground">
-                  此文件仅供查看，分享者未开放下载权限
-                </div>
-              )}
+              <Button className="mt-6 w-full" onClick={() => window.open(data.downloadUrl)}>
+                下载文件
+              </Button>
             </CardContent>
           </Card>
 
@@ -113,11 +102,6 @@ export default function SharePage() {
         </>
         )}
       </div>
-
-      {/* Footer branding */}
-      <footer className="border-t px-6 py-4 text-center text-sm text-muted-foreground">
-        由 AI Drive 提供 — 智能文档管理
-      </footer>
     </div>
   )
 }

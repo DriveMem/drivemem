@@ -1,6 +1,6 @@
 "use client"
+import { FileText } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { getFileIcon } from "@/lib/get-file-icon"
 import Link from "next/link"
 
 interface CitationData { index?: number; filename?: string; snippet?: string; fileId?: string; fileName?: string; chunkIndex?: number; text?: string }
@@ -10,11 +10,10 @@ export function Citation({ citation, idx }: { citation: CitationData; idx?: numb
   const displayName = citation.filename || citation.fileName || "未知文件"
   const displaySnippet = citation.snippet || citation.text || ""
   const fileId = citation.fileId
-  const { icon: Icon, colorClass } = getFileIcon(displayName)
 
   const inner = (
-    <span className="inline-flex items-center gap-1 text-xs text-blue-500 hover:underline cursor-pointer">
-      <Icon className={`h-3 w-3 ${colorClass}`} />
+    <span className="inline-flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
+      <FileText className="h-3 w-3" />
       <span>[{displayIndex + 1}] {displayName}</span>
     </span>
   )

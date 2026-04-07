@@ -109,7 +109,7 @@ function ApiKeysCard() {
         )}
 
         <p className="mt-4 text-xs text-muted-foreground">
-          📖 <a href="/developers" className="text-[#4F5BD5] hover:underline">查看 API 文档</a> — 上传文件、搜索知识、AI 问答
+          📖 API 文档：上传文件、搜索知识、AI 问答。详见 <a href="https://github.com/yufuche1/ai-drive#api" className="text-[#4F5BD5] hover:underline" target="_blank" rel="noopener noreferrer">GitHub README</a>
         </p>
       </CardContent>
     </Card>

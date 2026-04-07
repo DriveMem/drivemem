@@ -4,8 +4,6 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { getFileIcon } from "@/lib/get-file-icon"
-import { cn } from "@/lib/utils"
 
 interface FileItem {
   id: string
@@ -14,6 +12,13 @@ interface FileItem {
   size: number
   parseStatus: "parsing" | "done" | "error"
   [key: string]: unknown
+}
+
+const TYPE_ICONS: Record<string, string> = {
+  pdf: "📄",
+  md: "📝",
+  txt: "📃",
+  image: "🖼️",
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -40,7 +45,7 @@ export function FileGrid({ files = [] }: { files?: FileItem[] }) {
             <Link key={f.id} href={`/files/${f.id}/preview`}>
               <Card className="transition-colors hover:bg-accent">
                 <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
-                  {(() => { const { icon: Icon, colorClass } = getFileIcon(f.name, f.type); return <Icon className={cn("h-8 w-8", colorClass)} /> })()}
+                  <span className="text-3xl">{TYPE_ICONS[f.type] || "📄"}</span>
                   <p className="truncate text-sm font-medium w-full">{f.name}</p>
                   <span className={`text-xs ${f.parseStatus === "error" ? "text-destructive" : f.parseStatus === "parsing" ? "text-yellow-600" : "text-muted-foreground"}`}>
                     {STATUS_LABEL[f.parseStatus] || f.parseStatus}
@@ -54,13 +59,8 @@ export function FileGrid({ files = [] }: { files?: FileItem[] }) {
         <ul className="divide-y rounded border">
           {files.map((f) => (
             <li key={f.id}>
-<<<<<<< HEAD
-              <Link href={`/files/${f.id}/preview`} className="flex items-center gap-3 px-4 py-3 hover:bg-accent">
-                {(() => { const { icon: Icon, colorClass } = getFileIcon(f.name, f.type); return <Icon className={cn("h-5 w-5", colorClass)} /> })()}
-=======
               <Link href={`/files/${f.id}/preview`} className="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors duration-150">
                 <span className="text-xl">{TYPE_ICONS[f.type] || "📄"}</span>
->>>>>>> origin/feat/ai-drive-web
                 <span className="flex-1 truncate text-sm font-medium">{f.name}</span>
                 <span className={`text-xs ${f.parseStatus === "error" ? "text-destructive" : f.parseStatus === "parsing" ? "text-yellow-600" : "text-muted-foreground"}`}>
                   {STATUS_LABEL[f.parseStatus] || f.parseStatus}

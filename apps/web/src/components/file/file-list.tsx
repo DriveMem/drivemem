@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2, MoreHorizontal, BotMessageSquare, Link2, Info, X } from "lucide-react"
 import { Lightbulb } from "lucide-react"
-import { getFileIcon } from "@/lib/get-file-icon"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -26,16 +25,10 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
-<<<<<<< HEAD
-import { FileListSkeleton } from "@/components/skeletons/file-list-skeleton"
-=======
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
->>>>>>> origin/feat/ai-drive-web
 import { FileUpload } from "./file-upload"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
-import { EmptyState } from "@/components/ui/empty-state"
 import { toast } from "sonner"
-import { useTagFileIds, useFileTags, TAG_COLOR_MAP, type Tag } from "@/hooks/use-tags"
 
 type SortKey = "name" | "createdAt" | "size" | "type"
 type SortDir = "asc" | "desc"
@@ -74,8 +67,23 @@ function formatRelativeTime(date: string): string {
 }
 
 function TypeIcon({ type, name, className }: { type: string; name?: string; className?: string }) {
-  const { icon: Icon, colorClass } = getFileIcon(name || type, type)
-  return <Icon className={cn("h-4 w-4 flex-shrink-0", className, colorClass)} />
+  const ext = name?.split(".").pop()?.toLowerCase()
+  const colorByExt: Record<string, string> = {
+    pdf: "text-red-500",
+    doc: "text-blue-600", docx: "text-blue-600",
+    md: "text-green-500", markdown: "text-green-500",
+    txt: "text-gray-500",
+    pptx: "text-orange-500", ppt: "text-orange-500",
+    xlsx: "text-emerald-600", xls: "text-emerald-600",
+  }
+  const colorByType: Record<string, string> = {
+    pdf: "text-red-500",
+    txt: "text-gray-500",
+    md: "text-green-500",
+    image: "text-blue-400",
+  }
+  const color = (ext && colorByExt[ext]) || colorByType[type] || "text-muted-foreground"
+  return <FileText className={cn("h-4 w-4 flex-shrink-0", className, color)} />
 }
 
 function StatusIcon({ status, error, compact }: { status: string; error?: string; compact?: boolean }) {
@@ -89,25 +97,8 @@ function StatusIcon({ status, error, compact }: { status: string; error?: string
   return <span title={error || "解析失败"} className="flex items-center gap-1 text-xs text-red-500 cursor-help"><XCircle className="h-3.5 w-3.5" />索引失败</span>
 }
 
-function FileTagPills({ fileId }: { fileId: string }) {
-  const { data: tags = [] } = useFileTags(fileId)
-  if (tags.length === 0) return null
-  return (
-    <span className="flex items-center gap-1 shrink-0">
-      {tags.slice(0, 3).map((tag: Tag) => {
-        const colors = TAG_COLOR_MAP[tag.color] || TAG_COLOR_MAP.blue
-        return (
-          <span key={tag.id} className={`rounded-full px-1.5 py-0 text-[10px] border ${colors.bg} ${colors.text} ${colors.border}`}>
-            {tag.name}
-          </span>
-        )
-      })}
-    </span>
-  )
-}
-
 export function FileList() {
-  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId, filterTagId } = useLayoutStore()
+  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId } = useLayoutStore()
   const router = useRouter()
   const { data, isLoading, error } = useFiles(currentFolderId)
   const deleteFile = useDeleteFile()
@@ -116,7 +107,6 @@ export function FileList() {
   const moveFile = useMoveFile()
   const createFolder = useCreateFolder()
   const { data: foldersData } = useFolders()
-  const { data: tagFileIds } = useTagFileIds(filterTagId || "")
   const allFolders = foldersData?.folders || []
   const currentFolder = allFolders.find((f: any) => f.id === currentFolderId) || null
   const visibleFolders = allFolders.filter((f: any) => currentFolderId ? f.parentId === currentFolderId : !f.parentId)
@@ -140,54 +130,13 @@ export function FileList() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
   const [shareLoading, setShareLoading] = useState(false)
-  const [sharePermission, setSharePermission] = useState<"view" | "download">("view")
-  const [shareFileId, setShareFileId] = useState<string | null>(null)
-  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
-  const [inlineNewFolder, setInlineNewFolder] = useState(false)
-  const [inlineNewFolderName, setInlineNewFolderName] = useState("新建文件夹")
-  const inlineFolderInputRef = useRef<HTMLInputElement>(null)
   const parentRef = useRef<HTMLDivElement>(null)
-  const [focusedIndex, setFocusedIndex] = useState(-1)
-  const [kbDeleteTarget, setKbDeleteTarget] = useState<string | null>(null)
-
-  // Ctrl+Shift+N shortcut for quick folder creation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "N") {
-        e.preventDefault()
-        setInlineNewFolderName("新建文件夹")
-        setInlineNewFolder(true)
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [])
-
-  // Auto-focus inline folder input
-  useEffect(() => {
-    if (inlineNewFolder && inlineFolderInputRef.current) {
-      inlineFolderInputRef.current.focus()
-      inlineFolderInputRef.current.select()
-    }
-  }, [inlineNewFolder])
-
-  const handleInlineFolderSave = useCallback(() => {
-    const name = inlineNewFolderName.trim()
-    if (name) {
-      createFolder.mutate({ name, parentId: currentFolderId }, {
-        onSuccess: () => toast.success(`文件夹「${name}」已创建`),
-        onError: (err: any) => toast.error(err?.message || "创建文件夹失败"),
-      })
-    }
-    setInlineNewFolder(false)
-  }, [inlineNewFolderName, createFolder, currentFolderId])
 
   const handleShare = useCallback(async (fileId: string) => {
     setShareLoading(true)
     setShareDialogOpen(true)
-    setShareFileId(fileId)
     try {
-      const data = await apiFetch(`/api/files/${fileId}/share`, { method: "POST", body: JSON.stringify({ permission: sharePermission }) })
+      const data = await apiFetch(`/api/files/${fileId}/share`, { method: "POST" })
       setShareUrl(data.url || "")
     } catch (err) {
       console.error("Share failed:", err)
@@ -196,7 +145,7 @@ export function FileList() {
     } finally {
       setShareLoading(false)
     }
-  }, [sharePermission])
+  }, [])
 
   const handleDownload = useCallback(async (fileId: string, e?: React.MouseEvent) => {
     e?.stopPropagation()
@@ -233,12 +182,8 @@ export function FileList() {
       const m = sortDir === "asc" ? 1 : -1
       if (sortKey === "name") return a.name.localeCompare(b.name) * m
       if (sortKey === "size") return (a.size - b.size) * m
-<<<<<<< HEAD
-      return (new Date(a.updatedAt || a.createdAt).getTime() - new Date(b.updatedAt || b.createdAt).getTime()) * m
-=======
       if (sortKey === "type") return (a.type || "").localeCompare(b.type || "") * m
       return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * m
->>>>>>> origin/feat/ai-drive-web
     })
   }, [rawFiles, sortKey, sortDir])
 
@@ -253,8 +198,7 @@ export function FileList() {
     { key: "image", label: "图片" },
   ]
 
-  const filteredFiles = useMemo(() => {
-    let result = typeFilter === "all" ? files : files.filter((f: any) => {
+  const filteredFiles = typeFilter === "all" ? files : files.filter((f: any) => {
     const ext = (f.name || f.originalName || "").split(".").pop()?.toLowerCase()
     const mime = f.mimeType || ""
     switch (typeFilter) {
@@ -268,37 +212,6 @@ export function FileList() {
       default: return true
     }
   })
-    if (filterTagId && tagFileIds) {
-      result = result.filter((f: any) => tagFileIds.includes(f.id))
-    }
-    return result
-  }, [typeFilter, files, filterTagId, tagFileIds])
-
-  // Keyboard navigation for file list
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const tag = (document.activeElement?.tagName || "").toLowerCase()
-      if (tag === "input" || tag === "textarea" || tag === "select" || (document.activeElement as HTMLElement)?.isContentEditable) return
-
-      if (e.key === "ArrowDown") {
-        e.preventDefault()
-        setFocusedIndex(prev => Math.min(prev + 1, filteredFiles.length - 1))
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault()
-        setFocusedIndex(prev => Math.max(prev - 1, 0))
-      } else if (e.key === "Enter" && focusedIndex >= 0 && focusedIndex < filteredFiles.length) {
-        e.preventDefault()
-        router.push(`/files/${filteredFiles[focusedIndex].id}/preview`)
-      } else if (e.key === "Delete" && focusedIndex >= 0 && focusedIndex < filteredFiles.length) {
-        e.preventDefault()
-        setKbDeleteTarget(filteredFiles[focusedIndex].id)
-      } else if (e.key === "Escape") {
-        setFocusedIndex(-1)
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [focusedIndex, filteredFiles, router])
 
   const virt = useVirtualizer({ count: filteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 52, overscan: 5 })
 
@@ -333,7 +246,20 @@ export function FileList() {
   }, [files, selected, openInspector])
 
   if (isLoading) {
-    return <FileListSkeleton />
+    return (
+      <div className="flex flex-col gap-3 p-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <Skeleton className="h-8 w-8 rounded" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+            <Skeleton className="h-4 w-16" />
+          </div>
+        ))}
+      </div>
+    )
   }
 
   if (error) {
@@ -347,40 +273,6 @@ export function FileList() {
   if (files.length === 0 && !showUpload && !currentFolderId && visibleFolders.length === 0) {
     return (
       <div
-<<<<<<< HEAD
-        className="h-full"
-        onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
-        onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setShowUpload(true) }}
-      >
-        <EmptyState
-          icon={<Upload className="h-12 w-12" />}
-          title="把文件拖到这里，让 AI 记住它"
-          description=""
-          action={<Button onClick={() => setShowUpload(true)}>让 AI 记住文件</Button>}
-        />
-        {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
-      </div>
-    )
-  }
-
-  if (files.length === 0 && !showUpload && currentFolderId && visibleFolders.length === 0) {
-    return (
-      <div
-        className="h-full"
-        onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
-        onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setShowUpload(true) }}
-      >
-        <EmptyState
-          icon={<Folder className="h-12 w-12" />}
-          title="这个文件夹还是空的"
-          description="拖拽文件到这里，或点击上传"
-          action={
-            <Button onClick={() => setShowUpload(true)} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
-              <Upload className="h-4 w-4" />上传文件
-            </Button>
-          }
-        />
-=======
         className="flex flex-col items-center justify-center h-full"
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setShowUpload(true) }}
@@ -408,7 +300,6 @@ export function FileList() {
             <span className="rounded-full bg-muted px-3 py-1 text-xs">💡 提取关键信息</span>
           </div>
         </div>
->>>>>>> origin/feat/ai-drive-web
         {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
       </div>
     )
@@ -453,13 +344,8 @@ export function FileList() {
               queryClient.invalidateQueries({ queryKey: ["folders"] })
             } catch (e: any) { const { toast } = await import("sonner"); toast.error(e.message || "整理失败") }
           }} variant="outline" className="gap-1">✨ 一键整理</Button>
-<<<<<<< HEAD
-          <Button size="sm" onClick={() => { setInlineNewFolderName("新建文件夹"); setInlineNewFolder(true) }} variant="outline" className="gap-1" title="Ctrl+Shift+N"><FolderPlus className="h-3.5 w-3.5" />📁 新建文件夹</Button>
-          <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
-=======
           <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />新建文件夹</Button>
           <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
->>>>>>> origin/feat/ai-drive-web
           <div className="flex items-center rounded-md border border-border ml-2">
             <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-r-none", viewMode === "list" && "bg-accent")} onClick={() => setViewMode("list")}><List className="h-3.5 w-3.5" /></Button>
             <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-l-none", viewMode === "grid" && "bg-accent")} onClick={() => setViewMode("grid")}><LayoutGrid className="h-3.5 w-3.5" /></Button>
@@ -489,41 +375,15 @@ export function FileList() {
           ))
         })()}
       </div>
-      {viewMode === "grid" && (visibleFolders.length > 0 || inlineNewFolder) && (
+      {viewMode === "grid" && visibleFolders.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4 border-b border-border">
-          {inlineNewFolder && (
-            <div className="rounded-xl border-2 border-dashed border-blue-400 p-4 flex flex-col gap-2 bg-blue-500/5">
-              <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
-                <Folder className="h-10 w-10 text-amber-500" />
-              </div>
-              <input
-                ref={inlineFolderInputRef}
-                value={inlineNewFolderName}
-                onChange={(e) => setInlineNewFolderName(e.target.value)}
-                onBlur={handleInlineFolderSave}
-                onKeyDown={(e) => { if (e.key === "Enter") handleInlineFolderSave(); if (e.key === "Escape") setInlineNewFolder(false) }}
-                className="text-sm font-medium bg-transparent border-b border-blue-400 outline-none px-1"
-              />
-            </div>
-          )}
           {visibleFolders.map((folder: any) => (
-<<<<<<< HEAD
-            <div key={folder.id} className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", dragOverFolderId === folder.id && "ring-2 ring-blue-500 bg-blue-500/10")}
-              onClick={() => setCurrentFolder(folder.id)}
-              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverFolderId(folder.id) }}
-              onDragLeave={() => setDragOverFolderId(null)}
-              onDrop={(e) => { e.preventDefault(); e.stopPropagation(); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success(`已移入 ${folder.name}`) } setDragOverFolderId(null) }}
-            >
-              <div className="flex h-20 items-center justify-center rounded-lg bg-muted">
-                <Folder className="h-10 w-10 text-amber-500" />
-=======
             <div key={folder.id} className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", dragOverFolderId === folder.id && "ring-2 ring-[#4F5BD5] bg-[#4F5BD5]/5")} onClick={() => setCurrentFolder(folder.id)}
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverFolderId(folder.id) }}
               onDragLeave={() => setDragOverFolderId(null)}
               onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success("已移入 " + folder.name) } }}>
               <div className="flex h-28 items-center justify-center rounded-lg bg-muted/50">
                 <Folder className="h-14 w-14 text-amber-500" />
->>>>>>> origin/feat/ai-drive-web
               </div>
               <p className="text-sm font-medium truncate">{folder.name}</p>
               {typeof folder.fileCount === "number" && (
@@ -533,35 +393,13 @@ export function FileList() {
           ))}
         </div>
       )}
-      {viewMode === "list" && (visibleFolders.length > 0 || inlineNewFolder) && (
+      {viewMode === "list" && visibleFolders.length > 0 && (
         <div className="border-b border-border">
-          {inlineNewFolder && (
-            <div className="flex items-center gap-3 px-4 py-2.5 bg-blue-500/5 border-b border-dashed border-blue-400">
-              <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
-              <input
-                ref={viewMode === "list" ? inlineFolderInputRef : undefined}
-                value={inlineNewFolderName}
-                onChange={(e) => setInlineNewFolderName(e.target.value)}
-                onBlur={handleInlineFolderSave}
-                onKeyDown={(e) => { if (e.key === "Enter") handleInlineFolderSave(); if (e.key === "Escape") setInlineNewFolder(false) }}
-                className="text-sm bg-transparent border-b border-blue-400 outline-none flex-1"
-              />
-            </div>
-          )}
           {visibleFolders.map((folder: any) => (
-<<<<<<< HEAD
-            <div key={folder.id} className={cn("flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors", dragOverFolderId === folder.id && "ring-2 ring-blue-500 bg-blue-500/10")}
-              onClick={() => setCurrentFolder(folder.id)}
-              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverFolderId(folder.id) }}
-              onDragLeave={() => setDragOverFolderId(null)}
-              onDrop={(e) => { e.preventDefault(); e.stopPropagation(); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success(`已移入 ${folder.name}`) } setDragOverFolderId(null) }}
-            >
-=======
             <div key={folder.id} className={cn("flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors", dragOverFolderId === folder.id && "ring-2 ring-[#4F5BD5] bg-[#4F5BD5]/5")} onClick={() => setCurrentFolder(folder.id)}
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverFolderId(folder.id) }}
               onDragLeave={() => setDragOverFolderId(null)}
               onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success("已移入 " + folder.name) } }}>
->>>>>>> origin/feat/ai-drive-web
               <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
               <span className="text-sm truncate">{folder.name}</span>
               {typeof folder.fileCount === "number" && (
@@ -585,11 +423,7 @@ export function FileList() {
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                 draggable
                 onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
-<<<<<<< HEAD
-                className={cn("group absolute left-0 top-0 flex w-full cursor-grab items-center gap-3 border-b border-border px-4 hover:bg-accent/50 transition-colors", isSel && "bg-accent", focusedIndex === row.index && "ring-2 ring-primary")}
-=======
                 className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-border/50 px-4 py-3 hover:bg-accent/50 transition-colors", isSel && "bg-accent")}
->>>>>>> origin/feat/ai-drive-web
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <Checkbox
                   checked={selected.has(file.id)}
@@ -600,13 +434,7 @@ export function FileList() {
                   className="shrink-0"
                 />
                 <TypeIcon type={file.type} name={file.name} />
-                <span className="truncate text-sm flex-1 min-w-0">
-                  {file.name.startsWith("📎 ") ? file.name.slice(3) : file.name}
-                </span>
-                {file.name.startsWith("📎 ") && (
-                  <span className="shrink-0 rounded-full bg-blue-500/10 border border-blue-500/20 px-1.5 py-0 text-[10px] text-blue-500 font-medium">示例</span>
-                )}
-                <FileTagPills fileId={file.id} />
+                <span className="truncate text-sm flex-1 min-w-0">{file.name}</span>
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">已更新</span>}
                 {file.archivedAt && <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">已归档</span>}
                 {file.suggestedFolder && !file.folderId && (
@@ -688,21 +516,12 @@ export function FileList() {
                   onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                   draggable
                   onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
-<<<<<<< HEAD
-                  className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-grab flex flex-col gap-2", isSel && "bg-accent ring-2 ring-primary", focusedIndex === filteredFiles.indexOf(file) && "ring-2 ring-primary")}
-=======
                   className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-3", isSel && "bg-accent ring-2 ring-primary")}
->>>>>>> origin/feat/ai-drive-web
                 >
                   <div className="flex h-28 items-center justify-center rounded-lg bg-muted/50">
                     <TypeIcon type={file.type} name={file.name} className="h-14 w-14" />
                   </div>
-                  <p className="text-sm font-medium truncate">
-                    {file.name.startsWith("📎 ") ? file.name.slice(3) : file.name}
-                  </p>
-                  {file.name.startsWith("📎 ") && (
-                    <span className="self-start rounded-full bg-blue-500/10 border border-blue-500/20 px-1.5 py-0 text-[10px] text-blue-500 font-medium">示例</span>
-                  )}
+                  <p className="text-sm font-medium truncate">{file.name}</p>
                   {file.summary && (
                     <p className="text-xs text-muted-foreground line-clamp-2">{file.summary}</p>
                   )}
@@ -746,13 +565,6 @@ export function FileList() {
             }}>
               <Share2 className="h-4 w-4 mr-2" />分享
             </DropdownMenuItem>
-<<<<<<< HEAD
-            <DropdownMenuItem onClick={() => {
-              window.location.href = `/files/${contextMenu.fileId}/preview#versions`
-              setContextMenu(null)
-            }}>
-              📋 版本历史
-=======
             <DropdownMenuItem onClick={async () => {
               const file = rawFiles?.find((f: any) => f.id === contextMenu?.fileId)
               const isArchived = file?.archivedAt
@@ -777,20 +589,15 @@ export function FileList() {
               setContextMenu(null)
             }}>
               <Link2 className="h-4 w-4 mr-2" />🔗 查看知识关联
->>>>>>> origin/feat/ai-drive-web
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )}
       {selected.size > 0 && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-background/80 backdrop-blur-md border shadow-lg px-5 py-3 z-50">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-background border shadow-lg px-4 py-3 z-50">
           <span className="text-sm font-medium">已选 {selected.size} 个文件</span>
-          <Button variant="outline" size="sm" onClick={handleBatchDelete} className="gap-1">🗑️ 批量删除</Button>
-          <Button variant="outline" size="sm" onClick={handleBatchDownload} className="gap-1">📥 批量下载</Button>
+          <Button variant="outline" size="sm" onClick={handleBatchDelete}>删除</Button>
           <Button variant="outline" size="sm" onClick={() => setBatchMoveOpen(true)}>移动</Button>
-<<<<<<< HEAD
-          <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>❌ 取消选择</Button>
-=======
           <Button variant="outline" size="sm" onClick={handleBatchDownload}>下载</Button>
           <button
             onClick={() => {
@@ -802,13 +609,12 @@ export function FileList() {
             💬 问 AI
           </button>
           <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>取消</Button>
->>>>>>> origin/feat/ai-drive-web
         </div>
       )}
       <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
       {filteredFiles.length < 5 && filteredFiles.length > 0 && (
         <div className="flex items-center justify-center py-8 text-xs text-muted-foreground/50">
-          拖拽文件到这里上传
+          拖拽文件到这里上传，或使用 Web Clipper 保存网页
         </div>
       )}
       <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
@@ -877,23 +683,9 @@ export function FileList() {
             <div className="flex items-center justify-center py-4"><Loader2 className="h-5 w-5 animate-spin" /></div>
           ) : (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">权限设置</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="sharePermission" value="view" checked={sharePermission === "view"} onChange={() => setSharePermission("view")} className="accent-blue-600" />
-                    <span className="text-sm">仅查看</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="sharePermission" value="download" checked={sharePermission === "download"} onChange={() => setSharePermission("download")} className="accent-blue-600" />
-                    <span className="text-sm">可下载</span>
-                  </label>
-                </div>
-              </div>
               <Input value={shareUrl} readOnly onClick={(e) => (e.target as HTMLInputElement).select()} />
               <DialogFooter>
                 <Button variant="outline" onClick={() => setShareDialogOpen(false)}>关闭</Button>
-                <Button variant="outline" onClick={() => { if (shareFileId) handleShare(shareFileId) }}>更新权限</Button>
                 <Button onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success("已复制") }}>复制</Button>
               </DialogFooter>
             </div>
@@ -901,19 +693,6 @@ export function FileList() {
         </DialogContent>
       </Dialog>
 
-<<<<<<< HEAD
-      {/* Keyboard Delete Confirm Dialog */}
-      <Dialog open={!!kbDeleteTarget} onOpenChange={(open) => { if (!open) setKbDeleteTarget(null) }}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>确定删除？</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">确定要删除此文件吗？此操作不可撤销。</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setKbDeleteTarget(null)}>取消</Button>
-            <Button variant="destructive" onClick={() => { if (kbDeleteTarget) { deleteFile.mutate(kbDeleteTarget); setKbDeleteTarget(null); setFocusedIndex(-1) } }}>确定</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-=======
       {/* File Detail Drawer Backdrop */}
       {drawerFileId && (
         <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setDrawerFileId(null)} />
@@ -976,7 +755,6 @@ export function FileList() {
           </div>
         )
       })()}
->>>>>>> origin/feat/ai-drive-web
 
       {/* Move Dialog */}
       <Dialog open={!!moveTarget} onOpenChange={(open) => { if (!open) setMoveTarget(null) }}>

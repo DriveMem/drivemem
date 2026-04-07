@@ -29,10 +29,6 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint }: { 
       e.preventDefault()
       handleSend()
     }
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault()
-      handleSend()
-    }
   }
 
   function handleSend() {

@@ -3,9 +3,7 @@ import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/providers/theme-provider'
 import { AuthProvider } from '@/providers/auth-provider'
 import { QueryProvider } from '@/providers/query-provider'
-import { NProgressProvider } from '@/providers/nprogress-provider'
 import { Toaster } from '@/components/ui/sonner'
-import { OfflineBanner } from '@/components/ui/offline-banner'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -31,10 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <QueryProvider>
-              <NProgressProvider>
-                <OfflineBanner />
-                {children}
-              </NProgressProvider>
+              {children}
             </QueryProvider>
           </AuthProvider>
           <Toaster />

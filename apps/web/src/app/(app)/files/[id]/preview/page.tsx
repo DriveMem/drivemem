@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useFile, useMoveFile } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
 import { apiFetch } from "@/lib/api"
-import { Loader2, FileText, ArrowLeft, AlertCircle, Download, History, ChevronDown, ChevronUp, Eye } from "lucide-react"
+import { Loader2, FileText, ArrowLeft, AlertCircle, Download } from "lucide-react"
 import Link from "next/link"
 
 function getFileType(name: string, mimeType?: string): string {
@@ -16,12 +16,8 @@ function getFileType(name: string, mimeType?: string): string {
   if (ext === "md" || ext === "markdown") return "md"
   if (ext === "txt") return "txt"
   if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image"
-<<<<<<< HEAD
-  if (["docx", "doc", "pptx", "ppt", "xlsx", "xls"].includes(ext)) return "office"
-=======
   if (/^(docx?|pptx?|xlsx?)$/.test(ext)) return "office"
   if (mimeType && (mimeType.includes("officedocument") || mimeType.includes("msword") || mimeType.includes("ms-powerpoint") || mimeType.includes("ms-excel"))) return "office"
->>>>>>> origin/feat/ai-drive-web
   return "other"
 }
 
@@ -48,7 +44,7 @@ function useFileContent(fileId: string, fileType: string) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!fileId || !["md", "txt", "pdf", "office"].includes(fileType)) return
+    if (!fileId || !["md", "txt", "pdf"].includes(fileType)) return
 
     let cancelled = false
     setLoading(true)
@@ -59,8 +55,8 @@ function useFileContent(fileId: string, fileType: string) {
         const res = await apiFetch(`/api/files/${fileId}/preview-url`)
         const { previewUrl: url } = res as { previewUrl: string; mimeType: string }
         if (!cancelled) setPreviewUrl(url)
-        if (fileType === "pdf" || fileType === "office") {
-          // For PDF and Office, we only need the URL for iframe
+        if (fileType === "pdf") {
+          // For PDF, we only need the URL for iframe
           if (!cancelled) setLoading(false)
           return
         }
@@ -265,27 +261,7 @@ export default function FilePreviewPage() {
             </>
           )}
           {fileType === "office" && (
-<<<<<<< HEAD
-            previewUrl ? (
-              <iframe
-                src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewUrl)}&embedded=true`}
-                className="w-full h-[600px] rounded border"
-                title="Office 文件预览"
-              />
-            ) : contentLoading ? (
-              <div className="flex h-96 items-center justify-center rounded border bg-muted">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
-                <FileText className="h-12 w-12" />
-                <p>Office 文件 — AI 已记住内容</p>
-                <p className="text-xs">可在 AI 对话中询问此文件相关问题</p>
-              </div>
-            )
-=======
             <OfficePreview fileId={params.id} fileName={fileName} />
->>>>>>> origin/feat/ai-drive-web
           )}
           {fileType === "other" && (
             <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
@@ -305,29 +281,38 @@ export default function FilePreviewPage() {
         <Card className="w-72 shrink-0">
           <CardContent className="space-y-4 p-4">
             <h2 className="font-semibold">文件信息</h2>
-            <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-3 text-sm">
-              <span className="text-muted-foreground">📎 文件类型</span>
-              <span>{file.mimeType || fileType.toUpperCase()}</span>
-
-              <span className="text-muted-foreground">📦 文件大小</span>
-              <span>{file.size ? formatSize(file.size) : "未知"}</span>
-
-              <span className="text-muted-foreground">📅 上传时间</span>
-              <span>{file.createdAt ? new Date(file.createdAt).toLocaleString("zh-CN") : "未知"}</span>
-
-              <span className="text-muted-foreground">🕐 最近访问</span>
-              <span>{file.updatedAt ? new Date(file.updatedAt).toLocaleString("zh-CN") : "未知"}</span>
-
-              <span className="text-muted-foreground">🤖 AI 状态</span>
-              <span>{statusLabel(file.status || file.parseStatus)}</span>
-
-              {file.errorMessage && (
-                <>
-                  <span className="text-muted-foreground">❌ 错误</span>
-                  <span className="text-destructive">{file.errorMessage}</span>
-                </>
+            <dl className="space-y-2 text-sm">
+              <div>
+                <dt className="text-muted-foreground">文件名</dt>
+                <dd className="break-all">{fileName}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">类型</dt>
+                <dd>{file.mimeType || fileType.toUpperCase()}</dd>
+              </div>
+              {file.size && (
+                <div>
+                  <dt className="text-muted-foreground">大小</dt>
+                  <dd>{formatSize(file.size)}</dd>
+                </div>
               )}
-            </div>
+              <div>
+                <dt className="text-muted-foreground">状态</dt>
+                <dd>{statusLabel(file.status || file.parseStatus)}</dd>
+              </div>
+              {file.errorMessage && (
+                <div>
+                  <dt className="text-muted-foreground">错误</dt>
+                  <dd className="text-destructive">{file.errorMessage}</dd>
+                </div>
+              )}
+              {file.createdAt && (
+                <div>
+                  <dt className="text-muted-foreground">上传时间</dt>
+                  <dd>{new Date(file.createdAt).toLocaleString("zh-CN")}</dd>
+                </div>
+              )}
+            </dl>
             <div className="flex gap-2">
               <Button className="flex-1" asChild>
                 <Link href={`/chat?file=${file.id}`}>对此文件提问</Link>
@@ -354,202 +339,6 @@ export default function FilePreviewPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
-      {/* Version History */}
-      <VersionHistory fileId={params.id} />
-      {/* Related Files */}
-      <RelatedFiles fileId={params.id} />
-    </div>
-  )
-}
-
-function VersionHistory({ fileId }: { fileId: string }) {
-  const [versions, setVersions] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [open, setOpen] = useState(false)
-
-  useEffect(() => {
-    setLoading(true)
-    apiFetch(`/api/files/${fileId}/versions`)
-      .then((data: any) => setVersions(data?.versions || []))
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [fileId])
-
-  if (loading) return null
-
-  return (
-    <div className="space-y-3">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 text-lg font-semibold hover:text-primary transition"
-      >
-        <History className="h-5 w-5" />
-        📋 版本历史
-        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        {versions.length > 0 && (
-          <span className="text-xs font-normal text-muted-foreground">({versions.length} 个历史版本)</span>
-        )}
-      </button>
-      {open && (
-        <div className="space-y-2">
-          {versions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">暂无历史版本</p>
-          ) : (
-            versions.map((v: any) => (
-              <div
-                key={v.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 hover:bg-muted/50 transition"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate">{v.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    v{v.version} · {new Date(v.createdAt).toLocaleString("zh-CN")} · {formatSize(v.size)}
-                  </p>
-                </div>
-                <div className="flex gap-1.5 shrink-0">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="预览">
-                    <Link href={`/files/${v.id}/preview`}>
-                      <Eye className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    title="下载"
-                    onClick={async () => {
-                      try {
-                        const res = await apiFetch(`/api/files/${v.id}/preview-url`) as { previewUrl: string }
-                        const a = document.createElement("a")
-                        a.href = res.previewUrl
-                        a.download = v.name
-                        a.target = "_blank"
-                        a.click()
-                      } catch {
-                        alert("获取下载链接失败")
-                      }
-                    }}
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function RelatedFiles({ fileId }: { fileId: string }) {
-  const [links, setLinks] = useState<any[]>([])
-  const [fallbackFiles, setFallbackFiles] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    setLoading(true)
-    apiFetch(`/api/users/me/knowledge-links`)
-      .then((data: any) => {
-        const all = data?.links || []
-        const related = all
-          .filter((l: any) => l.fileAId === fileId || l.fileBId === fileId)
-          .slice(0, 5)
-        setLinks(related)
-        // If no knowledge links, fallback to /api/files
-        if (related.length === 0) {
-          return apiFetch(`/api/files`).then((filesData: any) => {
-            const files = Array.isArray(filesData) ? filesData : (filesData?.files || [])
-            setFallbackFiles(files.filter((f: any) => f.id !== fileId).slice(0, 4))
-          })
-        }
-      })
-      .catch(() => {
-        // On error, try fallback
-        apiFetch(`/api/files`).then((filesData: any) => {
-          const files = Array.isArray(filesData) ? filesData : (filesData?.files || [])
-          setFallbackFiles(files.filter((f: any) => f.id !== fileId).slice(0, 4))
-        }).catch(() => {})
-      })
-      .finally(() => setLoading(false))
-  }, [fileId])
-
-  if (loading) return null
-
-  const relationLabels: Record<string, string> = {
-    similar: "相似",
-    complementary: "互补",
-    contradictory: "矛盾",
-    reference: "引用",
-  }
-
-  const relationIcons: Record<string, string> = {
-    similar: "🔗",
-    complementary: "🤝",
-    contradictory: "⚡",
-    reference: "📎",
-  }
-
-  const hasLinks = links.length > 0
-  const hasFallback = fallbackFiles.length > 0
-
-  if (!hasLinks && !hasFallback) {
-    return (
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">📎 相关文件</h2>
-        <p className="text-sm text-muted-foreground">暂无相关文件</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-3">
-      <h2 className="text-lg font-semibold">📎 相关文件</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {hasLinks ? links.map((l: any) => {
-          const isA = l.fileAId === fileId
-          const otherName = isA ? l.fileBName : l.fileAName
-          const otherId = isA ? l.fileBId : l.fileAId
-          const icon = relationIcons[l.relationType] || "🔗"
-          const label = relationLabels[l.relationType] || l.relationType
-
-          return (
-            <Link
-              key={l.id}
-              href={`/files/${otherId}/preview`}
-              className="flex items-start gap-3 rounded-lg border border-border p-3 hover:bg-muted/50 transition group"
-            >
-              <FileText className="h-8 w-8 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate group-hover:text-primary transition">{otherName}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {icon} {label}
-                  {l.score != null && <span className="ml-2">相似度 {Math.round(l.score * 100)}%</span>}
-                </p>
-                {l.description && (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{l.description}</p>
-                )}
-              </div>
-            </Link>
-          )
-        }) : fallbackFiles.map((f: any) => {
-          const name = f.name || f.originalName || "未命名文件"
-          const ext = name.split(".").pop()?.toLowerCase() || ""
-          return (
-            <Link
-              key={f.id}
-              href={`/files/${f.id}/preview`}
-              className="flex items-start gap-3 rounded-lg border border-border p-3 hover:bg-muted/50 transition group"
-            >
-              <FileText className="h-8 w-8 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate group-hover:text-primary transition">{name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{ext.toUpperCase() || "文件"}</p>
-              </div>
-            </Link>
-          )
-        })}
       </div>
     </div>
   )

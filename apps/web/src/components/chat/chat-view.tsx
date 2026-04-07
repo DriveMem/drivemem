@@ -18,7 +18,6 @@ import Link from "next/link"
 import { getSession } from "next-auth/react"
 import { useConversation } from "@/hooks/use-conversations"
 import { useQueryClient } from "@tanstack/react-query"
-import { CONVERSATION_TEMPLATES, type ConversationTemplate } from "@/lib/templates"
 
 type ScopeType = "all" | "folder" | "file"
 
@@ -33,15 +32,6 @@ interface ChatMessage {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
 const DEFAULT_SUGGESTIONS = [
-<<<<<<< HEAD
-  "📄 帮我总结 AI Drive 使用指南的要点",
-  "🔍 这份竞品分析报告的关键发现是什么？",
-  "💡 比较两个示例文件的内容差异",
-  "📊 帮我分析文件内容",
-]
-
-function EmptyState({ indexedCount, onSend, onSelectTemplate }: { indexedCount: number; onSend: (msg: string) => void; onSelectTemplate: (template: ConversationTemplate) => void }) {
-=======
   "📄 总结我最近上传的文件",
   "🔍 这些文件之间有什么关联？",
   "💡 从我的文件中提取关键信息",
@@ -49,7 +39,6 @@ function EmptyState({ indexedCount, onSend, onSelectTemplate }: { indexedCount: 
 ]
 
 function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (msg: string) => void }) {
->>>>>>> origin/feat/ai-drive-web
   const [suggestions, setSuggestions] = useState<string[]>([])
 
   useEffect(() => {
@@ -70,23 +59,8 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
       {indexedCount > 0 ? (
         <>
           <p className="text-lg font-medium text-foreground">AI 已记住 {indexedCount} 个文件</p>
-<<<<<<< HEAD
-          <p className="text-sm text-muted-foreground">选择模板开始对话，或直接提问：</p>
-          <div className="grid grid-cols-2 gap-3 max-w-lg mt-2">
-            {CONVERSATION_TEMPLATES.map((t) => (
-              <button key={t.id} onClick={() => onSelectTemplate(t)}
-                className="flex flex-col items-start gap-1.5 rounded-xl border border-border p-4 text-left hover:bg-accent/50 hover:border-primary/30 hover:shadow-sm transition-all">
-                <span className="text-2xl">{t.emoji}</span>
-                <span className="text-sm font-medium text-foreground">{t.title}</span>
-                <span className="text-xs text-muted-foreground line-clamp-2">{t.description}</span>
-              </button>
-            ))}
-          </div>
-          <div className="mt-3 flex flex-wrap justify-center gap-2 max-w-lg">
-=======
           <p className="text-sm text-muted-foreground">问问 AI 关于你的文件：</p>
           <div className="mt-1 flex flex-wrap justify-center gap-2 max-w-lg">
->>>>>>> origin/feat/ai-drive-web
             {chips.map((q, i) => (
               <button key={i} onClick={() => onSend(q)}
                 className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground/80 hover:bg-primary/10 hover:shadow-sm hover:scale-[1.02] transition-all cursor-pointer">
@@ -130,7 +104,6 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   const [followUpSuggestions, setFollowUpSuggestions] = useState<string[]>([])
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [activeTemplate, setActiveTemplate] = useState<ConversationTemplate | null>(null)
 
   const queryClient = useQueryClient()
 
@@ -247,14 +220,6 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
               const data = JSON.parse(line.slice(6))
               if (currentEvent === "thinking") {
                 // Backend is searching knowledge base — keep thinking animation
-              } else if (currentEvent === "title") {
-                // Title was auto-generated — update conversation list immediately
-                if (data.title) {
-                  queryClient.setQueryData(["conversations"], (old: any) => {
-                    if (!old?.conversations) return old
-                    return { ...old, conversations: old.conversations.map((c: any) => c.id === conversationId ? { ...c, title: data.title } : c) }
-                  })
-                }
               } else if (currentEvent === "suggestions") {
                 if (data.suggestions?.length) {
                   setFollowUpSuggestions(data.suggestions.slice(0, 3))
@@ -361,25 +326,20 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
             size="sm"
             className="ml-auto gap-1 text-xs"
             onClick={() => {
-              const title = convData?.title || "未命名对话"
-              const now = new Date()
-              const exportTime = now.toLocaleString("zh-CN")
-              const dateStr = now.toISOString().slice(0, 10)
-              let md = `# 对话：${title}\n导出时间：${exportTime}\n\n---\n\n`
-              md += messages.map(m => {
-                const role = m.role === "user" ? "**用户**" : "**AI 助手**"
-                return `${role}: ${m.content}\n`
+              const md = messages.map(m => {
+                const role = m.role === "user" ? "## 👤 用户" : "## 🤖 AI"
+                return `${role}\n\n${m.content}\n`
               }).join("\n---\n\n")
               const blob = new Blob([md], { type: "text/markdown" })
               const url = URL.createObjectURL(blob)
               const a = document.createElement("a")
               a.href = url
-              a.download = `对话-${title}-${dateStr}.md`
+              a.download = `对话-${new Date().toISOString().slice(0, 10)}.md`
               a.click()
               URL.revokeObjectURL(url)
             }}
           >
-            <Download className="h-3 w-3" />📥 导出
+            <Download className="h-3 w-3" />导出
           </Button>
         )}
       </div>
@@ -399,49 +359,19 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       )}
 
       {messages.length === 0 && (
-        <EmptyState indexedCount={indexedCount} onSend={handleSend} onSelectTemplate={(template) => {
-          setActiveTemplate(template)
-          handleSend(`[${template.emoji} ${template.title}] ${template.systemPrompt}`)
-        }} />
+        <EmptyState indexedCount={indexedCount} onSend={handleSend} />
       )}
-      {messages.length > 0 && <MessageList messages={messages} streaming={streaming} conversationId={conversationId} onRegenerate={messages.length >= 2 && !sending ? () => {
-        // Find the last user message and resend it
-        const lastUserMsg = [...messages].reverse().find(m => m.role === "user")
-        if (lastUserMsg) {
-          // Remove the last assistant message, then resend
-          setMessages(prev => {
-            const idx = prev.length - 1
-            return prev[idx]?.role === "assistant" ? prev.slice(0, idx) : prev
-          })
-          handleSend(lastUserMsg.content)
-        }
-      } : undefined} />}
+      {messages.length > 0 && <MessageList messages={messages} streaming={streaming} conversationId={conversationId} />}
       {followUpSuggestions.length > 0 && !sending && (
-        <div className="flex flex-wrap gap-2 px-4 py-3 border-t border-border bg-background/50">
-          <span className="text-xs text-muted-foreground self-center mr-1">💡 继续追问：</span>
+        <div className="flex flex-wrap gap-2 px-4 py-2 border-t border-border">
           {followUpSuggestions.map((q, i) => (
             <button key={i} onClick={() => { handleSend(q); setFollowUpSuggestions([]) }}
-              className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground/80 hover:bg-primary/15 hover:border-primary/40 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer">
+              className="rounded-full border border-border/50 bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition">
               {q}
             </button>
           ))}
         </div>
       )}
-      {scope === "file" && scopeId && (() => {
-        const contextFile = indexedFiles.find((f: any) => f.id === scopeId)
-        if (!contextFile) return null
-        return (
-          <div className="flex items-center gap-2 px-4 py-2 border-t border-border bg-muted/30">
-            <div className="flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-sm max-w-[240px]">
-              <FileText className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
-              <span className="truncate text-foreground/80">{contextFile.name}</span>
-              <button onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined) }} className="ml-0.5 flex-shrink-0 rounded-full hover:bg-destructive/20 p-0.5 transition-colors">
-                <span className="text-muted-foreground hover:text-destructive text-xs">✕</span>
-              </button>
-            </div>
-          </div>
-        )
-      })()}
       <ChatInput onSend={handleSend} disabled={sending} />
     </div>
   )

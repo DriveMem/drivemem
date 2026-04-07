@@ -1,9 +1,9 @@
 "use client"
-import { useRef, useEffect, useState, useCallback } from "react"
+import { useRef, useEffect, useState } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
-import { Loader2, Bot, User, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw, ArrowDown } from "lucide-react"
+import { Loader2, Bot, User, Copy, Check, ThumbsUp, ThumbsDown } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import type { ChatMessage } from "@/lib/mock-chat"
@@ -21,11 +21,11 @@ function CodeBlock({ children, ...props }: any) {
     setTimeout(() => setCopied(false), 2000)
   }
   return (
-    <div className="group/code relative">
+    <div className="group relative">
       <pre ref={ref} {...props}>{children}</pre>
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 rounded-md bg-muted/80 p-1.5 opacity-0 group-hover/code:opacity-100 transition"
+        className="absolute top-2 right-2 rounded-md bg-muted/80 p-1.5 opacity-0 group-hover:opacity-100 transition"
       >
         {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
       </button>
@@ -69,31 +69,13 @@ function formatFullTime(dateStr: string): string {
   return new Date(dateStr).toLocaleString("zh-CN")
 }
 
-function MessageActionBar({
-  conversationId,
-  messageId,
-  content,
-  onRegenerate,
-}: {
-  conversationId?: string
-  messageId: string
-  content: string
-  onRegenerate?: () => void
-}) {
+function MessageRating({ conversationId, messageId }: { conversationId?: string; messageId: string }) {
   const [rating, setRating] = useState<"thumbs_up" | "thumbs_down" | null>(null)
-  const [ratingLoading, setRatingLoading] = useState(false)
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(content)
-    setCopied(true)
-    toast.success("已复制")
-    setTimeout(() => setCopied(false), 2000)
-  }
+  const [loading, setLoading] = useState(false)
 
   const handleRate = async (value: "thumbs_up" | "thumbs_down") => {
-    if (!conversationId || ratingLoading) return
-    setRatingLoading(true)
+    if (!conversationId || loading) return
+    setLoading(true)
     try {
       await apiFetch(`/api/conversations/${conversationId}/messages/${messageId}/rating`, {
         method: "POST",
@@ -103,117 +85,56 @@ function MessageActionBar({
     } catch {
       toast.error("评分失败")
     } finally {
-      setRatingLoading(false)
+      setLoading(false)
     }
   }
 
   return (
-    <div className="flex items-center gap-0.5 mt-2 opacity-0 group-hover:opacity-100 transition-opacity bg-muted/80 rounded-lg px-1 py-0.5 w-fit">
-      <button onClick={handleCopy} className="p-1.5 rounded hover:bg-accent transition" title="复制">
-        {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-      </button>
+    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition">
       <button
         onClick={() => handleRate("thumbs_up")}
-        className={cn("p-1.5 rounded hover:bg-accent transition", rating === "thumbs_up" && "text-green-500")}
+        className={cn("p-1 rounded hover:bg-accent", rating === "thumbs_up" && "text-green-500 opacity-100")}
         title="有帮助"
       >
-        <ThumbsUp className={cn("h-3.5 w-3.5", rating === "thumbs_up" ? "fill-current" : "text-muted-foreground")} />
+        <ThumbsUp className={cn("h-3.5 w-3.5", rating === "thumbs_up" ? "fill-current" : "")} />
       </button>
       <button
         onClick={() => handleRate("thumbs_down")}
-        className={cn("p-1.5 rounded hover:bg-accent transition", rating === "thumbs_down" && "text-red-500")}
+        className={cn("p-1 rounded hover:bg-accent", rating === "thumbs_down" && "text-red-500 opacity-100")}
         title="没帮助"
       >
-        <ThumbsDown className={cn("h-3.5 w-3.5", rating === "thumbs_down" ? "fill-current" : "text-muted-foreground")} />
+        <ThumbsDown className={cn("h-3.5 w-3.5", rating === "thumbs_down" ? "fill-current" : "")} />
       </button>
-      {onRegenerate && (
-        <button onClick={onRegenerate} className="p-1.5 rounded hover:bg-accent transition" title="重新生成">
-          <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
-        </button>
-      )}
     </div>
   )
 }
 
-export function MessageList({
-  messages,
-  streaming,
-  conversationId,
-  onRegenerate,
-}: {
-  messages: ChatMessage[]
-  streaming?: string
-  conversationId?: string
-  onRegenerate?: () => void
-}) {
+export function MessageList({ messages, streaming, conversationId }: { messages: ChatMessage[]; streaming?: string; conversationId?: string }) {
   const bottomRef = useRef<HTMLDivElement>(null)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
-
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }) }, [messages, streaming])
-
-  const handleScroll = useCallback(() => {
-    const el = scrollContainerRef.current
-    if (!el) return
-    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
-    setShowScrollToBottom(distanceFromBottom > 150)
-  }, [])
-
-  useEffect(() => {
-    const el = scrollContainerRef.current
-    if (!el) return
-    el.addEventListener("scroll", handleScroll, { passive: true })
-    return () => el.removeEventListener("scroll", handleScroll)
-  }, [handleScroll])
-
-  const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
-
-  // Find last user message index for regenerate button placement
-  const lastAssistantIdx = messages.length > 0 && messages[messages.length - 1].role === "assistant"
-    ? messages.length - 1
-    : -1
-
   return (
-    <div ref={scrollContainerRef} className="flex-1 overflow-auto px-4 py-6 space-y-4 relative">
-      {messages.map((msg, idx) => (
-        <div key={msg.id} className={cn(
-          "flex gap-3 group",
-          msg.role === "user" ? "justify-end" : "",
-          // Different role → gap-6, same role → gap-3
-          idx > 0 && messages[idx - 1].role !== msg.role ? "mt-6" : idx > 0 ? "mt-3" : "",
-          // Timeline vertical line for assistant messages
-          msg.role === "assistant" && "border-l-2 border-border/30 pl-3"
-        )}>
+    <div className="flex-1 overflow-auto px-4 py-6 space-y-6">
+      {messages.map((msg) => (
+        <div key={msg.id} className={cn("flex gap-3 group", msg.role === "user" ? "justify-end" : "")}>
           {msg.role === "assistant" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>}
           <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-[#4F5BD5] text-white rounded-2xl rounded-br-sm px-4 py-3" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>
             {msg.role === "assistant" ? (
               <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={markdownComponents}>{msg.content}</ReactMarkdown>
                 {msg.citations && msg.citations.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-border">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium mb-2">📎 引用文件</div>
-                    <div className="flex flex-wrap gap-2">
+                  <details className="mt-3 pt-3 border-t border-border">
+                    <summary className="text-xs text-muted-foreground font-medium cursor-pointer select-none hover:text-foreground">📎 {msg.citations.length} 个来源引用</summary>
+                    <div className="mt-2 space-y-1">
                       {msg.citations.map((c, i) => <Citation key={i} citation={c} idx={i} />)}
                     </div>
-                  </div>
+                  </details>
                 )}
-<<<<<<< HEAD
-                <MessageActionBar
-                  conversationId={conversationId}
-                  messageId={msg.id}
-                  content={msg.content}
-                  onRegenerate={idx === lastAssistantIdx ? onRegenerate : undefined}
-                />
-=======
                 {!msg.id.startsWith("a-") && <MessageRating conversationId={conversationId} messageId={msg.id} />}
                 {msg.createdAt && (
                   <p className="text-[10px] text-muted-foreground/50 mt-1 text-right" title={formatFullTime(msg.createdAt)}>
                     {formatTime(msg.createdAt)}
                   </p>
                 )}
->>>>>>> origin/feat/ai-drive-web
               </div>
             ) : (<><p>{msg.content}</p>{msg.createdAt && (
                   <p className="text-[10px] text-white/50 mt-1 text-right" title={formatFullTime(msg.createdAt)}>
@@ -225,7 +146,7 @@ export function MessageList({
         </div>
       ))}
       {streaming !== undefined && (
-        <div className="flex gap-3 mt-6">
+        <div className="flex gap-3">
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>
           <div className="max-w-[80%] rounded-lg px-4 py-3 text-sm bg-muted">
             {streaming ? (
@@ -244,17 +165,6 @@ export function MessageList({
         </div>
       )}
       <div ref={bottomRef} />
-
-      {/* Jump to latest floating button */}
-      {showScrollToBottom && (
-        <button
-          onClick={scrollToBottom}
-          className="sticky bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 rounded-full bg-background/90 border border-border shadow-lg px-4 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-background transition-all backdrop-blur-sm"
-        >
-          <ArrowDown className="h-3.5 w-3.5" />
-          跳到最新
-        </button>
-      )}
     </div>
   )
 }

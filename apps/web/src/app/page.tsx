@@ -202,7 +202,7 @@ export default function LandingPage() {
       {/* ===== Developer Section ===== */}
       <div className="relative z-10 border-t border-[#E5E4E1] py-8 text-center">
         <p className="text-sm text-[#6B6966]">
-          🔧 开发者？AI Drive 提供 <a href="/developers" className="text-[#4F5BD5] hover:underline">Open API</a> 和 <span className="text-[#4F5BD5]">MCP 协议</span>，让任何 AI agent 接入你的知识库
+          🔧 开发者？AI Drive 提供 <span className="text-[#4F5BD5] font-medium">Open API</span> 和 <span className="text-[#4F5BD5]">MCP 协议</span>，让任何 AI agent 接入你的知识库。登录后在设置页获取 API Key。
         </p>
       </div>
 

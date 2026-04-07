@@ -6,7 +6,6 @@ import { Sidebar } from "./sidebar"
 import { InspectorPanel } from "./inspector-panel"
 import { TopNav } from "./top-nav"
 import { CommandPalette } from "./command-palette"
-import { KeyboardShortcutsModal } from "./keyboard-shortcuts-modal"
 import { FeedbackButton } from "@/components/feedback/feedback-button"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -46,7 +45,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       </AnimatePresence>
       <CommandPalette />
-      <KeyboardShortcutsModal />
       <FeedbackButton />
     </div>
   )

@@ -1,14 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { MessageSquare, Loader2, AlertCircle, Link2, X, Plus } from "lucide-react"
-import { getFileIcon } from "@/lib/get-file-icon"
+import { FileText, MessageSquare, Loader2, AlertCircle, Link2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useFile, useMoveFile } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
 import { apiFetch } from "@/lib/api"
 import Link from "next/link"
-import { useFileTags, useTags, useAddFileTag, useRemoveFileTag, TAG_COLOR_MAP, type Tag } from "@/hooks/use-tags"
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return bytes + " B"
@@ -45,7 +43,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
   return (
     <div className="p-4 space-y-6">
       <div className="flex items-center gap-3">
-        {(() => { const { icon: Icon, colorClass } = getFileIcon(file.name, file.type); return <Icon className={`h-8 w-8 ${colorClass}`} /> })()}
+        <FileText className="h-8 w-8 text-muted-foreground" />
         <div>
           <p className="font-medium text-sm">{file.name}</p>
           <p className="text-xs text-muted-foreground">{typeLabels[file.type] || file.type}</p>
@@ -83,7 +81,6 @@ export function FileInspector({ fileId }: { fileId: string }) {
         </div>
       )}
       <KnowledgeLinksForFile fileId={fileId} />
-      <FileTagsSection fileId={fileId} />
       <Button className="w-full gap-2" asChild>
         <Link href={"/chat?file=" + file.id}><MessageSquare className="h-4 w-4" />问 AI 关于这个文件</Link>
       </Button>
@@ -114,56 +111,6 @@ function KnowledgeLinksForFile({ fileId }: { fileId: string }) {
           </Link>
         )
       })}
-    </div>
-  )
-}
-
-function FileTagsSection({ fileId }: { fileId: string }) {
-  const { data: fileTags = [] } = useFileTags(fileId)
-  const { data: allTags = [] } = useTags()
-  const addTag = useAddFileTag()
-  const removeTag = useRemoveFileTag()
-  const [showPicker, setShowPicker] = useState(false)
-
-  const availableTags = allTags.filter((t: Tag) => !fileTags.some((ft: Tag) => ft.id === t.id))
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-muted-foreground">🏷️ 标签</p>
-        <button onClick={() => setShowPicker(!showPicker)} className="text-muted-foreground hover:text-foreground">
-          <Plus className="h-3.5 w-3.5" />
-        </button>
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        {fileTags.map((tag: Tag) => {
-          const colors = TAG_COLOR_MAP[tag.color] || TAG_COLOR_MAP.blue
-          return (
-            <span key={tag.id} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border ${colors.bg} ${colors.text} ${colors.border}`}>
-              {tag.name}
-              <button onClick={() => removeTag.mutate({ fileId, tagId: tag.id })} className="hover:opacity-70">
-                <X className="h-3 w-3" />
-              </button>
-            </span>
-          )
-        })}
-        {fileTags.length === 0 && !showPicker && (
-          <span className="text-xs text-muted-foreground">暂无标签</span>
-        )}
-      </div>
-      {showPicker && availableTags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pt-1 border-t border-border">
-          {availableTags.map((tag: Tag) => {
-            const colors = TAG_COLOR_MAP[tag.color] || TAG_COLOR_MAP.blue
-            return (
-              <button key={tag.id} onClick={() => { addTag.mutate({ fileId, tagId: tag.id }); setShowPicker(false) }}
-                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border hover:opacity-80 ${colors.bg} ${colors.text} ${colors.border}`}>
-                + {tag.name}
-              </button>
-            )
-          })}
-        </div>
-      )}
     </div>
   )
 }

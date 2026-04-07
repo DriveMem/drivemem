@@ -119,7 +119,6 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
-<<<<<<< HEAD
 // Validate ../../src/app/(app)/trash/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/trash">> = Specific
@@ -129,8 +128,6 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
-=======
->>>>>>> origin/feat/ai-drive-web
 // Validate ../../src/app/(auth)/forgot-password/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/forgot-password">> = Specific
