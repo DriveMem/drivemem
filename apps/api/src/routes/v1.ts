@@ -192,7 +192,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
       query: queryVec,
       scopeType,
       scopeId: body.fileIds?.[0],
-      limit: 6,
+      limit: 10,
     });
 
     const citationSources = chunks.map(

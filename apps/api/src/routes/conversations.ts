@@ -274,14 +274,23 @@ export default async function conversationRoutes(app: FastifyInstance) {
       query: queryEmbedding,
       scopeType: conversation.scopeType,
       scopeId: conversation.scopeId ?? undefined,
-      limit: 6,
+      limit: 10,
     });
 
+    // Prefer newer file versions: if a file has previousVersionId pointing to it, deprioritize the old one
+    const filesWithVersions = await db.select({ id: schema.files.id, previousVersionId: schema.files.previousVersionId })
+      .from(schema.files)
+      .where(eq(schema.files.userId, user.id));
+    const oldVersionIds = new Set(filesWithVersions.filter(f => f.previousVersionId).map(f => f.previousVersionId));
+    const filteredChunks = chunks.filter(c => !oldVersionIds.has(c.fileId));
+    // Fall back to original if filtering removes everything
+    const finalChunks = filteredChunks.length > 0 ? filteredChunks : chunks;
+
     // RAG debug log
-    console.log("[RAG] user=" + user.id + " chunks=" + chunks.length + " scores=" + JSON.stringify(chunks.map(c => c.score.toFixed(2))));
+    console.log("[RAG] user=" + user.id + " chunks=" + finalChunks.length + " scores=" + JSON.stringify(finalChunks.map(c => c.score.toFixed(2))));
 
     // Build system prompt
-    const citationSources = chunks.map(
+    const citationSources = finalChunks.map(
       (c, i) => `来源 ${i + 1} (${c.fileName} 第${c.chunkIndex + 1}段): ${c.text}`,
     );
     const systemPrompt = `你是 AI Drive 的文档 AI 助手。你的职责是**严格基于用户上传的文档内容**回答问题。
@@ -336,7 +345,7 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : '（未找到相�
       }
 
       // Save assistant message with citations
-      const citations = chunks.map((c) => ({
+      const citations = finalChunks.map((c) => ({
         fileId: c.fileId,
         fileName: c.fileName,
         chunkIndex: c.chunkIndex,

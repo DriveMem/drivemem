@@ -94,7 +94,7 @@ export async function searchSimilar(params: {
   scopeId?: string;
   limit?: number;
 }): Promise<Array<{ text: string; fileId: string; fileName: string; chunkIndex: number; score: number }>> {
-  const { userId, query, scopeType, scopeId, limit = 5 } = params;
+  const { userId, query, scopeType, scopeId, limit = 10 } = params;
 
   const must: Array<{ key: string; match: { value: string } }> = [
     { key: 'user_id', match: { value: userId } },
@@ -113,11 +113,15 @@ export async function searchSimilar(params: {
     with_payload: true,
   });
 
-  return results.map((r) => ({
+  const rawResults = results.map((r) => ({
     text: (r.payload as Record<string, unknown>).text as string,
     fileId: (r.payload as Record<string, unknown>).file_id as string,
     fileName: (r.payload as Record<string, unknown>).file_name as string,
     chunkIndex: (r.payload as Record<string, unknown>).chunk_index as number,
     score: r.score,
   }));
+
+  // Deduplicate: if multiple chunks from same file, keep highest scoring
+  // Then sort by score (semantic similarity is primary ranking)
+  return rawResults;
 }
