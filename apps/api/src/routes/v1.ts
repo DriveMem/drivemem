@@ -92,12 +92,21 @@ export default async function v1Routes(fastify: FastifyInstance) {
     const searchArchivedIds = new Set(searchFiles.filter(f => f.archivedAt).map(f => f.id));
     const searchResults = chunks.filter(c => !searchArchivedIds.has(c.fileId));
 
+    // Get file dates
+    const searchFileIds = [...new Set(searchResults.map(c => c.fileId))];
+    const fileDates: Record<string, Date> = {};
+    for (const fid of searchFileIds) {
+      const [f] = await db.select({ id: schema.files.id, createdAt: schema.files.createdAt }).from(schema.files).where(eq(schema.files.id, fid));
+      if (f) fileDates[f.id] = f.createdAt;
+    }
+
     return reply.send({
       results: searchResults.map(c => ({
         fileId: c.fileId,
         fileName: c.fileName,
         text: c.text.slice(0, maxChars),
         score: c.score,
+        createdAt: fileDates[c.fileId] || null,
       })),
     });
   });
