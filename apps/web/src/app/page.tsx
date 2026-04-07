@@ -162,28 +162,23 @@ export default function LandingPage() {
         </FadeIn>
       </section>
 
-      {/* ===== Feature Highlights ===== */}
-      <section className="relative z-10 mx-auto max-w-6xl space-y-32 px-6 py-24">
-        {FEATURES.map((f) => (
-          <FadeIn key={f.title}>
-            <div className={`flex flex-col items-center gap-12 md:flex-row ${f.reverse ? "md:flex-row-reverse" : ""}`}>
-              {/* text */}
-              <div className="flex-1 space-y-4">
-                <f.icon className="h-8 w-8 text-[#4F5BD5]" />
-                <h3 className="text-2xl font-bold sm:text-3xl">{f.title}</h3>
-                <p className="text-[#6B6966] leading-relaxed">{f.desc}</p>
+      {/* ===== Feature Highlights (2x3 Grid) ===== */}
+      <section className="relative z-10 mx-auto max-w-6xl px-6 py-24">
+        <FadeIn>
+          <h2 className="text-3xl font-bold text-center text-[#1C1B18] mb-4">核心功能</h2>
+          <p className="text-center text-[#6B6966] mb-12 max-w-2xl mx-auto">AI Drive 不只是存储，更是理解你的知识</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {FEATURES.map((f, i) => (
+              <div key={i} className="rounded-xl border border-[#E5E4E1] bg-white p-6 hover:shadow-lg transition-all duration-200">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#4F5BD5]/10 mb-4">
+                  <f.icon className="h-6 w-6 text-[#4F5BD5]" />
+                </div>
+                <h3 className="text-lg font-semibold text-[#1C1B18] mb-2">{f.title}</h3>
+                <p className="text-sm text-[#6B6966] leading-relaxed">{f.desc}</p>
               </div>
-              {/* real screenshot */}
-              <div className="w-full flex-1 overflow-hidden rounded-2xl border border-[#E5E4E1] ring-1 ring-black/5 shadow-lg">
-                <img
-                  src={f.title === "AI 智能对话" || f.title === "精准引用来源" || f.title === "对话历史记录" ? "/screenshots/chat.png" : "/screenshots/dashboard.png"}
-                  alt={f.title}
-                  className="w-full rounded-2xl"
-                />
-              </div>
-            </div>
-          </FadeIn>
-        ))}
+            ))}
+          </div>
+        </FadeIn>
       </section>
 
       {/* ===== Final CTA ===== */}
@@ -199,16 +194,51 @@ export default function LandingPage() {
         </FadeIn>
       </section>
 
-      {/* ===== Developer Section ===== */}
-      <div className="relative z-10 border-t border-[#E5E4E1] py-8 text-center">
-        <p className="text-sm text-[#6B6966]">
-          🔧 开发者？AI Drive 提供 <span className="text-[#4F5BD5] font-medium">Open API</span> 和 <span className="text-[#4F5BD5]">MCP 协议</span>，让任何 AI agent 接入你的知识库。登录后在设置页获取 API Key。
-        </p>
-      </div>
+      {/* ===== Footer (4-column) ===== */}
+      <footer className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5]">
+        <div className="mx-auto max-w-6xl px-6 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Brand */}
+            <div>
+              <h3 className="text-lg font-bold text-[#1C1B18]">AI Drive</h3>
+              <p className="mt-2 text-sm text-[#6B6966]">你的 AI 知识助手</p>
+            </div>
 
-      {/* ===== Footer ===== */}
-      <footer className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5] px-6 py-8 text-center text-sm text-[#6B6966]">
-        © 2026 AI Drive · <Link href="/privacy" className="text-[#6B6966] hover:text-[#1C1B18] text-sm">隐私政策</Link> · <Link href="/terms" className="text-[#6B6966] hover:text-[#1C1B18] text-sm">使用条款</Link>
+            {/* 产品 */}
+            <div>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">产品</h4>
+              <ul className="space-y-2 text-sm text-[#6B6966]">
+                <li><a href="#features" className="hover:text-[#4F5BD5] transition">功能介绍</a></li>
+                <li><Link href="/login" className="hover:text-[#4F5BD5] transition">登录</Link></li>
+                <li><Link href="/signup" className="hover:text-[#4F5BD5] transition">免费注册</Link></li>
+              </ul>
+            </div>
+
+            {/* 开发者 */}
+            <div>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">开发者</h4>
+              <ul className="space-y-2 text-sm text-[#6B6966]">
+                <li><Link href="/developers" className="hover:text-[#4F5BD5] transition">API 文档</Link></li>
+                <li><span className="text-[#6B6966]">MCP 协议</span></li>
+                <li><span className="text-[#6B6966]">CLI 工具</span></li>
+              </ul>
+            </div>
+
+            {/* 法律 */}
+            <div>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">法律</h4>
+              <ul className="space-y-2 text-sm text-[#6B6966]">
+                <li><Link href="/terms" className="hover:text-[#4F5BD5] transition">使用条款</Link></li>
+                <li><Link href="/privacy" className="hover:text-[#4F5BD5] transition">隐私政策</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* 版权 */}
+          <div className="mt-8 border-t border-[#E5E4E1] pt-6 text-center text-xs text-[#6B6966]">
+            © {new Date().getFullYear()} AI Drive. All rights reserved.
+          </div>
+        </div>
       </footer>
     </main>
   )
