@@ -168,8 +168,19 @@ switch (command) {
     const fileContent = readFileSync(filePath);
     const fileName = filePath.split('/').pop() || 'file';
     
+    // Detect MIME type from extension
+    const ext = fileName.split('.').pop()?.toLowerCase() || '';
+    const mimeMap: Record<string, string> = {
+      'md': 'text/markdown', 'txt': 'text/plain', 'pdf': 'application/pdf',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'json': 'application/json', 'csv': 'text/csv', 'html': 'text/html',
+    };
+    const mimeType = mimeMap[ext] || 'application/octet-stream';
+    
     const formData = new FormData();
-    formData.append('file', new Blob([fileContent]), fileName);
+    formData.append('file', new Blob([fileContent], { type: mimeType }), fileName);
     
     const res = await fetch(`${baseUrl}/api/files/upload`, {
       method: 'POST',

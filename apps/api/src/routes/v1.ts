@@ -112,7 +112,18 @@ export default async function v1Routes(fastify: FastifyInstance) {
     if (!data) return reply.status(400).send({ error: 'No file provided' });
 
     const filename = data.filename;
-    const mimeType = data.mimetype;
+    let mimeType = data.mimetype;
+    // Fallback MIME detection from extension if octet-stream
+    if (mimeType === 'application/octet-stream') {
+      const ext = filename.split('.').pop()?.toLowerCase() || '';
+      const mimeMap: Record<string, string> = {
+        'md': 'text/markdown', 'txt': 'text/plain', 'pdf': 'application/pdf',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      };
+      mimeType = mimeMap[ext] || mimeType;
+    }
     const chunks: Buffer[] = [];
     for await (const chunk of data.file) chunks.push(chunk as Buffer);
     const buffer = Buffer.concat(chunks);
