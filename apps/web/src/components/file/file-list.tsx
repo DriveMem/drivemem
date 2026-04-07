@@ -46,6 +46,7 @@ interface FileItem {
   summary?: string | null
   suggestedFolder?: string | null
   previousVersionId?: string | null
+  archivedAt?: string | null
 }
 
 function fmtSize(b: number) { return !b ? "—" : b < 1024 ? "< 1 KB" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
@@ -435,6 +436,7 @@ export function FileList() {
                 <TypeIcon type={file.type} name={file.name} />
                 <span className="truncate text-sm flex-1 min-w-0">{file.name}</span>
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">已更新</span>}
+                {file.archivedAt && <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">已归档</span>}
                 {file.suggestedFolder && !file.folderId && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
@@ -562,6 +564,18 @@ export function FileList() {
               setContextMenu(null)
             }}>
               <Share2 className="h-4 w-4 mr-2" />分享
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={async () => {
+              const file = rawFiles?.find((f: any) => f.id === contextMenu?.fileId)
+              const isArchived = file?.archivedAt
+              try {
+                await apiFetch(`/api/files/${contextMenu?.fileId}/${isArchived ? 'unarchive' : 'archive'}`, { method: 'PATCH' })
+                queryClient.invalidateQueries({ queryKey: ['files'] })
+                toast.success(isArchived ? '已取消归档' : '已归档')
+              } catch { toast.error('操作失败') }
+              setContextMenu(null)
+            }}>
+              📦 {rawFiles?.find((f: any) => f.id === contextMenu?.fileId)?.archivedAt ? '取消归档' : '归档'}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => {
