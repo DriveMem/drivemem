@@ -272,12 +272,33 @@ export function FileList() {
   if (files.length === 0 && !showUpload && !currentFolderId && visibleFolders.length === 0) {
     return (
       <div
-        className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground"
+        className="flex flex-col items-center justify-center h-full"
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setShowUpload(true) }}
       >
-        <Upload className="h-12 w-12" /><p className="text-lg">把文件拖到这里，让 AI 记住它</p>
-        <Button onClick={() => setShowUpload(true)}>让 AI 记住文件</Button>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="rounded-full bg-[#4F5BD5]/10 p-5 mb-4">
+            <Upload className="h-10 w-10 text-[#4F5BD5]" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">开始使用 AI Drive</h3>
+          <p className="text-sm text-muted-foreground max-w-sm mb-6">
+            上传你的第一份文件，AI 将自动理解内容，随时为你解答问题。
+          </p>
+          <button
+            onClick={() => setShowUpload(true)}
+            className="rounded-lg bg-[#4F5BD5] hover:bg-[#3D49C4] px-6 py-2.5 text-sm text-white transition"
+          >
+            上传文件
+          </button>
+          <p className="mt-4 text-xs text-muted-foreground">
+            支持 PDF、Word、PPT、Excel、TXT、Markdown 等格式
+          </p>
+          <div className="mt-6 flex gap-3">
+            <span className="rounded-full bg-muted px-3 py-1 text-xs">💡 总结文件内容</span>
+            <span className="rounded-full bg-muted px-3 py-1 text-xs">💡 对比两份文件</span>
+            <span className="rounded-full bg-muted px-3 py-1 text-xs">💡 提取关键信息</span>
+          </div>
+        </div>
         {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
       </div>
     )

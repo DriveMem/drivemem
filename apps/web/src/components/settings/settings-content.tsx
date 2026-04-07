@@ -116,7 +116,10 @@ function ApiKeysCard() {
   )
 }
 
+type SettingsTab = "general" | "developer"
+
 export default function SettingsContent() {
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>("general")
   const [session, setSession] = useState<any>(null)
   const [name, setName] = useState("用户")
   const [deleteConfirm, setDeleteConfirm] = useState("")
@@ -214,6 +217,30 @@ export default function SettingsContent() {
     <div className="mx-auto max-w-2xl space-y-6 p-6">
       <h1 className="text-2xl font-bold">设置</h1>
 
+      {/* Tab switcher */}
+      <div className="flex gap-1 rounded-lg bg-muted p-1">
+        <button
+          onClick={() => setSettingsTab("general")}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "general" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          ⚙️ 通用
+        </button>
+        <button
+          onClick={() => setSettingsTab("developer")}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "developer" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          🔧 开发者
+        </button>
+      </div>
+
+      {settingsTab === "developer" ? (
+        <>
+          <p className="text-sm text-muted-foreground">这些功能面向需要通过 API 或 AI Agent 接入的高级用户</p>
+          <ApiKeysCard />
+        </>
+      ) : (
+      <>
+
       {/* Profile */}
       <Card>
         <CardHeader>
@@ -284,9 +311,6 @@ export default function SettingsContent() {
           )}
         </CardContent>
       </Card>
-
-      {/* API Keys */}
-      <ApiKeysCard />
 
       {/* Password */}
       <Card>
@@ -360,6 +384,8 @@ export default function SettingsContent() {
           </Dialog>
         </CardContent>
       </Card>
+      </>
+      )}
     </div>
   )
 }

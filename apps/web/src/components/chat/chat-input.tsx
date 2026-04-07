@@ -8,6 +8,17 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint }: { 
   const [value, setValue] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  const [placeholder] = useState(() => {
+    const placeholders = [
+      "帮我总结上传的会议纪要",
+      "对比这两份合同的关键差异",
+      "用我的资料写一份周报摘要",
+      "这篇论文的核心观点是什么？",
+      "找出这些文件里提到的截止日期",
+    ]
+    return placeholders[Math.floor(Math.random() * placeholders.length)]
+  })
+
   useEffect(() => {
     const el = textareaRef.current
     if (el) { el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 200) + "px" }
@@ -46,7 +57,7 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint }: { 
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="问 AI 任何问题，或探索你的知识库..."
+          placeholder={placeholder}
           disabled={disabled}
           rows={1}
           className="flex-1 bg-transparent resize-none outline-none text-sm placeholder-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
