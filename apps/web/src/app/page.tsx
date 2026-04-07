@@ -77,7 +77,7 @@ export default function LandingPage() {
       {/* ===== Hero ===== */}
       <section className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center bg-gradient-to-b from-[#F4F5FD] to-white px-6 text-center">
         <FadeIn>
-          <h1 className="mx-auto max-w-4xl text-5xl font-bold leading-tight tracking-tight sm:text-7xl">
+          <h1 className="mx-auto max-w-4xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-7xl">
             你的 AI 知识助手
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-[#6B6966] sm:text-xl">

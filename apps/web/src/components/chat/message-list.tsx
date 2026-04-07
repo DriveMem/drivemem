@@ -3,6 +3,7 @@ import { useRef, useEffect, useState } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
+import rehypeRaw from "rehype-raw"
 import { Loader2, Bot, User, Copy, Check, ThumbsUp, ThumbsDown } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -31,6 +32,15 @@ function CodeBlock({ children, ...props }: any) {
       </button>
     </div>
   )
+}
+
+// Transform inline citations to superscript numbers
+function transformCitations(content: string): string {
+  let counter = 0
+  return content.replace(/\[来源[:：]\s*[^\]]+\]/g, () => {
+    counter++
+    return `<sup class="citation-ref">${counter}</sup>`
+  })
 }
 
 const markdownComponents = {
@@ -120,7 +130,7 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
           <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-[#4F5BD5] text-white rounded-2xl rounded-br-sm px-4 py-3" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>
             {msg.role === "assistant" ? (
               <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={markdownComponents}>{msg.content}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight, rehypeRaw]} components={markdownComponents}>{transformCitations(msg.content)}</ReactMarkdown>
                 {msg.citations && msg.citations.length > 0 && (
                   <details className="mt-3 pt-3 border-t border-border">
                     <summary className="text-xs text-muted-foreground font-medium cursor-pointer select-none hover:text-foreground">📎 {msg.citations.length} 个来源引用</summary>

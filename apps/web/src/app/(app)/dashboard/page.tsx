@@ -71,7 +71,7 @@ function ActivitySummary({ activities }: { activities: any[] }) {
   if (activities.length === 0) {
     return (
       <div className="mx-3 mb-3 rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
-        暂无 AI 活动，上传文件后将自动开始分析
+        AI 正在后台工作，新的活动会显示在这里
       </div>
     )
   }
@@ -247,12 +247,6 @@ export default function DashboardPage() {
               )}
               <SectionLabel>AI 报告</SectionLabel>
               <ReportSection ref={reportRef} />
-              <div className="mx-3 mb-3 rounded-xl border bg-muted/30 p-4 text-center">
-                <Sparkles className="h-5 w-5 text-indigo-500 mx-auto mb-1.5" />
-                <p className="text-sm text-muted-foreground">
-                  继续上传更多文件，AI 将发现更多跨文件知识关联和深度洞察。
-                </p>
-              </div>
               <ActivitySummary activities={activities} />
             </div>
           ) : (

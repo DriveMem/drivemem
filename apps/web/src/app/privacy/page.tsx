@@ -1,6 +1,10 @@
 import Link from "next/link"
 
-export const metadata = { title: "隐私政策 - AI Drive" }
+export const metadata = {
+  title: "隐私政策 - AI Drive",
+  description: "AI Drive 隐私政策和数据保护说明",
+  openGraph: { title: "隐私政策 - AI Drive", description: "AI Drive 隐私政策和数据保护说明" },
+}
 
 export default function PrivacyPage() {
   return (
