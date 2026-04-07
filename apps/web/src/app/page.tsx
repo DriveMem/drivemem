@@ -16,18 +16,6 @@ import {
   FileSearch,
 } from "lucide-react"
 
-function useSocialProofStats() {
-  const [stats, setStats] = useState<{ users: number; files: number; conversations: number } | null>(null)
-  useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
-    fetch(apiBase + "/api/admin/public-stats")
-      .then(r => r.ok ? r.json() : null)
-      .then(d => d && setStats(d))
-      .catch(() => {})
-  }, [])
-  return stats
-}
-
 function FadeIn({ children, className = "" }: { children: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
@@ -57,7 +45,7 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
 
 const STEPS = [
   { icon: Upload, title: "上传文件", desc: "拖拽或选择你的 PDF、Word、PPT、Excel、TXT、Markdown 文件" },
-  { icon: Search, title: "AI 自动索引", desc: "AI 自动理解内容，建立语义索引" },
+  { icon: Search, title: "AI 自动索引", desc: "AI 自动解析文件内容，建立语义索引" },
   { icon: MessageSquare, title: "对话提问", desc: "用自然语言提问，获得精准答案" },
 ] as const
 
@@ -71,7 +59,6 @@ const FEATURES = [
 ] as const
 
 export default function LandingPage() {
-  const stats = useSocialProofStats()
   return (
     <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-[#4F5BD5]/30">
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-[#E5E4E1] bg-white/80 px-6 py-4 backdrop-blur">
@@ -94,11 +81,7 @@ export default function LandingPage() {
             你的 AI 知识助手
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-[#6B6966] sm:text-xl">
-<<<<<<< HEAD
-            上传你的文档，AI 帮你记忆、理解、随时回答。你的个人 AI 知识库。
-=======
             上传文件，AI 自动理解。随时提问，AI 用你的知识回答。
->>>>>>> origin/feat/ai-drive-web
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" className="h-12 px-8 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
@@ -135,32 +118,6 @@ export default function LandingPage() {
       {/* ===== Scenario Cards ===== */}
       <section id="features" className="relative z-10 mx-auto max-w-6xl px-6 py-24">
         <FadeIn>
-<<<<<<< HEAD
-          <h2 className="text-center text-3xl font-bold sm:text-4xl">AI 让你的文件更智能</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">不只是存储，更是理解。AI Drive 让每个文件都成为可交互的知识。</p>
-          <div className="mt-16 grid gap-6 sm:grid-cols-3">
-            <div className="group rounded-2xl border border-[#E5E4E1] bg-white p-8 backdrop-blur transition hover:border-[#4F5BD5]/30 hover:bg-[#F8F7F5]">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#4F5BD5]/20 to-purple-500/20 mb-4">
-                <Brain className="h-6 w-6 text-[#4F5BD5]" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">AI 智能摘要</h3>
-              <p className="text-[#6B6966] leading-relaxed">上传文件自动生成摘要，不用阅读全文就能了解核心内容</p>
-            </div>
-            <div className="group rounded-2xl border border-[#E5E4E1] bg-white p-8 backdrop-blur transition hover:border-[#4F5BD5]/30 hover:bg-[#F8F7F5]">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 mb-4">
-                <MessageSquare className="h-6 w-6 text-purple-400" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">跨文件问答</h3>
-              <p className="text-[#6B6966] leading-relaxed">同时问 AI 多个文件的内容，获得跨文档的综合分析</p>
-            </div>
-            <div className="group rounded-2xl border border-[#E5E4E1] bg-white p-8 backdrop-blur transition hover:border-[#4F5BD5]/30 hover:bg-[#F8F7F5]">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-[#4F5BD5]/20 mb-4">
-                <Globe className="h-6 w-6 text-cyan-400" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">知识时间线</h3>
-              <p className="text-[#6B6966] leading-relaxed">按时间轴浏览你的知识积累，清晰回顾学习与成长的脉络</p>
-            </div>
-=======
           <h2 className="text-center text-3xl font-bold sm:text-4xl">每个人都能用 AI Drive</h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">无论你是学生、职场人还是研究者，AI Drive 都能帮你更高效地使用知识。</p>
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -178,7 +135,6 @@ export default function LandingPage() {
                 <p className="mt-2 text-sm text-[#6B6966] leading-relaxed">{s.desc}</p>
               </div>
             ))}
->>>>>>> origin/feat/ai-drive-web
           </div>
         </FadeIn>
       </section>
@@ -228,17 +184,6 @@ export default function LandingPage() {
             </div>
           </FadeIn>
         ))}
-      </section>
-
-      {/* ===== Social Proof ===== */}
-      <section className="relative z-10 px-6 py-16">
-        <FadeIn>
-          <p className="text-center text-lg text-[#6B6966]">
-            {stats
-              ? `已有 ${stats.users.toLocaleString()} 位用户 · 已分析 ${stats.files.toLocaleString()} 份文档 · ${stats.conversations.toLocaleString()} 次 AI 对话`
-              : "信任千+ 用户"}
-          </p>
-        </FadeIn>
       </section>
 
       {/* ===== Final CTA ===== */}
