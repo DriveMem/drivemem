@@ -278,11 +278,12 @@ export default async function conversationRoutes(app: FastifyInstance) {
     });
 
     // Prefer newer file versions: if a file has previousVersionId pointing to it, deprioritize the old one
-    const filesWithVersions = await db.select({ id: schema.files.id, previousVersionId: schema.files.previousVersionId })
+    const filesWithVersions = await db.select({ id: schema.files.id, previousVersionId: schema.files.previousVersionId, archivedAt: schema.files.archivedAt })
       .from(schema.files)
       .where(eq(schema.files.userId, user.id));
     const oldVersionIds = new Set(filesWithVersions.filter(f => f.previousVersionId).map(f => f.previousVersionId));
-    const filteredChunks = chunks.filter(c => !oldVersionIds.has(c.fileId));
+    const archivedIds = new Set(filesWithVersions.filter(f => f.archivedAt).map(f => f.id));
+    const filteredChunks = chunks.filter(c => !oldVersionIds.has(c.fileId) && !archivedIds.has(c.fileId));
     // Fall back to original if filtering removes everything
     const finalChunks = filteredChunks.length > 0 ? filteredChunks : chunks;
 

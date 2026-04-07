@@ -538,4 +538,24 @@ export default async function fileRoutes(fastify: FastifyInstance) {
 
     return reply.send({ organized, created, message: `AI 整理了 ${organized.reduce((s, o) => s + o.fileCount, 0)} 个文件到 ${organized.length} 个文件夹` });
   });
+
+  // PATCH /:id/archive — 归档文件
+  fastify.patch('/:id/archive', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = request.user!.id;
+    const [file] = await db.select().from(schema.files).where(and(eq(schema.files.id, id), eq(schema.files.userId, userId)));
+    if (!file) return reply.status(404).send({ error: 'File not found' });
+    await db.update(schema.files).set({ archivedAt: new Date() }).where(eq(schema.files.id, id));
+    return reply.send({ message: '文件已归档' });
+  });
+
+  // PATCH /:id/unarchive — 取消归档
+  fastify.patch('/:id/unarchive', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = request.user!.id;
+    const [file] = await db.select().from(schema.files).where(and(eq(schema.files.id, id), eq(schema.files.userId, userId)));
+    if (!file) return reply.status(404).send({ error: 'File not found' });
+    await db.update(schema.files).set({ archivedAt: null }).where(eq(schema.files.id, id));
+    return reply.send({ message: '文件已取消归档' });
+  });
 }

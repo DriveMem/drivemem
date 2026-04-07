@@ -31,7 +31,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
       createdAt: schema.files.createdAt,
     })
       .from(schema.files)
-      .where(eq(schema.files.userId, userId))
+      .where(and(eq(schema.files.userId, userId), sql`${schema.files.archivedAt} IS NULL`))
       .orderBy(desc(schema.files.createdAt));
 
     if (brief) {
@@ -58,6 +58,22 @@ export default async function v1Routes(fastify: FastifyInstance) {
     if (!file) return reply.status(404).send({ error: 'File not found' });
     await db.delete(schema.files).where(eq(schema.files.id, id));
     return reply.status(204).send();
+  });
+
+  // PATCH /files/:id/archive — 归档文件
+  fastify.patch('/files/:id/archive', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = request.user!.id;
+    await db.update(schema.files).set({ archivedAt: new Date() }).where(and(eq(schema.files.id, id), eq(schema.files.userId, userId)));
+    return reply.send({ message: 'archived' });
+  });
+
+  // PATCH /files/:id/unarchive — 取消归档
+  fastify.patch('/files/:id/unarchive', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = request.user!.id;
+    await db.update(schema.files).set({ archivedAt: null }).where(and(eq(schema.files.id, id), eq(schema.files.userId, userId)));
+    return reply.send({ message: 'unarchived' });
   });
 
   // GET /search — max_tokens limits snippet length
