@@ -28,21 +28,14 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
   const onDrop = useCallback((accepted: File[], rejected: FileRejection[]) => {
     // Add rejected files with error
     rejected.forEach((r) => {
-      const isTooLarge = r.errors[0]?.code === "file-too-large"
-      const msg = isTooLarge ? "文件超过 50MB 限制" : "不支持的文件格式"
-      if (isTooLarge) {
-        toast.error(`文件过大：最大支持 50MB（${r.file.name}）`)
-      }
+      const msg = r.errors[0]?.code === "file-too-large" ? "文件超过 50MB 限制" : "不支持的文件格式"
       setUploads((p) => [...p, { id: crypto.randomUUID(), name: r.file.name, progress: 0, status: "error" as const, error: msg }])
     })
 
-    // Upload accepted files (double-check size limit)
+    // Upload accepted files with progress tracking
+    const total = accepted.length
+    let doneCount = 0
     accepted.forEach((file) => {
-      if (file.size > MAX_SIZE) {
-        toast.error(`文件过大：最大支持 50MB（${file.name}）`)
-        setUploads((p) => [...p, { id: crypto.randomUUID(), name: file.name, progress: 0, status: "error" as const, error: "文件超过 50MB 限制" }])
-        return
-      }
       const itemId = crypto.randomUUID()
       setUploads((p) => [...p, { id: itemId, name: file.name, progress: 0, status: "uploading" as const }])
 
@@ -53,17 +46,26 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
         {
           onSuccess: () => {
             setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "done" as const, progress: 100 } : u))
-            toast.success(`✅ ${file.name} 已添加到对话上下文`, { duration: 3000 })
+            doneCount++
+            if (total > 1) {
+              toast(`文件上传完成 (${doneCount}/${total})`)
+            }
+            if (doneCount === total) {
+              toast.success("AI 正在理解你的文件...")
+            }
           },
           onError: (err: any) => {
             setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "error" as const, error: err.message || "记住失败" } : u))
-            toast.error(`${file.name} 上传失败: ${err.message || "未知错误"}`, { duration: 5000 })
+            doneCount++
+            if (doneCount === total) {
+              toast.success("AI 正在理解你的文件...")
+            }
           },
         }
       )
     })
 
-    // Auto-close modal and show toast after uploads start
+    // Auto-close modal after uploads start
     if (accepted.length > 0) {
       toast("正在让 AI 记住...", { duration: 3000 })
       onClose()

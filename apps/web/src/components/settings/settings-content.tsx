@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { getSession, signOut } from "next-auth/react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { UserAvatar } from "@/components/user/user-avatar"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -14,25 +14,118 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { ErrorState } from "@/components/ui/error-state"
 
-const sections = [
-  { id: "profile", emoji: "👤", title: "个人信息", desc: "用户名、头像、邮箱等基础信息" },
-  { id: "ai", emoji: "🤖", title: "AI 设置", desc: "AI 记忆管理、语言偏好、自动摘要开关" },
-  { id: "notifications", emoji: "🔔", title: "通知偏好", desc: "控制各类通知的开关" },
-  { id: "security", emoji: "🔒", title: "安全", desc: "修改密码与登录信息管理" },
-  { id: "data", emoji: "💾", title: "数据管理", desc: "存储用量、数据导出与账号操作" },
-] as const
+function ApiKeysCard() {
+  const [keys, setKeys] = useState<any[]>([])
+  const [keyName, setKeyName] = useState("")
+  const [newKey, setNewKey] = useState<string | null>(null)
+  const [creating, setCreating] = useState(false)
+
+  useEffect(() => {
+    const fetchKeys = async () => {
+      try {
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/api-keys")
+        setKeys(data?.keys || [])
+      } catch { /* ignore */ }
+    }
+    fetchKeys()
+  }, [])
+
+  const createKey = async () => {
+    setCreating(true)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const data = await apiFetch("/api/api-keys", { method: "POST", body: JSON.stringify({ name: keyName.trim() }) })
+      setNewKey(data.key)
+      setKeyName("")
+      const list = await apiFetch("/api/api-keys")
+      setKeys(list?.keys || [])
+      toast.success("API Key 已创建")
+    } catch {
+      toast.error("创建失败")
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const deleteKey = async (id: string) => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/api-keys/${id}`, { method: "DELETE" })
+      setKeys(prev => prev.filter(k => k.id !== id))
+      toast.success("已删除")
+    } catch {
+      toast.error("删除失败")
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>🔑 API Keys</CardTitle>
+        <CardDescription>创建 API Key 让 AI agent 接入你的知识库</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-2 mb-4">
+          <Input placeholder="Key 名称（如 My Agent）" value={keyName} onChange={(e) => setKeyName(e.target.value)} />
+          <Button onClick={createKey} disabled={!keyName.trim() || creating}>
+            {creating ? "创建中..." : "创建 Key"}
+          </Button>
+        </div>
+
+        {newKey && (
+          <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+            <p className="text-sm font-medium text-amber-600 mb-2">⚠️ 请保存你的 API Key — 只显示一次</p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 rounded bg-muted px-3 py-2 text-sm font-mono select-all">{newKey}</code>
+              <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newKey); toast.success("已复制") }}>
+                复制
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {keys.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">还没有 API Key</p>
+        ) : (
+          <div className="space-y-2">
+            {keys.map(k => (
+              <div key={k.id} className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <p className="text-sm font-medium">{k.name}</p>
+                  <p className="text-xs text-muted-foreground font-mono">{k.keyPrefix}••••••••</p>
+                  <p className="text-xs text-muted-foreground">
+                    创建于 {new Date(k.createdAt).toLocaleDateString("zh-CN")}
+                    {k.lastUsedAt && ` · 最后使用 ${new Date(k.lastUsedAt).toLocaleDateString("zh-CN")}`}
+                  </p>
+                </div>
+                <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteKey(k.id)}>
+                  删除
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p className="mt-4 text-xs text-muted-foreground">
+          📖 <a href="/developers" className="text-[#4F5BD5] hover:underline">查看 API 文档</a> — 上传文件、搜索知识、AI 问答
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
+
+type SettingsTab = "general" | "developer"
 
 export default function SettingsContent() {
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>("general")
   const [session, setSession] = useState<any>(null)
   const [name, setName] = useState("用户")
   const [deleteConfirm, setDeleteConfirm] = useState("")
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [deleteOpen, setDeleteOpen] = useState(false)
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-  const avatarInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     getSession().then((s) => {
@@ -41,42 +134,8 @@ export default function SettingsContent() {
         setName(s.user?.name || "用户")
       }
     })
-    // Fetch avatar
-    import("@/lib/api").then(({ apiFetch }) => {
-      apiFetch("/api/users/me").then((data: any) => {
-        if (data?.avatarUrl) setAvatarUrl(data.avatarUrl)
-      }).catch(() => {})
-    })
   }, [])
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    // Preview immediately
-    const previewUrl = URL.createObjectURL(file)
-    setAvatarUrl(previewUrl)
-
-    try {
-      const s = await getSession()
-      const token = (s as any)?.accessToken
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
-      const formData = new FormData()
-      formData.append("file", file)
-      const res = await fetch(apiBase + "/api/users/me/avatar", {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
-      })
-      if (!res.ok) throw new Error("上传失败")
-      const data = await res.json()
-      if (data.avatarUrl) setAvatarUrl(data.avatarUrl)
-      toast.success("头像已更新")
-    } catch {
-      toast.error("头像上传失败")
-    }
-  }
-
-  // AI Memories
   const [memories, setMemories] = useState<any[]>([])
 
   const fetchMemories = async () => {
@@ -98,78 +157,32 @@ export default function SettingsContent() {
     } catch { toast.error("删除失败") }
   }
 
-  // Notification Preferences
-  const [notifPrefs, setNotifPrefs] = useState({
-    fileUpdates: true,
-    aiAnalysis: true,
-    storageWarning: true,
-    systemAnnouncements: true,
-  })
-  const [notifLoading, setNotifLoading] = useState(true)
-  const [notifSaving, setNotifSaving] = useState(false)
+  const [storageUsed, setStorageUsed] = useState<string>("—")
+  const [storageTotal, setStorageTotal] = useState<string>("—")
+  const [chatUsedToday, setChatUsedToday] = useState<string>("—")
+  const [chatLimitToday, setChatLimitToday] = useState<string>("—")
 
   useEffect(() => {
-    import("@/lib/api").then(({ apiFetch }) => {
-      apiFetch("/api/notifications/preferences")
-        .then((data: any) => {
-          if (data?.preferences) setNotifPrefs(data.preferences)
+    const fetchUsage = async () => {
+      try {
+        const s = await getSession()
+        const token = (s as any)?.accessToken
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
+        const res = await fetch(apiBase + "/api/users/me", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
-        .catch(() => {})
-        .finally(() => setNotifLoading(false))
-    })
+        if (!res.ok) throw new Error("not ok")
+        const data = await res.json()
+        setStorageUsed(((data.storageUsed || 0) / 1073741824).toFixed(2))
+        setStorageTotal(((data.storageLimit || 5368709120) / 1073741824).toFixed(1))
+        setChatUsedToday(String(data.dailyChatCount ?? "—"))
+        setChatLimitToday(String(data.dailyChatLimit ?? 20))
+      } catch {
+        // API not available, keep fallback "—"
+      }
+    }
+    fetchUsage()
   }, [])
-
-  const handleNotifToggle = async (key: string, value: boolean) => {
-    const updated = { ...notifPrefs, [key]: value }
-    setNotifPrefs(updated)
-    setNotifSaving(true)
-    try {
-      const { apiFetch } = await import("@/lib/api")
-      await apiFetch("/api/notifications/preferences", {
-        method: "PUT",
-        body: JSON.stringify(updated),
-      })
-      toast.success("通知设置已保存")
-    } catch {
-      toast.error("保存失败")
-      setNotifPrefs(notifPrefs)
-    } finally {
-      setNotifSaving(false)
-    }
-  }
-
-  // Usage
-  const [storageUsed, setStorageUsed] = useState<string | null>(null)
-  const [storageTotal, setStorageTotal] = useState<string | null>(null)
-  const [chatUsedToday, setChatUsedToday] = useState<string | null>(null)
-  const [chatLimitToday, setChatLimitToday] = useState<string | null>(null)
-  const [usageLoading, setUsageLoading] = useState(true)
-  const [usageError, setUsageError] = useState(false)
-
-  const fetchUsage = async () => {
-    setUsageLoading(true)
-    setUsageError(false)
-    try {
-      const s = await getSession()
-      const token = (s as any)?.accessToken
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
-      const res = await fetch(apiBase + "/api/users/me", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      if (!res.ok) throw new Error("not ok")
-      const data = await res.json()
-      setStorageUsed(((data.storageUsed || 0) / 1073741824).toFixed(2))
-      setStorageTotal(((data.storageLimit || 5368709120) / 1073741824).toFixed(1))
-      setChatUsedToday(String(data.dailyChatCount ?? 0))
-      setChatLimitToday(String(data.dailyChatLimit ?? 50))
-    } catch {
-      setUsageError(true)
-    } finally {
-      setUsageLoading(false)
-    }
-  }
-
-  useEffect(() => { fetchUsage() }, [])
 
   const handleExport = async () => {
     try {
@@ -194,252 +207,185 @@ export default function SettingsContent() {
   }
 
   const handleDelete = () => {
-    if (deleteConfirm === "DELETE") {
+    if (deleteConfirm === "确认删除") {
       alert("账号已删除（mock）")
       setDeleteOpen(false)
     }
   }
 
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })
-  }
-
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <h1 className="text-2xl font-bold mb-6">设置</h1>
+    <div className="mx-auto max-w-2xl space-y-6 p-6">
+      <h1 className="text-2xl font-bold">设置</h1>
 
-      <div className="flex gap-8">
-        {/* Left nav */}
-        <nav className="hidden md:block w-48 shrink-0 sticky top-6 self-start">
-          <ul className="space-y-1">
-            {sections.map((s) => (
-              <li key={s.id}>
-                <button
-                  onClick={() => scrollTo(s.id)}
-                  className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  {s.emoji} {s.title}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* Main content */}
-        <div className="flex-1 space-y-6">
-          {/* 👤 个人信息 */}
-          <section id="profile" className="rounded-lg border bg-card p-6">
-            <h2 className="text-lg font-semibold mb-1">👤 个人信息</h2>
-            <p className="text-sm text-muted-foreground mb-4">用户名、头像、邮箱等基础信息</p>
-            <div className="space-y-4">
-              {/* Avatar */}
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => avatarInputRef.current?.click()}
-                  className="relative group cursor-pointer"
-                >
-                  <UserAvatar name={name} avatarUrl={avatarUrl} size={64} />
-                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-white text-xs">更换</span>
-                  </div>
-                </button>
-                <div>
-                  <p className="text-sm font-medium">头像</p>
-                  <p className="text-xs text-muted-foreground">点击更换头像</p>
-                </div>
-                <input
-                  ref={avatarInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
-                  className="hidden"
-                  onChange={handleAvatarUpload}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="name">名称</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-              </div>
-              {session?.user?.email && (
-                <div className="space-y-2">
-                  <Label htmlFor="email">邮箱</Label>
-                  <Input id="email" value={session.user.email} readOnly className="bg-muted" />
-                </div>
-              )}
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => toast.success("已保存")}>保存</Button>
-            </div>
-          </section>
-
-          {/* 🤖 AI 设置 */}
-          <section id="ai" className="rounded-lg border bg-card p-6">
-            <h2 className="text-lg font-semibold mb-1">🤖 AI 设置</h2>
-            <p className="text-sm text-muted-foreground mb-4">AI 记忆管理、语言偏好、自动摘要开关</p>
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">AI 记忆</h3>
-              <p className="text-xs text-muted-foreground">AI 从你的对话中学到的偏好和关注点</p>
-              {memories.length === 0 ? (
-                <p className="text-sm text-muted-foreground">AI 还没有记住任何内容。多聊聊试试。</p>
-              ) : (
-                <ul className="space-y-3">
-                  {memories.map(m => (
-                    <li key={m.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
-                      <div>
-                        <p className="text-sm font-medium">{m.key}</p>
-                        <p className="text-xs text-muted-foreground">{m.value}</p>
-                        <p className="text-xs text-muted-foreground/50 mt-1">{new Date(m.createdAt).toLocaleDateString("zh-CN")}</p>
-                      </div>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => handleDeleteMemory(m.id)}>
-                        ✕
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </section>
-
-          {/* 🔔 通知偏好 */}
-          <section id="notifications" className="rounded-lg border bg-card p-6">
-            <h2 className="text-lg font-semibold mb-1">🔔 通知偏好</h2>
-            <p className="text-sm text-muted-foreground mb-4">控制各类通知的开关</p>
-            <div className="space-y-4">
-              {notifLoading ? (
-                <p className="text-sm text-muted-foreground">加载中...</p>
-              ) : (
-                ([
-                  { key: "fileUpdates", label: "文件更新通知", desc: "文件上传、解析完成时通知" },
-                  { key: "aiAnalysis", label: "AI 分析完成通知", desc: "AI 摘要、知识图谱生成完成时通知" },
-                  { key: "storageWarning", label: "存储用量预警", desc: "存储空间即将用完时通知" },
-                  { key: "systemAnnouncements", label: "系统公告", desc: "产品更新、维护公告等" },
-                ] as const).map((item) => (
-                  <div key={item.key} className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-medium">{item.label}</p>
-                      <p className="text-xs text-muted-foreground">{item.desc}</p>
-                    </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={notifPrefs[item.key]}
-                      disabled={notifSaving}
-                      onClick={() => handleNotifToggle(item.key, !notifPrefs[item.key])}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        notifPrefs[item.key] ? "bg-blue-600" : "bg-muted-foreground/30"
-                      } ${notifSaving ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
-                          notifPrefs[item.key] ? "translate-x-6" : "translate-x-1"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-
-          {/* 🔒 安全 */}
-          <section id="security" className="rounded-lg border bg-card p-6">
-            <h2 className="text-lg font-semibold mb-1">🔒 安全</h2>
-            <p className="text-sm text-muted-foreground mb-4">修改密码与登录信息管理</p>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">当前密码</Label>
-                <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="rounded-xl h-12" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">新密码</Label>
-                <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="rounded-xl h-12" />
-              </div>
-              <Button
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                disabled={!currentPassword || !newPassword || newPassword.length < 6}
-                onClick={async () => {
-                  try {
-                    const { apiFetch } = await import("@/lib/api")
-                    await apiFetch("/api/users/me/password", { method: "PATCH", body: JSON.stringify({ currentPassword, newPassword }) })
-                    toast.success("密码已修改")
-                    setCurrentPassword("")
-                    setNewPassword("")
-                  } catch (e: any) { toast.error(e.message || "修改失败") }
-                }}
-              >
-                修改密码
-              </Button>
-              <div className="border-t pt-4">
-                <Button variant="outline" className="w-full" onClick={() => signOut({ callbackUrl: "/" })}>
-                  退出登录
-                </Button>
-              </div>
-            </div>
-          </section>
-
-          {/* 💾 数据管理 */}
-          <section id="data" className="rounded-lg border bg-card p-6">
-            <h2 className="text-lg font-semibold mb-1">💾 数据管理</h2>
-            <p className="text-sm text-muted-foreground mb-4">存储用量、数据导出与账号操作</p>
-            <div className="space-y-4">
-              {/* Usage */}
-              {usageLoading ? (
-                <div className="space-y-3">
-                  <div className="h-4 w-48 animate-pulse rounded bg-muted" />
-                  <div className="h-2 w-full animate-pulse rounded-full bg-muted" />
-                  <div className="h-4 w-36 animate-pulse rounded bg-muted" />
-                </div>
-              ) : usageError ? (
-                <ErrorState type="server" onRetry={fetchUsage} />
-              ) : (
-                <>
-                  <div>
-                    <p className="mb-1 text-sm text-muted-foreground">
-                      存储空间：{storageUsed} GB / {storageTotal} GB
-                    </p>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${storageUsed && storageTotal ? (parseFloat(storageUsed) / parseFloat(storageTotal)) * 100 : 0}%` }}
-                      />
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    今日对话：{chatUsedToday} / {chatLimitToday} 次
-                  </p>
-                </>
-              )}
-
-              <div className="border-t pt-4 flex flex-wrap gap-3">
-                <Button variant="outline" onClick={handleExport}>导出数据</Button>
-                <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="destructive">删除账号</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>确认删除账号</DialogTitle>
-                    </DialogHeader>
-                    <p className="text-sm text-muted-foreground">
-                      此操作不可撤销。请输入 <strong>DELETE</strong> 确认。
-                    </p>
-                    <Input
-                      value={deleteConfirm}
-                      onChange={(e) => setDeleteConfirm(e.target.value)}
-                      placeholder='输入 "DELETE"'
-                    />
-                    <Button
-                      variant="destructive"
-                      disabled={deleteConfirm !== "DELETE"}
-                      onClick={handleDelete}
-                    >
-                      确认删除
-                    </Button>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-          </section>
-        </div>
+      {/* Tab switcher */}
+      <div className="flex gap-1 rounded-lg bg-muted p-1">
+        <button
+          onClick={() => setSettingsTab("general")}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "general" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          ⚙️ 通用
+        </button>
+        <button
+          onClick={() => setSettingsTab("developer")}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "developer" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          🔧 开发者
+        </button>
       </div>
+
+      {settingsTab === "developer" ? (
+        <>
+          <p className="text-sm text-muted-foreground">这些功能面向需要通过 API 或 AI Agent 接入的高级用户</p>
+          <ApiKeysCard />
+        </>
+      ) : (
+      <>
+
+      {/* Profile */}
+      <Card>
+        <CardHeader>
+          <CardTitle>个人信息</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">名称</Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          {session?.user?.email && (
+            <div className="space-y-2">
+              <Label htmlFor="email">邮箱</Label>
+              <Input id="email" value={session.user.email} readOnly className="bg-muted" />
+            </div>
+          )}
+          <Button size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white" onClick={() => toast.success("已保存")}>保存</Button>
+        </CardContent>
+      </Card>
+
+      {/* Usage */}
+      <Card>
+        <CardHeader>
+          <CardTitle>用量</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <p className="mb-1 text-sm text-muted-foreground">
+              存储空间：{storageUsed} GB / {storageTotal} GB
+            </p>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${storageUsed !== "—" && storageTotal !== "—" ? (parseFloat(storageUsed) / parseFloat(storageTotal)) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            今日对话：{chatUsedToday} / {chatLimitToday} 次
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* AI Memory */}
+      <Card>
+        <CardHeader>
+          <CardTitle>🧠 AI 记忆</CardTitle>
+          <p className="text-sm text-muted-foreground">AI 从你的对话中学到的偏好和关注点</p>
+        </CardHeader>
+        <CardContent>
+          {memories.length === 0 ? (
+            <p className="text-sm text-muted-foreground">AI 还没有记住任何内容。多聊聊试试。</p>
+          ) : (
+            <ul className="space-y-3">
+              {memories.map(m => (
+                <li key={m.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
+                  <div>
+                    <p className="text-sm font-medium">{m.key}</p>
+                    <p className="text-xs text-muted-foreground">{m.value}</p>
+                    <p className="text-xs text-muted-foreground/50 mt-1">{new Date(m.createdAt).toLocaleDateString("zh-CN")}</p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => handleDeleteMemory(m.id)}>
+                    ✕
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Password */}
+      <Card>
+        <CardHeader>
+          <CardTitle>修改密码</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="currentPassword">当前密码</Label>
+            <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="rounded-xl h-12" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">新密码</Label>
+            <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="rounded-xl h-12" />
+          </div>
+          <Button
+            size="sm"
+            className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"
+            disabled={!currentPassword || !newPassword || newPassword.length < 6}
+            onClick={async () => {
+              try {
+                const { apiFetch } = await import("@/lib/api")
+                await apiFetch("/api/users/me/password", { method: "PATCH", body: JSON.stringify({ currentPassword, newPassword }) })
+                toast.success("密码已修改")
+                setCurrentPassword("")
+                setNewPassword("")
+              } catch (e: any) { toast.error(e.message || "修改失败") }
+            }}
+          >
+            修改密码
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Data */}
+      <Card>
+        <CardHeader>
+          <CardTitle>数据管理</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-4">
+          <Button variant="outline" onClick={handleExport}>
+            导出数据
+          </Button>
+          <Button variant="outline" className="w-full" onClick={() => signOut({ callbackUrl: "/" })}>
+            退出登录
+          </Button>
+          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            <DialogTrigger asChild>
+              <Button variant="destructive">删除账号</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>确认删除账号</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">
+                此操作不可撤销。请输入 <strong>确认删除</strong> 以继续。
+              </p>
+              <Input
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                placeholder='输入「确认删除」'
+              />
+              <Button
+                variant="destructive"
+                disabled={deleteConfirm !== "确认删除"}
+                onClick={handleDelete}
+              >
+                确认删除
+              </Button>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
+      </>
+      )}
     </div>
   )
 }

@@ -33,7 +33,41 @@ function CodeBlock({ children, ...props }: any) {
   )
 }
 
-const markdownComponents = { pre: CodeBlock }
+const markdownComponents = {
+  pre: CodeBlock,
+  table: ({ children, ...props }: any) => (
+    <div className="overflow-x-auto my-3">
+      <table className="w-full border-collapse border border-border text-sm" {...props}>{children}</table>
+    </div>
+  ),
+  thead: ({ children, ...props }: any) => (
+    <thead className="bg-muted/50" {...props}>{children}</thead>
+  ),
+  th: ({ children, ...props }: any) => (
+    <th className="border border-border px-3 py-2 text-left font-medium text-sm" {...props}>{children}</th>
+  ),
+  td: ({ children, ...props }: any) => (
+    <td className="border border-border px-3 py-2 text-sm" {...props}>{children}</td>
+  ),
+  blockquote: ({ children, ...props }: any) => (
+    <blockquote className="border-l-4 border-indigo-500 pl-4 my-3 text-muted-foreground italic" {...props}>{children}</blockquote>
+  ),
+  ul: ({ children, ...props }: any) => (
+    <ul className="list-disc pl-6 my-2 space-y-1" {...props}>{children}</ul>
+  ),
+  ol: ({ children, ...props }: any) => (
+    <ol className="list-decimal pl-6 my-2 space-y-1" {...props}>{children}</ol>
+  ),
+}
+
+function formatTime(dateStr: string): string {
+  const d = new Date(dateStr)
+  return d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false })
+}
+
+function formatFullTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleString("zh-CN")
+}
 
 function MessageActionBar({
   conversationId,
@@ -153,7 +187,7 @@ export function MessageList({
           msg.role === "assistant" && "border-l-2 border-border/30 pl-3"
         )}>
           {msg.role === "assistant" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>}
-          <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-blue-600 text-white rounded-2xl rounded-br-sm px-4 py-3" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>
+          <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-[#4F5BD5] text-white rounded-2xl rounded-br-sm px-4 py-3" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>
             {msg.role === "assistant" ? (
               <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={markdownComponents}>{msg.content}</ReactMarkdown>
@@ -165,16 +199,29 @@ export function MessageList({
                     </div>
                   </div>
                 )}
+<<<<<<< HEAD
                 <MessageActionBar
                   conversationId={conversationId}
                   messageId={msg.id}
                   content={msg.content}
                   onRegenerate={idx === lastAssistantIdx ? onRegenerate : undefined}
                 />
+=======
+                {!msg.id.startsWith("a-") && <MessageRating conversationId={conversationId} messageId={msg.id} />}
+                {msg.createdAt && (
+                  <p className="text-[10px] text-muted-foreground/50 mt-1 text-right" title={formatFullTime(msg.createdAt)}>
+                    {formatTime(msg.createdAt)}
+                  </p>
+                )}
+>>>>>>> origin/feat/ai-drive-web
               </div>
-            ) : <p>{msg.content}</p>}
+            ) : (<><p>{msg.content}</p>{msg.createdAt && (
+                  <p className="text-[10px] text-white/50 mt-1 text-right" title={formatFullTime(msg.createdAt)}>
+                    {formatTime(msg.createdAt)}
+                  </p>
+                )}</>)}
           </div>
-          {msg.role === "user" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">U</div>}
+          {msg.role === "user" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#4F5BD5] flex items-center justify-center text-white text-xs font-bold">U</div>}
         </div>
       ))}
       {streaming !== undefined && (

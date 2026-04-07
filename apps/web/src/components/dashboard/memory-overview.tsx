@@ -88,10 +88,10 @@ export function MemoryOverview() {
 
   return (
     <>
-    <div className="mx-4 mt-4 rounded-xl border border-blue-500/20 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 p-5">
+    <div className="mx-4 mt-4 rounded-xl border border-indigo-500/20 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 p-5">
       <div className="flex items-start gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500/10 shadow-lg shadow-blue-500/30">
-          <Brain className="h-5 w-5 text-blue-500" />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-500/10 shadow-lg shadow-indigo-500/30">
+          <Brain className="h-5 w-5 text-indigo-500" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -106,7 +106,7 @@ export function MemoryOverview() {
           {profile && profile.topics.length > 0 ? (
             <>
               <p className="mt-1 text-sm text-muted-foreground">
-                AI 了解你关注的 <strong className="text-foreground">{profile.topics.length}</strong> 个领域
+                AI 整理了 <strong className="text-foreground">{profile.topics.length}</strong> 个知识分类
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {profile.topics.map((t) => (
@@ -145,7 +145,7 @@ export function MemoryOverview() {
                 📊 本周 {weeklyStats.filesThisWeek} 文件 · {weeklyStats.conversationsThisWeek} 对话
               </span>
             )}
-            <Link href="/chat" className="ml-auto text-xs text-blue-500 hover:underline">
+            <Link href="/chat" className="ml-auto text-xs text-indigo-500 hover:underline">
               问你的 AI →
             </Link>
           </div>
@@ -153,7 +153,7 @@ export function MemoryOverview() {
       </div>
     </div>
     <Link href="/chat" className="mx-4 mt-3 mb-4 flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground hover:bg-muted/50 transition">
-      <MessageSquare className="h-4 w-4 text-blue-500" />
+      <MessageSquare className="h-4 w-4 text-indigo-500" />
       <span>问你的 AI 任何问题...</span>
       <ArrowRight className="ml-auto h-4 w-4" />
     </Link>

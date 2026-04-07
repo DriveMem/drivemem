@@ -54,8 +54,13 @@ export function FileGrid({ files = [] }: { files?: FileItem[] }) {
         <ul className="divide-y rounded border">
           {files.map((f) => (
             <li key={f.id}>
+<<<<<<< HEAD
               <Link href={`/files/${f.id}/preview`} className="flex items-center gap-3 px-4 py-3 hover:bg-accent">
                 {(() => { const { icon: Icon, colorClass } = getFileIcon(f.name, f.type); return <Icon className={cn("h-5 w-5", colorClass)} /> })()}
+=======
+              <Link href={`/files/${f.id}/preview`} className="flex items-center gap-3 px-4 py-3 hover:bg-accent transition-colors duration-150">
+                <span className="text-xl">{TYPE_ICONS[f.type] || "📄"}</span>
+>>>>>>> origin/feat/ai-drive-web
                 <span className="flex-1 truncate text-sm font-medium">{f.name}</span>
                 <span className={`text-xs ${f.parseStatus === "error" ? "text-destructive" : f.parseStatus === "parsing" ? "text-yellow-600" : "text-muted-foreground"}`}>
                   {STATUS_LABEL[f.parseStatus] || f.parseStatus}

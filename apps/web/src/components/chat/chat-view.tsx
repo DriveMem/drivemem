@@ -33,6 +33,7 @@ interface ChatMessage {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
 
 const DEFAULT_SUGGESTIONS = [
+<<<<<<< HEAD
   "📄 帮我总结 AI Drive 使用指南的要点",
   "🔍 这份竞品分析报告的关键发现是什么？",
   "💡 比较两个示例文件的内容差异",
@@ -40,6 +41,15 @@ const DEFAULT_SUGGESTIONS = [
 ]
 
 function EmptyState({ indexedCount, onSend, onSelectTemplate }: { indexedCount: number; onSend: (msg: string) => void; onSelectTemplate: (template: ConversationTemplate) => void }) {
+=======
+  "📄 总结我最近上传的文件",
+  "🔍 这些文件之间有什么关联？",
+  "💡 从我的文件中提取关键信息",
+  "📊 帮我分析文件内容",
+]
+
+function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (msg: string) => void }) {
+>>>>>>> origin/feat/ai-drive-web
   const [suggestions, setSuggestions] = useState<string[]>([])
 
   useEffect(() => {
@@ -60,6 +70,7 @@ function EmptyState({ indexedCount, onSend, onSelectTemplate }: { indexedCount: 
       {indexedCount > 0 ? (
         <>
           <p className="text-lg font-medium text-foreground">AI 已记住 {indexedCount} 个文件</p>
+<<<<<<< HEAD
           <p className="text-sm text-muted-foreground">选择模板开始对话，或直接提问：</p>
           <div className="grid grid-cols-2 gap-3 max-w-lg mt-2">
             {CONVERSATION_TEMPLATES.map((t) => (
@@ -72,6 +83,10 @@ function EmptyState({ indexedCount, onSend, onSelectTemplate }: { indexedCount: 
             ))}
           </div>
           <div className="mt-3 flex flex-wrap justify-center gap-2 max-w-lg">
+=======
+          <p className="text-sm text-muted-foreground">问问 AI 关于你的文件：</p>
+          <div className="mt-1 flex flex-wrap justify-center gap-2 max-w-lg">
+>>>>>>> origin/feat/ai-drive-web
             {chips.map((q, i) => (
               <button key={i} onClick={() => onSend(q)}
                 className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground/80 hover:bg-primary/10 hover:shadow-sm hover:scale-[1.02] transition-all cursor-pointer">

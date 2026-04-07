@@ -9,12 +9,11 @@ import {
   MessageSquare,
   History,
   Command,
-  Brain,
-  Shield,
   Quote,
   ArrowRight,
   ChevronRight,
-  Globe,
+  Lightbulb,
+  FileSearch,
 } from "lucide-react"
 
 function useSocialProofStats() {
@@ -63,10 +62,12 @@ const STEPS = [
 ] as const
 
 const FEATURES = [
-  { icon: MessageSquare, title: "AI 对话", desc: "问你的 AI 任何关于你文件的问题，获得基于文档内容的精准回答。就像拥有一个读过你所有资料的私人助手。", reverse: false },
-  { icon: Quote, title: "引用来源", desc: "每个回答都标注来自哪个文件、哪一段。让你对答案的准确性充满信心，随时可以回溯原文验证。", reverse: true },
-  { icon: History, title: "对话历史", desc: "所有对话自动保存，随时回顾。你的每一次提问和 AI 的每一次回答都被完整记录。", reverse: false },
-  { icon: Command, title: "全文搜索", desc: "⌘K 一键搜索所有文件内容。瞬间在海量文档中找到你需要的信息。", reverse: true },
+  { icon: MessageSquare, title: "AI 智能对话", desc: "问你的 AI 任何关于你文件的问题，获得基于文档内容的精准回答。就像拥有一个读过你所有资料的私人助手。", reverse: false },
+  { icon: Lightbulb, title: "AI 主动发现知识关联", desc: "AI 自动分析文件间的联系、矛盾和趋势，主动推送洞察给你，无需你提问。", reverse: true },
+  { icon: Quote, title: "精准引用来源", desc: "每个回答都标注来自哪个文件、哪一段。让你对答案的准确性充满信心，随时可以回溯原文验证。", reverse: false },
+  { icon: FileSearch, title: "一键查看文件摘要", desc: "AI 自动生成文件摘要、提取关键信息，无需逐页阅读。一眼掌握文件核心内容。", reverse: true },
+  { icon: Command, title: "全文语义搜索", desc: "⌘K 一键搜索所有文件内容。不只是关键词匹配，AI 理解你的意思，在海量文档中找到真正相关的信息。", reverse: false },
+  { icon: History, title: "对话历史记录", desc: "所有对话自动保存，随时回顾。你的每一次提问和 AI 的每一次回答都被完整记录。", reverse: true },
 ] as const
 
 export default function LandingPage() {
@@ -90,10 +91,14 @@ export default function LandingPage() {
       <section className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center bg-gradient-to-b from-[#F4F5FD] to-white px-6 text-center">
         <FadeIn>
           <h1 className="mx-auto max-w-4xl text-5xl font-bold leading-tight tracking-tight sm:text-7xl">
-            让 AI 记住你的一切
+            你的 AI 知识助手
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-[#6B6966] sm:text-xl">
+<<<<<<< HEAD
             上传你的文档，AI 帮你记忆、理解、随时回答。你的个人 AI 知识库。
+=======
+            上传文件，AI 自动理解。随时提问，AI 用你的知识回答。
+>>>>>>> origin/feat/ai-drive-web
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" className="h-12 px-8 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
@@ -127,9 +132,10 @@ export default function LandingPage() {
 
       {/* Value Cards section removed — AI Feature Showcase below is more specific */}
 
-      {/* ===== AI Feature Showcase ===== */}
+      {/* ===== Scenario Cards ===== */}
       <section id="features" className="relative z-10 mx-auto max-w-6xl px-6 py-24">
         <FadeIn>
+<<<<<<< HEAD
           <h2 className="text-center text-3xl font-bold sm:text-4xl">AI 让你的文件更智能</h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">不只是存储，更是理解。AI Drive 让每个文件都成为可交互的知识。</p>
           <div className="mt-16 grid gap-6 sm:grid-cols-3">
@@ -154,6 +160,25 @@ export default function LandingPage() {
               <h3 className="text-xl font-semibold mb-2">知识时间线</h3>
               <p className="text-[#6B6966] leading-relaxed">按时间轴浏览你的知识积累，清晰回顾学习与成长的脉络</p>
             </div>
+=======
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">每个人都能用 AI Drive</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">无论你是学生、职场人还是研究者，AI Drive 都能帮你更高效地使用知识。</p>
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { emoji: "📄", title: "学生写论文", desc: "上传参考文献，AI 帮你找关键论点、对比不同作者观点" },
+              { emoji: "💼", title: "职场人做汇报", desc: "上传项目文档，一键生成分析报告，数据引用有据可查" },
+              { emoji: "🔬", title: "研究员做调研", desc: "上传多篇论文，AI 自动发现观点关联和数据矛盾" },
+              { emoji: "📊", title: "创业者做竞品分析", desc: "上传竞品资料，AI 对比分析差异，生成结构化报告" },
+              { emoji: "🤖", title: "AI 开发者", desc: "通过 API 和 MCP 协议，让你的 AI agent 接入个人知识库" },
+              { emoji: "📚", title: "终身学习者", desc: "所有笔记和资料统一管理，AI 帮你建立知识体系" },
+            ].map((s) => (
+              <div key={s.title} className="rounded-xl border border-[#E5E4E1] bg-white p-6 transition hover:shadow-lg hover:shadow-black/5">
+                <span className="text-3xl">{s.emoji}</span>
+                <h3 className="mt-3 text-lg font-semibold">{s.title}</h3>
+                <p className="mt-2 text-sm text-[#6B6966] leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+>>>>>>> origin/feat/ai-drive-web
           </div>
         </FadeIn>
       </section>
@@ -195,7 +220,7 @@ export default function LandingPage() {
               {/* real screenshot */}
               <div className="w-full flex-1 overflow-hidden rounded-2xl border border-[#E5E4E1] ring-1 ring-black/5 shadow-lg">
                 <img
-                  src={f.title === "AI 对话" || f.title === "引用来源" ? "/screenshots/chat.png" : "/screenshots/dashboard.png"}
+                  src={f.title === "AI 智能对话" || f.title === "精准引用来源" || f.title === "对话历史记录" ? "/screenshots/chat.png" : "/screenshots/dashboard.png"}
                   alt={f.title}
                   className="w-full rounded-2xl"
                 />
@@ -228,6 +253,13 @@ export default function LandingPage() {
           <p className="mt-4 text-sm text-[#6B6966]">✨ 免费 5GB 存储 · 每天 50 次 AI 对话 · 无需信用卡</p>
         </FadeIn>
       </section>
+
+      {/* ===== Developer Section ===== */}
+      <div className="relative z-10 border-t border-[#E5E4E1] py-8 text-center">
+        <p className="text-sm text-[#6B6966]">
+          🔧 开发者？AI Drive 提供 <a href="/developers" className="text-[#4F5BD5] hover:underline">Open API</a> 和 <span className="text-[#4F5BD5]">MCP 协议</span>，让任何 AI agent 接入你的知识库
+        </p>
+      </div>
 
       {/* ===== Footer ===== */}
       <footer className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5] px-6 py-8 text-center text-sm text-[#6B6966]">

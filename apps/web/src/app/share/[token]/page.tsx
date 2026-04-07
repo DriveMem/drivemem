@@ -106,7 +106,7 @@ export default function SharePage() {
           <div className="mt-8 rounded-2xl bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 border border-blue-500/20 p-8 text-center">
             <h2 className="text-xl font-bold">🚀 免费创建你的 AI 知识库</h2>
             <p className="mt-2 text-sm text-muted-foreground">上传文件即可开始 — AI 自动理解、记忆、分析</p>
-            <Button asChild className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-8">
+            <Button asChild className="mt-4 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white px-8">
               <Link href="/signup">免费注册</Link>
             </Button>
           </div>

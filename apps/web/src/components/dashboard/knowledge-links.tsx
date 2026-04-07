@@ -49,7 +49,7 @@ export function KnowledgeLinks() {
             </span>
             <Link
               href={`/chat?q=对比「${link.fileAName}」和「${link.fileBName}」的核心观点异同&mode=compare&fileA=${link.fileAId}&fileB=${link.fileBId}`}
-              className="shrink-0 ml-3 text-xs text-blue-500 hover:underline"
+              className="shrink-0 ml-3 text-xs text-indigo-500 hover:underline"
             >
               对比
             </Link>

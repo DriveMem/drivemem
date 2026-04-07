@@ -26,6 +26,33 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
+
+    /* === AI Drive Design System === */
+    /* 背景 */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F8F7F5;
+    --bg-tertiary: #F1F0EE;
+    --bg-elevated: #FFFFFF;
+    --bg-sunken: #EFEEED;
+    /* 文字 */
+    --text-primary: #1C1B18;
+    --text-secondary: #6B6966;
+    --text-tertiary: #9B9893;
+    --text-inverse: #FFFFFF;
+    /* 品牌强调色 */
+    --ad-accent: #4F5BD5;
+    --ad-accent-hover: #3D49C4;
+    --ad-accent-light: #ECEEFB;
+    --ad-accent-subtle: #F4F5FD;
+    /* 边框 */
+    --border-default: #E5E4E1;
+    --border-subtle: #EEEDEB;
+    --border-strong: #D0CFCC;
+    /* 语义色 */
+    --success: #30A46C;
+    --warning: #F5A623;
+    --error: #E5484D;
+    --info: #3B82F6;
   }
 
   .dark {
@@ -48,6 +75,26 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+
+    /* AI Drive Design System — Dark Mode */
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #252525;
+    --bg-tertiary: #303030;
+    --bg-elevated: #2a2a2a;
+    --bg-sunken: #1f1f1f;
+
+    --text-primary: #e8e8e8;
+    --text-secondary: #999999;
+    --text-tertiary: #666666;
+
+    --ad-accent: #7B85E8;
+    --ad-accent-hover: #6E78E0;
+    --ad-accent-light: #2a2d4a;
+    --ad-accent-subtle: #22243a;
+
+    --border-default: #333333;
+    --border-subtle: #2a2a2a;
+    --border-strong: #444444;
   }
 }
 

@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,9 +19,16 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
+  return <Suspense><LoginForm /></Suspense>
+}
+
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const returnUrl = searchParams.get("returnUrl") || "/"
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
 
   const {
     register,
@@ -39,12 +46,13 @@ export default function LoginPage() {
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
+        rememberMe: rememberMe ? "true" : "false",
         redirect: false,
       })
       if (result?.error) {
         setError("邮箱或密码错误")
       } else {
-        router.push("/")
+        router.push(returnUrl)
         router.refresh()
       }
     } catch {
@@ -70,7 +78,7 @@ export default function LoginPage() {
             id="email"
             type="email"
             placeholder="your@email.com"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-[#4F5BD5] focus:border-[#4F5BD5]"
             {...register("email")}
           />
           {errors.email && (
@@ -92,12 +100,17 @@ export default function LoginPage() {
             id="password"
             type="password"
             placeholder="••••••••"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-[#4F5BD5] focus:border-[#4F5BD5]"
             {...register("password")}
           />
           {errors.password && (
             <p className="text-sm text-destructive">{errors.password.message}</p>
           )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input type="checkbox" id="rememberMe" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="rounded border-border/50" />
+          <label htmlFor="rememberMe" className="text-sm text-muted-foreground cursor-pointer">记住我（30 天免登录）</label>
         </div>
 
         {error && (
@@ -106,7 +119,7 @@ export default function LoginPage() {
 
         <Button
           type="submit"
-          className="bg-blue-600 hover:bg-blue-700 rounded-xl h-12 w-full text-white font-medium"
+          className="bg-[#4F5BD5] hover:bg-[#3D49C4] rounded-xl h-12 w-full text-white font-medium"
           disabled={loading}
         >
           {loading ? "登录中..." : "登录"}

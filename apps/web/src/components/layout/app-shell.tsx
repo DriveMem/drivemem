@@ -17,7 +17,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         initial={false}
         animate={{ width: sidebarCollapsed ? 64 : 240 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
-        className="flex-shrink-0 border-r border-border overflow-hidden"
+        className="flex-shrink-0 border-r border-border overflow-hidden bg-[#F8F7F5] dark:bg-[#252525]"
       >
         <Sidebar />
       </motion.aside>

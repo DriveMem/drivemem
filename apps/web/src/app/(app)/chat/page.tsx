@@ -9,6 +9,7 @@ function ChatPageInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const fileId = searchParams.get("file") || undefined
+  const fileIds = searchParams.get("fileIds") || undefined
   const presetQuestion = searchParams.get("q") || undefined
   const compareMode = searchParams.get("mode") === "compare"
   const fileA = searchParams.get("fileA") || undefined
@@ -16,14 +17,15 @@ function ChatPageInner() {
   const { data: convsData, isLoading } = useConversations()
 
   useEffect(() => {
-    if (isLoading || fileId || presetQuestion) return
+    if (isLoading || fileId || fileIds || presetQuestion) return
     const convs = Array.isArray(convsData) ? convsData : (convsData?.conversations || [])
     if (convs.length > 0 && convs[0].id) {
       router.replace("/chat/" + convs[0].id)
     }
-  }, [convsData, isLoading, fileId, presetQuestion, router])
+  }, [convsData, isLoading, fileId, fileIds, presetQuestion, router])
 
-  return <ChatView fileScope={fileId} presetQuestion={presetQuestion} compareMode={compareMode} fileA={fileA} fileB={fileB} />
+  const resolvedFileScope = fileIds ? `files:${fileIds}` : fileId
+  return <ChatView fileScope={resolvedFileScope} presetQuestion={presetQuestion} compareMode={compareMode} fileA={fileA} fileB={fileB} />
 }
 
 export default function ChatPage() {

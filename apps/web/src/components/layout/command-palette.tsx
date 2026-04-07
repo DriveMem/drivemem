@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import React, { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import {
   CommandDialog,
@@ -13,28 +13,23 @@ import {
 import { useFiles } from "@/hooks/use-files"
 import { apiFetch } from "@/lib/api"
 
-function HighlightText({ text, query }: { text: string; query: string }) {
-  if (!query.trim() || !text) return <>{text}</>
-  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi")
-  const parts = text.split(regex)
-  return (
-    <>
-      {parts.map((part, i) =>
-        regex.test(part) ? (
-          <mark key={i} className="bg-yellow-500/30 text-foreground rounded-sm px-0.5">{part}</mark>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )}
-    </>
-  )
-}
-
 interface SearchResult {
   type: "file" | "chunk"
   fileId: string
   fileName: string
   text?: string
+}
+
+function highlightText(text: string, query: string, maxLen = 120): React.ReactNode {
+  if (!text || !query) return text?.slice(0, maxLen)
+  const idx = text.toLowerCase().indexOf(query.toLowerCase())
+  if (idx === -1) return text.slice(0, maxLen)
+  const start = Math.max(0, idx - 40)
+  const end = Math.min(text.length, idx + query.length + 40)
+  const before = (start > 0 ? "..." : "") + text.slice(start, idx)
+  const match = text.slice(idx, idx + query.length)
+  const after = text.slice(idx + query.length, end) + (end < text.length ? "..." : "")
+  return <>{before}<mark className="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{match}</mark>{after}</>
 }
 
 export function CommandPalette() {
@@ -116,15 +111,23 @@ export function CommandPalette() {
                 value={`search-${r.fileId}-${r.fileName}-${i}`}
                 onSelect={() => navigate(`/files/${r.fileId}/preview`)}
               >
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm"><HighlightText text={r.fileName} query={inputValue} /></span>
+                <div className="flex flex-1 flex-col gap-0.5">
+                  <span className="text-sm">{r.fileName}</span>
                   {r.type === "chunk" && r.text && (
-                    <span className="text-xs text-muted-foreground line-clamp-1"><HighlightText text={r.text.slice(0, 80)} query={inputValue} /></span>
+                    <span className="text-xs text-muted-foreground line-clamp-2">{highlightText(r.text, inputValue.trim())}</span>
                   )}
                 </div>
-                {r.type === "chunk" && (
-                  <span className="ml-auto shrink-0 rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] text-blue-400">内容匹配</span>
-                )}
+                <div className="flex items-center gap-1.5 ml-auto shrink-0">
+                  {r.type === "chunk" && (
+                    <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] text-blue-400">内容匹配</span>
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate(`/chat?q=关于${encodeURIComponent(r.fileName)}的问题`) }}
+                    className="rounded bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white hover:bg-[#3D49C4] transition"
+                  >
+                    💬 问 AI
+                  </button>
+                </div>
               </CommandItem>
             ))}
           </CommandGroup>
