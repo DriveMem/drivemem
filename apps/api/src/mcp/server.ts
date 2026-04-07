@@ -82,6 +82,18 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {},
       },
     },
+    {
+      name: 'aidrive_upload_file',
+      description: '上传文件到用户的 AI Drive 知识库。上传后 AI 会自动解析、生成摘要、发现知识关联。适用场景：agent 想把工作产出物（报告、笔记、分析结果）存入知识库供后续检索和问答。',
+      inputSchema: {
+        type: 'object' as const,
+        properties: {
+          filename: { type: 'string', description: '文件名（如 report.md）' },
+          content: { type: 'string', description: '文件内容（纯文本或 Markdown）' },
+        },
+        required: ['filename', 'content'],
+      },
+    },
   ],
 }));
 
@@ -155,6 +167,40 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const suggestions = await chat([{ role: 'user', content: prompt }]);
         return { content: [{ type: 'text' as const, text: suggestions }] };
       }
+
+      case 'aidrive_upload_file': {
+        const filename = (args as any).filename as string;
+        const content = (args as any).content as string;
+        if (!filename || !content) return { content: [{ type: 'text' as const, text: '需要 filename 和 content 参数。' }], isError: true };
+
+        const { randomUUID } = await import('crypto');
+        const fileId = randomUUID();
+        const s3Key = `users/${USER_ID}/files/${fileId}/${filename}`;
+        const buffer = Buffer.from(content, 'utf-8');
+        const mimeType = filename.endsWith('.md') ? 'text/markdown' : 'text/plain';
+
+        const { uploadObject } = await import('../services/s3.service.js');
+        await uploadObject(s3Key, buffer, mimeType);
+
+        await db.insert(schema.files).values({
+          id: fileId,
+          name: filename,
+          originalName: filename,
+          mimeType,
+          size: buffer.length,
+          status: 'parsing',
+          userId: USER_ID,
+          s3Key,
+        });
+
+        const { Queue } = await import('bullmq');
+        const queue = new Queue('file-parse', { connection: { host: 'localhost', port: 6379 } });
+        await queue.add('parse', { fileId, userId: USER_ID, s3Key, mimeType });
+        await queue.close();
+
+        return { content: [{ type: 'text' as const, text: `✅ 已上传「${filename}」到知识库。AI 正在解析和索引，稍后可搜索和问答。` }] };
+      }
+
       default:
         return { content: [{ type: 'text' as const, text: `未知工具: ${name}` }], isError: true };
     }

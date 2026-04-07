@@ -88,3 +88,8 @@ export async function getObjectStream(key: string): Promise<NodeJS.ReadableStrea
   const response = await s3Client.send(command);
   return response.Body as NodeJS.ReadableStream;
 }
+
+export async function uploadObject(key: string, body: Buffer, contentType: string): Promise<void> {
+  const command = new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: contentType });
+  await s3Client.send(command);
+}
