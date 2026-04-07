@@ -70,6 +70,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: 'object' as const,
         properties: {
           fileId: { type: 'string', description: '文件 ID' },
+          detail: { type: 'string', description: 'brief（默认，返回摘要+元数据，省 token）或 full（返回完整信息）', enum: ['brief', 'full'] },
         },
         required: ['fileId'],
       },
@@ -150,11 +151,28 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case 'aidrive_file_detail': {
         const fileId = (args as any).fileId as string;
+        const detail = ((args as any).detail as string) || 'brief';
         const [file] = await db.select().from(schema.files)
           .where(eq(schema.files.id, fileId));
         if (!file || file.userId !== USER_ID) return { content: [{ type: 'text' as const, text: '文件不存在。' }] };
-        const text = `文件: ${file.name}\n类型: ${file.mimeType}\n状态: ${file.status}\n摘要: ${file.summary || '无'}\n创建: ${file.createdAt}`;
-        return { content: [{ type: 'text' as const, text }] };
+        
+        if (detail === 'brief') {
+          const text = `文件: ${file.name}\n类型: ${file.mimeType}\n状态: ${file.status}\n大小: ${Number(file.size)} bytes\n摘要: ${file.summary?.slice(0, 200) || '无'}\n创建: ${file.createdAt}`;
+          return { content: [{ type: 'text' as const, text }] };
+        }
+        
+        // full: include summary + top chunks from Qdrant
+        let fullText = `文件: ${file.name}\n类型: ${file.mimeType}\n状态: ${file.status}\n大小: ${Number(file.size)} bytes\n创建: ${file.createdAt}\n\n摘要:\n${file.summary || '无'}`;
+        
+        if (file.status === 'indexed' && file.summary) {
+          const [queryVec] = await embedTexts([file.summary.substring(0, 100)]);
+          const chunks = await searchSimilar({ userId: USER_ID, query: queryVec, scopeType: 'file', scopeId: fileId, limit: 3 });
+          if (chunks.length > 0) {
+            fullText += '\n\n关键片段:\n' + chunks.map((c, i) => `[${i + 1}] ${c.text.slice(0, 500)}`).join('\n\n');
+          }
+        }
+        
+        return { content: [{ type: 'text' as const, text: fullText }] };
       }
 
 
