@@ -12,6 +12,8 @@ import {
   Quote,
   ArrowRight,
   ChevronRight,
+  Lightbulb,
+  FileSearch,
 } from "lucide-react"
 
 function FadeIn({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -48,10 +50,12 @@ const STEPS = [
 ] as const
 
 const FEATURES = [
-  { icon: MessageSquare, title: "AI 对话", desc: "问你的 AI 任何关于你文件的问题，获得基于文档内容的精准回答。就像拥有一个读过你所有资料的私人助手。", reverse: false },
-  { icon: Quote, title: "引用来源", desc: "每个回答都标注来自哪个文件、哪一段。让你对答案的准确性充满信心，随时可以回溯原文验证。", reverse: true },
-  { icon: History, title: "对话历史", desc: "所有对话自动保存，随时回顾。你的每一次提问和 AI 的每一次回答都被完整记录。", reverse: false },
-  { icon: Command, title: "全文搜索", desc: "⌘K 一键搜索所有文件内容。瞬间在海量文档中找到你需要的信息。", reverse: true },
+  { icon: MessageSquare, title: "AI 智能对话", desc: "问你的 AI 任何关于你文件的问题，获得基于文档内容的精准回答。就像拥有一个读过你所有资料的私人助手。", reverse: false },
+  { icon: Lightbulb, title: "AI 主动发现知识关联", desc: "AI 自动分析文件间的联系、矛盾和趋势，主动推送洞察给你，无需你提问。", reverse: true },
+  { icon: Quote, title: "精准引用来源", desc: "每个回答都标注来自哪个文件、哪一段。让你对答案的准确性充满信心，随时可以回溯原文验证。", reverse: false },
+  { icon: FileSearch, title: "一键查看文件摘要", desc: "AI 自动生成文件摘要、提取关键信息，无需逐页阅读。一眼掌握文件核心内容。", reverse: true },
+  { icon: Command, title: "全文语义搜索", desc: "⌘K 一键搜索所有文件内容。不只是关键词匹配，AI 理解你的意思，在海量文档中找到真正相关的信息。", reverse: false },
+  { icon: History, title: "对话历史记录", desc: "所有对话自动保存，随时回顾。你的每一次提问和 AI 的每一次回答都被完整记录。", reverse: true },
 ] as const
 
 export default function LandingPage() {
@@ -172,7 +176,7 @@ export default function LandingPage() {
               {/* real screenshot */}
               <div className="w-full flex-1 overflow-hidden rounded-2xl border border-[#E5E4E1] ring-1 ring-black/5 shadow-lg">
                 <img
-                  src={f.title === "AI 对话" || f.title === "引用来源" ? "/screenshots/chat.png" : "/screenshots/dashboard.png"}
+                  src={f.title === "AI 智能对话" || f.title === "精准引用来源" || f.title === "对话历史记录" ? "/screenshots/chat.png" : "/screenshots/dashboard.png"}
                   alt={f.title}
                   className="w-full rounded-2xl"
                 />
