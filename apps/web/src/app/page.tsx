@@ -58,7 +58,7 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
 
 const STEPS = [
   { icon: Upload, title: "上传文件", desc: "拖拽或选择你的 PDF、Word、PPT、Excel、TXT、Markdown 文件" },
-  { icon: Search, title: "AI 自动索引", desc: "AI 自动解析文件内容，建立知识图谱" },
+  { icon: Search, title: "AI 自动索引", desc: "AI 自动理解内容，建立语义索引" },
   { icon: MessageSquare, title: "对话提问", desc: "用自然语言提问，获得精准答案" },
 ] as const
 
