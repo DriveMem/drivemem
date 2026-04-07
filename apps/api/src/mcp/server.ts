@@ -177,11 +177,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 
       case 'aidrive_suggest_workflow': {
-        const files = await db.select({ name: schema.files.name, summary: schema.files.summary })
+        const files = await db.select({ name: schema.files.name, summary: schema.files.summary, mimeType: schema.files.mimeType })
           .from(schema.files).where(eq(schema.files.userId, USER_ID)).orderBy(desc(schema.files.createdAt)).limit(10);
         if (files.length === 0) return { content: [{ type: 'text' as const, text: '知识库为空。上传文件后 AI 会自动分析并生成操作建议。' }] };
-        const fileSummaries = files.map(f => `- ${f.name}: ${f.summary?.slice(0, 80) || '无摘要'}`).join('\n');
-        const prompt = `用户知识库有以下文件：\n${fileSummaries}\n\n基于这些文件内容，建议 3-5 个有价值的操作。每条建议一行，格式：emoji + 具体建议（含涉及的文件名）。不要空话。`;
+        
+        // Get knowledge links for richer context
+        const links = await db.select({ description: schema.knowledgeLinks.description, relationType: schema.knowledgeLinks.relationType })
+          .from(schema.knowledgeLinks).where(eq(schema.knowledgeLinks.userId, USER_ID)).limit(5);
+        
+        // Get existing insights
+        const existingInsights = await db.select({ title: schema.insights.title })
+          .from(schema.insights).where(eq(schema.insights.userId, USER_ID)).limit(5);
+        
+        const fileSummaries = files.map(f => `- ${f.name} (${f.mimeType}): ${f.summary?.slice(0, 120) || '无摘要'}`).join('\n');
+        const linkInfo = links.length > 0 ? '\n\n文件间已知关联：\n' + links.map(l => `- ${l.relationType}: ${l.description}`).join('\n') : '';
+        const insightInfo = existingInsights.length > 0 ? '\n\nAI 已发现的洞察：\n' + existingInsights.map(i => `- ${i.title}`).join('\n') : '';
+        
+        const prompt = `用户知识库有 ${files.length} 个文件：\n${fileSummaries}${linkInfo}${insightInfo}\n\n基于以上具体文件内容和关联，建议 3-5 个**具体可执行的操作**。要求：\n1. 每条建议必须提到具体文件名\n2. 建议要有实际价值（如"对比《X》和《Y》的市场定位差异"），不要泛泛而谈\n3. 混合不同类型：有分析类、有整理类、有探索类\n4. 格式：emoji + 具体建议（一行一条）`;
         const suggestions = await chat([{ role: 'user', content: prompt }]);
         return { content: [{ type: 'text' as const, text: suggestions }] };
       }
