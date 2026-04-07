@@ -119,3 +119,15 @@
 
 /* Card hover */
 .card-hover { @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5; }
+
+/* Citation superscript */
+.citation-ref {
+  color: var(--ad-accent, #4F5BD5);
+  font-size: 0.7em;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 1px;
+}
+.citation-ref:hover {
+  text-decoration: underline;
+}
