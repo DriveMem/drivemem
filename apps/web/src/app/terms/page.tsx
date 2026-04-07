@@ -1,6 +1,10 @@
 import Link from "next/link"
 
-export const metadata = { title: "使用条款 - AI Drive" }
+export const metadata = {
+  title: "使用条款 - AI Drive",
+  description: "AI Drive 使用条款和服务协议",
+  openGraph: { title: "使用条款 - AI Drive", description: "AI Drive 使用条款和服务协议" },
+}
 
 export default function TermsPage() {
   return (
