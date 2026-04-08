@@ -4,19 +4,21 @@ import { Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint }: { onSend: (message: string) => void; disabled?: boolean; dailyLimitReached?: boolean; scopeHint?: string }) {
+export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, fileCount = 0, hasConversations = false }: { onSend: (message: string) => void; disabled?: boolean; dailyLimitReached?: boolean; scopeHint?: string; fileCount?: number; hasConversations?: boolean }) {
   const [value, setValue] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const [placeholder] = useState(() => {
-    const placeholders = [
-      "问 AI 任何关于你文件的问题...",
-      "帮我总结这份文件的要点",
-      "找出文件里的关键信息",
-      "这些资料的核心结论是什么？",
-      "帮我整理一下上传的内容",
-    ]
-    return placeholders[Math.floor(Math.random() * placeholders.length)]
+    if (fileCount === 0) {
+      const p = ["上传文件后，试试问 AI 任何问题...", "拖拽文件到这里开始，或直接输入问题..."]
+      return p[Math.floor(Math.random() * p.length)]
+    }
+    if (!hasConversations) {
+      const p = ["总结我最近上传的文件", "我的文件里有哪些关键信息？", "帮我分析这些文件的共同点"]
+      return p[Math.floor(Math.random() * p.length)]
+    }
+    const p = ["对比我最近上传的两个文件", "基于我的知识库，帮我写一份总结", "我的文件里有没有矛盾的信息？"]
+    return p[Math.floor(Math.random() * p.length)]
   })
 
   useEffect(() => {

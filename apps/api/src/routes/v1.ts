@@ -239,7 +239,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
       (c, i) => `来源 ${i + 1} (${c.fileName} 第${c.chunkIndex + 1}段): ${c.text}`,
     );
 
-    const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于文档内容回答。引用来源。\n\n[文档片段]\n${citationSources.join('\n\n') || '（未找到相关文档）'}`;
+    const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于文档内容回答。用上标数字¹²³引用来源。\n\n[文档片段]\n${citationSources.join('\n\n') || '（未找到相关文档）'}`;
 
     const { chat } = await import('../services/llm.service.js');
     const answer = await chat([
