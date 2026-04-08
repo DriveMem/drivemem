@@ -218,7 +218,7 @@ export default function LandingPage() {
             <div>
               <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">开发者</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><span className="text-[#6B6966]">API 文档</span></li>
+                <li><a href="https://api.verrrnm.cloud/api/docs" target="_blank" rel="noopener noreferrer" className="hover:text-[#4F5BD5] transition">API 文档</a></li>
                 <li><span className="text-[#6B6966]">MCP 协议</span></li>
                 <li><span className="text-[#6B6966]">CLI 工具</span></li>
               </ul>

@@ -29,7 +29,7 @@ export default auth((req) => {
   }
 
   // Known app routes that require auth
-  const appRoutes = ["/dashboard", "/chat", "/settings", "/timeline", "/files", "/search"]
+  const appRoutes = ["/dashboard", "/chat", "/settings", "/timeline", "/files", "/search", "/trash"]
   const isAppRoute = appRoutes.some(r => req.nextUrl.pathname.startsWith(r))
 
   // Landing page is public
