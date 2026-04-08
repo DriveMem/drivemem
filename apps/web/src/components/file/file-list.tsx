@@ -47,6 +47,7 @@ interface FileItem {
   suggestedFolder?: string | null
   previousVersionId?: string | null
   archivedAt?: string | null
+  tags?: { name: string; color?: string }[]
 }
 
 function fmtSize(b: number) { return !b ? "—" : b < 1024 ? "< 1 KB" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
@@ -507,6 +508,9 @@ export function FileList() {
                 <span className="truncate text-sm flex-1 min-w-0">{file.name}</span>
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">已更新</span>}
                 {file.archivedAt && <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">已归档</span>}
+                {file.tags?.slice(0, 2).map((tag: any) => (
+                  <span key={tag.name} className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
+                ))}
                 {file.suggestedFolder && !file.folderId && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
