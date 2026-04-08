@@ -1,6 +1,9 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
 import crypto from 'node:crypto';
 import { config } from '../lib/config.js';
+import { db } from '../db/index.js';
+import * as schema from '../db/schema.js';
+import { eq } from 'drizzle-orm';
 
 const COLLECTION_NAME = 'document_chunks';
 const VECTOR_SIZE = 1024; // text-embedding-v3
@@ -122,6 +125,23 @@ export async function searchSimilar(params: {
   }));
 
   // Deduplicate: if multiple chunks from same file, keep highest scoring
-  // Then sort by score (semantic similarity is primary ranking)
-  return rawResults;
+  // Apply time decay: newer files get a boost
+  const fileIds = [...new Set(rawResults.map(r => r.fileId))];
+  const fileDates: Record<string, Date> = {};
+  for (const fid of fileIds) {
+    const [f] = await db.select({ id: schema.files.id, createdAt: schema.files.createdAt })
+      .from(schema.files).where(eq(schema.files.id, fid));
+    if (f) fileDates[f.id] = f.createdAt;
+  }
+
+  const now = Date.now();
+  const boostedResults = rawResults.map(r => {
+    const created = fileDates[r.fileId];
+    const daysSince = created ? (now - new Date(created).getTime()) / 86400000 : 30;
+    const timeDecay = 1 / (1 + daysSince * 0.01); // newer = higher
+    return { ...r, score: r.score * (0.8 + 0.2 * timeDecay) }; // 80% similarity + 20% recency
+  });
+
+  boostedResults.sort((a, b) => b.score - a.score);
+  return boostedResults;
 }
