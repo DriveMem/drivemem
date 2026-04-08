@@ -3,6 +3,7 @@ import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { requireApiKey } from '../plugins/api-key-auth.js';
+import { fetchTimeline } from './timeline.js';
 import { embedTexts } from '../services/embedding.service.js';
 import { searchSimilar } from '../services/vector.service.js';
 import { s3Client } from '../services/s3.service.js';
@@ -256,5 +257,16 @@ export default async function v1Routes(fastify: FastifyInstance) {
         score: c.score,
       })),
     });
+  });
+
+  // GET /timeline
+  fastify.get('/timeline', async (request, reply) => {
+    const userId = request.user!.id;
+    const query = request.query as { limit?: string; offset?: string };
+    const limit = Math.min(parseInt(query.limit || '50'), 100);
+    const offset = parseInt(query.offset || '0');
+
+    const result = await fetchTimeline(userId, limit, offset);
+    return reply.send(result);
   });
 }

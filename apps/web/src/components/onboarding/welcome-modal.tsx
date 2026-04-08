@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Upload, Brain, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
+import { toast } from "sonner"
 
 const personas = [
   { id: "student", emoji: "📚", title: "学生", desc: "写论文、做笔记、整理资料" },
@@ -146,6 +147,15 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
             <div className="flex flex-col gap-2">
               <Button onClick={handleUpload} className="bg-[#4F5BD5] hover:bg-[#3D49C4]">
                 上传文件
+              </Button>
+              <Button variant="outline" onClick={async () => {
+                try {
+                  await apiFetch("/api/onboarding/demo-files", { method: "POST" })
+                  toast.success("示例文件已创建，AI 正在理解...")
+                  setStep(2)
+                } catch { toast.error("创建失败，请重试") }
+              }}>
+                📎 用示例文件体验
               </Button>
               <div className="flex gap-2">
                 <Button variant="ghost" onClick={() => setStep(0)} className="flex-1 text-muted-foreground">
