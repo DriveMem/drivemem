@@ -1,15 +1,44 @@
 module.exports = {
   apps: [
     {
-      name: 'ai-drive-web',
-      cwd: '/tmp/frontend-work/apps/web',
-      script: './node_modules/.bin/next',
-      args: 'start --port 3000',
-      max_memory_restart: '250M',
+      name: 'ai-drive-api',
+      cwd: '/home/ubuntu/repos/ai-drive/apps/api',
+      script: 'dist/index.js',
+      node_args: '--env-file=.env',
+      max_memory_restart: '400M',
       exp_backoff_restart_delay: 1000,
       max_restarts: 50,
       min_uptime: '10s',
-      kill_timeout: 5000,
-    }
-  ]
+    },
+    {
+      name: 'ai-drive-worker',
+      cwd: '/home/ubuntu/repos/ai-drive/apps/api',
+      script: 'dist/workers/parse.worker.js',
+      node_args: '--env-file=.env --max-old-space-size=384',
+      max_memory_restart: '400M',
+      exp_backoff_restart_delay: 1000,
+      max_restarts: 50,
+      min_uptime: '10s',
+    },
+    {
+      name: 'ai-drive-insight',
+      cwd: '/home/ubuntu/repos/ai-drive/apps/api',
+      script: 'dist/workers/insight.worker.js',
+      node_args: '--env-file=.env',
+      max_memory_restart: '300M',
+      exp_backoff_restart_delay: 1000,
+      max_restarts: 50,
+      min_uptime: '10s',
+    },
+    {
+      name: 'ai-drive-web',
+      cwd: '/home/ubuntu/repos/ai-drive/apps/web',
+      script: './node_modules/.bin/next',
+      args: 'start --port 3000',
+      max_memory_restart: '300M',
+      exp_backoff_restart_delay: 1000,
+      max_restarts: 50,
+      min_uptime: '10s',
+    },
+  ],
 };
