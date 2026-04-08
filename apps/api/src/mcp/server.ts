@@ -84,6 +84,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     {
+      name: 'aidrive_timeline',
+      description: '查看用户知识库的活动时间线——包括文件上传、AI 对话、AI 洞察发现、报告生成等所有活动。适用场景：了解用户最近做了什么、知识库有什么变化、追踪知识积累过程。',
+      inputSchema: {
+        type: 'object' as const,
+        properties: {
+          limit: { type: 'number', description: '返回条数（默认 20）' },
+        },
+      },
+    },
+    {
       name: 'aidrive_upload_file',
       description: '上传文件到用户的 AI Drive 知识库。上传后 AI 会自动解析、生成摘要、发现知识关联。适用场景:agent 想把工作产出物(报告、笔记、分析结果)存入知识库供后续检索和问答。',
       inputSchema: {
@@ -203,6 +213,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const prompt = `用户知识库有 ${files.length} 个文件:\n${fileSummaries}${linkInfo}${insightInfo}\n\n基于以上具体文件内容和关联,建议 3-5 个**具体可执行的操作**。要求:\n1. 每条建议必须提到具体文件名\n2. 建议要有实际价值(如"对比《X》和《Y》的市场定位差异"),不要泛泛而谈\n3. 混合不同类型:有分析类、有整理类、有探索类\n4. 格式:emoji + 具体建议(一行一条)`;
         const suggestions = await chat([{ role: 'user', content: prompt }]);
         return { content: [{ type: 'text' as const, text: suggestions }] };
+      }
+
+      case 'aidrive_timeline': {
+        const limit = ((args as any).limit as number) || 20;
+        const { fetchTimeline } = await import('../routes/timeline.js');
+        const data = await fetchTimeline(USER_ID, limit, 0);
+        if (data.events.length === 0) return { content: [{ type: 'text' as const, text: '暂无活动记录。上传文件或与 AI 对话后会出现活动。' }] };
+        const text = data.events.map((e: any) => {
+          const date = new Date(e.createdAt).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+          const desc = e.description ? ` — ${e.description.slice(0, 60)}` : '';
+          return `${e.icon} [${date}] ${e.title}${desc}`;
+        }).join('\n');
+        return { content: [{ type: 'text' as const, text: `最近 ${data.events.length} 条活动（共 ${data.total}）：\n\n${text}` }] };
       }
 
       case 'aidrive_upload_file': {
