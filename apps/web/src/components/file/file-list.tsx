@@ -127,6 +127,7 @@ export function FileList() {
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
   const [drawerFileId, setDrawerFileId] = useState<string | null>(null)
+  const [drawerTags, setDrawerTags] = useState<any[]>([])
   const [versionFileId, setVersionFileId] = useState<string | null>(null)
   const [versions, setVersions] = useState<any[]>([])
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
@@ -218,6 +219,17 @@ export function FileList() {
   const virt = useVirtualizer({ count: filteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 52, overscan: 5 })
 
   const toggleSort = (k: SortKey) => { if (sortKey === k) setSortDir((d) => d === "asc" ? "desc" : "asc"); else { setSortKey(k); setSortDir("asc") } }
+
+  // Fetch tags for drawer file
+  useEffect(() => {
+    if (drawerFileId) {
+      apiFetch(`/api/tags/file/${drawerFileId}`).then((data: any) => {
+        setDrawerTags(Array.isArray(data) ? data : data?.tags || [])
+      }).catch(() => setDrawerTags([]))
+    } else {
+      setDrawerTags([])
+    }
+  }, [drawerFileId])
 
   // F2 rename shortcut
   useEffect(() => {
@@ -791,6 +803,15 @@ export function FileList() {
                 <div className="rounded-lg border p-3">
                   <p className="text-xs font-medium text-muted-foreground mb-1">🧠 AI 摘要</p>
                   <p className="text-sm">{drawerFile.summary}</p>
+                </div>
+              )}
+              {drawerTags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {drawerTags.map((tag: any) => (
+                    <span key={tag.id} className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>
+                      {tag.name}
+                    </span>
+                  ))}
                 </div>
               )}
               <div className="rounded-lg border p-3 space-y-2">

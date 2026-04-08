@@ -2,7 +2,7 @@ import { encode } from 'gpt-tokenizer';
 
 const TARGET_CHUNK_TOKENS = 800;
 const OVERLAP_TOKENS = 100;
-const SEPARATORS = ['\n\n', '\n', '. ', ' ', ''];
+const SEPARATORS = ['\n## ', '\n### ', '\n#### ', '\n\n', '\n', '. ', ' ', ''];
 
 function tokenLength(text: string): number {
   return encode(text).length;
@@ -76,8 +76,13 @@ export function chunkText(text: string, fileName: string): Array<{ text: string;
     }
   }
 
-  return chunks.map((chunk, index) => ({
-    text: `[${fileName}] 第 ${index + 1} 段：${chunk}`,
-    index,
-  }));
+  return chunks.map((chunk, index) => {
+    // Extract heading if chunk starts with one
+    const headingMatch = chunk.match(/^(#{1,4})\s+(.+)/);
+    const sectionInfo = headingMatch ? ` [${headingMatch[2].trim()}]` : '';
+    return {
+      text: `[${fileName}]${sectionInfo} 第 ${index + 1} 段：${chunk}`,
+      index,
+    };
+  });
 }

@@ -128,6 +128,45 @@ const worker = new Worker<ParseJobData>(
         await db.update(files).set({ summary }).where(eq(files.id, fileId));
         console.log('[file-parse] Summary generated for ' + fileId);
 
+        // Auto-tag: generate 2-3 tags based on summary
+        try {
+          const tagPrompt = `基于以下文件摘要，生成2-3个分类标签。只从以下选项中选择：spec、decision、report、meeting、research、tutorial、analysis、test、config、note。只返回逗号分隔的标签，不要其他文字。\n\n摘要：${summary.substring(0, 200)}`;
+          const tagResult = await chat([{ role: 'user', content: tagPrompt }]);
+          const tagNames = tagResult.split(',').map((t: string) => t.trim().toLowerCase()).filter((t: string) => t.length > 0 && t.length < 20).slice(0, 3);
+          
+          const tagColors: Record<string, string> = {
+            spec: '#3B82F6', decision: '#F59E0B', report: '#10B981', meeting: '#8B5CF6',
+            research: '#EC4899', tutorial: '#06B6D4', analysis: '#F97316', test: '#6B7280',
+            config: '#64748B', note: '#A855F7',
+          };
+          
+          for (const tagName of tagNames) {
+            // Find or create tag
+            let [existingTag] = await db.select().from(schema.tags)
+              .where(and(eq(schema.tags.userId, userId), eq(schema.tags.name, tagName)));
+            
+            if (!existingTag) {
+              [existingTag] = await db.insert(schema.tags).values({
+                name: tagName,
+                color: tagColors[tagName] || '#6B7280',
+                userId,
+              }).returning();
+            }
+            
+            if (existingTag) {
+              // Check if file-tag link exists
+              const [existingLink] = await db.select().from(schema.fileTags)
+                .where(and(eq(schema.fileTags.fileId, fileId), eq(schema.fileTags.tagId, existingTag.id)));
+              if (!existingLink) {
+                await db.insert(schema.fileTags).values({ fileId, tagId: existingTag.id });
+              }
+            }
+          }
+          console.log('[file-parse] Auto-tagged ' + fileId + ': ' + tagNames.join(', '));
+        } catch (tagErr) {
+          console.warn('[file-parse] Auto-tag failed (non-blocking):', (tagErr as Error).message);
+        }
+
         // Dispatch webhook: summary.generated
         try {
           const { dispatchWebhook } = await import('../services/webhook.service.js');

@@ -212,7 +212,16 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       .where(and(...conditions))
       .orderBy(desc(schema.files.updatedAt));
 
-    return reply.send(fileList);
+    // Enrich with tags
+    const filesWithTags = await Promise.all(fileList.map(async (f) => {
+      const fileTags = await db.select({ name: schema.tags.name, color: schema.tags.color })
+        .from(schema.fileTags)
+        .innerJoin(schema.tags, eq(schema.fileTags.tagId, schema.tags.id))
+        .where(eq(schema.fileTags.fileId, f.id));
+      return { ...f, tags: fileTags };
+    }));
+
+    return reply.send(filesWithTags);
   });
 
   // GET /:id — file detail
