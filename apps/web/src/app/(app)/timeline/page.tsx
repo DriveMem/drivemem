@@ -6,7 +6,7 @@ import Link from "next/link"
 
 interface TimelineEvent {
   id: string
-  type: "file_upload" | "conversation" | "insight" | "report"
+  type: "file_uploaded" | "conversation" | "insight" | "report"
   title: string
   subtitle?: string
   metadata?: Record<string, any>
@@ -14,7 +14,7 @@ interface TimelineEvent {
 }
 
 const EVENT_CONFIG = {
-  file_upload: {
+  file_uploaded: {
     icon: FileText,
     label: "上传文件",
     dotColor: "bg-blue-500",
@@ -42,7 +42,7 @@ const EVENT_CONFIG = {
 
 function getEventLink(event: TimelineEvent): string {
   switch (event.type) {
-    case "file_upload":
+    case "file_uploaded":
       return `/dashboard`
     case "conversation":
       return `/chat`
@@ -119,7 +119,7 @@ export default function TimelinePage() {
               <h2 className="text-sm font-semibold text-muted-foreground mb-4">{date}</h2>
               <div className="border-l-2 border-border pl-6 space-y-4">
                 {items.map((event) => {
-                  const config = EVENT_CONFIG[event.type] || EVENT_CONFIG.file_upload
+                  const config = EVENT_CONFIG[event.type] || EVENT_CONFIG.file_uploaded
                   const Icon = config.icon
                   return (
                     <div key={`${event.type}-${event.id}`} className="relative">
