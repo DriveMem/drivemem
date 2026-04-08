@@ -315,7 +315,7 @@ export default function FilePreviewPage() {
             </dl>
             <div className="flex gap-2">
               <Button className="flex-1" asChild>
-                <Link href={`/chat?file=${file.id}`}>对此文件提问</Link>
+                <Link href={`/chat?fileIds=${file.id}`}>💬 问 AI 关于这个文件</Link>
               </Button>
               <Button
                 variant="outline"
