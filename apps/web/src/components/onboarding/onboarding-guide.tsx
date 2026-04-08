@@ -116,7 +116,7 @@ export function OnboardingGuide({ onUpload }: OnboardingGuideProps) {
                   // Auto-advance to step 3 after delay (simulating processing)
                   setTimeout(() => setCurrentStep(2), 3000)
                 }}
-                className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                className="w-full rounded-xl bg-[#4F5BD5] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#3D49C4]"
               >
                 上传文件
               </button>
