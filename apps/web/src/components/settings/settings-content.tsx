@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { getSession, signOut } from "next-auth/react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -109,7 +110,7 @@ function ApiKeysCard() {
         )}
 
         <p className="mt-4 text-xs text-muted-foreground">
-          📖 API 文档：上传文件、搜索知识、AI 问答。详见 <a href="https://github.com/yufuche1/ai-drive#api" className="text-[#4F5BD5] hover:underline" target="_blank" rel="noopener noreferrer">GitHub README</a>
+          📖 API 文档：上传文件、搜索知识、AI 问答。详见 <a href="/developers" className="text-[#4F5BD5] hover:underline">开发者文档</a>
         </p>
       </CardContent>
     </Card>
@@ -119,7 +120,9 @@ function ApiKeysCard() {
 type SettingsTab = "general" | "developer"
 
 export default function SettingsContent() {
-  const [settingsTab, setSettingsTab] = useState<SettingsTab>("general")
+  const searchParams = useSearchParams()
+  const initialTab = searchParams.get("tab") === "developer" ? "developer" : "general"
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>(initialTab)
   const [session, setSession] = useState<any>(null)
   const [name, setName] = useState("用户")
   const [deleteConfirm, setDeleteConfirm] = useState("")

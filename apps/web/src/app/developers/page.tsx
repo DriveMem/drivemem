@@ -160,8 +160,24 @@ export default function DevelopersPage() {
               ))}
             </div>
 
+            {/* Client hint for MCP tab */}
+            {activeTab === 1 && (
+              <p className="mt-6 mb-2 text-sm text-[#6B6966]">
+                将以下配置添加到你的 MCP 客户端配置文件中：
+                <span className="block mt-1">
+                  • <strong>Claude Desktop</strong>: <code className="rounded bg-[#F8F7F5] px-1 text-xs font-mono">~/Library/Application Support/Claude/claude_desktop_config.json</code>
+                </span>
+                <span className="block">
+                  • <strong>Cursor</strong>: <code className="rounded bg-[#F8F7F5] px-1 text-xs font-mono">~/.cursor/mcp.json</code>
+                </span>
+                <span className="block">
+                  • <strong>OpenClaw</strong>: 参考 <a href="#quickstart" className="text-[#4F5BD5] hover:underline">接入文档</a>
+                </span>
+              </p>
+            )}
+
             {/* Code block */}
-            <pre className="mt-6 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
+            <pre className={`${activeTab === 1 ? "mt-2" : "mt-6"} overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]`}>
               <code>{CODE_BLOCKS[activeTab]}</code>
             </pre>
           </FadeIn>
@@ -177,7 +193,7 @@ export default function DevelopersPage() {
           </p>
           <div className="mt-8">
             <Button asChild size="lg" className="h-12 px-8 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
-              <Link href="/settings">前往创建 API Key <ChevronRight className="ml-1 h-4 w-4" /></Link>
+              <Link href="/settings?tab=developer">前往创建 API Key <ChevronRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>
         </FadeIn>
@@ -239,8 +255,8 @@ aidrive upload report.md`}</code>
               <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">开发者</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
                 <li><Link href="/developers" className="hover:text-[#4F5BD5] transition">API 文档</Link></li>
-                <li><span className="text-[#6B6966]">MCP 协议</span></li>
-                <li><span className="text-[#6B6966]">CLI 工具</span></li>
+                <li><a href="#quickstart" className="hover:text-[#4F5BD5] transition">MCP 协议</a></li>
+                <li><a href="#quickstart" className="hover:text-[#4F5BD5] transition">CLI 工具</a></li>
               </ul>
             </div>
             <div>
