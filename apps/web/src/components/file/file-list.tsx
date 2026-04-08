@@ -317,7 +317,6 @@ export function FileList() {
           <p className="mt-6 text-xs text-muted-foreground">
             支持 PDF、Word、PPT、Excel、TXT、Markdown 等格式
           </p>
-          </div>
         </div>
         {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
       </div>
