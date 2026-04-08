@@ -88,7 +88,7 @@ export const ReportSection = forwardRef<ReportSectionHandle>(function ReportSect
       ) : (
         <div className="flex items-center justify-center gap-2 rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
           <FileText className="h-4 w-4" />
-          点击上方按钮生成 AI 报告
+          点击「📊 分析报告」或「📝 学习笔记」生成 AI 报告
         </div>
       )}
 

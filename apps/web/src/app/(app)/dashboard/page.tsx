@@ -71,7 +71,7 @@ function ActivitySummary({ activities }: { activities: any[] }) {
   if (activities.length === 0) {
     return (
       <div className="mx-3 mb-3 rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
-        AI 正在后台工作，新的活动会显示在这里
+        AI 会在发现知识关联时自动通知你
       </div>
     )
   }
