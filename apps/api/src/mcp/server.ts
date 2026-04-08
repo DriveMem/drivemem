@@ -32,6 +32,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: 'object' as const,
         properties: {
           query: { type: 'string', description: '搜索关键词或问题' },
+          contextBudget: { type: 'number', description: '返回内容的 token 预算（默认完整返回）。小模型传 2000，大模型传 50000' },
         },
         required: ['query'],
       },
@@ -43,6 +44,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: 'object' as const,
         properties: {
           question: { type: 'string', description: '要问的问题' },
+          contextBudget: { type: 'number', description: '回答的 token 预算。小模型传 500，大模型传 5000' },
         },
         required: ['question'],
       },
@@ -70,7 +72,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: 'object' as const,
         properties: {
           fileId: { type: 'string', description: '文件 ID' },
-          detail: { type: 'string', description: 'brief(默认,返回摘要+元数据,省 token)或 full(返回完整信息)', enum: ['brief', 'full'] },
+          detail: { type: 'string', description: 'brief(默认)或 full', enum: ['brief', 'full'] },
+          contextBudget: { type: 'number', description: 'token 预算，自动决定返回 brief 还是 full' },
         },
         required: ['fileId'],
       },
@@ -129,27 +132,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (name) {
       case 'aidrive_search': {
         const query = (args as any).query as string;
+        const budget = ((args as any).contextBudget as number) || 0;
         const [queryVec] = await embedTexts([query]);
-        const results = await searchSimilar({ userId: USER_ID, query: queryVec, scopeType: 'all', limit: 5 });
-        // Get file creation dates for context
+        const results = await searchSimilar({ userId: USER_ID, query: queryVec, scopeType: 'all', limit: budget && budget < 3000 ? 3 : 5 });
         const fileIds = [...new Set(results.map(r => r.fileId))];
         const fileDates: Record<string, string> = {};
         for (const fid of fileIds) {
           const [f] = await db.select({ id: schema.files.id, createdAt: schema.files.createdAt }).from(schema.files).where(eq(schema.files.id, fid));
           if (f) fileDates[f.id] = f.createdAt.toISOString().slice(0, 10);
         }
+        // Dynamic snippet length based on budget
+        const charsPerResult = budget ? Math.min(Math.floor((budget * 4) / Math.max(results.length, 1)), 2000) : 600;
         const text = results.map((r, i) => 
-          `${i + 1}. [${r.fileName}] (score: ${r.score.toFixed(2)}, ${fileDates[r.fileId] || '?'})\n${r.text.slice(0, 600)}`
+          `${i + 1}. [${r.fileName}] (score: ${r.score.toFixed(2)}, ${fileDates[r.fileId] || '?'})\n${r.text.slice(0, charsPerResult)}`
         ).join('\n\n');
         return { content: [{ type: 'text' as const, text: text || '未找到相关内容。' }] };
       }
 
       case 'aidrive_ask': {
         const question = (args as any).question as string;
+        const budget = ((args as any).contextBudget as number) || 0;
         const [queryVec] = await embedTexts([question]);
-        const chunks = await searchSimilar({ userId: USER_ID, query: queryVec, scopeType: 'all', limit: 6 });
-        const citations = chunks.map((c, i) => `来源 ${i + 1} (${c.fileName}): ${c.text}`).join('\n\n');
-        const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于文档内容回答。\n\n[文档片段]\n${citations || '(未找到相关文档)'}`;
+        const chunks = await searchSimilar({ userId: USER_ID, query: queryVec, scopeType: 'all', limit: budget && budget < 2000 ? 3 : 6 });
+        const chunkChars = budget ? Math.min(Math.floor((budget * 2) / Math.max(chunks.length, 1)), 1000) : 500;
+        const citations = chunks.map((c, i) => `来源 ${i + 1} (${c.fileName}): ${c.text.slice(0, chunkChars)}`).join('\n\n');
+        const lengthHint = budget && budget < 1000 ? `\n请简洁回答，控制在 ${budget} 字以内。` : '';
+        const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于文档内容回答。用上标¹²³引用来源。${lengthHint}\n\n[文档片段]\n${citations || '(未找到相关文档)'}`;
         const answer = await chat([{ role: 'system', content: systemPrompt }, { role: 'user', content: question }]);
         return { content: [{ type: 'text' as const, text: answer }] };
       }
@@ -181,7 +189,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case 'aidrive_file_detail': {
         const fileId = (args as any).fileId as string;
-        const detail = ((args as any).detail as string) || 'brief';
+        const budget = ((args as any).contextBudget as number) || 0;
+        const detail = ((args as any).detail as string) || (budget && budget < 1000 ? 'brief' : 'brief');
         const [file] = await db.select().from(schema.files)
           .where(eq(schema.files.id, fileId));
         if (!file || file.userId !== USER_ID) return { content: [{ type: 'text' as const, text: '文件不存在。' }] };
