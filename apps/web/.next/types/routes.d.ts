@@ -4,7 +4,7 @@
 type AppRoutes = "/" | "/chat" | "/chat/[id]" | "/dashboard" | "/files" | "/files/[id]/preview" | "/forgot-password" | "/landing" | "/login" | "/privacy" | "/register" | "/reset-password" | "/search" | "/settings" | "/share/[token]" | "/share/report/[token]" | "/signup" | "/terms" | "/timeline" | "/trash"
 type AppRouteHandlerRoutes = "/api/auth/[...nextauth]"
 type PageRoutes = never
-type LayoutRoutes = "/" | "/chat"
+type LayoutRoutes = "/" | "/chat" | "/forgot-password" | "/login" | "/reset-password" | "/signup"
 type RedirectRoutes = never
 type RewriteRoutes = never
 type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRoutes | AppRouteHandlerRoutes
@@ -40,6 +40,10 @@ export type ParamsOf<Route extends Routes> = ParamMap[Route]
 interface LayoutSlotMap {
   "/": never
   "/chat": never
+  "/forgot-password": never
+  "/login": never
+  "/reset-password": never
+  "/signup": never
 }
 
 

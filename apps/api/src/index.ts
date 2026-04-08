@@ -113,6 +113,9 @@ await app.register(tagRoutes, { prefix: '/api/tags' });
 import feedbackRoutes from './routes/feedback.js';
 await app.register(feedbackRoutes, { prefix: '/api/feedback' });
 
+import onboardingRoutes from './routes/onboarding.js';
+await app.register(onboardingRoutes, { prefix: '/api/onboarding' });
+
 import adminRoutes from './routes/admin.js';
 await app.register(adminRoutes, { prefix: '/api/admin' });
 
@@ -127,6 +130,9 @@ await app.register(v1Routes, { prefix: '/api/v1' });
 
 import webhookRoutes from './routes/webhooks.js';
 await app.register(webhookRoutes, { prefix: '/api/webhooks' });
+
+import timelineRoutes from './routes/timeline.js';
+await app.register(timelineRoutes, { prefix: '/api/timeline' });
 
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {
