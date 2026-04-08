@@ -236,6 +236,44 @@ export function FileList() {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [selectedFileId, rawFiles])
 
+  // Keyboard navigation: arrows, enter, delete, escape
+  useEffect(() => {
+    const handleKeyNav = (e: KeyboardEvent) => {
+      // Skip when typing in inputs
+      const tag = (document.activeElement?.tagName || "").toLowerCase()
+      if (tag === "input" || tag === "textarea" || tag === "select") return
+      if ((document.activeElement as HTMLElement)?.isContentEditable) return
+      if (!filteredFiles?.length) return
+
+      const currentIdx = filteredFiles.findIndex((f: any) => f.id === selectedFileId)
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault()
+        const nextIdx = currentIdx < 0 ? 0 : Math.min(currentIdx + 1, filteredFiles.length - 1)
+        openInspector(filteredFiles[nextIdx].id)
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault()
+        const prevIdx = currentIdx < 0 ? 0 : Math.max(currentIdx - 1, 0)
+        openInspector(filteredFiles[prevIdx].id)
+      }
+      if (e.key === "Enter" && selectedFileId) {
+        e.preventDefault()
+        router.push(`/files/${selectedFileId}/preview`)
+      }
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedFileId) {
+        e.preventDefault()
+        setDeleteTarget(selectedFileId)
+      }
+      if (e.key === "Escape") {
+        e.preventDefault()
+        openInspector("")
+      }
+    }
+    window.addEventListener("keydown", handleKeyNav)
+    return () => window.removeEventListener("keydown", handleKeyNav)
+  }, [filteredFiles, selectedFileId, router, openInspector])
+
   const handleClick = useCallback((id: string, e: React.MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
       setSelected((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n })

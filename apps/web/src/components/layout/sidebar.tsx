@@ -17,7 +17,7 @@ const navItems = [
 ] as const
 
 export function Sidebar() {
-  const { sidebarCollapsed, toggleSidebar } = useLayoutStore()
+  const { sidebarCollapsed, toggleSidebar, setMobileSidebarOpen } = useLayoutStore()
   const pathname = usePathname()
   return (
     <TooltipProvider delayDuration={0}>
@@ -44,7 +44,7 @@ export function Sidebar() {
                 size={sidebarCollapsed ? "icon" : "default"}
                 asChild
               >
-                <Link href={item.href}>
+                <Link href={item.href} onClick={() => setMobileSidebarOpen(false)}>
                   <item.icon className="h-4 w-4 flex-shrink-0" />
                   {!sidebarCollapsed && <span>{item.label}</span>}
                 </Link>

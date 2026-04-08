@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useTheme } from "next-themes"
-import { Bell } from "lucide-react"
+import { Bell, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Popover,
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
+import { useLayoutStore } from "@/stores/layout-store"
 
 interface Notification {
   id: string
@@ -44,6 +45,7 @@ function formatRelativeTime(dateStr: string): string {
 
 export function TopNav() {
   const { theme, setTheme } = useTheme()
+  const { setMobileSidebarOpen } = useLayoutStore()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -84,8 +86,11 @@ export function TopNav() {
 
   return (
     <header className="flex h-14 items-center justify-between border-b bg-background px-4">
-      {/* Logo */}
+      {/* Hamburger + Logo */}
       <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileSidebarOpen(true)}>
+          <Menu className="h-5 w-5" />
+        </Button>
         <span className="text-lg font-bold">AI Drive</span>
       </div>
 

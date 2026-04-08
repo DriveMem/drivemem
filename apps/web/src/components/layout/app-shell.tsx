@@ -7,19 +7,29 @@ import { InspectorPanel } from "./inspector-panel"
 import { TopNav } from "./top-nav"
 import { CommandPalette } from "./command-palette"
 import { FeedbackButton } from "@/components/feedback/feedback-button"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { sidebarCollapsed, inspectorOpen } = useLayoutStore()
+  const { sidebarCollapsed, inspectorOpen, mobileSidebarOpen, setMobileSidebarOpen } = useLayoutStore()
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      {/* Desktop sidebar */}
       <motion.aside
         initial={false}
         animate={{ width: sidebarCollapsed ? 64 : 240 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
-        className="flex-shrink-0 border-r border-border overflow-hidden bg-[#F8F7F5] dark:bg-[#252525]"
+        className="hidden md:block flex-shrink-0 border-r border-border overflow-hidden bg-[#F8F7F5] dark:bg-[#252525]"
       >
         <Sidebar />
       </motion.aside>
+
+      {/* Mobile sidebar overlay */}
+      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+        <SheetContent side="left" className="w-[280px] p-0 bg-[#F8F7F5] dark:bg-[#252525]">
+          <Sidebar />
+        </SheetContent>
+      </Sheet>
+
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopNav />
         <motion.main
