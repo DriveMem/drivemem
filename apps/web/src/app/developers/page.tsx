@@ -1,120 +1,261 @@
-import Link from "next/link"
+"use client"
 
-export const metadata = {
-  title: "开发者 - AI Drive",
-  description: "AI Drive API 文档、MCP 协议和 CLI 工具",
+import Link from "next/link"
+import { useRef, useEffect, useState, type ReactNode } from "react"
+import { Button } from "@/components/ui/button"
+import { Search, FileText, Plug, Bell, ArrowRight, ChevronRight } from "lucide-react"
+
+/* ---------- FadeIn ---------- */
+function FadeIn({ children, className = "" }: { children: ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const timer = setTimeout(() => setVisible(true), 800)
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); clearTimeout(timer) } },
+      { threshold: 0.05 }
+    )
+    obs.observe(el)
+    return () => { obs.disconnect(); clearTimeout(timer) }
+  }, [])
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"} ${className}`}
+    >
+      {children}
+    </div>
+  )
 }
 
-export default function DevelopersPage() {
-  return (
-    <div className="min-h-screen bg-white">
-      <nav className="flex items-center justify-between border-b px-6 py-4">
-        <Link href="/" className="text-lg font-bold">AI Drive</Link>
-        <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← 返回首页</Link>
-      </nav>
-      
-      <div className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-3xl font-bold mb-4">🔧 开发者</h1>
-        <p className="text-lg text-[#6B6966] mb-12">
-          让你的 AI agent 接入 AI Drive 知识库
-        </p>
-        
-        {/* API Section */}
-        <section className="mb-12">
-          <h2 className="text-xl font-semibold mb-4">📡 Open API</h2>
-          <p className="text-sm text-[#6B6966] mb-4">
-            通过 API Key 认证，任何应用都能访问你的知识库。
-          </p>
-          <div className="rounded-xl border p-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <code className="shrink-0 rounded bg-muted px-2 py-1 text-xs font-mono">GET</code>
-              <div>
-                <code className="text-sm font-mono">/api/v1/search?q=关键词</code>
-                <p className="text-xs text-[#6B6966] mt-1">语义搜索知识库</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <code className="shrink-0 rounded bg-muted px-2 py-1 text-xs font-mono">POST</code>
-              <div>
-                <code className="text-sm font-mono">/api/v1/ask</code>
-                <p className="text-xs text-[#6B6966] mt-1">基于知识库问答（RAG）</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <code className="shrink-0 rounded bg-muted px-2 py-1 text-xs font-mono">GET</code>
-              <div>
-                <code className="text-sm font-mono">/api/v1/files</code>
-                <p className="text-xs text-[#6B6966] mt-1">列出文件</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <code className="shrink-0 rounded bg-muted px-2 py-1 text-xs font-mono">GET</code>
-              <div>
-                <code className="text-sm font-mono">/api/v1/insights</code>
-                <p className="text-xs text-[#6B6966] mt-1">获取 AI 洞察</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <code className="shrink-0 rounded bg-muted px-2 py-1 text-xs font-mono">GET</code>
-              <div>
-                <code className="text-sm font-mono">/api/v1/timeline</code>
-                <p className="text-xs text-[#6B6966] mt-1">知识活动时间线</p>
-              </div>
-            </div>
-          </div>
-          <p className="mt-3 text-xs text-[#6B6966]">
-            认证方式：<code className="rounded bg-muted px-1">Authorization: Bearer ak_xxx</code>
-            。在 <Link href="/settings" className="text-[#4F5BD5] hover:underline">设置页</Link> 创建 API Key。
-          </p>
-        </section>
+/* ---------- Data ---------- */
+const CAPABILITIES = [
+  { icon: Search, emoji: "🔍", title: "语义搜索", desc: "自然语言检索知识库，找到真正相关的内容" },
+  { icon: FileText, emoji: "📝", title: "知识存储", desc: "agent 自动存入笔记、分析结论、决策记录" },
+  { icon: Plug, emoji: "🤖", title: "MCP 集成", desc: "标准 MCP 协议，Claude/OpenClaw 等即插即用" },
+  { icon: Bell, emoji: "🔔", title: "Webhook 推送", desc: "AI 发现新洞察时主动通知你的应用" },
+] as const
 
-        {/* MCP Section */}
-        <section className="mb-12">
-          <h2 className="text-xl font-semibold mb-4">🔌 MCP 协议</h2>
-          <p className="text-sm text-[#6B6966] mb-4">
-            支持 MCP（Model Context Protocol）的 AI 工具可以即插即用。
-          </p>
-          <div className="rounded-xl border p-4">
-            <p className="text-sm font-medium mb-2">配置示例（Claude Desktop / OpenClaw）：</p>
-            <pre className="rounded-lg bg-muted p-3 text-xs font-mono overflow-x-auto">{`{
+const TABS = ["REST API", "MCP 配置", "Webhook"] as const
+
+const CODE_BLOCKS = [
+  `# 1. 获取 API Key（Settings → API Keys）
+
+# 2. 语义搜索
+curl -X GET 'https://drive.verrrnm.cloud/api/v1/search?q=项目最新进展' \\
+  -H 'Authorization: Bearer YOUR_API_KEY'
+
+# 3. 存入知识
+curl -X POST https://drive.verrrnm.cloud/api/v1/store \\
+  -H 'Authorization: Bearer YOUR_API_KEY' \\
+  -H 'Content-Type: application/json' \\
+  -d '{"content": "今天决定采用方案 A", "title": "决策记录"}'`,
+
+  `{
   "mcpServers": {
     "ai-drive": {
-      "command": "node",
-      "args": ["apps/api/src/mcp/server.js"],
-      "env": {
-        "MCP_API_KEY": "ak_your_key",
-        "MCP_USER_ID": "your_user_id"
+      "url": "https://drive.verrrnm.cloud/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
       }
     }
   }
-}`}</pre>
-            <p className="mt-3 text-xs text-[#6B6966]">
-              9 个 Tools：search / ask / list_files / file_detail / get_insights / suggest_workflow / upload_file / timeline
-            </p>
-          </div>
-        </section>
+}`,
 
-        {/* CLI Section */}
-        <section className="mb-12">
-          <h2 className="text-xl font-semibold mb-4">⌨️ CLI 工具</h2>
-          <p className="text-sm text-[#6B6966] mb-4">
-            命令行直接操作知识库。
+  `# 注册 webhook（即将推出）
+curl -X POST https://drive.verrrnm.cloud/api/v1/webhooks \\
+  -H 'Authorization: Bearer YOUR_API_KEY' \\
+  -H 'Content-Type: application/json' \\
+  -d '{"url": "https://your-app.com/hook", "events": ["insight.created", "file.indexed"]}'`,
+]
+
+const MCP_TOOLS = [
+  "search", "ask", "list_files", "file_detail",
+  "insights", "suggest", "timeline", "upload", "store",
+]
+
+/* ---------- Page ---------- */
+export default function DevelopersPage() {
+  const [activeTab, setActiveTab] = useState(0)
+
+  return (
+    <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-[#4F5BD5]/30">
+      {/* Nav */}
+      <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-[#E5E4E1] bg-white/80 px-6 py-4 backdrop-blur">
+        <Link href="/" className="text-lg font-bold text-[#1C1B18]">AI Drive</Link>
+        <div className="flex items-center gap-4">
+          <a href="#features" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">功能</a>
+          <Link href="/login" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">登录</Link>
+          <Link href="/signup" className="rounded-lg bg-[#4F5BD5] px-4 py-2 text-sm font-medium text-white hover:bg-[#3D49C4] transition">免费开始</Link>
+        </div>
+      </nav>
+
+      {/* Grid bg */}
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(rgba(0,0,0,.04)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(79,91,213,.1),transparent)]" />
+
+      {/* Hero */}
+      <section className="relative z-10 flex min-h-[70vh] flex-col items-center justify-center bg-gradient-to-b from-[#F4F5FD] to-white px-6 text-center">
+        <FadeIn>
+          <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+            Build with AI Drive
+          </h1>
+          <p className="mx-auto mt-6 max-w-xl text-lg text-[#6B6966]">
+            让你的 Agent 拥有记忆 — AI Drive 是 agent 的知识基建
           </p>
-          <div className="rounded-xl border p-4">
-            <pre className="rounded-lg bg-muted p-3 text-xs font-mono overflow-x-auto">{`# 搜索知识库
-aidrive search "关键词"
-
-# 问 AI
-aidrive ask "这些文件的核心结论是什么？"
-
-# 查看活动
-aidrive timeline
-
-# 上传文件
-aidrive upload report.pdf`}</pre>
+          <div className="mt-10">
+            <Button asChild size="lg" className="h-12 px-10 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
+              <a href="#quickstart">Get Started <ArrowRight className="ml-1 h-4 w-4" /></a>
+            </Button>
           </div>
-        </section>
-      </div>
-    </div>
+        </FadeIn>
+      </section>
+
+      {/* Capabilities */}
+      <section id="features" className="relative z-10 mx-auto max-w-5xl px-6 py-24">
+        <FadeIn>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">核心能力</h2>
+          <p className="mt-4 text-center text-[#6B6966]">一套完整的 API，让你的应用拥有 AI 知识能力</p>
+        </FadeIn>
+        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
+          {CAPABILITIES.map((c, i) => (
+            <FadeIn key={i}>
+              <div className="flex gap-4 rounded-xl border border-[#E5E4E1] p-6 hover:shadow-sm transition">
+                <span className="text-3xl">{c.emoji}</span>
+                <div>
+                  <h3 className="font-semibold text-[#1C1B18]">{c.title}</h3>
+                  <p className="mt-1 text-sm text-[#6B6966]">{c.desc}</p>
+                </div>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </section>
+
+      {/* Quick Start */}
+      <section id="quickstart" className="relative z-10 bg-[#F8F7F5] px-6 py-24">
+        <div className="mx-auto max-w-3xl">
+          <FadeIn>
+            <h2 className="text-center text-3xl font-bold sm:text-4xl">Quick Start</h2>
+            <p className="mt-4 text-center text-[#6B6966]">三种方式接入 AI Drive</p>
+          </FadeIn>
+
+          <FadeIn className="mt-12">
+            {/* Tabs */}
+            <div className="flex gap-6 border-b border-[#E5E4E1]">
+              {TABS.map((tab, i) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(i)}
+                  className={`pb-3 text-sm font-medium transition ${
+                    activeTab === i
+                      ? "border-b-2 border-[#4F5BD5] text-[#1C1B18]"
+                      : "text-[#6B6966] hover:text-[#1C1B18]"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Code block */}
+            <pre className="mt-6 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
+              <code>{CODE_BLOCKS[activeTab]}</code>
+            </pre>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* API Key Guide */}
+      <section className="relative z-10 mx-auto max-w-3xl px-6 py-24 text-center">
+        <FadeIn>
+          <h2 className="text-2xl font-bold sm:text-3xl">获取 API Key</h2>
+          <p className="mt-4 text-[#6B6966]">
+            在 Settings 页面创建你的 API Key，即可开始集成。
+          </p>
+          <div className="mt-8">
+            <Button asChild size="lg" className="h-12 px-8 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
+              <Link href="/settings">前往创建 API Key <ChevronRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
+          </div>
+        </FadeIn>
+      </section>
+
+      {/* API Reference */}
+      <section className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5] px-6 py-24">
+        <div className="mx-auto max-w-3xl">
+          <FadeIn>
+            <h2 className="text-2xl font-bold sm:text-3xl">API 参考</h2>
+
+            <div className="mt-8 space-y-6">
+              <div>
+                <h3 className="font-semibold text-[#1C1B18]">MCP 工具列表</h3>
+                <p className="mt-2 text-sm text-[#6B6966]">
+                  AI Drive MCP Server 提供 {MCP_TOOLS.length} 个工具：
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {MCP_TOOLS.map((t) => (
+                    <code key={t} className="rounded bg-white px-2 py-1 text-xs font-mono text-[#4F5BD5] border border-[#E5E4E1]">
+                      {t}
+                    </code>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-[#1C1B18]">CLI 工具</h3>
+                <p className="mt-2 text-sm text-[#6B6966]">通过命令行快速访问知识库：</p>
+                <pre className="mt-3 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
+                  <code>{`aidrive search "关键词"
+aidrive ask "基于文件回答问题"
+aidrive store "快速存入一段知识"
+aidrive upload report.md`}</code>
+                </pre>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5]">
+        <div className="mx-auto max-w-6xl px-6 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-lg font-bold text-[#1C1B18]">AI Drive</h3>
+              <p className="mt-2 text-sm text-[#6B6966]">你的 AI 知识助手</p>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">产品</h4>
+              <ul className="space-y-2 text-sm text-[#6B6966]">
+                <li><a href="#features" className="hover:text-[#4F5BD5] transition">功能介绍</a></li>
+                <li><Link href="/login" className="hover:text-[#4F5BD5] transition">登录</Link></li>
+                <li><Link href="/signup" className="hover:text-[#4F5BD5] transition">免费注册</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">开发者</h4>
+              <ul className="space-y-2 text-sm text-[#6B6966]">
+                <li><Link href="/developers" className="hover:text-[#4F5BD5] transition">API 文档</Link></li>
+                <li><span className="text-[#6B6966]">MCP 协议</span></li>
+                <li><span className="text-[#6B6966]">CLI 工具</span></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">法律</h4>
+              <ul className="space-y-2 text-sm text-[#6B6966]">
+                <li><Link href="/terms" className="hover:text-[#4F5BD5] transition">使用条款</Link></li>
+                <li><Link href="/privacy" className="hover:text-[#4F5BD5] transition">隐私政策</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 border-t border-[#E5E4E1] pt-6 text-center text-xs text-[#6B6966]">
+            © {new Date().getFullYear()} AI Drive. All rights reserved.
+          </div>
+        </div>
+      </footer>
+    </main>
   )
 }
