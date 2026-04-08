@@ -90,6 +90,12 @@ const worker = new Worker('insight-generate', async (job) => {
         title: '💡 新洞察',
         message: `AI 发现「${file.name}」和「${matchedFile.name}」之间的关联：${ins.title}`,
       });
+      
+      // Dispatch webhook
+      try {
+        const { dispatchWebhook } = await import('../services/webhook.service.js');
+        await dispatchWebhook(userId, 'insight.discovered', { title: ins.title, sourceFile: file.name, relatedFile: matchedFile.name });
+      } catch { /* non-blocking */ }
     }
     
     console.log(`[insight] Generated insights for ${fileId}`);

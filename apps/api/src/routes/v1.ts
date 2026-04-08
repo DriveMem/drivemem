@@ -277,6 +277,39 @@ export default async function v1Routes(fastify: FastifyInstance) {
     });
   });
 
+  // POST /store — lightweight knowledge storage (mirrors MCP aidrive_store)
+  fastify.post('/store', async (request, reply) => {
+    const userId = request.user!.id;
+    const body = request.body as { content: string; title?: string; tags?: string };
+    if (!body.content) return reply.status(400).send({ error: 'content is required' });
+
+    const title = body.title || body.content.slice(0, 30).replace(/\n/g, ' ');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `note-${timestamp}.md`;
+    const mdContent = `# ${title}\n\n${body.content}\n\n---\n_存入时间: ${new Date().toLocaleString('zh-CN')}_`;
+    
+    const { randomUUID } = await import('crypto');
+    const fileId = randomUUID();
+    const s3Key = `users/${userId}/files/${fileId}/${filename}`;
+    const buffer = Buffer.from(mdContent, 'utf-8');
+    
+    const { uploadObject } = await import('../services/s3.service.js');
+    await uploadObject(s3Key, buffer, 'text/markdown');
+    
+    await db.insert(schema.files).values({
+      id: fileId, name: filename, originalName: filename,
+      mimeType: 'text/markdown', size: buffer.length,
+      status: 'parsing', userId, s3Key,
+    });
+    
+    const { Queue } = await import('bullmq');
+    const queue = new Queue('file-parse', { connection: { host: 'localhost', port: 6379 } });
+    await queue.add('parse', { fileId, userId, s3Key, mimeType: 'text/markdown' });
+    await queue.close();
+    
+    return reply.status(201).send({ fileId, title, message: `已存入「${title}」` });
+  });
+
   // GET /timeline
   fastify.get('/timeline', async (request, reply) => {
     const userId = request.user!.id;
