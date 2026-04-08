@@ -168,14 +168,8 @@ export default function SettingsContent() {
   useEffect(() => {
     const fetchUsage = async () => {
       try {
-        const s = await getSession()
-        const token = (s as any)?.accessToken
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
-        const res = await fetch(apiBase + "/api/users/me", {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        })
-        if (!res.ok) throw new Error("not ok")
-        const data = await res.json()
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/users/me")
         setStorageUsed(((data.storageUsed || 0) / 1073741824).toFixed(2))
         setStorageTotal(((data.storageLimit || 5368709120) / 1073741824).toFixed(1))
         setChatUsedToday(String(data.dailyChatCount ?? "—"))
@@ -191,7 +185,8 @@ export default function SettingsContent() {
     try {
       const s = await getSession()
       const token = (s as any)?.accessToken
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || ""
+      const isDev = typeof window !== "undefined" && window.location.hostname === "localhost"
+      const apiBase = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : "https://api.verrrnm.cloud"
       const res = await fetch(apiBase + "/api/users/me/export", {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
