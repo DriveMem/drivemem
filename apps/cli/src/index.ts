@@ -182,7 +182,7 @@ switch (command) {
     const formData = new FormData();
     formData.append('file', new Blob([fileContent], { type: mimeType }), fileName);
     
-    const res = await fetch(`${baseUrl}/api/files/upload`, {
+    const res = await fetch(`${baseUrl}/api/v1/files/upload`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}` },
       body: formData,
