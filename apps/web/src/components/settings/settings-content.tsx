@@ -363,9 +363,6 @@ export default function SettingsContent() {
           <Button variant="outline" onClick={handleExport}>
             导出数据
           </Button>
-          <Button variant="outline" className="w-full" onClick={() => signOut({ callbackUrl: "/" })}>
-            退出登录
-          </Button>
           <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
             <DialogTrigger asChild>
               <Button variant="destructive">删除账号</Button>

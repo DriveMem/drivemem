@@ -79,11 +79,12 @@ export default async function v1Routes(fastify: FastifyInstance) {
 
   // GET /search — max_tokens limits snippet length
   fastify.get('/search', async (request, reply) => {
-    const query = request.query as { q: string; max_tokens?: string; format?: string };
+    const query = request.query as { q: string; max_tokens?: string; format?: string; contextBudget?: string };
     if (!query.q) return reply.status(400).send({ error: 'q parameter required' });
     const userId = request.user!.id;
     const format = query.format || 'text'; // text | structured | summary
-    const maxChars = Math.min(parseInt(query.max_tokens || '300') * 4, 2000); // ~4 chars per token
+    const budget = parseInt(query.contextBudget || '0');
+    const maxChars = budget ? Math.min(budget * 4, 8000) : Math.min(parseInt(query.max_tokens || '300') * 4, 2000);
 
     const [queryVec] = await embedTexts([query.q]);
     const chunks = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: 10 });
@@ -225,7 +226,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
   // POST /ask — sync AI Q&A
   fastify.post('/ask', async (request, reply) => {
     const userId = request.user!.id;
-    const body = request.body as { question: string; fileIds?: string[] };
+    const body = request.body as { question: string; fileIds?: string[]; contextBudget?: number; preferFormat?: string };
     if (!body.question) return reply.status(400).send({ error: 'question is required' });
 
     const [queryVec] = await embedTexts([body.question]);
@@ -250,7 +251,11 @@ export default async function v1Routes(fastify: FastifyInstance) {
       (c, i) => `来源 ${i + 1} (${c.fileName} 第${c.chunkIndex + 1}段): ${c.text}`,
     );
 
-    const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于用户上传的文档内容回答问题。\n\n重要规则：\n1. 只使用下方文档片段回答，不使用自己的知识补充\n2. 回答时用上标数字引用来源：¹ ² ³\n3. 区分【确认事实】和【推测判断】——基于文档的是事实，你的推断要标注"推测"\n4. 如果文档片段时间不同，标注信息的时间上下文\n5. 多个文件内容时，主动对比分析异同\n6. 没有找到相关内容时明确告知\n\n[文档片段]\n${citationSources.join('\n\n') || '（未找到相关文档）'}`;
+    const askBudget = body.contextBudget || 0;
+    const askFormat = body.preferFormat || 'text';
+    const lengthHint = askBudget && askBudget < 1000 ? `\n请简洁回答，控制在 ${askBudget} 字以内。` : '';
+    const formatHint = askFormat === 'summary' ? '\n用要点列表回答。' : askFormat === 'structured' ? '\n用 JSON 格式回答：{"answer":"...","keyPoints":["..."],"confidence":"high/medium/low"}' : '';
+    const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于文档内容回答。用上标¹²³引用来源。${lengthHint}${formatHint}\n\n[文档片段]\n${citationSources.join('\n\n') || '（未找到相关文档）'}`;
 
     const { chat } = await import('../services/llm.service.js');
     const answer = await chat([

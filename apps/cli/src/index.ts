@@ -125,12 +125,19 @@ switch (command) {
   }
 
   case 'ask': {
-    const question = args.join(' ');
-    if (!question) { console.error('Usage: aidrive ask <question>'); break; }
+    const budgetIdx = args.indexOf('--budget');
+    const budgetVal = budgetIdx > -1 ? parseInt(args[budgetIdx + 1]) : undefined;
+    const askSummary = args.includes('--summary');
+    const askArgs = args.filter((a, i) => a !== '--budget' && a !== '--summary' && (budgetIdx === -1 || i !== budgetIdx + 1));
+    const question = askArgs.join(' ');
+    if (!question) { console.error('Usage: aidrive ask <question> [--budget N] [--summary] [--json]'); break; }
     if (!jsonMode) console.log('🤔 AI 正在思考...');
+    const askBody: Record<string, unknown> = { question };
+    if (budgetVal) askBody.contextBudget = budgetVal;
+    if (askSummary) askBody.preferFormat = 'summary';
     const data = await apiCall('/ask', {
       method: 'POST',
-      body: JSON.stringify({ question }),
+      body: JSON.stringify(askBody),
     });
     if (jsonMode) { console.log(JSON.stringify(data, null, 2)); break; }
     console.log(`\n💡 ${data.answer}`);
