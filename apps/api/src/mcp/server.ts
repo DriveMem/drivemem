@@ -105,6 +105,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ['filename', 'content'],
       },
     },
+    {
+      name: 'aidrive_store',
+      description: '快速存入一段知识到 AI Drive。不需要文件名，自动创建笔记。适用场景：agent 工作中发现的结论、做出的决策、重要的对话摘要、需要记住的信息。比 upload_file 更轻量——直接传内容就存入。',
+      inputSchema: {
+        type: 'object' as const,
+        properties: {
+          content: { type: 'string', description: '要存入的知识内容' },
+          title: { type: 'string', description: '标题（可选，自动从内容生成）' },
+          tags: { type: 'string', description: '标签（可选，逗号分隔，如 decision,meeting）' },
+        },
+        required: ['content'],
+      },
+    },
   ],
 }));
 
@@ -259,6 +272,64 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         await queue.close();
 
         return { content: [{ type: 'text' as const, text: `✅ 已上传「${filename}」到知识库。AI 正在解析和索引,稍后可搜索和问答。` }] };
+      }
+
+      case 'aidrive_store': {
+        const content = (args as any).content as string;
+        if (!content) return { content: [{ type: 'text' as const, text: '需要 content 参数。' }], isError: true };
+        
+        const title = ((args as any).title as string) || content.slice(0, 30).replace(/\n/g, ' ');
+        const tagStr = (args as any).tags as string || '';
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const filename = `note-${timestamp}.md`;
+        
+        // Build markdown content
+        const mdContent = `# ${title}\n\n${content}\n\n---\n_存入时间: ${new Date().toLocaleString('zh-CN')}_`;
+        
+        const { randomUUID } = await import('crypto');
+        const fileId = randomUUID();
+        const s3Key = `users/${USER_ID}/files/${fileId}/${filename}`;
+        const buffer = Buffer.from(mdContent, 'utf-8');
+        
+        const { uploadObject } = await import('../services/s3.service.js');
+        await uploadObject(s3Key, buffer, 'text/markdown');
+        
+        await db.insert(schema.files).values({
+          id: fileId, name: filename, originalName: filename,
+          mimeType: 'text/markdown', size: buffer.length,
+          status: 'parsing', userId: USER_ID, s3Key,
+        });
+        
+        const { Queue } = await import('bullmq');
+        const queue = new Queue('file-parse', { connection: { host: 'localhost', port: 6379 } });
+        await queue.add('parse', { fileId, userId: USER_ID, s3Key, mimeType: 'text/markdown' });
+        await queue.close();
+        
+        // Auto-tag if tags provided
+        if (tagStr) {
+          const tagNames = tagStr.split(',').map(t => t.trim()).filter(Boolean).slice(0, 3);
+          const tagColors: Record<string, string> = {
+            decision: '#F59E0B', meeting: '#8B5CF6', note: '#A855F7',
+            research: '#EC4899', report: '#10B981', spec: '#3B82F6',
+          };
+          for (const tagName of tagNames) {
+            try {
+              const { and } = await import('drizzle-orm');
+              let [existingTag] = await db.select().from(schema.tags)
+                .where(and(eq(schema.tags.userId, USER_ID), eq(schema.tags.name, tagName)));
+              if (!existingTag) {
+                [existingTag] = await db.insert(schema.tags).values({
+                  name: tagName, color: tagColors[tagName] || '#6B7280', userId: USER_ID,
+                }).returning();
+              }
+              if (existingTag) {
+                await db.insert(schema.fileTags).values({ fileId, tagId: existingTag.id });
+              }
+            } catch { /* skip */ }
+          }
+        }
+        
+        return { content: [{ type: 'text' as const, text: `✅ 已存入「${title}」到知识库。AI 正在理解内容，稍后可搜索和问答。` }] };
       }
 
       default:
