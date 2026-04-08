@@ -33,7 +33,7 @@ module.exports = {
     {
       name: 'ai-drive-web',
       cwd: '/home/ubuntu/repos/ai-drive/apps/web',
-      script: './node_modules/.bin/next',
+      script: './node_modules/next/dist/bin/next',
       args: 'start --port 3000',
       max_memory_restart: '300M',
       exp_backoff_restart_delay: 1000,

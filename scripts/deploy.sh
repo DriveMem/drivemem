@@ -1,6 +1,9 @@
 #!/bin/bash
 # AI Drive Deploy Script
 # Usage: ./scripts/deploy.sh [api|web|all]
+#
+# Safety: validates build output before restarting PM2 processes.
+# Never use `pm2 restart all` — always restart specific processes.
 
 set -e
 
@@ -18,8 +21,19 @@ if [ "$TARGET" = "api" ] || [ "$TARGET" = "all" ]; then
   cd "$REPO_DIR/apps/api"
   pnpm install --frozen-lockfile 2>/dev/null || pnpm install
   npx tsc
-  echo "🔄 Restarting API + Worker + Insight..."
-  pm2 restart ai-drive-api ai-drive-worker ai-drive-insight
+
+  # Validate build output
+  if [ ! -f "dist/index.js" ]; then
+    echo "❌ API build failed — dist/index.js not found. Aborting restart."
+    exit 1
+  fi
+
+  echo "🔄 Restarting API..."
+  pm2 restart ai-drive-api --update-env
+  echo "🔄 Restarting Worker..."
+  pm2 restart ai-drive-worker --update-env
+  echo "🔄 Restarting Insight Worker..."
+  pm2 restart ai-drive-insight --update-env
 fi
 
 if [ "$TARGET" = "web" ] || [ "$TARGET" = "all" ]; then
@@ -27,8 +41,16 @@ if [ "$TARGET" = "web" ] || [ "$TARGET" = "all" ]; then
   cd "$REPO_DIR/apps/web"
   pnpm install --frozen-lockfile 2>/dev/null || pnpm install
   pnpm build
+
+  # Validate .next build output exists
+  if [ ! -f ".next/BUILD_ID" ]; then
+    echo "❌ Web build failed — .next/BUILD_ID not found. Aborting restart."
+    exit 1
+  fi
+
+  echo "✅ Web build verified (.next/BUILD_ID exists)"
   echo "🔄 Restarting Web..."
-  pm2 restart ai-drive-web
+  pm2 restart ai-drive-web --update-env
 fi
 
 echo "💾 Saving PM2 config..."
