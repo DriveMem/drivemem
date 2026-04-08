@@ -98,7 +98,31 @@ export function ConversationList() {
         </div>
       ) : (
         <ul className="flex-1 overflow-y-auto">
-          {sorted.map((c: Conversation) => (
+          {(() => {
+            const now = new Date()
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+            const yesterday = today - 86400000
+            const weekAgo = today - 7 * 86400000
+
+            const groups: { label: string; items: Conversation[] }[] = [
+              { label: "今天", items: [] },
+              { label: "昨天", items: [] },
+              { label: "本周", items: [] },
+              { label: "更早", items: [] },
+            ]
+
+            sorted.forEach((c: Conversation) => {
+              const t = new Date(c.updatedAt).getTime()
+              if (t >= today) groups[0].items.push(c)
+              else if (t >= yesterday) groups[1].items.push(c)
+              else if (t >= weekAgo) groups[2].items.push(c)
+              else groups[3].items.push(c)
+            })
+
+            return groups.filter(g => g.items.length > 0).map(g => (
+              <li key={g.label}>
+                <p className="px-3 pt-3 pb-1 text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">{g.label}</p>
+                {g.items.map((c: Conversation) => (
             <li
               key={c.id}
               className={`group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 transition-colors duration-150 hover:bg-accent ${
@@ -172,6 +196,9 @@ export function ConversationList() {
               </Button>
             </li>
           ))}
+              </li>
+            ))
+          })()}
         </ul>
       )}
 
