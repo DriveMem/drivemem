@@ -239,7 +239,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
       (c, i) => `来源 ${i + 1} (${c.fileName} 第${c.chunkIndex + 1}段): ${c.text}`,
     );
 
-    const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于文档内容回答。用上标数字¹²³引用来源。\n\n[文档片段]\n${citationSources.join('\n\n') || '（未找到相关文档）'}`;
+    const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于用户上传的文档内容回答问题。\n\n重要规则：\n1. 只使用下方文档片段回答，不使用自己的知识补充\n2. 回答时用上标数字引用来源：¹ ² ³\n3. 区分【确认事实】和【推测判断】——基于文档的是事实，你的推断要标注"推测"\n4. 如果文档片段时间不同，标注信息的时间上下文\n5. 多个文件内容时，主动对比分析异同\n6. 没有找到相关内容时明确告知\n\n[文档片段]\n${citationSources.join('\n\n') || '（未找到相关文档）'}`;
 
     const { chat } = await import('../services/llm.service.js');
     const answer = await chat([

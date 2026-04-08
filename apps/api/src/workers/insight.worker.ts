@@ -48,7 +48,7 @@ const worker = new Worker('insight-generate', async (job) => {
     `文件B：${cf.name}\n摘要B：${cf.summary?.substring(0, 150)}\n相似度：${cf.score.toFixed(2)}`
   ).join('\n---\n');
   
-  const prompt = `文件A：${file.name}\n摘要A：${file.summary.substring(0, 150)}\n\n以下是与文件A最相似的文件：\n${pairDescs}\n\n为每对文件生成一条洞察。类型：relation（相关联）、contradiction（观点矛盾）、trend（共同趋势）。\n返回JSON数组：[{"relatedFileName":"文件B名","type":"relation","title":"简短标题(10字内)","description":"具体描述(30字内)"}]\n只返回JSON。`;
+  const prompt = `文件A：${file.name}\n摘要A：${file.summary.substring(0, 150)}\n\n以下是与文件A最相似的文件：\n${pairDescs}\n\n分析文件A和以下文件之间的深层关联。要求：\n1. 不要只说"两个文件讨论相同主题"——要指出具体的共同观点、矛盾论述或发展趋势\n2. title 要具体有信息量（如"用户增长策略一致"而非"相关主题"）\n3. description 要引用文件中的具体内容或数据点\n\n类型选择：\n- relation：两个文件有具体的内容关联或互相支持的论点\n- contradiction：两个文件在某个具体问题上持不同观点\n- trend：两个文件反映了某个可追踪的趋势或变化\n\n返回JSON数组：[{"relatedFileName":"文件B名","type":"relation|contradiction|trend","title":"具体标题(15字内)","description":"引用具体内容的描述(50字内)"}]\n只返回JSON，不要其他文字。`;
   
   try {
     const result = await chat([{ role: 'user', content: prompt }]);
