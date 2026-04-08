@@ -10,11 +10,11 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint }: { 
 
   const [placeholder] = useState(() => {
     const placeholders = [
-      "帮我总结上传的会议纪要",
-      "对比这两份合同的关键差异",
-      "用我的资料写一份周报摘要",
-      "这篇论文的核心观点是什么？",
-      "找出这些文件里提到的截止日期",
+      "问 AI 任何关于你文件的问题...",
+      "帮我总结这份文件的要点",
+      "找出文件里的关键信息",
+      "这些资料的核心结论是什么？",
+      "帮我整理一下上传的内容",
     ]
     return placeholders[Math.floor(Math.random() * placeholders.length)]
   })
