@@ -1,6 +1,6 @@
 "use client"
 import { useState, useCallback, useEffect } from "react"
-import { MessageSquare, FileText, Folder, Files, ChevronDown, Link2, Download } from "lucide-react"
+import { MessageSquare, FileText, Folder, Files, ChevronDown, Link2, Download, Upload, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
 import { ChatInput } from "@/components/chat/chat-input"
@@ -18,6 +18,7 @@ import Link from "next/link"
 import { getSession } from "next-auth/react"
 import { useConversation } from "@/hooks/use-conversations"
 import { useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 type ScopeType = "all" | "folder" | "file"
 
@@ -104,6 +105,8 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   const [followUpSuggestions, setFollowUpSuggestions] = useState<string[]>([])
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const queryClient = useQueryClient()
 
@@ -279,7 +282,45 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="relative flex h-full flex-col"
+      onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+      onDragLeave={(e) => { if (e.currentTarget === e.target) setIsDragging(false) }}
+      onDrop={async (e) => {
+        e.preventDefault()
+        setIsDragging(false)
+        const files = e.dataTransfer.files
+        if (files.length === 0) return
+        setUploading(true)
+        try {
+          const session = await getSession()
+          const token = (session as any)?.accessToken
+          for (const file of Array.from(files)) {
+            const formData = new FormData()
+            formData.append("file", file)
+            await fetch(`${API_BASE}/api/files/upload`, {
+              method: "POST",
+              headers: token ? { "Authorization": `Bearer ${token}` } : {},
+              credentials: "include",
+              body: formData,
+            })
+          }
+          toast.success(`${files.length} 个文件上传成功，AI 正在理解...`)
+        } catch {
+          toast.error("上传失败")
+        } finally {
+          setUploading(false)
+        }
+      }}
+    >
+      {isDragging && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#4F5BD5]/10 border-2 border-dashed border-[#4F5BD5] rounded-xl">
+          <div className="text-center">
+            <Upload className="h-10 w-10 text-[#4F5BD5] mx-auto mb-2" />
+            <p className="text-sm font-medium text-[#4F5BD5]">拖拽文件到这里上传</p>
+            <p className="text-xs text-muted-foreground mt-1">上传后 AI 将自动理解文件内容</p>
+          </div>
+        </div>
+      )}
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <span className="text-xs text-muted-foreground">AI 记忆范围：</span>
         <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined) }} className="gap-1 text-xs">
@@ -370,6 +411,11 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
               {q}
             </button>
           ))}
+        </div>
+      )}
+      {uploading && (
+        <div className="text-center text-xs text-muted-foreground py-1">
+          <Loader2 className="h-3 w-3 animate-spin inline mr-1" /> 正在上传...
         </div>
       )}
       <ChatInput onSend={handleSend} disabled={sending} />
