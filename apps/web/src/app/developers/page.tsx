@@ -33,9 +33,9 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
 /* ---------- Data ---------- */
 const CAPABILITIES = [
   { icon: Search, emoji: "🔍", title: "语义搜索", desc: "自然语言检索知识库，找到真正相关的内容" },
-  { icon: FileText, emoji: "📝", title: "知识存储", desc: "agent 自动存入笔记、分析结论、决策记录" },
-  { icon: Plug, emoji: "🤖", title: "MCP 集成", desc: "标准 MCP 协议，Claude/OpenClaw 等即插即用" },
-  { icon: Bell, emoji: "🔔", title: "Webhook 推送", desc: "AI 发现新洞察时主动通知你的应用" },
+  { icon: FileText, emoji: "🤖", title: "RAG 问答", desc: "基于知识库的 AI 问答，自动引用来源生成结构化回答" },
+  { icon: Plug, emoji: "📝", title: "知识存储", desc: "agent 自动存入笔记、分析结论、决策记录" },
+  { icon: Bell, emoji: "💡", title: "AI 洞察", desc: "AI 主动发现文件间的关联、矛盾和趋势" },
 ] as const
 
 const TABS = ["REST API", "MCP 配置", "Webhook"] as const
