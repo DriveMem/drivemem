@@ -6,6 +6,7 @@
   "/register/page": "app/register/page.js",
   "/share/[token]/page": "app/share/[token]/page.js",
   "/share/report/[token]/page": "app/share/report/[token]/page.js",
+  "/developers/page": "app/developers/page.js",
   "/privacy/page": "app/privacy/page.js",
   "/terms/page": "app/terms/page.js",
   "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
