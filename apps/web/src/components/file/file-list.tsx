@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2, MoreHorizontal, BotMessageSquare, Link2, Info, X } from "lucide-react"
+import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2, MoreHorizontal, BotMessageSquare, Link2, Info, X, Sparkles } from "lucide-react"
 import { Lightbulb } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Link from "next/link"
@@ -277,27 +277,46 @@ export function FileList() {
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setShowUpload(true) }}
       >
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="rounded-full bg-[#4F5BD5]/10 p-5 mb-4">
-            <Upload className="h-10 w-10 text-[#4F5BD5]" />
-          </div>
-          <h3 className="text-xl font-semibold mb-2">开始使用 AI Drive</h3>
-          <p className="text-sm text-muted-foreground max-w-sm mb-6">
-            上传你的第一份文件，AI 将自动理解内容，随时为你解答问题。
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <h3 className="text-xl font-semibold mb-2">开始你的 AI 知识库</h3>
+          <p className="text-sm text-muted-foreground max-w-sm mb-8">
+            上传文件，AI 自动理解内容。随时提问，AI 用你的知识回答。
           </p>
-          <button
-            onClick={() => setShowUpload(true)}
-            className="rounded-lg bg-[#4F5BD5] hover:bg-[#3D49C4] px-6 py-2.5 text-sm text-white transition"
-          >
-            上传文件
-          </button>
-          <p className="mt-4 text-xs text-muted-foreground">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg w-full">
+            <button
+              onClick={() => setShowUpload(true)}
+              className="rounded-xl border p-4 hover:border-[#4F5BD5]/50 hover:shadow-md transition text-center"
+            >
+              <div className="rounded-lg bg-[#4F5BD5]/10 p-3 mx-auto w-fit mb-2">
+                <Upload className="h-5 w-5 text-[#4F5BD5]" />
+              </div>
+              <p className="text-sm font-medium">上传文件</p>
+              <p className="text-xs text-muted-foreground mt-0.5">PDF、Word、PPT 等</p>
+            </button>
+            <Link
+              href="/chat"
+              className="rounded-xl border p-4 hover:border-green-500/50 hover:shadow-md transition text-center"
+            >
+              <div className="rounded-lg bg-green-500/10 p-3 mx-auto w-fit mb-2">
+                <MessageSquare className="h-5 w-5 text-green-500" />
+              </div>
+              <p className="text-sm font-medium">问 AI 问题</p>
+              <p className="text-xs text-muted-foreground mt-0.5">基于你的知识库</p>
+            </Link>
+            <Link
+              href="/chat?q=帮我看看示例文件里有什么"
+              className="rounded-xl border p-4 hover:border-amber-500/50 hover:shadow-md transition text-center"
+            >
+              <div className="rounded-lg bg-amber-500/10 p-3 mx-auto w-fit mb-2">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+              </div>
+              <p className="text-sm font-medium">体验示例</p>
+              <p className="text-xs text-muted-foreground mt-0.5">用 demo 文件试试</p>
+            </Link>
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground">
             支持 PDF、Word、PPT、Excel、TXT、Markdown 等格式
           </p>
-          <div className="mt-6 flex gap-3">
-            <span className="rounded-full bg-muted px-3 py-1 text-xs">💡 总结文件内容</span>
-            <span className="rounded-full bg-muted px-3 py-1 text-xs">💡 对比两份文件</span>
-            <span className="rounded-full bg-muted px-3 py-1 text-xs">💡 提取关键信息</span>
           </div>
         </div>
         {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
