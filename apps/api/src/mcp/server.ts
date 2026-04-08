@@ -33,6 +33,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {
           query: { type: 'string', description: '搜索关键词或问题' },
           contextBudget: { type: 'number', description: '返回内容的 token 预算（默认完整返回）。小模型传 2000，大模型传 50000' },
+          preferFormat: { type: 'string', description: '返回格式：text(自然语言,默认) | structured(JSON) | summary(要点列表)', enum: ['text', 'structured', 'summary'] },
         },
         required: ['query'],
       },
@@ -46,6 +47,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           question: { type: 'string', description: '要问的问题' },
           contextBudget: { type: 'number', description: '回答的 token 预算。小模型传 500，大模型传 5000' },
         },
+          preferFormat: { type: 'string', description: '回答格式：text(自然语言,默认) | structured(JSON) | summary(要点列表)', enum: ['text', 'structured', 'summary'] },
         required: ['question'],
       },
     },
@@ -74,6 +76,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           fileId: { type: 'string', description: '文件 ID' },
           detail: { type: 'string', description: 'brief(默认)或 full', enum: ['brief', 'full'] },
           contextBudget: { type: 'number', description: 'token 预算，自动决定返回 brief 还是 full' },
+          preferFormat: { type: 'string', description: '返回格式：text | structured | summary', enum: ['text', 'structured', 'summary'] },
         },
         required: ['fileId'],
       },
@@ -133,6 +136,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'aidrive_search': {
         const query = (args as any).query as string;
         const budget = ((args as any).contextBudget as number) || 0;
+        const format = ((args as any).preferFormat as string) || 'text';
         const [queryVec] = await embedTexts([query]);
         const results = await searchSimilar({ userId: USER_ID, query: queryVec, scopeType: 'all', limit: budget && budget < 3000 ? 3 : 5 });
         const fileIds = [...new Set(results.map(r => r.fileId))];
@@ -141,7 +145,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           const [f] = await db.select({ id: schema.files.id, createdAt: schema.files.createdAt }).from(schema.files).where(eq(schema.files.id, fid));
           if (f) fileDates[f.id] = f.createdAt.toISOString().slice(0, 10);
         }
-        // Dynamic snippet length based on budget
+        
+        if (format === 'structured') {
+          const jsonData = results.map(r => ({ fileName: r.fileName, fileId: r.fileId, score: r.score, text: r.text.slice(0, 500), createdAt: fileDates[r.fileId] }));
+          return { content: [{ type: 'text' as const, text: JSON.stringify(jsonData, null, 2) }] };
+        }
+        if (format === 'summary') {
+          const summaryText = results.map((r, i) => `${i + 1}. ${r.fileName} (${r.score.toFixed(2)}) — ${r.text.slice(0, 80).replace(/\n/g, ' ')}`).join('\n');
+          return { content: [{ type: 'text' as const, text: summaryText || '未找到。' }] };
+        }
+        
         const charsPerResult = budget ? Math.min(Math.floor((budget * 4) / Math.max(results.length, 1)), 2000) : 600;
         const text = results.map((r, i) => 
           `${i + 1}. [${r.fileName}] (score: ${r.score.toFixed(2)}, ${fileDates[r.fileId] || '?'})\n${r.text.slice(0, charsPerResult)}`
@@ -152,12 +165,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'aidrive_ask': {
         const question = (args as any).question as string;
         const budget = ((args as any).contextBudget as number) || 0;
+        const format = ((args as any).preferFormat as string) || 'text';
         const [queryVec] = await embedTexts([question]);
         const chunks = await searchSimilar({ userId: USER_ID, query: queryVec, scopeType: 'all', limit: budget && budget < 2000 ? 3 : 6 });
         const chunkChars = budget ? Math.min(Math.floor((budget * 2) / Math.max(chunks.length, 1)), 1000) : 500;
         const citations = chunks.map((c, i) => `来源 ${i + 1} (${c.fileName}): ${c.text.slice(0, chunkChars)}`).join('\n\n');
         const lengthHint = budget && budget < 1000 ? `\n请简洁回答，控制在 ${budget} 字以内。` : '';
-        const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于文档内容回答。用上标¹²³引用来源。${lengthHint}\n\n[文档片段]\n${citations || '(未找到相关文档)'}`;
+        const formatHint = format === 'summary' ? '\n用要点列表（bullet points）回答，每点一行。' : format === 'structured' ? '\n用 JSON 格式回答：{"answer":"...","keyPoints":["..."],"confidence":"high/medium/low"}' : '';
+        const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于文档内容回答。用上标¹²³引用来源。${lengthHint}${formatHint}\n\n[文档片段]\n${citations || '(未找到相关文档)'}`;
         const answer = await chat([{ role: 'system', content: systemPrompt }, { role: 'user', content: question }]);
         return { content: [{ type: 'text' as const, text: answer }] };
       }
