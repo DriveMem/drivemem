@@ -268,15 +268,24 @@ export default function SettingsContent() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="mb-1 text-sm text-muted-foreground">
-              存储空间：{storageUsed} GB / {storageTotal} GB
-            </p>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${storageUsed !== "—" && storageTotal !== "—" ? (parseFloat(storageUsed) / parseFloat(storageTotal)) * 100 : 0}%` }}
-              />
-            </div>
+            {(() => {
+              const pct = storageUsed !== "—" && storageTotal !== "—" ? (parseFloat(storageUsed) / parseFloat(storageTotal)) * 100 : 0
+              const barColor = pct > 90 ? "bg-red-500" : pct > 70 ? "bg-yellow-500" : "bg-primary"
+              const textColor = pct > 90 ? "text-red-500" : pct > 70 ? "text-yellow-600" : "text-muted-foreground"
+              return (
+                <>
+                  <p className={`mb-1 text-sm ${textColor}`}>
+                    存储空间：{storageUsed} GB / {storageTotal} GB {pct > 90 ? "⚠️ 即将用完" : pct > 70 ? "⚡ 接近上限" : ""}
+                  </p>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={`h-full rounded-full ${barColor} transition-all`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </>
+              )
+            })()}
           </div>
           <p className="text-sm text-muted-foreground">
             今日对话：{chatUsedToday} / {chatLimitToday} 次
