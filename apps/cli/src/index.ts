@@ -155,6 +155,23 @@ switch (command) {
     break;
   }
 
+  case 'timeline': {
+    const limitArg = args.includes('--limit') ? args[args.indexOf('--limit') + 1] : '20';
+    const data = await apiCall(`/timeline?limit=${limitArg}`);
+    if (jsonMode) { console.log(JSON.stringify(data, null, 2)); break; }
+    if (!data.events?.length) {
+      console.log('📅 暂无活动记录');
+    } else {
+      for (const e of data.events) {
+        const date = new Date(e.createdAt).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const desc = e.description ? ` — ${e.description.slice(0, 60)}` : '';
+        console.log(`${e.icon} [${date}] ${e.title}${desc}`);
+      }
+      console.log(`\n共 ${data.total} 条活动`);
+    }
+    break;
+  }
+
   case 'upload': {
     const filePath = args[0];
     if (!filePath) { console.error('Usage: aidrive upload <file-path>'); break; }
@@ -214,6 +231,7 @@ switch (command) {
   aidrive search <query>        语义搜索
   aidrive ask <question>        基于知识库问答
   aidrive insights              查看 AI 洞察
+  aidrive timeline [--limit N]  知识活动时间线
   aidrive upload <file>         上传文件
 
 示例:
