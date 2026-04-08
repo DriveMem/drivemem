@@ -78,7 +78,7 @@ export default function SharedReportPage() {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{data.report}</ReactMarkdown>
           </div>
         </div>
-        <div className="mt-8 rounded-2xl bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 border border-blue-500/20 p-8 text-center">
+        <div className="mt-8 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-600/10 to-pink-600/10 border border-indigo-500/20 p-8 text-center">
           <h2 className="text-xl font-bold">🚀 免费创建你的 AI 知识库</h2>
           <p className="mt-2 text-sm text-muted-foreground">上传文件即可开始 — AI 自动生成分析报告</p>
           <Button asChild className="mt-4 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white px-8">

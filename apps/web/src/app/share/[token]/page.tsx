@@ -80,7 +80,7 @@ export default function SharePage() {
               </p>
 
               {data.file.summary && (
-                <div className="mt-6 rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
+                <div className="mt-6 rounded-lg border border-indigo-500/20 bg-indigo-500/5 p-4">
                   <h2 className="text-sm font-semibold flex items-center gap-1">🧠 AI 摘要</h2>
                   <p className="mt-2 text-sm text-muted-foreground">{data.file.summary}</p>
                 </div>
@@ -92,7 +92,7 @@ export default function SharePage() {
             </CardContent>
           </Card>
 
-          <div className="mt-8 rounded-2xl bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 border border-blue-500/20 p-8 text-center">
+          <div className="mt-8 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-600/10 to-pink-600/10 border border-indigo-500/20 p-8 text-center">
             <h2 className="text-xl font-bold">🚀 免费创建你的 AI 知识库</h2>
             <p className="mt-2 text-sm text-muted-foreground">上传文件即可开始 — AI 自动理解、记忆、分析</p>
             <Button asChild className="mt-4 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white px-8">
