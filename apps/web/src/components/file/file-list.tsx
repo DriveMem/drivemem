@@ -127,6 +127,8 @@ export function FileList() {
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
   const [drawerFileId, setDrawerFileId] = useState<string | null>(null)
+  const [versionFileId, setVersionFileId] = useState<string | null>(null)
+  const [versions, setVersions] = useState<any[]>([])
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
   const [shareLoading, setShareLoading] = useState(false)
@@ -595,6 +597,21 @@ export function FileList() {
             }}>
               📦 {rawFiles?.find((f: any) => f.id === contextMenu?.fileId)?.archivedAt ? '取消归档' : '归档'}
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              const file = rawFiles?.find((f: any) => f.id === contextMenu?.fileId)
+              if (file) {
+                // Find versions: files with same name base or linked via previousVersionId
+                const allVersions = rawFiles?.filter((f: any) =>
+                  f.id === file.id || f.previousVersionId === file.id || file.previousVersionId === f.id ||
+                  (f.name.replace(/_\d{8}/, '') === file.name.replace(/_\d{8}/, '') && f.id !== file.id)
+                ) || []
+                setVersions(allVersions.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+                setVersionFileId(file.id)
+              }
+              setContextMenu(null)
+            }}>
+              📋 版本历史
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => {
               router.push(`/chat?fileIds=${contextMenu.fileId}`)
@@ -792,6 +809,28 @@ export function FileList() {
             <Button variant="outline" onClick={() => setMoveTarget(null)}>取消</Button>
             <Button onClick={() => { if (moveTarget) { moveFile.mutate({ fileId: moveTarget, folderId: moveFolderId || null }); setMoveTarget(null) } }}>移动</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Version History Dialog */}
+      <Dialog open={!!versionFileId} onOpenChange={() => setVersionFileId(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>📋 版本历史</DialogTitle></DialogHeader>
+          {versions.length <= 1 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">没有其他版本</p>
+          ) : (
+            <div className="space-y-2 max-h-60 overflow-auto">
+              {versions.map((v: any) => (
+                <div key={v.id} className={cn("flex items-center justify-between rounded-lg border p-3", v.id === versionFileId && "border-[#4F5BD5] bg-[#4F5BD5]/5")}>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{v.name}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(v.createdAt).toLocaleString("zh-CN")} · {fmtSize(v.size)}</p>
+                  </div>
+                  <Link href={`/files/${v.id}/preview`} className="text-xs text-[#4F5BD5] hover:underline shrink-0 ml-2">预览</Link>
+                </div>
+              ))}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
