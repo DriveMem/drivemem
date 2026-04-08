@@ -360,7 +360,7 @@ export default function SettingsContent() {
           <CardTitle>数据管理</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-4">
-          <Button variant="outline" onClick={handleExport}>
+          <Button variant="outline" onClick={handleExport} title="导出所有文件和对话记录为 ZIP">
             导出数据
           </Button>
           <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
@@ -372,7 +372,7 @@ export default function SettingsContent() {
                 <DialogTitle>确认删除账号</DialogTitle>
               </DialogHeader>
               <p className="text-sm text-muted-foreground">
-                此操作不可撤销。请输入 <strong>确认删除</strong> 以继续。
+                删除账号将永久清除所有文件、对话记录和 AI 记忆，此操作不可撤销。请输入 <strong>确认删除</strong> 以继续。
               </p>
               <Input
                 value={deleteConfirm}
