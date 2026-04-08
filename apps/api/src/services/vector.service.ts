@@ -90,6 +90,23 @@ export async function deleteByUserId(userId: string): Promise<void> {
   });
 }
 
+// Preprocess search query: replace time words with actual dates
+export function preprocessQuery(query: string): string {
+  const now = new Date();
+  const fmt = (d: Date) => d.toISOString().slice(0, 10);
+  const daysAgo = (n: number) => new Date(now.getTime() - n * 86400000);
+  
+  return query
+    .replace(/今天/g, fmt(now))
+    .replace(/昨天/g, fmt(daysAgo(1)))
+    .replace(/前天/g, fmt(daysAgo(2)))
+    .replace(/上周/g, `${fmt(daysAgo(7))}到${fmt(now)}`)
+    .replace(/本周/g, `${fmt(daysAgo(now.getDay()))}到${fmt(now)}`)
+    .replace(/最近/g, `${fmt(daysAgo(7))}以来`)
+    .replace(/这个月/g, `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`)
+    .replace(/上个月/g, `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}`);
+}
+
 export async function searchSimilar(params: {
   userId: string;
   query: number[];

@@ -86,7 +86,8 @@ export default async function v1Routes(fastify: FastifyInstance) {
     const budget = parseInt(query.contextBudget || '0');
     const maxChars = budget ? Math.min(budget * 4, 8000) : Math.min(parseInt(query.max_tokens || '300') * 4, 2000);
 
-    const [queryVec] = await embedTexts([query.q]);
+    const { preprocessQuery } = await import("../services/vector.service.js");
+    const [queryVec] = await embedTexts([preprocessQuery(query.q)]);
     const chunks = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: 10 });
 
     // Filter archived files from search results
@@ -229,7 +230,8 @@ export default async function v1Routes(fastify: FastifyInstance) {
     const body = request.body as { question: string; fileIds?: string[]; contextBudget?: number; preferFormat?: string };
     if (!body.question) return reply.status(400).send({ error: 'question is required' });
 
-    const [queryVec] = await embedTexts([body.question]);
+    const { preprocessQuery: ppq } = await import("../services/vector.service.js");
+    const [queryVec] = await embedTexts([ppq(body.question)]);
     const scopeType = body.fileIds?.length ? 'file' : 'all';
     const chunks = await searchSimilar({
       userId,

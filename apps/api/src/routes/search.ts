@@ -23,7 +23,8 @@ export default async function searchRoutes(app: FastifyInstance) {
       .limit(10);
 
     // 2. 搜内容 (Qdrant 向量搜索)
-    const [queryVector] = await embedTexts([q]);
+    const { preprocessQuery } = await import('../services/vector.service.js');
+    const [queryVector] = await embedTexts([preprocessQuery(q)]);
     const chunkResults = await searchSimilar({
       userId: user.id,
       query: queryVector,

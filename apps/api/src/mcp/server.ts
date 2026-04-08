@@ -4,7 +4,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 
 // Import service layers
 import { embedTexts } from '../services/embedding.service.js';
-import { searchSimilar } from '../services/vector.service.js';
+import { searchSimilar, preprocessQuery } from '../services/vector.service.js';
 import { chat } from '../services/llm.service.js';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
@@ -137,7 +137,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const query = (args as any).query as string;
         const budget = ((args as any).contextBudget as number) || 0;
         const format = ((args as any).preferFormat as string) || 'text';
-        const [queryVec] = await embedTexts([query]);
+        const [queryVec] = await embedTexts([preprocessQuery(query)]);
         const results = await searchSimilar({ userId: USER_ID, query: queryVec, scopeType: 'all', limit: budget && budget < 3000 ? 3 : 5 });
         const fileIds = [...new Set(results.map(r => r.fileId))];
         const fileDates: Record<string, string> = {};
@@ -166,7 +166,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const question = (args as any).question as string;
         const budget = ((args as any).contextBudget as number) || 0;
         const format = ((args as any).preferFormat as string) || 'text';
-        const [queryVec] = await embedTexts([question]);
+        const [queryVec] = await embedTexts([preprocessQuery(question)]);
         const chunks = await searchSimilar({ userId: USER_ID, query: queryVec, scopeType: 'all', limit: budget && budget < 2000 ? 3 : 6 });
         const chunkChars = budget ? Math.min(Math.floor((budget * 2) / Math.max(chunks.length, 1)), 1000) : 500;
         const citations = chunks.map((c, i) => `来源 ${i + 1} (${c.fileName}): ${c.text.slice(0, chunkChars)}`).join('\n\n');

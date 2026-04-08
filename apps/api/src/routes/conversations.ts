@@ -268,7 +268,9 @@ export default async function conversationRoutes(app: FastifyInstance) {
     reply.raw.write(`event: thinking\ndata: ${JSON.stringify({ status: 'searching' })}\n\n`);
 
     // RAG: embed query and search
-    const [queryEmbedding] = await embedTexts([body.content]);
+    const { preprocessQuery } = await import("../services/vector.service.js");
+    const processedQuery = preprocessQuery(body.content);
+    const [queryEmbedding] = await embedTexts([processedQuery]);
     const chunks = await searchSimilar({
       userId: user.id,
       query: queryEmbedding,
