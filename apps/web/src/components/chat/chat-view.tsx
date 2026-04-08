@@ -418,7 +418,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
           <Loader2 className="h-3 w-3 animate-spin inline mr-1" /> 正在上传...
         </div>
       )}
-      <ChatInput onSend={handleSend} disabled={sending} />
+      <ChatInput onSend={handleSend} disabled={sending} fileCount={filesList.length} hasConversations={messages.length > 0} />
     </div>
   )
 }
