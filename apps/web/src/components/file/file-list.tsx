@@ -599,7 +599,7 @@ export function FileList() {
                   {file.summary && (
                     <p className="text-xs text-muted-foreground line-clamp-2">{file.summary}</p>
                   )}
-                  {file.tags?.length > 0 && (
+                  {file.tags && file.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {file.tags.slice(0, 2).map((tag: any) => (
                         <span key={tag.name} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>

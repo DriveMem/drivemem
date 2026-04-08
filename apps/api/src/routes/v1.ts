@@ -79,9 +79,10 @@ export default async function v1Routes(fastify: FastifyInstance) {
 
   // GET /search — max_tokens limits snippet length
   fastify.get('/search', async (request, reply) => {
-    const query = request.query as { q: string; max_tokens?: string };
+    const query = request.query as { q: string; max_tokens?: string; format?: string };
     if (!query.q) return reply.status(400).send({ error: 'q parameter required' });
     const userId = request.user!.id;
+    const format = query.format || 'text'; // text | structured | summary
     const maxChars = Math.min(parseInt(query.max_tokens || '300') * 4, 2000); // ~4 chars per token
 
     const [queryVec] = await embedTexts([query.q]);
@@ -99,6 +100,16 @@ export default async function v1Routes(fastify: FastifyInstance) {
     for (const fid of searchFileIds) {
       const [f] = await db.select({ id: schema.files.id, createdAt: schema.files.createdAt }).from(schema.files).where(eq(schema.files.id, fid));
       if (f) fileDates[f.id] = f.createdAt;
+    }
+
+        if (format === 'summary') {
+      return reply.send({
+        results: searchResults.map(c => ({
+          fileName: c.fileName,
+          score: c.score,
+          summary: c.text.slice(0, 80).replace(/\n/g, ' '),
+        })),
+      });
     }
 
     return reply.send({

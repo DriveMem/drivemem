@@ -106,9 +106,12 @@ switch (command) {
   }
 
   case 'search': {
-    const query = args.join(' ');
-    if (!query) { console.error('Usage: aidrive search <query>'); break; }
-    const data = await apiCall(`/search?q=${encodeURIComponent(query)}`);
+    const formatFlag = args.includes('--summary') ? 'summary' : '';
+    const queryArgs = args.filter(a => a !== '--summary');
+    const query = queryArgs.join(' ');
+    if (!query) { console.error('Usage: aidrive search <query> [--summary] [--json]'); break; }
+    const formatParam = formatFlag ? `&format=${formatFlag}` : '';
+    const data = await apiCall(`/search?q=${encodeURIComponent(query)}${formatParam}`);
     if (jsonMode) { console.log(JSON.stringify(data, null, 2)); break; }
     if (data.results?.length === 0) {
       console.log('🔍 未找到相关内容');
