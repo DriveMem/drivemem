@@ -84,4 +84,30 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
       .where(and(eq(schema.webhooks.id, id), eq(schema.webhooks.userId, request.user!.id)));
     return reply.status(204).send();
   });
+
+  // GET /deliveries — recent delivery logs
+  fastify.get('/deliveries', { preHandler: [requireAnyAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const query = request.query as { limit?: string; webhookId?: string };
+    const limit = Math.min(parseInt(query.limit || '50'), 100);
+
+    let q = db.select({
+      id: schema.webhookDeliveries.id,
+      webhookId: schema.webhookDeliveries.webhookId,
+      event: schema.webhookDeliveries.event,
+      url: schema.webhookDeliveries.url,
+      statusCode: schema.webhookDeliveries.statusCode,
+      success: schema.webhookDeliveries.success,
+      duration: schema.webhookDeliveries.duration,
+      error: schema.webhookDeliveries.error,
+      createdAt: schema.webhookDeliveries.createdAt,
+    })
+      .from(schema.webhookDeliveries)
+      .where(eq(schema.webhookDeliveries.userId, userId))
+      .orderBy(desc(schema.webhookDeliveries.createdAt))
+      .limit(limit);
+
+    const deliveries = await q;
+    return reply.send({ deliveries });
+  });
 }

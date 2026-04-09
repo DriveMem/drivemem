@@ -376,8 +376,49 @@ function WebhookCard() {
           每个事件发送 JSON POST，含 <code className="font-mono">X-AIDrive-Signature</code> 签名。
           <a href="/developers" className="text-[#4F5BD5] hover:underline ml-1">查看文档 ↗</a>
         </p>
+
+        {/* Delivery Log */}
+        {hooks.length > 0 && <WebhookDeliveryLog />}
       </CardContent>
     </Card>
+  )
+}
+
+function WebhookDeliveryLog() {
+  const [deliveries, setDeliveries] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchDeliveries = async () => {
+      try {
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/webhooks/deliveries?limit=20")
+        setDeliveries(data?.deliveries || [])
+      } catch { /* ignore */ }
+      finally { setLoading(false) }
+    }
+    fetchDeliveries()
+  }, [])
+
+  if (loading) return <p className="text-xs text-muted-foreground py-2">加载投递记录...</p>
+  if (deliveries.length === 0) return <p className="text-xs text-muted-foreground py-2">暂无投递记录</p>
+
+  return (
+    <div className="mt-4 border-t pt-4">
+      <h4 className="text-sm font-medium mb-2">📋 最近投递记录</h4>
+      <div className="space-y-1.5 max-h-60 overflow-y-auto">
+        {deliveries.map((d: any) => (
+          <div key={d.id} className="flex items-center gap-2 rounded-md border px-3 py-2 text-xs">
+            <span className={`h-2 w-2 rounded-full shrink-0 ${d.success ? "bg-green-500" : "bg-red-500"}`} />
+            <span className="font-mono text-muted-foreground shrink-0">{d.event}</span>
+            <span className="truncate text-muted-foreground flex-1">{d.url}</span>
+            {d.statusCode && <span className={`shrink-0 font-mono ${d.success ? "text-green-600" : "text-red-500"}`}>{d.statusCode}</span>}
+            {d.duration && <span className="shrink-0 text-muted-foreground">{d.duration}ms</span>}
+            <span className="shrink-0 text-muted-foreground/60">{new Date(d.createdAt).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 

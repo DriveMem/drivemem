@@ -1,10 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { useRef, useEffect, useState, type ReactNode } from "react"
+import { useRef, useEffect, useState, useCallback, type ReactNode } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Search, FileText, Plug, Bell, ArrowRight, ChevronRight } from "lucide-react"
+import { Search, FileText, Plug, Bell, ArrowRight, ChevronRight, RefreshCw, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
 
 /* ---------- FadeIn ---------- */
 function FadeIn({ children, className = "" }: { children: ReactNode; className?: string }) {

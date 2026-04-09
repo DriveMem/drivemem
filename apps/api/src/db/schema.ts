@@ -203,6 +203,19 @@ export const webhooks = pgTable('webhooks', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+export const webhookDeliveries = pgTable('webhook_deliveries', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  webhookId: uuid('webhook_id').notNull().references(() => webhooks.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  event: text('event').notNull(),
+  url: text('url').notNull(),
+  statusCode: integer('status_code'),
+  success: boolean('success').notNull(),
+  duration: integer('duration_ms'),
+  error: text('error'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // --- Insights ---
 export const insights = pgTable('insights', {
   id: uuid('id').defaultRandom().primaryKey(),
