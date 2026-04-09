@@ -333,6 +333,29 @@ switch (command) {
     break;
   }
 
+  case 'rename': {
+    const fileId = args[0];
+    const newName = args[1];
+    if (!fileId || !newName) { console.error('Usage: aidrive rename <file-id> <new-name>'); break; }
+    const data = await apiCall(`/files/${fileId}`, { method: 'PATCH', body: JSON.stringify({ name: newName }) });
+    output(data, `✅ 已重命名为: ${newName}`);
+    break;
+  }
+
+  case 'archive': {
+    if (args.length === 0) { console.error('Usage: aidrive archive <file-id> [file-id...]'); break; }
+    const data = await apiCall('/files/batch', { method: 'POST', body: JSON.stringify({ action: 'archive', fileIds: args }) });
+    output(data, `✅ 已归档 ${data.success?.length || 0} 个文件${data.failed?.length ? `，失败 ${data.failed.length} 个` : ''}`);
+    break;
+  }
+
+  case 'unarchive': {
+    if (args.length === 0) { console.error('Usage: aidrive unarchive <file-id> [file-id...]'); break; }
+    const data = await apiCall('/files/batch', { method: 'POST', body: JSON.stringify({ action: 'unarchive', fileIds: args }) });
+    output(data, `✅ 已取消归档 ${data.success?.length || 0} 个文件${data.failed?.length ? `，失败 ${data.failed.length} 个` : ''}`);
+    break;
+  }
+
   case 'help':
   case undefined:
   default:
@@ -354,6 +377,9 @@ switch (command) {
 文件管理:
   aidrive files [--brief]       列出知识库文件
   aidrive info <file-id>        查看文件详情和 AI 摘要
+  aidrive rename <id> <name>    重命名文件
+  aidrive archive <id> [id...]  归档文件（支持批量）
+  aidrive unarchive <id> [id...] 取消归档（支持批量）
   aidrive delete <file-id>      删除文件（需确认，--force 跳过）
 
 AI 能力:

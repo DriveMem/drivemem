@@ -112,6 +112,31 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     {
+      name: 'aidrive_update_file',
+      description: '更新文件属性（重命名、标签）',
+      inputSchema: {
+        type: 'object' as const,
+        properties: {
+          fileId: { type: 'string', description: '文件 ID' },
+          name: { type: 'string', description: '新文件名' },
+          tags: { type: 'string', description: '逗号分隔的标签' },
+        },
+        required: ['fileId'],
+      },
+    },
+    {
+      name: 'aidrive_batch',
+      description: '批量文件操作',
+      inputSchema: {
+        type: 'object' as const,
+        properties: {
+          action: { type: 'string', enum: ['delete', 'archive', 'unarchive'], description: '操作类型' },
+          fileIds: { type: 'string', description: '逗号分隔的文件ID' },
+        },
+        required: ['action', 'fileIds'],
+      },
+    },
+    {
       name: 'aidrive_store',
       description: '快速存入一段知识到 AI Drive。不需要文件名，自动创建笔记。适用场景：agent 工作中发现的结论、做出的决策、重要的对话摘要、需要记住的信息。比 upload_file 更轻量——直接传内容就存入。',
       inputSchema: {
@@ -354,6 +379,62 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
         
         return { content: [{ type: 'text' as const, text: `✅ 已存入「${title}」到知识库。AI 正在理解内容，稍后可搜索和问答。` }] };
+      }
+
+      case 'aidrive_update_file': {
+        const fileId = (args as any).fileId as string;
+        if (!fileId) return { content: [{ type: 'text' as const, text: '需要 fileId 参数。' }], isError: true };
+        const [file] = await db.select().from(schema.files).where(eq(schema.files.id, fileId));
+        if (!file || file.userId !== USER_ID) return { content: [{ type: 'text' as const, text: '文件不存在。' }], isError: true };
+
+        const newName = (args as any).name as string | undefined;
+        const tagStr = (args as any).tags as string | undefined;
+
+        if (newName) {
+          if (!newName.trim()) return { content: [{ type: 'text' as const, text: '名称不能为空。' }], isError: true };
+          await db.update(schema.files).set({ name: newName.trim(), updatedAt: new Date() }).where(eq(schema.files.id, fileId));
+        }
+
+        if (tagStr !== undefined) {
+          const { and } = await import('drizzle-orm');
+          await db.delete(schema.fileTags).where(eq(schema.fileTags.fileId, fileId));
+          const tagNames = tagStr.split(',').map(t => t.trim()).filter(Boolean).slice(0, 10);
+          const tagColors: Record<string, string> = { decision: '#F59E0B', meeting: '#8B5CF6', note: '#A855F7', research: '#EC4899', report: '#10B981', spec: '#3B82F6' };
+          for (const tn of tagNames) {
+            let [existing] = await db.select().from(schema.tags).where(and(eq(schema.tags.userId, USER_ID), eq(schema.tags.name, tn)));
+            if (!existing) {
+              [existing] = await db.insert(schema.tags).values({ name: tn, color: tagColors[tn] || '#6B7280', userId: USER_ID }).returning();
+            }
+            if (existing) await db.insert(schema.fileTags).values({ fileId, tagId: existing.id });
+          }
+        }
+
+        const changes = [newName ? `重命名为「${newName.trim()}」` : '', tagStr !== undefined ? `标签已更新` : ''].filter(Boolean).join('，');
+        return { content: [{ type: 'text' as const, text: `✅ 文件已更新：${changes}` }] };
+      }
+
+      case 'aidrive_batch': {
+        const action = (args as any).action as string;
+        const fileIdsStr = (args as any).fileIds as string;
+        if (!action || !fileIdsStr) return { content: [{ type: 'text' as const, text: '需要 action 和 fileIds 参数。' }], isError: true };
+        if (!['delete', 'archive', 'unarchive'].includes(action)) return { content: [{ type: 'text' as const, text: 'action 必须是 delete/archive/unarchive。' }], isError: true };
+
+        const fileIds = fileIdsStr.split(',').map(s => s.trim()).filter(Boolean);
+        if (fileIds.length > 50) return { content: [{ type: 'text' as const, text: '最多 50 个文件。' }], isError: true };
+
+        const { and } = await import('drizzle-orm');
+        let ok = 0, fail = 0;
+        for (const fid of fileIds) {
+          try {
+            const [f] = await db.select().from(schema.files).where(and(eq(schema.files.id, fid), eq(schema.files.userId, USER_ID)));
+            if (!f) { fail++; continue; }
+            if (action === 'delete') await db.delete(schema.files).where(eq(schema.files.id, fid));
+            else if (action === 'archive') await db.update(schema.files).set({ archivedAt: new Date() }).where(eq(schema.files.id, fid));
+            else await db.update(schema.files).set({ archivedAt: null }).where(eq(schema.files.id, fid));
+            ok++;
+          } catch { fail++; }
+        }
+        return { content: [{ type: 'text' as const, text: `✅ 批量${action}完成：成功 ${ok}，失败 ${fail}` }] };
       }
 
       default:

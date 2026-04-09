@@ -66,6 +66,157 @@ export default async function v1Routes(fastify: FastifyInstance) {
     return reply.status(204).send();
   });
 
+  // PATCH /files/:id — 更新文件元数据（名称、标签）
+  fastify.patch('/files/:id', { preHandler: [requireScope('write')] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = request.user!.id;
+    const body = request.body as { name?: string; tags?: string[] };
+
+    const [file] = await db.select().from(schema.files).where(and(eq(schema.files.id, id), eq(schema.files.userId, userId)));
+    if (!file) return reply.status(404).send({ error: 'File not found' });
+
+    // Update name
+    if (body.name !== undefined) {
+      if (!body.name || body.name.trim() === '') return reply.status(400).send({ error: 'name cannot be empty' });
+      await db.update(schema.files).set({ name: body.name.trim(), updatedAt: new Date() }).where(eq(schema.files.id, id));
+    }
+
+    // Update tags (replace all)
+    if (body.tags !== undefined) {
+      // Delete existing file_tags
+      await db.delete(schema.fileTags).where(eq(schema.fileTags.fileId, id));
+      // Insert new tags
+      const tagColors: Record<string, string> = {
+        decision: '#F59E0B', meeting: '#8B5CF6', note: '#A855F7',
+        research: '#EC4899', report: '#10B981', spec: '#3B82F6',
+      };
+      for (const tagName of body.tags.slice(0, 10)) {
+        if (!tagName || tagName.trim() === '') continue;
+        const trimmed = tagName.trim();
+        let [existingTag] = await db.select().from(schema.tags)
+          .where(and(eq(schema.tags.userId, userId), eq(schema.tags.name, trimmed)));
+        if (!existingTag) {
+          [existingTag] = await db.insert(schema.tags).values({
+            name: trimmed, color: tagColors[trimmed] || '#6B7280', userId,
+          }).returning();
+        }
+        if (existingTag) {
+          await db.insert(schema.fileTags).values({ fileId: id, tagId: existingTag.id });
+        }
+      }
+    }
+
+    const [updated] = await db.select().from(schema.files).where(eq(schema.files.id, id));
+    return reply.send({ file: updated });
+  });
+
+  // PUT /files/:id/content — 替换文件内容
+  fastify.put('/files/:id/content', { preHandler: [requireScope('write')] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = request.user!.id;
+
+    const [file] = await db.select().from(schema.files).where(and(eq(schema.files.id, id), eq(schema.files.userId, userId)));
+    if (!file) return reply.status(404).send({ error: 'File not found' });
+
+    const data = await request.file();
+    if (!data) return reply.status(400).send({ error: 'No file provided' });
+
+    const chunks: Buffer[] = [];
+    for await (const chunk of data.file) chunks.push(chunk as Buffer);
+    const buffer = Buffer.concat(chunks);
+    const size = buffer.length;
+    let mimeType = data.mimetype;
+    if (mimeType === 'application/octet-stream') {
+      const ext = data.filename.split('.').pop()?.toLowerCase() || '';
+      const mimeMap: Record<string, string> = {
+        'md': 'text/markdown', 'txt': 'text/plain', 'pdf': 'application/pdf',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      };
+      mimeType = mimeMap[ext] || mimeType;
+    }
+
+    // Upload to S3 (overwrite)
+    await s3Client.send(new PutObjectCommand({
+      Bucket: config.AWS_S3_BUCKET,
+      Key: file.s3Key,
+      Body: buffer,
+      ContentType: mimeType,
+    }));
+
+    // Update file record: reset status, update size/mime
+    const sizeDiff = size - Number(file.size);
+    await db.update(schema.files).set({
+      size, mimeType, status: 'parsing', errorMessage: null,
+      chunkCount: 0, summary: null, updatedAt: new Date(),
+    }).where(eq(schema.files.id, id));
+
+    // Update storage used
+    if (sizeDiff !== 0) {
+      await db.update(schema.users).set({ storageUsed: sql`${schema.users.storageUsed} + ${sizeDiff}` }).where(eq(schema.users.id, userId));
+    }
+
+    // Delete old embeddings/chunks from Qdrant will happen during re-parse
+    // Enqueue parse job
+    const queue = new Queue('file-parse', { connection: { host: 'localhost', port: 6379 } });
+    await queue.add('parse', { fileId: id, userId, s3Key: file.s3Key, mimeType });
+    await queue.close();
+
+    const [updated] = await db.select().from(schema.files).where(eq(schema.files.id, id));
+    return reply.send({ file: updated });
+  });
+
+  // POST /files/batch — 批量操作
+  fastify.post('/files/batch', { preHandler: [requireScope('write')] }, async (request, reply) => {
+    const body = request.body as { action: string; fileIds: string[] };
+    const userId = request.user!.id;
+
+    if (!body.action || !['delete', 'archive', 'unarchive'].includes(body.action)) {
+      return reply.status(400).send({ error: 'action must be delete, archive, or unarchive' });
+    }
+    if (!body.fileIds || !Array.isArray(body.fileIds) || body.fileIds.length === 0) {
+      return reply.status(400).send({ error: 'fileIds is required' });
+    }
+    if (body.fileIds.length > 50) {
+      return reply.status(400).send({ error: 'fileIds max 50' });
+    }
+
+    const success: string[] = [];
+    const failed: { id: string; error: string }[] = [];
+
+    for (const fileId of body.fileIds) {
+      try {
+        const [file] = await db.select().from(schema.files).where(and(eq(schema.files.id, fileId), eq(schema.files.userId, userId)));
+        if (!file) {
+          failed.push({ id: fileId, error: 'File not found' });
+          continue;
+        }
+
+        switch (body.action) {
+          case 'delete':
+            await db.delete(schema.files).where(eq(schema.files.id, fileId));
+            try {
+              const { dispatchWebhook } = await import('../services/webhook.service.js');
+              await dispatchWebhook(userId, 'file.deleted', { fileId, fileName: file.name });
+            } catch {}
+            break;
+          case 'archive':
+            await db.update(schema.files).set({ archivedAt: new Date() }).where(eq(schema.files.id, fileId));
+            break;
+          case 'unarchive':
+            await db.update(schema.files).set({ archivedAt: null }).where(eq(schema.files.id, fileId));
+            break;
+        }
+        success.push(fileId);
+      } catch (err) {
+        failed.push({ id: fileId, error: (err as Error).message });
+      }
+    }
+
+    return reply.send({ success, failed });
+  });
+
   // PATCH /files/:id/archive — 归档文件
   fastify.patch('/files/:id/archive', async (request, reply) => {
     const { id } = request.params as { id: string };
