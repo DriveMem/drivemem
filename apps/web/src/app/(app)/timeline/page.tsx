@@ -8,6 +8,7 @@ interface TimelineEvent {
   id: string
   type: "file_uploaded" | "conversation" | "insight" | "report"
   title: string
+  description?: string
   subtitle?: string
   metadata?: Record<string, any>
   createdAt: string
@@ -43,9 +44,9 @@ const EVENT_CONFIG = {
 function getEventLink(event: TimelineEvent): string {
   switch (event.type) {
     case "file_uploaded":
-      return `/dashboard`
+      return `/files`
     case "conversation":
-      return `/chat`
+      return `/chat/${event.id}`
     case "insight":
       return `/dashboard`
     case "report":
@@ -130,8 +131,8 @@ export default function TimelinePage() {
                           <span className="text-xs font-medium text-muted-foreground">{config.label}</span>
                         </div>
                         <p className="mt-1 font-medium text-sm">{event.title}</p>
-                        {event.subtitle && (
-                          <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{event.subtitle}</p>
+                        {(event.description || event.subtitle) && (
+                          <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{event.description || event.subtitle}</p>
                         )}
                         {event.type === "insight" && event.metadata?.sourceFileName && (
                           <p className="mt-1 text-xs text-muted-foreground">
