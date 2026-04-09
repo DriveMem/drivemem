@@ -269,6 +269,63 @@ export default function DevelopersPage() {
             <h2 className="text-2xl font-bold sm:text-3xl">API 参考</h2>
 
             <div className="mt-8 space-y-6">
+              {/* REST API Endpoints */}
+              <div>
+                <h3 className="font-semibold text-[#1C1B18]">REST API Endpoints</h3>
+                <p className="mt-2 text-sm text-[#6B6966]">
+                  所有 v1 端点前缀为 <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">/api/v1</code>，需携带 API Key 认证。Webhook 端点前缀为 <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">/api/webhooks</code>。
+                </p>
+                <div className="mt-3 overflow-x-auto rounded-lg border border-[#E5E4E1]">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#E5E4E1] bg-white">
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Method</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Path</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Description</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E5E4E1]">
+                      {[
+                        ["GET", "/api/v1/search?q=…", "语义搜索知识库"],
+                        ["POST", "/api/v1/ask", "RAG 问答（基于文档的 AI 回答）"],
+                        ["POST", "/api/v1/store", "快速存入一段知识笔记"],
+                        ["POST", "/api/v1/files/upload", "上传文件（multipart）"],
+                        ["GET", "/api/v1/files", "列出所有文件（?detail=brief|full）"],
+                        ["GET", "/api/v1/files/:id", "获取文件详情"],
+                        ["PATCH", "/api/v1/files/:id", "更新文件元数据（名称、标签）"],
+                        ["PUT", "/api/v1/files/:id/content", "替换文件内容"],
+                        ["DELETE", "/api/v1/files/:id", "删除文件"],
+                        ["POST", "/api/v1/files/batch", "批量操作（delete/archive/unarchive）"],
+                        ["PATCH", "/api/v1/files/:id/archive", "归档文件"],
+                        ["PATCH", "/api/v1/files/:id/unarchive", "取消归档"],
+                        ["GET", "/api/v1/insights", "获取 AI 洞察（文件关联与趋势）"],
+                        ["GET", "/api/v1/timeline", "知识库活动时间线"],
+                        ["GET", "/api/webhooks", "列出已注册的 Webhook"],
+                        ["POST", "/api/webhooks", "注册新 Webhook"],
+                        ["PATCH", "/api/webhooks/:id", "更新 Webhook"],
+                        ["DELETE", "/api/webhooks/:id", "删除 Webhook"],
+                      ].map(([method, path, desc], i) => (
+                        <tr key={i} className="hover:bg-white/60 transition">
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-mono font-semibold ${
+                              method === "GET" ? "bg-emerald-50 text-emerald-700" :
+                              method === "POST" ? "bg-blue-50 text-blue-700" :
+                              method === "PUT" ? "bg-amber-50 text-amber-700" :
+                              method === "PATCH" ? "bg-purple-50 text-purple-700" :
+                              "bg-red-50 text-red-700"
+                            }`}>{method}</span>
+                          </td>
+                          <td className="px-4 py-2">
+                            <code className="text-xs font-mono text-[#1C1B18]">{path}</code>
+                          </td>
+                          <td className="px-4 py-2 text-[#6B6966]">{desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               <div>
                 <h3 className="font-semibold text-[#1C1B18]">MCP 工具列表</h3>
                 <p className="mt-2 text-sm text-[#6B6966]">
