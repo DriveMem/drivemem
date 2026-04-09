@@ -36,4 +36,17 @@ export async function requireApiKey(request: FastifyRequest, reply: FastifyReply
   if (!user) return reply.status(401).send({ error: 'User not found' });
 
   request.user = { id: user.id, email: user.email, name: user.name || '' };
+  (request as any).apiKeyScopes = apiKey.scopes || ['read', 'write'];
+}
+
+/** Middleware: require specific scope on current API Key */
+export function requireScope(scope: string) {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    const scopes: string[] = (request as any).apiKeyScopes;
+    // Session auth (not API key) has full access
+    if (!scopes) return;
+    if (!scopes.includes(scope) && !scopes.includes('admin')) {
+      return reply.status(403).send({ error: `Insufficient permissions. Required scope: ${scope}` });
+    }
+  };
 }

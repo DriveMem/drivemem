@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { eq, and, desc, sql } from 'drizzle-orm';
-import { requireApiKey } from '../plugins/api-key-auth.js';
+import { requireApiKey, requireScope } from '../plugins/api-key-auth.js';
 import { fetchTimeline } from './timeline.js';
 import { embedTexts } from '../services/embedding.service.js';
 import { searchSimilar } from '../services/vector.service.js';
@@ -52,7 +52,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
   });
 
   // DELETE /files/:id
-  fastify.delete('/files/:id', async (request, reply) => {
+  fastify.delete('/files/:id', { preHandler: [requireScope('write')] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const userId = request.user!.id;
     const [file] = await db.select().from(schema.files).where(and(eq(schema.files.id, id), eq(schema.files.userId, userId)));
@@ -156,7 +156,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
   });
 
   // POST /files/upload — direct file upload (multipart)
-  fastify.post('/files/upload', async (request, reply) => {
+  fastify.post('/files/upload', { preHandler: [requireScope('write')] }, async (request, reply) => {
     const userId = request.user!.id;
     const data = await request.file();
     if (!data) return reply.status(400).send({ error: 'No file provided' });
@@ -283,7 +283,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
   });
 
   // POST /store — lightweight knowledge storage (mirrors MCP aidrive_store)
-  fastify.post('/store', async (request, reply) => {
+  fastify.post('/store', { preHandler: [requireScope('write')] }, async (request, reply) => {
     const userId = request.user!.id;
     const body = request.body as { content: string; title?: string; tags?: string };
     if (!body.content) return reply.status(400).send({ error: 'content is required' });

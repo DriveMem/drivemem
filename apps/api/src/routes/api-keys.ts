@@ -15,6 +15,7 @@ export default async function apiKeyRoutes(fastify: FastifyInstance) {
       id: schema.apiKeys.id,
       name: schema.apiKeys.name,
       keyPrefix: schema.apiKeys.keyPrefix,
+      scopes: schema.apiKeys.scopes,
       lastUsedAt: schema.apiKeys.lastUsedAt,
       createdAt: schema.apiKeys.createdAt,
     })
@@ -25,8 +26,11 @@ export default async function apiKeyRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post('/', { preHandler: [requireAuth] }, async (request, reply) => {
-    const body = request.body as { name: string };
+    const body = request.body as { name: string; scopes?: string[] };
     if (!body.name) return reply.status(400).send({ error: 'name is required' });
+
+    const validScopes = ['read', 'write', 'admin'];
+    const scopes = body.scopes?.filter(s => validScopes.includes(s)) || ['read', 'write'];
 
     const rawKey = 'ak_' + randomBytes(24).toString('hex');
     const keyHash = hashKey(rawKey);
@@ -37,9 +41,10 @@ export default async function apiKeyRoutes(fastify: FastifyInstance) {
       name: body.name,
       keyHash,
       keyPrefix,
+      scopes,
     });
 
-    return reply.status(201).send({ key: rawKey, prefix: keyPrefix, name: body.name });
+    return reply.status(201).send({ key: rawKey, prefix: keyPrefix, name: body.name, scopes });
   });
 
   fastify.delete('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
