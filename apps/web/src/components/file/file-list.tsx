@@ -700,7 +700,7 @@ export function FileList() {
               const ids = Array.from(selected).join(",")
               router.push(`/chat?fileIds=${ids}`)
             }}
-            className="flex items-center gap-1.5 rounded-lg bg-[#4F5BD5] px-3 py-1.5 text-xs text-white hover:bg-[#3D49C4]"
+            className="flex items-center gap-1.5 rounded-lg border border-[#4F5BD5]/30 px-3 py-1.5 text-xs text-[#4F5BD5] hover:bg-[#4F5BD5]/10"
           >
             💬 问 AI
           </button>

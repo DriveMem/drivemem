@@ -101,7 +101,7 @@ export default function TimelinePage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
       <h1 className="text-2xl font-bold mb-2">📅 知识时间线</h1>
-      <p className="text-sm text-muted-foreground mb-8">你的 AI 知识活动全览</p>
+      <p className="text-sm text-muted-foreground mb-8">追踪文件上传、AI 分析和知识发现的完整历程</p>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">

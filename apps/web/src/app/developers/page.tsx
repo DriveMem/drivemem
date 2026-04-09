@@ -138,8 +138,27 @@ export default function DevelopersPage() {
       <section id="quickstart" className="relative z-10 bg-[#F8F7F5] px-6 py-24">
         <div className="mx-auto max-w-3xl">
           <FadeIn>
-            <h2 className="text-center text-3xl font-bold sm:text-4xl">Quick Start</h2>
-            <p className="mt-4 text-center text-[#6B6966]">三种方式接入 AI Drive</p>
+            <h2 className="text-center text-3xl font-bold sm:text-4xl">快速接入</h2>
+            <p className="mt-4 text-center text-[#6B6966]">三步接入 AI Drive</p>
+
+            {/* Step guide */}
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-bold text-white">1</span>
+                <p className="mt-2 text-sm font-medium">获取 API Key</p>
+                <p className="mt-1 text-xs text-[#6B6966]">在 <a href="/settings?tab=developer" className="text-[#4F5BD5] hover:underline">Settings</a> 创建你的 Key</p>
+              </div>
+              <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-bold text-white">2</span>
+                <p className="mt-2 text-sm font-medium">复制配置</p>
+                <p className="mt-1 text-xs text-[#6B6966]">选择 REST API 或 MCP 配置</p>
+              </div>
+              <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-bold text-white">3</span>
+                <p className="mt-2 text-sm font-medium">粘贴使用</p>
+                <p className="mt-1 text-xs text-[#6B6966]">粘贴到 Claude / Cursor / 你的应用</p>
+              </div>
+            </div>
           </FadeIn>
 
           <FadeIn className="mt-12">
