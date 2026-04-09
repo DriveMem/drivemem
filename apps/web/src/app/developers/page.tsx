@@ -84,11 +84,20 @@ curl -X POST https://drive.verrrnm.cloud/api/v1/store \\
   }
 }`,
 
-  `# 注册 webhook（即将推出）
-curl -X POST https://drive.verrrnm.cloud/api/v1/webhooks \\
+  `# 注册 Webhook 接收事件推送
+curl -X POST https://drive.verrrnm.cloud/api/webhooks \\
   -H 'Authorization: Bearer YOUR_API_KEY' \\
   -H 'Content-Type: application/json' \\
-  -d '{"url": "https://your-app.com/hook", "events": ["insight.created", "file.indexed"]}'`,
+  -d '{"url": "https://your-app.com/hook", "events": ["file.indexed", "insight.discovered"]}'
+
+# 支持的事件类型：
+# - file.indexed     文件上传并完成 AI 索引
+# - insight.discovered  AI 发现新知识关联
+# - file.deleted     文件被删除
+
+# 响应示例：
+# { "id": "...", "url": "...", "events": [...], "secret": "..." }
+# 用 secret 验证签名：X-AIDrive-Signature: sha256=<HMAC(secret, body)>`,
 ]
 
 const MCP_TOOLS = [
@@ -276,12 +285,24 @@ export default function DevelopersPage() {
 
               <div>
                 <h3 className="font-semibold text-[#1C1B18]">CLI 工具</h3>
-                <p className="mt-2 text-sm text-[#6B6966]">通过命令行快速访问知识库：</p>
+                <p className="mt-2 text-sm text-[#6B6966]">命令行操作知识库：</p>
                 <pre className="mt-3 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
-                  <code>{`aidrive search "关键词"
+                  <code>{`# 安装
+npm install -g aidrive-cli
+
+# 配置 API Key
+aidrive login --key ak_your_api_key
+
+# 常用命令
+aidrive search "关键词"
 aidrive ask "基于文件回答问题"
 aidrive store "快速存入一段知识"
-aidrive upload report.md`}</code>
+aidrive upload report.md
+aidrive files              # 列出文件
+aidrive info <file-id>     # 文件详情 + AI 摘要
+aidrive insights           # AI 洞察
+
+# 所有命令支持 --json 输出（适合 agent/脚本）`}</code>
                 </pre>
               </div>
             </div>
