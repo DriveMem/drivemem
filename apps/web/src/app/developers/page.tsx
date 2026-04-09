@@ -48,11 +48,30 @@ const CODE_BLOCKS = [
 curl -X GET 'https://drive.verrrnm.cloud/api/v1/search?q=项目最新进展' \\
   -H 'Authorization: Bearer YOUR_API_KEY'
 
+# 响应示例：
+# {
+#   "results": [
+#     {
+#       "fileId": "abc-123",
+#       "fileName": "项目周报.md",
+#       "text": "本周完成了用户认证模块...",
+#       "score": 0.92
+#     }
+#   ]
+# }
+
 # 3. 存入知识
 curl -X POST https://drive.verrrnm.cloud/api/v1/store \\
   -H 'Authorization: Bearer YOUR_API_KEY' \\
   -H 'Content-Type: application/json' \\
-  -d '{"content": "今天决定采用方案 A", "title": "决策记录"}'`,
+  -d '{"content": "今天决定采用方案 A", "title": "决策记录"}'
+
+# 响应示例：
+# {
+#   "id": "def-456",
+#   "name": "note-2026-04-09.md",
+#   "status": "pending"
+# }`,
 
   `{
   "mcpServers": {
