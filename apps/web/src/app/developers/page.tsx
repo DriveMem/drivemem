@@ -100,14 +100,14 @@ export default function DevelopersPage() {
       <section className="relative z-10 flex min-h-[70vh] flex-col items-center justify-center bg-gradient-to-b from-[#F4F5FD] to-white px-6 text-center">
         <FadeIn>
           <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-            Build with AI Drive
+            让你的 Agent 拥有记忆
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-[#6B6966]">
-            让你的 Agent 拥有记忆 — AI Drive 是 agent 的知识基建
+            AI Drive 是 agent 的知识基建 — 通过 API 和 MCP 协议接入你的知识库
           </p>
           <div className="mt-10">
             <Button asChild size="lg" className="h-12 px-10 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
-              <a href="#quickstart">Get Started <ArrowRight className="ml-1 h-4 w-4" /></a>
+              <a href="#quickstart">开始使用 <ArrowRight className="ml-1 h-4 w-4" /></a>
             </Button>
           </div>
         </FadeIn>

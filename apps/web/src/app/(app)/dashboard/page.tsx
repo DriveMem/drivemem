@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Search, FolderOpen, Sparkles, Upload } from "lucide-react"
+import { FolderOpen, Sparkles, Upload } from "lucide-react"
 import { FileList } from "@/components/file/file-list"
 import { MemoryOverview } from "@/components/dashboard/memory-overview"
 import { KnowledgeLinks } from "@/components/dashboard/knowledge-links"
@@ -131,10 +131,6 @@ export default function DashboardPage() {
     document.title = "我的文件 - AI Drive"
   }, [])
 
-  const openSearch = () => {
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))
-  }
-
   const handleQuickGenerate = (type: "analysis" | "study") => {
     reportRef.current?.generate(type)
   }
@@ -152,20 +148,8 @@ export default function DashboardPage() {
     <div className="flex flex-col h-full">
       <WelcomeModal onUpload={() => setShowUpload(true)} />
 
-      {/* Search bar */}
-      <div className="px-6 pt-6 pb-4">
-        <button
-          onClick={openSearch}
-          className="w-full max-w-2xl mx-auto flex items-center gap-3 rounded-xl border bg-muted/50 px-4 py-3 text-sm text-muted-foreground hover:bg-muted transition"
-        >
-          <Search className="h-4 w-4" />
-          <span className="flex-1 text-left">搜索文件、对话、知识...</span>
-          <kbd className="rounded border bg-background px-1.5 py-0.5 text-xs">⌘K</kbd>
-        </button>
-      </div>
-
       {/* Tab switcher */}
-      <div className="px-6 pb-2">
+      <div className="px-6 pt-6 pb-2">
         <div className="flex gap-1 border-b">
           <button
             onClick={() => setActiveTab("files")}

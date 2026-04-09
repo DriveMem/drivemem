@@ -528,8 +528,8 @@ export function FileList() {
                   </TooltipProvider>
                 )}
                 <StatusIcon status={file.status} error={file.errorMessage} compact />
-                <span className="w-20 text-right text-xs text-muted-foreground shrink-0" suppressHydrationWarning>{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
-                <span className="w-16 text-right text-xs text-muted-foreground shrink-0">{fmtSize(file.size)}</span>
+                <span className="w-20 text-right text-xs text-muted-foreground shrink-0 hidden sm:inline" suppressHydrationWarning>{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
+                <span className="w-16 text-right text-xs text-muted-foreground shrink-0 hidden sm:inline">{fmtSize(file.size)}</span>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDownload(file.id, e) }}
