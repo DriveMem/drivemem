@@ -86,7 +86,7 @@ export function SearchResults({ query }: { query: string }) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
         <Search className="h-8 w-8" />
-        <p className="text-sm">输入关键词开始搜索</p>
+        <p className="text-sm">用自然语言描述你想找的内容</p>
       </div>
     )
   }
