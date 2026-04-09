@@ -105,6 +105,190 @@ const MCP_TOOLS = [
   "insights", "suggest", "timeline", "upload", "store",
 ]
 
+/* ---------- Webhook Delivery Log ---------- */
+
+interface WebhookDelivery {
+  id: string
+  webhookId: string
+  event: string
+  url: string
+  statusCode: number | null
+  success: boolean
+  duration: number | null
+  error: string | null
+  createdAt: string
+}
+
+const EVENT_BADGE_COLORS: Record<string, string> = {
+  "file.indexed": "bg-blue-100 text-blue-700 border-blue-200",
+  "insight.discovered": "bg-purple-100 text-purple-700 border-purple-200",
+  "file.deleted": "bg-red-100 text-red-700 border-red-200",
+  "summary.generated": "bg-emerald-100 text-emerald-700 border-emerald-200",
+}
+
+function relativeTime(dateStr: string): string {
+  const now = Date.now()
+  const then = new Date(dateStr).getTime()
+  const diff = Math.max(0, now - then)
+  const seconds = Math.floor(diff / 1000)
+  if (seconds < 60) return `${seconds}秒前`
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}分钟前`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}小时前`
+  const days = Math.floor(hours / 24)
+  return `${days}天前`
+}
+
+function truncateUrl(url: string, max = 40): string {
+  return url.length > max ? url.slice(0, max) + "…" : url
+}
+
+function WebhookDeliveryLog() {
+  const { status } = useSession()
+  const isLoggedIn = status === "authenticated"
+  const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  const fetchDeliveries = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch("/api/webhooks/deliveries?limit=20")
+      if (!res.ok) throw new Error(`请求失败 (${res.status})`)
+      const data = await res.json()
+      setDeliveries(data.deliveries || [])
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "加载失败")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isLoggedIn) fetchDeliveries()
+  }, [isLoggedIn, fetchDeliveries])
+
+  if (!isLoggedIn) {
+    return (
+      <div className="mt-8 rounded-xl border border-[#E5E4E1] bg-white p-6 text-center">
+        <p className="text-sm text-[#6B6966]">登录后查看 Webhook 日志</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-8">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-[#1C1B18]">📋 Webhook 事件日志</h3>
+        <button
+          onClick={fetchDeliveries}
+          disabled={loading}
+          className="flex items-center gap-1.5 rounded-lg border border-[#E5E4E1] px-3 py-1.5 text-xs font-medium text-[#6B6966] hover:bg-[#F8F7F5] transition disabled:opacity-50"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+          刷新
+        </button>
+      </div>
+
+      {error && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && deliveries.length === 0 && (
+        <div className="rounded-xl border border-[#E5E4E1] bg-white p-8 text-center">
+          <p className="text-sm text-[#6B6966]">
+            暂无 Webhook 投递记录。注册 Webhook 后，事件触发时会在这里显示投递历史。
+          </p>
+        </div>
+      )}
+
+      {deliveries.length > 0 && (
+        <div className="overflow-x-auto rounded-xl border border-[#E5E4E1]">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#E5E4E1] bg-white">
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">事件</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">URL</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">状态码</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">耗时</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">时间</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E5E4E1]">
+              {deliveries.map((d) => (
+                <>
+                  <tr key={d.id} className="hover:bg-white/60 transition">
+                    <td className="px-4 py-2.5">
+                      <span className={`inline-block rounded-full border px-2 py-0.5 text-xs font-medium ${EVENT_BADGE_COLORS[d.event] || "bg-gray-100 text-gray-700 border-gray-200"}`}>
+                        {d.event}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className="font-mono text-xs text-[#6B6966]" title={d.url}>
+                        {truncateUrl(d.url)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {d.statusCode != null ? (
+                        <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-mono font-semibold ${
+                          d.statusCode >= 200 && d.statusCode < 300
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-red-50 text-red-700"
+                        }`}>
+                          {d.statusCode}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[#6B6966]">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-[#6B6966] font-mono">
+                      {d.duration != null ? `${d.duration}ms` : "—"}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-[#6B6966]">
+                      {relativeTime(d.createdAt)}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {d.error && (
+                        <button
+                          onClick={() => setExpandedId(expandedId === d.id ? null : d.id)}
+                          className="text-[#6B6966] hover:text-[#1C1B18] transition"
+                        >
+                          {expandedId === d.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                  {d.error && expandedId === d.id && (
+                    <tr key={`${d.id}-error`}>
+                      <td colSpan={6} className="bg-red-50/50 px-4 py-3">
+                        <p className="text-xs font-mono text-red-700 break-all">{d.error}</p>
+                      </td>
+                    </tr>
+                  )}
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {loading && deliveries.length === 0 && (
+        <div className="rounded-xl border border-[#E5E4E1] bg-white p-8 text-center">
+          <RefreshCw className="mx-auto h-5 w-5 animate-spin text-[#6B6966]" />
+          <p className="mt-2 text-sm text-[#6B6966]">加载中...</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* ---------- Page ---------- */
 export default function DevelopersPage() {
   const [activeTab, setActiveTab] = useState(0)
@@ -302,6 +486,9 @@ plugins:
                 <code>{CODE_BLOCKS[activeTab]}</code>
               </pre>
             )}
+
+            {/* Webhook Delivery Log */}
+            {activeTab === 2 && <WebhookDeliveryLog />}
           </FadeIn>
         </div>
       </section>
