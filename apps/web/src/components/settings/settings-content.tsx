@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 function ApiKeysCard() {
   const [keys, setKeys] = useState<any[]>([])
@@ -448,36 +449,53 @@ export default function SettingsContent() {
       <Card>
         <CardHeader>
           <CardTitle>数据管理</CardTitle>
+          <CardDescription>管理你的文件、对话数据和账号</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-4">
-          <Button variant="outline" onClick={handleExport} title="导出所有文件和对话记录为 ZIP">
-            导出数据
-          </Button>
-          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-            <DialogTrigger asChild>
-              <Button variant="destructive">删除账号</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>确认删除账号</DialogTitle>
-              </DialogHeader>
-              <p className="text-sm text-muted-foreground">
-                删除账号将永久清除所有文件、对话记录和 AI 记忆，此操作不可撤销。请输入 <strong>确认删除</strong> 以继续。
-              </p>
-              <Input
-                value={deleteConfirm}
-                onChange={(e) => setDeleteConfirm(e.target.value)}
-                placeholder='输入「确认删除」'
-              />
-              <Button
-                variant="destructive"
-                disabled={deleteConfirm !== "确认删除"}
-                onClick={handleDelete}
-              >
-                确认删除
-              </Button>
-            </DialogContent>
-          </Dialog>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-4">
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" onClick={handleExport}>
+                    导出数据
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>导出所有文件和对话记录为 ZIP 压缩包</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="rounded-lg border border-red-200 bg-red-50/50 p-4 space-y-3">
+            <p className="text-sm text-red-600">
+              ⚠️ 删除账号将永久移除所有文件、对话记录和 AI 记忆，此操作不可撤销。
+            </p>
+            <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+              <DialogTrigger asChild>
+                <Button variant="destructive" size="sm">删除账号</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="text-red-600">⚠️ 确认删除账号</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground">
+                  删除账号将永久清除所有文件、对话记录和 AI 记忆，此操作不可撤销。请输入 <strong>确认删除</strong> 以继续。
+                </p>
+                <Input
+                  value={deleteConfirm}
+                  onChange={(e) => setDeleteConfirm(e.target.value)}
+                  placeholder='输入「确认删除」'
+                />
+                <Button
+                  variant="destructive"
+                  disabled={deleteConfirm !== "确认删除"}
+                  onClick={handleDelete}
+                >
+                  永久删除
+                </Button>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardContent>
       </Card>
       </>
