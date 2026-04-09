@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useRef, useEffect, useState, type ReactNode } from "react"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Search, FileText, Plug, Bell, ArrowRight, ChevronRight } from "lucide-react"
 
@@ -79,16 +80,31 @@ const MCP_TOOLS = [
 /* ---------- Page ---------- */
 export default function DevelopersPage() {
   const [activeTab, setActiveTab] = useState(0)
+  const { data: session, status } = useSession()
+  const isLoggedIn = status === "authenticated"
 
   return (
     <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-[#4F5BD5]/30">
       {/* Nav */}
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-[#E5E4E1] bg-white/80 px-6 py-4 backdrop-blur">
-        <Link href="/" className="text-lg font-bold text-[#1C1B18]">AI Drive</Link>
+        <Link href={isLoggedIn ? "/dashboard" : "/"} className="text-lg font-bold text-[#1C1B18]">AI Drive</Link>
         <div className="flex items-center gap-4">
           <a href="#features" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">功能</a>
-          <Link href="/login" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">登录</Link>
-          <Link href="/signup" className="rounded-lg bg-[#4F5BD5] px-4 py-2 text-sm font-medium text-white hover:bg-[#3D49C4] transition">免费开始</Link>
+          {isLoggedIn ? (
+            <>
+              <Link href="/dashboard" className="rounded-lg border border-[#E5E4E1] px-4 py-2 text-sm font-medium text-[#1C1B18] hover:bg-[#F8F7F5] transition">
+                返回 Dashboard
+              </Link>
+              <Link href="/settings" className="flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-medium text-white">
+                {(session?.user?.name || "U").charAt(0).toUpperCase()}
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">登录</Link>
+              <Link href="/signup" className="rounded-lg bg-[#4F5BD5] px-4 py-2 text-sm font-medium text-white hover:bg-[#3D49C4] transition">免费开始</Link>
+            </>
+          )}
         </div>
       </nav>
 
