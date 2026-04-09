@@ -108,6 +108,7 @@ const MCP_TOOLS = [
 /* ---------- Page ---------- */
 export default function DevelopersPage() {
   const [activeTab, setActiveTab] = useState(0)
+  const [copiedClient, setCopiedClient] = useState<string | null>(null)
   const { data: session, status } = useSession()
   const isLoggedIn = status === "authenticated"
 
@@ -223,26 +224,84 @@ export default function DevelopersPage() {
               ))}
             </div>
 
-            {/* Client hint for MCP tab */}
+            {/* Client-specific MCP templates */}
             {activeTab === 1 && (
-              <p className="mt-6 mb-2 text-sm text-[#6B6966]">
-                将以下配置添加到你的 MCP 客户端配置文件中：
-                <span className="block mt-1">
-                  • <strong>Claude Desktop</strong>: <code className="rounded bg-[#F8F7F5] px-1 text-xs font-mono">~/Library/Application Support/Claude/claude_desktop_config.json</code>
-                </span>
-                <span className="block">
-                  • <strong>Cursor</strong>: <code className="rounded bg-[#F8F7F5] px-1 text-xs font-mono">~/.cursor/mcp.json</code>
-                </span>
-                <span className="block">
-                  • <strong>OpenClaw</strong>: 参考 <a href="#quickstart" className="text-[#4F5BD5] hover:underline">接入文档</a>
-                </span>
-              </p>
+              <div className="mt-6 space-y-4">
+                {[
+                  {
+                    name: "Claude Desktop",
+                    path: "~/Library/Application Support/Claude/claude_desktop_config.json",
+                    config: `{
+  "mcpServers": {
+    "ai-drive": {
+      "url": "https://drive.verrrnm.cloud/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
+    }
+  }
+}`,
+                  },
+                  {
+                    name: "Cursor",
+                    path: "~/.cursor/mcp.json",
+                    config: `{
+  "mcpServers": {
+    "ai-drive": {
+      "url": "https://drive.verrrnm.cloud/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY"
+      }
+    }
+  }
+}`,
+                  },
+                  {
+                    name: "OpenClaw",
+                    path: "openclaw.yaml 或 TOOLS.md",
+                    config: `# OpenClaw MCP 配置（openclaw.yaml）
+plugins:
+  entries:
+    ai-drive:
+      kind: mcp
+      transport:
+        type: sse
+        url: "https://drive.verrrnm.cloud/mcp"
+        headers:
+          Authorization: "Bearer YOUR_API_KEY"`,
+                  },
+                ].map((client) => (
+                  <div key={client.name} className="rounded-xl border border-[#E5E4E1] overflow-hidden">
+                    <div className="flex items-center justify-between bg-white px-4 py-2 border-b border-[#E5E4E1]">
+                      <div>
+                        <span className="text-sm font-medium text-[#1C1B18]">{client.name}</span>
+                        <span className="ml-2 text-xs text-[#6B6966]">{client.path}</span>
+                      </div>
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(client.config); setCopiedClient(client.name) ; setTimeout(() => setCopiedClient(null), 2000) }}
+                        className="rounded-md border border-[#E5E4E1] px-2.5 py-1 text-xs text-[#6B6966] hover:bg-[#F8F7F5] transition"
+                      >
+                        {copiedClient === client.name ? "✓ 已复制" : "复制"}
+                      </button>
+                    </div>
+                    <pre className="overflow-x-auto bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
+                      <code>{client.config}</code>
+                    </pre>
+                  </div>
+                ))}
+                <p className="text-xs text-[#6B6966]">
+                  💡 将 <code className="font-mono">YOUR_API_KEY</code> 替换为你的 API Key。
+                  在 <a href="/settings?tab=developer" className="text-[#4F5BD5] hover:underline">Settings → 开发者</a> 创建。
+                </p>
+              </div>
             )}
 
-            {/* Code block */}
-            <pre className={`${activeTab === 1 ? "mt-2" : "mt-6"} overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]`}>
-              <code>{CODE_BLOCKS[activeTab]}</code>
-            </pre>
+            {/* Code block for non-MCP tabs */}
+            {activeTab !== 1 && (
+              <pre className="mt-6 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
+                <code>{CODE_BLOCKS[activeTab]}</code>
+              </pre>
+            )}
           </FadeIn>
         </div>
       </section>
