@@ -62,6 +62,7 @@ function ApiKeysCard() {
   }
 
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle>🔑 API Keys</CardTitle>
@@ -112,6 +113,97 @@ function ApiKeysCard() {
         <p className="mt-4 text-xs text-muted-foreground">
           📖 API 文档：上传文件、搜索知识、AI 问答。详见 <a href="/developers" className="text-[#4F5BD5] hover:underline">开发者文档</a>
         </p>
+      </CardContent>
+    </Card>
+
+    {/* MCP Quick Connect Card */}
+    <McpQuickConnectCard apiKeyPrefix={keys.length > 0 ? keys[0].keyPrefix : null} newKey={newKey} />
+    </>
+  )
+}
+
+function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | null; newKey: string | null }) {
+  const [urlCopied, setUrlCopied] = useState(false)
+  const [configCopied, setConfigCopied] = useState(false)
+
+  const mcpUrl = "https://drive.verrrnm.cloud/mcp"
+  const keyDisplay = newKey || (apiKeyPrefix ? `${apiKeyPrefix}••••••••` : "YOUR_API_KEY")
+  const keyForConfig = newKey || "YOUR_API_KEY"
+
+  const configJson = JSON.stringify({
+    mcpServers: {
+      "ai-drive": {
+        url: mcpUrl,
+        headers: {
+          Authorization: `Bearer ${keyForConfig}`
+        }
+      }
+    }
+  }, null, 2)
+
+  const copyWithFeedback = (text: string, setter: (v: boolean) => void) => {
+    navigator.clipboard.writeText(text)
+    setter(true)
+    setTimeout(() => setter(false), 2000)
+  }
+
+  return (
+    <Card className="mt-4">
+      <CardHeader>
+        <CardTitle>🔌 MCP 快速接入</CardTitle>
+        <CardDescription>将 AI Drive 接入支持 MCP 的 AI 工具</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* MCP Server URL */}
+        <div>
+          <label className="text-sm font-medium">MCP Server URL</label>
+          <div className="mt-1 flex items-center gap-2">
+            <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm font-mono select-all">{mcpUrl}</code>
+            <Button size="sm" variant="outline" onClick={() => copyWithFeedback(mcpUrl, setUrlCopied)}>
+              {urlCopied ? "✓ 已复制" : "复制"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Config JSON */}
+        <div>
+          <label className="text-sm font-medium">配置示例</label>
+          <p className="mt-1 text-xs text-muted-foreground">
+            将以下 JSON 添加到你的 MCP 客户端配置文件：
+          </p>
+          <ul className="mt-1 text-xs text-muted-foreground space-y-0.5 ml-3">
+            <li>• <strong>Claude Desktop</strong>: <code className="rounded bg-muted px-1 text-[11px]">~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+            <li>• <strong>Cursor</strong>: <code className="rounded bg-muted px-1 text-[11px]">~/.cursor/mcp.json</code></li>
+          </ul>
+          <div className="mt-2 relative">
+            <pre className="rounded-lg border bg-[#1C1B18] p-3 text-sm font-mono text-[#E5E4E1] overflow-x-auto">
+              <code>{configJson}</code>
+            </pre>
+            <Button
+              size="sm"
+              variant="outline"
+              className="absolute top-2 right-2 h-7 text-xs bg-white/10 border-white/20 text-white hover:bg-white/20"
+              onClick={() => copyWithFeedback(configJson, setConfigCopied)}
+            >
+              {configCopied ? "✓ 已复制" : "复制"}
+            </Button>
+          </div>
+          {!newKey && apiKeyPrefix && (
+            <p className="mt-2 text-xs text-amber-600">
+              💡 配置中显示的是占位符。请用你的完整 API Key 替换 <code className="font-mono">YOUR_API_KEY</code>
+            </p>
+          )}
+          {newKey && (
+            <p className="mt-2 text-xs text-emerald-600">
+              ✅ 已自动填入你刚创建的 API Key，可直接复制使用
+            </p>
+          )}
+        </div>
+
+        {/* Doc link */}
+        <a href="/developers" className="inline-flex items-center gap-1 text-sm text-[#4F5BD5] hover:underline">
+          查看完整开发者文档 ↗
+        </a>
       </CardContent>
     </Card>
   )
