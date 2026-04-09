@@ -3,6 +3,7 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
+import { createInterface } from 'readline';
 
 const CONFIG_DIR = join(homedir(), '.aidrive');
 const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
@@ -47,7 +48,13 @@ async function apiCall(path: string, options: RequestInit = {}) {
     process.exit(1);
   }
   
-  return res.json();
+  if (res.status === 204 || res.headers.get('content-length') === '0') {
+    return {};
+  }
+  
+  const text = await res.text();
+  if (!text) return {};
+  return JSON.parse(text);
 }
 
 const [,, command, ...rawArgs] = process.argv;
@@ -183,17 +190,31 @@ switch (command) {
   }
 
   case 'upload': {
-    const filePath = args[0];
-    if (!filePath) { console.error('Usage: aidrive upload <file-path>'); break; }
-    if (!existsSync(filePath)) { console.error(`File not found: ${filePath}`); break; }
+    const nameIdx = args.indexOf('--name');
+    const nameVal = nameIdx > -1 ? args[nameIdx + 1] : undefined;
+    const uploadArgs = args.filter((a, i) => a !== '--name' && (nameIdx === -1 || i !== nameIdx + 1));
+    const filePath = uploadArgs[0];
     
-    const config = loadConfig();
-    const apiKey = process.env.AIDRIVE_API_KEY || config.apiKey;
-    const baseUrl = process.env.AIDRIVE_API_URL || config.apiUrl || 'https://api.verrrnm.cloud';
+    let fileContent: Buffer;
+    let fileName: string;
     
-    // Use FormData for multipart upload
-    const fileContent = readFileSync(filePath);
-    const fileName = filePath.split('/').pop() || 'file';
+    if (!filePath && !process.stdin.isTTY) {
+      // Pipe mode: cat file.md | aidrive upload --name notes.md
+      const chunks: Buffer[] = [];
+      for await (const chunk of process.stdin) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      fileContent = Buffer.concat(chunks);
+      fileName = nameVal || `upload-${new Date().toISOString().slice(0, 10)}.md`;
+    } else if (filePath) {
+      if (!existsSync(filePath)) { console.error(`File not found: ${filePath}`); break; }
+      fileContent = readFileSync(filePath) as Buffer;
+      fileName = nameVal || filePath.split('/').pop() || 'file';
+    } else {
+      console.error('Usage: aidrive upload <file-path> [--json]');
+      console.error('  or: cat notes.md | aidrive upload --name notes.md');
+      break;
+    }
     
     // Detect MIME type from extension
     const ext = fileName.split('.').pop()?.toLowerCase() || '';
@@ -207,7 +228,11 @@ switch (command) {
     const mimeType = mimeMap[ext] || 'application/octet-stream';
     
     const formData = new FormData();
-    formData.append('file', new Blob([fileContent], { type: mimeType }), fileName);
+    formData.append('file', new Blob([new Uint8Array(fileContent)], { type: mimeType }), fileName);
+    
+    const config = loadConfig();
+    const apiKey = process.env.AIDRIVE_API_KEY || config.apiKey;
+    const baseUrl = process.env.AIDRIVE_API_URL || config.apiUrl || 'https://api.verrrnm.cloud';
     
     const res = await fetch(`${baseUrl}/api/v1/files/upload`, {
       method: 'POST',
@@ -226,29 +251,126 @@ switch (command) {
     break;
   }
 
+  case 'store': {
+    // Support pipe: echo "note" | aidrive store
+    let content: string;
+    if (args.length > 0) {
+      content = args.join(' ');
+    } else if (!process.stdin.isTTY) {
+      // Read from stdin pipe
+      content = await new Promise<string>((resolve) => {
+        let data = '';
+        process.stdin.setEncoding('utf-8');
+        process.stdin.on('data', (chunk) => { data += chunk; });
+        process.stdin.on('end', () => { resolve(data.trim()); });
+      });
+    } else {
+      console.error('Usage: aidrive store <text> [--title <t>] [--tags <t1,t2>] [--json]');
+      console.error('  or: echo "note" | aidrive store');
+      break;
+    }
+    if (!content) { console.error('Error: empty content'); break; }
+    const titleIdx = args.indexOf('--title');
+    const tagsIdx = args.indexOf('--tags');
+    const storeBody: Record<string, string> = { content };
+    if (titleIdx > -1 && args[titleIdx + 1]) storeBody.title = args[titleIdx + 1];
+    if (tagsIdx > -1 && args[tagsIdx + 1]) storeBody.tags = args[tagsIdx + 1];
+    const data = await apiCall('/store', { method: 'POST', body: JSON.stringify(storeBody) });
+    output(data, `✅ 已存入: ${data.name || data.fileName || 'note'} (${data.id || data.fileId})`);
+    break;
+  }
+
+  case 'info': {
+    const fileId = args[0];
+    if (!fileId) { console.error('Usage: aidrive info <file-id> [--json]'); break; }
+    const data = await apiCall(`/files/${fileId}`);
+    if (jsonMode) { console.log(JSON.stringify(data, null, 2)); break; }
+    const f = data.file || data;
+    console.log(`📄 ${f.name || f.originalName}`);
+    console.log(`   ID: ${f.id}`);
+    console.log(`   类型: ${f.mimeType || '未知'}`);
+    console.log(`   大小: ${f.size ? (f.size / 1024).toFixed(1) + ' KB' : '未知'}`);
+    console.log(`   状态: ${f.status || '未知'}`);
+    if (f.summary) console.log(`\n📝 AI 摘要:\n   ${f.summary}`);
+    if (f.createdAt) console.log(`\n   创建: ${new Date(f.createdAt).toLocaleString('zh-CN')}`);
+    if (f.updatedAt) console.log(`   更新: ${new Date(f.updatedAt).toLocaleString('zh-CN')}`);
+    break;
+  }
+
+  case 'delete':
+  case 'rm': {
+    const fileId = args[0];
+    if (!fileId) { console.error('Usage: aidrive delete <file-id> [--force] [--json]'); break; }
+    if (!args.includes('--force') && process.stdin.isTTY) {
+      const rl = createInterface({ input: process.stdin, output: process.stdout });
+      const answer = await new Promise<string>((resolve) => {
+        rl.question(`确认删除文件 ${fileId}? (y/N) `, resolve);
+      });
+      rl.close();
+      if (answer.toLowerCase() !== 'y') { console.log('取消删除'); break; }
+    }
+    await apiCall(`/files/${fileId}`, { method: 'DELETE' });
+    output({ deleted: fileId }, `🗑️ 已删除: ${fileId}`);
+    break;
+  }
+
+  case 'login': {
+    if (args[0] === '--key' && args[1]) {
+      const config = loadConfig();
+      config.apiKey = args[1];
+      saveConfig(config);
+      console.log('✅ API key saved to ~/.aidrive/config.json');
+    } else {
+      console.log('🔑 获取 API Key:');
+      console.log('   1. 打开 https://drive.verrrnm.cloud/settings?tab=developer');
+      console.log('   2. 点击"创建 Key"');
+      console.log('   3. 复制 Key，然后运行:');
+      console.log('');
+      console.log('   aidrive login --key <your-api-key>');
+      console.log('');
+      console.log('   或设置环境变量: export AIDRIVE_API_KEY=ak_xxx');
+    }
+    break;
+  }
+
   case 'help':
   case undefined:
   default:
     console.log(`
 🧠 AI Drive CLI — 你的 AI 知识操作系统
 
-命令:
-  aidrive config set-key <key>  设置 API Key
+认证:
+  aidrive login --key <key>     设置 API Key
+  aidrive config set-key <key>  设置 API Key（同 login --key）
   aidrive config set-url <url>  设置 API URL（默认 https://api.verrrnm.cloud）
   aidrive config show           显示当前配置
 
+知识操作:
+  aidrive upload <file>         上传文件到知识库
+  aidrive store <text>          快速存入一段知识
+  aidrive search <query>        语义搜索知识库
+  aidrive ask <question>        基于知识库 AI 问答
+
+文件管理:
   aidrive files [--brief]       列出知识库文件
-  aidrive search <query>        语义搜索
-  aidrive ask <question>        基于知识库问答
-  aidrive insights              查看 AI 洞察
+  aidrive info <file-id>        查看文件详情和 AI 摘要
+  aidrive delete <file-id>      删除文件（需确认，--force 跳过）
+
+AI 能力:
+  aidrive insights              查看 AI 发现的知识关联
   aidrive timeline [--limit N]  知识活动时间线
-  aidrive upload <file>         上传文件
+
+全局选项:
+  --json                        输出 JSON 格式（适合 agent/脚本）
 
 示例:
-  aidrive config set-key ak_xxxxxxxxxxxx
+  aidrive login --key ak_xxxxxxxxxxxx
   aidrive search "去年的营收数据"
   aidrive ask "竞品分析的核心结论是什么"
+  aidrive store "今天决定使用 PostgreSQL" --title "技术决策"
+  echo "meeting notes" | aidrive store --title "会议记录"
   aidrive upload ./report.pdf
+  aidrive info abc-123-def
 `);
     break;
 }
