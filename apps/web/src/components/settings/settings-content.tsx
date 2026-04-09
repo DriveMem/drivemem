@@ -210,6 +210,177 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
   )
 }
 
+const WEBHOOK_EVENTS = [
+  { id: 'file.indexed', label: '文件索引完成', desc: '文件上传并完成 AI 索引' },
+  { id: 'insight.discovered', label: 'AI 发现洞察', desc: '发现新的知识关联' },
+  { id: 'file.deleted', label: '文件删除', desc: '文件被删除' },
+]
+
+function WebhookCard() {
+  const [hooks, setHooks] = useState<any[]>([])
+  const [url, setUrl] = useState('')
+  const [events, setEvents] = useState<string[]>(['file.indexed'])
+  const [creating, setCreating] = useState(false)
+  const [newSecret, setNewSecret] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchHooks = async () => {
+      try {
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/webhooks")
+        setHooks(data?.webhooks || [])
+      } catch { /* ignore */ }
+    }
+    fetchHooks()
+  }, [])
+
+  const createHook = async () => {
+    if (!url.trim()) return
+    setCreating(true)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const data = await apiFetch("/api/webhooks", {
+        method: "POST",
+        body: JSON.stringify({ url: url.trim(), events }),
+      })
+      setNewSecret(data.secret)
+      setUrl('')
+      const list = await apiFetch("/api/webhooks")
+      setHooks(list?.webhooks || [])
+      toast.success("Webhook 已创建")
+    } catch {
+      toast.error("创建失败")
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const deleteHook = async (id: string) => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/webhooks/${id}`, { method: "DELETE" })
+      setHooks(prev => prev.filter(h => h.id !== id))
+      toast.success("已删除")
+    } catch {
+      toast.error("删除失败")
+    }
+  }
+
+  const toggleHook = async (id: string, active: boolean) => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/webhooks/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ active }),
+      })
+      setHooks(prev => prev.map(h => h.id === id ? { ...h, active } : h))
+    } catch {
+      toast.error("更新失败")
+    }
+  }
+
+  const toggleEvent = (eventId: string) => {
+    setEvents(prev =>
+      prev.includes(eventId)
+        ? prev.filter(e => e !== eventId)
+        : [...prev, eventId]
+    )
+  }
+
+  return (
+    <Card className="mt-4">
+      <CardHeader>
+        <CardTitle>🔔 Webhook 事件推送</CardTitle>
+        <CardDescription>当文件索引完成或 AI 发现新洞察时，自动通知你的应用</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Create form */}
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <Input
+              placeholder="https://your-app.com/webhook"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="flex-1"
+            />
+            <Button onClick={createHook} disabled={!url.trim() || events.length === 0 || creating}>
+              {creating ? "创建中..." : "添加"}
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {WEBHOOK_EVENTS.map(evt => (
+              <button
+                key={evt.id}
+                onClick={() => toggleEvent(evt.id)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                  events.includes(evt.id)
+                    ? "bg-[#4F5BD5] text-white"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+                title={evt.desc}
+              >
+                {evt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* New secret warning */}
+        {newSecret && (
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+            <p className="text-sm font-medium text-amber-600 mb-2">⚠️ 请保存你的 Signing Secret — 只显示一次</p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 rounded bg-muted px-3 py-2 text-xs font-mono select-all break-all">{newSecret}</code>
+              <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newSecret); toast.success("已复制") }}>
+                复制
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              用此 secret 验证 <code className="font-mono">X-AIDrive-Signature</code> header（HMAC-SHA256）
+            </p>
+          </div>
+        )}
+
+        {/* Webhook list */}
+        {hooks.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">还没有 Webhook</p>
+        ) : (
+          <div className="space-y-2">
+            {hooks.map(h => (
+              <div key={h.id} className="flex items-center justify-between rounded-lg border p-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{h.url}</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {h.events?.map((e: string) => (
+                      <span key={e} className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{e}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-2">
+                  <button
+                    onClick={() => toggleHook(h.id, !h.active)}
+                    className={`rounded-full px-2 py-0.5 text-xs ${h.active ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"}`}
+                  >
+                    {h.active ? "启用" : "停用"}
+                  </button>
+                  <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteHook(h.id)}>
+                    删除
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground">
+          每个事件发送 JSON POST，含 <code className="font-mono">X-AIDrive-Signature</code> 签名。
+          <a href="/developers" className="text-[#4F5BD5] hover:underline ml-1">查看文档 ↗</a>
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
+
 type SettingsTab = "general" | "developer"
 
 export default function SettingsContent() {
@@ -328,6 +499,7 @@ export default function SettingsContent() {
         <>
           <p className="text-sm text-muted-foreground">这些功能面向需要通过 API 或 AI Agent 接入的高级用户</p>
           <ApiKeysCard />
+          <WebhookCard />
         </>
       ) : (
       <>

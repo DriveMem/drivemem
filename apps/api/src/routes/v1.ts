@@ -58,6 +58,11 @@ export default async function v1Routes(fastify: FastifyInstance) {
     const [file] = await db.select().from(schema.files).where(and(eq(schema.files.id, id), eq(schema.files.userId, userId)));
     if (!file) return reply.status(404).send({ error: 'File not found' });
     await db.delete(schema.files).where(eq(schema.files.id, id));
+    // Dispatch webhook: file.deleted
+    try {
+      const { dispatchWebhook } = await import('../services/webhook.service.js');
+      await dispatchWebhook(userId, 'file.deleted', { fileId: id, fileName: file.name });
+    } catch {}
     return reply.status(204).send();
   });
 

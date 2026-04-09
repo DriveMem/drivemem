@@ -33,7 +33,7 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: 'url and events are required' });
     }
 
-    const validEvents = ['file.indexed', 'file.uploaded', 'insight.generated', 'summary.generated'];
+    const validEvents = ['file.indexed', 'file.deleted', 'insight.discovered', 'summary.generated'];
     const events = body.events.filter(e => validEvents.includes(e));
     if (events.length === 0) {
       return reply.status(400).send({ error: `Valid events: ${validEvents.join(', ')}` });
@@ -49,6 +49,32 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
     }).returning();
 
     return reply.status(201).send({ ...hook, secret });
+  });
+
+  // PATCH /:id — update webhook
+  fastify.patch('/:id', { preHandler: [requireAnyAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as { url?: string; events?: string[]; active?: boolean };
+    const updates: Record<string, unknown> = {};
+
+    if (body.url) updates.url = body.url;
+    if (body.active !== undefined) updates.active = body.active;
+    if (body.events?.length) {
+      const validEvents = ['file.indexed', 'file.deleted', 'insight.discovered', 'summary.generated'];
+      updates.events = body.events.filter(e => validEvents.includes(e));
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return reply.status(400).send({ error: 'Nothing to update' });
+    }
+
+    const [updated] = await db.update(schema.webhooks)
+      .set(updates)
+      .where(and(eq(schema.webhooks.id, id), eq(schema.webhooks.userId, request.user!.id)))
+      .returning();
+
+    if (!updated) return reply.status(404).send({ error: 'Webhook not found' });
+    return reply.send(updated);
   });
 
   // DELETE /:id — delete webhook
