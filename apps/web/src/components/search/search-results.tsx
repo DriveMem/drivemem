@@ -111,7 +111,7 @@ export function SearchResults({ query }: { query: string }) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
         <Search className="h-8 w-8" />
-        <p className="text-sm">未找到与「{query}」相关的结果</p>
+        <p className="text-sm">未找到相关内容，试试换个描述方式</p>
       </div>
     )
   }
@@ -136,6 +136,11 @@ export function SearchResults({ query }: { query: string }) {
                 {r.type === "chunk" && (
                   <span className="ml-auto shrink-0 rounded bg-blue-500/10 px-2 py-0.5 text-xs text-blue-400">
                     内容匹配
+                  </span>
+                )}
+                {r.score != null && (
+                  <span className="shrink-0 rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                    {Math.round(r.score * 100)}%
                   </span>
                 )}
               </div>
