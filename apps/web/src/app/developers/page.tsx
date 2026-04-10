@@ -5,6 +5,7 @@ import { useRef, useEffect, useState, useCallback, type ReactNode } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Search, FileText, Plug, Bell, ArrowRight, ChevronRight, RefreshCw, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
+import ApiPlayground from "./api-playground"
 
 /* ---------- FadeIn ---------- */
 function FadeIn({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -39,7 +40,7 @@ const CAPABILITIES = [
   { icon: Bell, emoji: "💡", title: "AI 洞察", desc: "AI 主动发现文件间的关联、矛盾和趋势" },
 ] as const
 
-const TABS = ["REST API", "MCP 配置", "Webhook"] as const
+const TABS = ["REST API", "MCP 配置", "Webhook", "Try it"] as const
 
 const CODE_BLOCKS = [
   `# 1. 获取 API Key（Settings → API Keys）
@@ -481,7 +482,7 @@ plugins:
             )}
 
             {/* Code block for non-MCP tabs */}
-            {activeTab !== 1 && (
+            {activeTab !== 1 && activeTab !== 3 && (
               <pre className="mt-6 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
                 <code>{CODE_BLOCKS[activeTab]}</code>
               </pre>
@@ -489,6 +490,9 @@ plugins:
 
             {/* Webhook Delivery Log */}
             {activeTab === 2 && <WebhookDeliveryLog />}
+
+            {/* API Playground */}
+            {activeTab === 3 && <ApiPlayground />}
           </FadeIn>
         </div>
       </section>
