@@ -77,7 +77,9 @@ curl -X POST https://drive.verrrnm.cloud/api/v1/store \\
   `{
   "mcpServers": {
     "ai-drive": {
-      "url": "https://drive.verrrnm.cloud/mcp",
+      // 公网: https://api.verrrnm.cloud/mcp
+      // 本地: http://localhost:3000/mcp
+      "url": "https://api.verrrnm.cloud/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -419,7 +421,9 @@ export default function DevelopersPage() {
                     config: `{
   "mcpServers": {
     "ai-drive": {
-      "url": "https://drive.verrrnm.cloud/mcp",
+      // 公网: https://api.verrrnm.cloud/mcp
+      // 本地: http://localhost:3000/mcp
+      "url": "https://api.verrrnm.cloud/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -433,7 +437,9 @@ export default function DevelopersPage() {
                     config: `{
   "mcpServers": {
     "ai-drive": {
-      "url": "https://drive.verrrnm.cloud/mcp",
+      // 公网: https://api.verrrnm.cloud/mcp
+      // 本地: http://localhost:3000/mcp
+      "url": "https://api.verrrnm.cloud/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -451,7 +457,9 @@ plugins:
       kind: mcp
       transport:
         type: sse
-        url: "https://drive.verrrnm.cloud/mcp"
+        # 公网: https://api.verrrnm.cloud/mcp
+        # 本地: http://localhost:3000/mcp
+        url: "https://api.verrrnm.cloud/mcp"
         headers:
           Authorization: "Bearer YOUR_API_KEY"`,
                   },
@@ -474,18 +482,44 @@ plugins:
                     </pre>
                   </div>
                 ))}
-                <div className="rounded-lg border border-[#E5E4E1] bg-white p-4 space-y-2">
+                {/* URL options */}
+                <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 space-y-3">
+                  <p className="text-sm font-medium text-[#1C1B18]">🌐 MCP 服务地址</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-lg border border-[#4F5BD5]/30 bg-[#4F5BD5]/5 p-3">
+                      <p className="text-xs font-medium text-[#4F5BD5] mb-1">☁️ 公网地址（推荐）</p>
+                      <code className="text-xs font-mono text-[#1C1B18] break-all">https://api.verrrnm.cloud/mcp</code>
+                      <p className="text-[10px] text-[#6B6966] mt-1">无需自建，直接使用</p>
+                    </div>
+                    <div className="rounded-lg border border-[#E5E4E1] bg-[#F8F7F5] p-3">
+                      <p className="text-xs font-medium text-[#6B6966] mb-1">🏠 本地 / 自部署</p>
+                      <code className="text-xs font-mono text-[#1C1B18] break-all">http://localhost:3000/mcp</code>
+                      <p className="text-[10px] text-[#6B6966] mt-1">适合本地开发或私有部署</p>
+                    </div>
+                  </div>
                   <p className="text-xs text-[#6B6966]">
                     💡 将 <code className="font-mono">YOUR_API_KEY</code> 替换为你的 API Key。
                     在 <a href="/settings?tab=developer" className="text-[#4F5BD5] hover:underline">Settings → 开发者</a> 创建。
                   </p>
-                  <p className="text-xs text-[#6B6966]">
-                    🌐 <strong>公网地址</strong>：<code className="font-mono text-[#4F5BD5]">https://drive.verrrnm.cloud/mcp</code>
-                    {" "}| 自部署用户可替换为 <code className="font-mono text-[#4F5BD5]">http://localhost:3000/mcp</code>
-                  </p>
-                  <p className="text-xs text-amber-600">
-                    🔒 安全提示：API Key 等同于账户访问权限，请勿在公开仓库或客户端代码中暴露。建议使用环境变量管理。
-                  </p>
+                </div>
+
+                {/* Security tips */}
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
+                  <p className="text-sm font-medium text-amber-800">🔒 安全最佳实践</p>
+                  <ul className="space-y-1.5 text-xs text-amber-700">
+                    <li className="flex items-start gap-2">
+                      <span className="shrink-0 mt-0.5">•</span>
+                      <span><strong>最小权限原则</strong> — 创建 API Key 时仅勾选所需的 scope，避免授予不必要的权限</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="shrink-0 mt-0.5">•</span>
+                      <span><strong>使用环境变量</strong> — 不要在配置文件中硬编码 API Key，使用 <code className="font-mono bg-amber-100 px-1 rounded">$AIDRIVE_API_KEY</code> 等环境变量代替</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="shrink-0 mt-0.5">•</span>
+                      <span><strong>定期轮换</strong> — 建议每 90 天轮换一次 API Key，及时撤销不再使用的 Key</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
             )}
