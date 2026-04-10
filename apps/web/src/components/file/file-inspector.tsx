@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FileText, MessageSquare, Loader2, AlertCircle, Link2 } from "lucide-react"
+import { FileText, MessageSquare, Loader2, AlertCircle, Link2, Lightbulb, AlertTriangle, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useFile, useMoveFile } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
@@ -81,6 +81,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
         </div>
       )}
       <KnowledgeLinksForFile fileId={fileId} />
+      <InsightsForFile fileId={fileId} />
       <Button className="w-full gap-2" asChild>
         <Link href={"/chat?file=" + file.id}><MessageSquare className="h-4 w-4" />问 AI 关于这个文件</Link>
       </Button>
@@ -108,6 +109,52 @@ function KnowledgeLinksForFile({ fileId }: { fileId: string }) {
         return (
           <Link key={l.id} href={`/files/${otherIdVal}/preview`} className="block text-xs text-blue-400 hover:underline truncate">
             {l.relationType === "similar" ? "🔗" : l.relationType === "complementary" ? "🤝" : "⚡"} {otherName} — {l.description}
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
+
+const insightTypeConfig: Record<string, { icon: typeof Lightbulb; label: string; color: string }> = {
+  correlation: { icon: Lightbulb, label: "关联", color: "text-amber-500" },
+  contradiction: { icon: AlertTriangle, label: "矛盾", color: "text-red-500" },
+  trend: { icon: TrendingUp, label: "趋势", color: "text-green-500" },
+}
+
+function InsightsForFile({ fileId }: { fileId: string }) {
+  const [insights, setInsights] = useState<any[]>([])
+  useEffect(() => {
+    apiFetch("/api/insights?limit=20")
+      .then((data: any) => {
+        const all = data?.insights || []
+        setInsights(all.filter((i: any) => i.sourceFileId === fileId || i.relatedFileId === fileId))
+      })
+      .catch(() => {})
+  }, [fileId])
+
+  if (insights.length === 0) return null
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-medium text-muted-foreground">💡 AI 洞察</p>
+      {insights.map((i: any) => {
+        const config = insightTypeConfig[i.type] || insightTypeConfig.correlation
+        const Icon = config.icon
+        const otherFile = i.sourceFileId === fileId ? i.relatedFileName : i.sourceFileName
+        return (
+          <Link
+            key={i.id}
+            href={`/chat?q=对比「${i.sourceFileName}」和「${i.relatedFileName}」&fileIds=${i.sourceFileId},${i.relatedFileId}`}
+            className="block rounded-lg border p-3 hover:bg-accent/50 transition text-xs"
+          >
+            <div className="flex items-center gap-1.5">
+              <Icon className={`h-3 w-3 ${config.color}`} />
+              <span className={`font-medium ${config.color}`}>{config.label}</span>
+            </div>
+            <p className="mt-1 text-sm font-medium line-clamp-1">{i.title}</p>
+            <p className="mt-0.5 text-muted-foreground line-clamp-2">{i.description}</p>
+            <p className="mt-1 text-muted-foreground">↔ {otherFile}</p>
           </Link>
         )
       })}
