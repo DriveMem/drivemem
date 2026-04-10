@@ -85,6 +85,41 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
     return reply.status(204).send();
   });
 
+  // POST /:id/test — send test event
+  fastify.post('/:id/test', { preHandler: [requireAnyAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const [hook] = await db.select()
+      .from(schema.webhooks)
+      .where(and(eq(schema.webhooks.id, id), eq(schema.webhooks.userId, request.user!.id)));
+    if (!hook) return reply.status(404).send({ error: 'Webhook not found' });
+
+    const { dispatchWebhook } = await import('../services/webhook.service.js');
+    // Send a test event directly to this webhook
+    const body = JSON.stringify({
+      event: 'test.ping',
+      data: { message: 'This is a test event from AI Drive', webhookId: hook.id },
+      timestamp: new Date().toISOString(),
+    });
+    const { createHmac } = await import('crypto');
+    const signature = createHmac('sha256', hook.secret).update(body).digest('hex');
+
+    try {
+      const res = await fetch(hook.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-AIDrive-Signature': `sha256=${signature}`,
+          'X-AIDrive-Event': 'test.ping',
+        },
+        body,
+        signal: AbortSignal.timeout(10000),
+      });
+      return reply.send({ success: res.ok, statusCode: res.status });
+    } catch (err) {
+      return reply.send({ success: false, error: (err as Error).message });
+    }
+  });
+
   // GET /deliveries — recent delivery logs
   fastify.get('/deliveries', { preHandler: [requireAnyAuth] }, async (request, reply) => {
     const userId = request.user!.id;

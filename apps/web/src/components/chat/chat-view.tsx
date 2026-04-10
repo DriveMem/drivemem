@@ -328,6 +328,11 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined) }} className="gap-1 text-xs">
           <Files className="h-3 w-3" />全部文件
         </Button>
+        {scope !== "all" && scopeLabel && (
+          <span className="rounded-full bg-[#4F5BD5]/10 px-2 py-0.5 text-[10px] text-[#4F5BD5] font-medium">
+            当前：{scopeLabel}
+          </span>
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

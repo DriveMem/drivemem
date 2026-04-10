@@ -175,6 +175,18 @@ export function FileList() {
     setSelected(new Set())
   }, [selected, deleteFile])
 
+  const handleBatchArchive = useCallback(async () => {
+    try {
+      await apiFetch("/api/v1/files/batch", {
+        method: "POST",
+        body: JSON.stringify({ action: "archive", fileIds: Array.from(selected) }),
+      })
+      toast.success(`已归档 ${selected.size} 个文件`)
+      setSelected(new Set())
+      queryClient.invalidateQueries({ queryKey: ["files"] })
+    } catch { toast.error("归档失败") }
+  }, [selected])
+
   const handleBatchDownload = useCallback(async () => {
     for (const id of selected) {
       await handleDownload(id)
@@ -730,8 +742,12 @@ export function FileList() {
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-background border shadow-lg px-4 py-3 z-50">
           <span className="text-sm font-medium">已选 {selected.size} 个文件</span>
           <Button variant="outline" size="sm" onClick={handleBatchDelete}>删除</Button>
+          <Button variant="outline" size="sm" onClick={handleBatchArchive}>归档</Button>
           <Button variant="outline" size="sm" onClick={() => setBatchMoveOpen(true)}>移动</Button>
           <Button variant="outline" size="sm" onClick={handleBatchDownload}>下载</Button>
+          <Button variant="outline" size="sm" onClick={() => {
+            if (selected.size > 0) setTagManagerFileId(Array.from(selected)[0])
+          }}>标签</Button>
           <button
             onClick={() => {
               const ids = Array.from(selected).join(",")

@@ -358,6 +358,18 @@ function WebhookCard() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-2">
                   <button
+                    onClick={async () => {
+                      try {
+                        const { apiFetch: af } = await import("@/lib/api")
+                        await af(`/api/webhooks/${h.id}/test`, { method: "POST" })
+                        toast.success("测试事件已发送")
+                      } catch { toast.error("发送失败") }
+                    }}
+                    className="rounded-full px-2 py-0.5 text-xs bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition"
+                  >
+                    测试
+                  </button>
+                  <button
                     onClick={() => toggleHook(h.id, !h.active)}
                     className={`rounded-full px-2 py-0.5 text-xs ${h.active ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"}`}
                   >
