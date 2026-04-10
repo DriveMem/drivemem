@@ -1,10 +1,11 @@
 "use client"
 
-import { FileText, MessageSquare, CalendarDays, Settings, PanelLeftClose, PanelLeft, Code } from "lucide-react"
+import { FileText, MessageSquare, CalendarDays, Settings, PanelLeftClose, PanelLeft, Code, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useLayoutStore } from "@/stores/layout-store"
 import { FolderTree } from "@/components/file/folder-tree"
+import { useTags } from "@/hooks/use-tags"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -18,8 +19,9 @@ const navItems = [
 ] as const
 
 export function Sidebar() {
-  const { sidebarCollapsed, toggleSidebar, setMobileSidebarOpen } = useLayoutStore()
+  const { sidebarCollapsed, toggleSidebar, setMobileSidebarOpen, activeTagFilter, setActiveTagFilter } = useLayoutStore()
   const pathname = usePathname()
+  const { data: tags = [] } = useTags()
   return (
     <TooltipProvider delayDuration={0}>
       <div className="flex h-full flex-col">
@@ -66,6 +68,41 @@ export function Sidebar() {
           <div className="flex-1 overflow-auto border-t border-border p-2">
             <p className="px-2 py-1 text-xs font-medium text-muted-foreground">文件夹</p>
             <FolderTree />
+            {tags.length > 0 && (
+              <div className="mt-3 border-t border-border pt-2">
+                <p className="px-2 py-1 text-xs font-medium text-muted-foreground flex items-center gap-1">
+                  <Tag className="h-3 w-3" /> 标签
+                </p>
+                <div className="flex flex-wrap gap-1 px-2 py-1">
+                  {activeTagFilter && (
+                    <button
+                      onClick={() => setActiveTagFilter(null)}
+                      className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition"
+                    >
+                      全部 ×
+                    </button>
+                  )}
+                  {tags.map((tag: any) => (
+                    <button
+                      key={tag.id}
+                      onClick={() => setActiveTagFilter(activeTagFilter === tag.name ? null : tag.name)}
+                      className={cn(
+                        "rounded-full px-2 py-0.5 text-[10px] font-medium transition-all",
+                        activeTagFilter === tag.name
+                          ? "ring-1 ring-offset-1 ring-offset-background shadow-sm"
+                          : "opacity-70 hover:opacity-100"
+                      )}
+                      style={{
+                        backgroundColor: tag.color + "20",
+                        color: tag.color,
+                      }}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

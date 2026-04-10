@@ -6,25 +6,9 @@ export interface Tag {
   name: string
   color: string
   userId: string
-  createdAt: string
 }
 
-export const TAG_COLORS = [
-  { name: '红色', value: 'red' },
-  { name: '蓝色', value: 'blue' },
-  { name: '绿色', value: 'green' },
-  { name: '黄色', value: 'yellow' },
-  { name: '紫色', value: 'purple' },
-]
-
-export const TAG_COLOR_MAP: Record<string, { bg: string; text: string; border: string }> = {
-  red: { bg: 'bg-red-500/10', text: 'text-red-500', border: 'border-red-500/30' },
-  blue: { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/30' },
-  green: { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500/30' },
-  yellow: { bg: 'bg-yellow-500/10', text: 'text-yellow-600', border: 'border-yellow-500/30' },
-  purple: { bg: 'bg-purple-500/10', text: 'text-purple-500', border: 'border-purple-500/30' },
-}
-
+// List all user tags
 export function useTags() {
   return useQuery<Tag[]>({
     queryKey: ['tags'],
@@ -32,7 +16,8 @@ export function useTags() {
   })
 }
 
-export function useFileTags(fileId: string) {
+// Get tags for a specific file
+export function useFileTags(fileId: string | null) {
   return useQuery<Tag[]>({
     queryKey: ['file-tags', fileId],
     queryFn: () => apiFetch(`/api/tags/file/${fileId}`),
@@ -40,6 +25,7 @@ export function useFileTags(fileId: string) {
   })
 }
 
+// Create a new tag
 export function useCreateTag() {
   const qc = useQueryClient()
   return useMutation({
@@ -49,40 +35,41 @@ export function useCreateTag() {
   })
 }
 
-export function useDeleteTag() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) => apiFetch(`/api/tags/${id}`, { method: 'DELETE' }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['tags'] }),
-  })
-}
-
-export function useAddFileTag() {
+// Add tag to file
+export function useAddTagToFile() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ fileId, tagId }: { fileId: string; tagId: string }) =>
       apiFetch(`/api/tags/file/${fileId}`, { method: 'POST', body: JSON.stringify({ tagId }) }),
-    onSuccess: (_data, vars) => {
-      qc.invalidateQueries({ queryKey: ['file-tags', vars.fileId] })
+    onSuccess: (_data, { fileId }) => {
+      qc.invalidateQueries({ queryKey: ['file-tags', fileId] })
+      qc.invalidateQueries({ queryKey: ['files'] })
     },
   })
 }
 
-export function useRemoveFileTag() {
+// Remove tag from file
+export function useRemoveTagFromFile() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ fileId, tagId }: { fileId: string; tagId: string }) =>
       apiFetch(`/api/tags/file/${fileId}/${tagId}`, { method: 'DELETE' }),
-    onSuccess: (_data, vars) => {
-      qc.invalidateQueries({ queryKey: ['file-tags', vars.fileId] })
+    onSuccess: (_data, { fileId }) => {
+      qc.invalidateQueries({ queryKey: ['file-tags', fileId] })
+      qc.invalidateQueries({ queryKey: ['files'] })
     },
   })
 }
 
-export function useTagFileIds(tagId: string) {
-  return useQuery<string[]>({
-    queryKey: ['tag-files', tagId],
-    queryFn: () => apiFetch(`/api/tags/${tagId}/files`),
-    enabled: !!tagId,
+// Delete a tag entirely
+export function useDeleteTag() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (tagId: string) =>
+      apiFetch(`/api/tags/${tagId}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tags'] })
+      qc.invalidateQueries({ queryKey: ['files'] })
+    },
   })
 }

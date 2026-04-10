@@ -27,6 +27,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
 import { FileUpload } from "./file-upload"
+import { TagManagerDialog } from "./tag-manager-dialog"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
 import { toast } from "sonner"
 
@@ -99,7 +100,7 @@ function StatusIcon({ status, error, compact }: { status: string; error?: string
 }
 
 export function FileList() {
-  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId } = useLayoutStore()
+  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId, activeTagFilter } = useLayoutStore()
   const router = useRouter()
   const { data, isLoading, error } = useFiles(currentFolderId)
   const deleteFile = useDeleteFile()
@@ -134,6 +135,7 @@ export function FileList() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
   const [shareLoading, setShareLoading] = useState(false)
+  const [tagManagerFileId, setTagManagerFileId] = useState<string | null>(null)
   const parentRef = useRef<HTMLDivElement>(null)
 
   const handleShare = useCallback(async (fileId: string) => {
@@ -202,7 +204,7 @@ export function FileList() {
     { key: "image", label: "图片" },
   ]
 
-  const filteredFiles = typeFilter === "all" ? files : files.filter((f: any) => {
+  const typeFiltered = typeFilter === "all" ? files : files.filter((f: any) => {
     const ext = (f.name || f.originalName || "").split(".").pop()?.toLowerCase()
     const mime = f.mimeType || ""
     switch (typeFilter) {
@@ -216,6 +218,10 @@ export function FileList() {
       default: return true
     }
   })
+
+  const filteredFiles = activeTagFilter
+    ? typeFiltered.filter((f: any) => f.tags?.some((t: any) => t.name === activeTagFilter))
+    : typeFiltered
 
   const virt = useVirtualizer({ count: filteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 52, overscan: 5 })
 
@@ -641,6 +647,12 @@ export function FileList() {
               setContextMenu(null)
             }}>移动到文件夹</DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
+              setTagManagerFileId(contextMenu.fileId)
+              setContextMenu(null)
+            }}>
+              🏷️ 管理标签
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
               handleShare(contextMenu.fileId)
               setContextMenu(null)
             }}>
@@ -903,6 +915,14 @@ export function FileList() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Tag Manager Dialog */}
+      <TagManagerDialog
+        fileId={tagManagerFileId}
+        fileName={rawFiles?.find((f: any) => f.id === tagManagerFileId)?.name}
+        open={!!tagManagerFileId}
+        onOpenChange={(open) => { if (!open) setTagManagerFileId(null) }}
+      />
     </div>
   )
 }
