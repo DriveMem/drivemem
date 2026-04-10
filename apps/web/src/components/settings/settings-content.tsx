@@ -590,12 +590,12 @@ export default function SettingsContent() {
           <div>
             {(() => {
               const pct = storageUsed !== "—" && storageTotal !== "—" ? (parseFloat(storageUsed) / parseFloat(storageTotal)) * 100 : 0
-              const barColor = pct > 90 ? "bg-red-500" : pct > 70 ? "bg-yellow-500" : "bg-primary"
-              const textColor = pct > 90 ? "text-red-500" : pct > 70 ? "text-yellow-600" : "text-muted-foreground"
+              const barColor = pct > 95 ? "bg-red-500" : pct > 80 ? "bg-yellow-500" : "bg-emerald-500"
+              const textColor = pct > 95 ? "text-red-500" : pct > 80 ? "text-yellow-600" : "text-muted-foreground"
               return (
                 <>
                   <p className={`mb-1 text-sm ${textColor}`}>
-                    存储空间：{storageUsed} GB / {storageTotal} GB {pct > 90 ? "⚠️ 即将用完" : pct > 70 ? "⚡ 接近上限" : ""}
+                    存储空间：{storageUsed} GB / {storageTotal} GB {pct > 95 ? "⚠️ 即将用完" : pct > 80 ? "⚡ 接近上限" : ""}
                   </p>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                     <div
@@ -610,12 +610,12 @@ export default function SettingsContent() {
           <div>
             {(() => {
               const chatPct = chatUsedToday !== "—" && chatLimitToday !== "—" ? (parseInt(chatUsedToday) / parseInt(chatLimitToday)) * 100 : 0
-              const chatBarColor = chatPct > 90 ? "bg-red-500" : chatPct > 70 ? "bg-yellow-500" : "bg-primary"
-              const chatTextColor = chatPct > 90 ? "text-red-500" : chatPct > 70 ? "text-yellow-600" : "text-muted-foreground"
+              const chatBarColor = chatPct > 95 ? "bg-red-500" : chatPct > 80 ? "bg-yellow-500" : "bg-emerald-500"
+              const chatTextColor = chatPct > 95 ? "text-red-500" : chatPct > 80 ? "text-yellow-600" : "text-muted-foreground"
               return (
                 <>
                   <p className={`mb-1 text-sm ${chatTextColor}`}>
-                    今日对话：{chatUsedToday} / {chatLimitToday} 次 {chatPct > 90 ? "⚠️ 即将用完" : chatPct > 70 ? "⚡ 接近上限" : ""}
+                    今日对话：{chatUsedToday} / {chatLimitToday} 次 {chatPct > 95 ? "⚠️ 即将用完" : chatPct > 80 ? "⚡ 接近上限" : ""}
                   </p>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                     <div
