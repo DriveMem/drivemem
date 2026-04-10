@@ -12,12 +12,14 @@ import {
 } from "@/components/ui/command"
 import { useFiles } from "@/hooks/use-files"
 import { apiFetch } from "@/lib/api"
+import { Sparkles, Search } from "lucide-react"
 
 interface SearchResult {
   type: "file" | "chunk"
   fileId: string
   fileName: string
   text?: string
+  score?: number
 }
 
 function highlightText(text: string, query: string, maxLen = 120): React.ReactNode {
@@ -41,6 +43,11 @@ export function CommandPalette() {
   const [inputValue, setInputValue] = useState("")
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
+  const [aiMode, setAiMode] = useState(false)
+
+  // Detect ? prefix for AI mode
+  const effectiveAiMode = aiMode || inputValue.startsWith("?")
+  const effectiveQuery = effectiveAiMode && inputValue.startsWith("?") ? inputValue.slice(1).trim() : inputValue.trim()
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -53,16 +60,19 @@ export function CommandPalette() {
     return () => document.removeEventListener("keydown", down)
   }, [])
 
-  // Debounced server search
+  // Debounced search
   useEffect(() => {
-    if (!inputValue.trim() || inputValue.trim().length < 2) {
+    if (!effectiveQuery || effectiveQuery.length < 2) {
       setSearchResults([])
       return
     }
     const timer = setTimeout(async () => {
       setSearching(true)
       try {
-        const data = await apiFetch(`/api/search?q=${encodeURIComponent(inputValue.trim())}`)
+        const endpoint = effectiveAiMode
+          ? `/api/search?q=${encodeURIComponent(effectiveQuery)}&mode=semantic`
+          : `/api/search?q=${encodeURIComponent(effectiveQuery)}`
+        const data = await apiFetch(endpoint)
         const results = data?.results || (Array.isArray(data) ? data : [])
         setSearchResults(results.slice(0, 8))
       } catch {
@@ -70,41 +80,67 @@ export function CommandPalette() {
       } finally {
         setSearching(false)
       }
-    }, 300)
+    }, effectiveAiMode ? 500 : 300)
     return () => clearTimeout(timer)
-  }, [inputValue])
+  }, [effectiveQuery, effectiveAiMode])
 
   const navigate = (path: string) => {
     setOpen(false)
     setInputValue("")
     setSearchResults([])
+    setAiMode(false)
     router.push(path)
   }
 
   const handleSearchSubmit = () => {
-    if (inputValue.trim()) {
-      navigate(`/search?q=${encodeURIComponent(inputValue.trim())}`)
+    if (effectiveQuery) {
+      navigate(`/search?q=${encodeURIComponent(effectiveQuery)}${effectiveAiMode ? "&mode=semantic" : ""}`)
     }
   }
 
+  const toggleAiMode = () => {
+    setAiMode(prev => !prev)
+    setSearchResults([])
+  }
+
+  const searchHeading = effectiveAiMode ? "AI 语义搜索结果" : "搜索结果"
+  const emptyText = searching
+    ? (effectiveAiMode ? "AI 搜索中..." : "搜索中...")
+    : "未找到结果"
+
   return (
-    <CommandDialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setInputValue(""); setSearchResults([]) } }}>
-      <CommandInput
-        placeholder="搜索文件内容、导航、操作…"
-        value={inputValue}
-        onValueChange={setInputValue}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && inputValue.trim()) {
-            e.preventDefault()
-            handleSearchSubmit()
-          }
-        }}
-      />
+    <CommandDialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setInputValue(""); setSearchResults([]); setAiMode(false) } }}>
+      <div className="flex items-center border-b px-1">
+        <button
+          onClick={toggleAiMode}
+          className={`flex items-center gap-1 shrink-0 rounded-md px-2 py-1.5 mx-1 text-xs font-medium transition ${
+            effectiveAiMode
+              ? "bg-[#4F5BD5]/10 text-[#4F5BD5] border border-[#4F5BD5]/30"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+          title={effectiveAiMode ? "切换到普通搜索" : "切换到 AI 语义搜索（或输入 ? 前缀）"}
+        >
+          {effectiveAiMode ? <Sparkles className="h-3.5 w-3.5" /> : <Search className="h-3.5 w-3.5" />}
+          {effectiveAiMode ? "AI" : "普通"}
+        </button>
+        <CommandInput
+          placeholder={effectiveAiMode ? "输入问题进行 AI 语义搜索…" : "搜索文件内容、导航、操作… (输入 ? 切换 AI 搜索)"}
+          value={inputValue}
+          onValueChange={setInputValue}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && effectiveQuery) {
+              e.preventDefault()
+              handleSearchSubmit()
+            }
+          }}
+          className="border-0"
+        />
+      </div>
       <CommandList>
-        <CommandEmpty>{searching ? "搜索中..." : "未找到结果"}</CommandEmpty>
+        <CommandEmpty>{emptyText}</CommandEmpty>
 
         {searchResults.length > 0 && (
-          <CommandGroup heading="搜索结果">
+          <CommandGroup heading={searchHeading}>
             {searchResults.map((r, i) => (
               <CommandItem
                 key={`search-${r.fileId}-${i}`}
@@ -113,13 +149,24 @@ export function CommandPalette() {
               >
                 <div className="flex flex-1 flex-col gap-0.5">
                   <span className="text-sm">{r.fileName}</span>
-                  {r.type === "chunk" && r.text && (
-                    <span className="text-xs text-muted-foreground line-clamp-2">{highlightText(r.text, inputValue.trim())}</span>
+                  {r.text && (
+                    <span className="text-xs text-muted-foreground line-clamp-2">
+                      {effectiveAiMode ? r.text.slice(0, 150) : highlightText(r.text, effectiveQuery)}
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 ml-auto shrink-0">
                   {r.type === "chunk" && (
-                    <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] text-blue-400">内容匹配</span>
+                    <span className={`rounded px-1.5 py-0.5 text-[10px] ${
+                      effectiveAiMode ? "bg-purple-500/10 text-purple-400" : "bg-blue-500/10 text-blue-400"
+                    }`}>
+                      {effectiveAiMode ? "语义匹配" : "内容匹配"}
+                    </span>
+                  )}
+                  {r.score !== undefined && effectiveAiMode && (
+                    <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                      {Math.round(r.score * 100)}%
+                    </span>
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate(`/chat?q=关于${encodeURIComponent(r.fileName)}的问题`) }}
@@ -133,7 +180,7 @@ export function CommandPalette() {
           </CommandGroup>
         )}
 
-        {!inputValue.trim() && files.length > 0 && (
+        {!effectiveQuery && files.length > 0 && (
           <CommandGroup heading="最近文件">
             {files.slice(0, 5).map((f: any) => (
               <CommandItem
@@ -153,7 +200,7 @@ export function CommandPalette() {
           <CommandItem value="nav-settings" onSelect={() => navigate("/settings")}>设置</CommandItem>
         </CommandGroup>
 
-        {!inputValue.trim() && (
+        {!effectiveQuery && (
           <CommandGroup heading="操作">
             <CommandItem value="action-upload" onSelect={() => navigate("/dashboard")}>让 AI 记住文件</CommandItem>
             <CommandItem value="action-new-chat" onSelect={() => navigate("/chat")}>新对话</CommandItem>
