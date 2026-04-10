@@ -43,14 +43,18 @@ const EVENT_CONFIG = {
 
 function getEventLink(event: TimelineEvent): string {
   switch (event.type) {
-    case "file_uploaded":
-      return `/files`
-    case "conversation":
-      return `/chat/${event.id}`
+    case "file_uploaded": {
+      const fileId = event.metadata?.fileId || event.id
+      return `/files?highlight=${fileId}`
+    }
+    case "conversation": {
+      const convId = event.metadata?.conversationId || event.id
+      return `/chat/${convId}`
+    }
     case "insight":
-      return `/dashboard`
+      return `/dashboard#insights`
     case "report":
-      return `/dashboard`
+      return `/dashboard#reports`
     default:
       return `/dashboard`
   }
@@ -151,7 +155,7 @@ export default function TimelinePage() {
                   return (
                     <div key={`${event.type}-${event.id}`} className="relative">
                       <div className={`absolute -left-[1.625rem] top-1 h-3 w-3 rounded-full ${config.dotColor} ring-4 ring-background`} />
-                      <Link href={getEventLink(event)} className="block rounded-lg border p-4 hover:bg-accent/50 transition">
+                      <Link href={getEventLink(event)} className="block cursor-pointer rounded-lg border p-4 hover:bg-accent/50 hover:shadow-md hover:border-border/80 transition-all duration-200">
                         <div className="flex items-center gap-2">
                           <Icon className={`h-4 w-4 ${config.iconColor}`} />
                           <span className="text-xs font-medium text-muted-foreground">{config.label}</span>
