@@ -13,6 +13,7 @@ import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 import { useFiles } from "@/hooks/use-files"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
+import { useLayoutStore } from "@/stores/layout-store"
 import { toast } from "sonner"
 
 // --- helpers ---
@@ -168,6 +169,12 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export default function DashboardPage() {
   const [showUpload, setShowUpload] = useState(false)
   const [activeTab, setActiveTab] = useState<"files" | "ai">("files")
+  const { closeInspector } = useLayoutStore()
+
+  const handleTabSwitch = (tab: "files" | "ai") => {
+    setActiveTab(tab)
+    if (tab === "ai") closeInspector()
+  }
   const { data: filesData } = useFiles()
   const [activities, setActivities] = useState<any[]>([])
   const [insights, setInsights] = useState<any[]>([])
@@ -214,7 +221,7 @@ export default function DashboardPage() {
       <div className="px-6 pt-6 pb-2">
         <div className="flex gap-1 border-b">
           <button
-            onClick={() => setActiveTab("files")}
+            onClick={() => handleTabSwitch("files")}
             className={cn(
               "flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition",
               activeTab === "files"
@@ -226,7 +233,7 @@ export default function DashboardPage() {
             最近文件
           </button>
           <button
-            onClick={() => setActiveTab("ai")}
+            onClick={() => handleTabSwitch("ai")}
             className={cn(
               "relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition",
               activeTab === "ai"

@@ -68,7 +68,7 @@ export function Sidebar() {
           <div className="flex-1 overflow-auto border-t border-border p-2">
             <p className="px-2 py-1 text-xs font-medium text-muted-foreground">文件夹</p>
             <FolderTree />
-            {tags.length > 0 && (
+            {tags.length > 0 ? (
               <div className="mt-3 border-t border-border pt-2">
                 <p className="px-2 py-1 text-xs font-medium text-muted-foreground flex items-center gap-1">
                   <Tag className="h-3 w-3" /> 标签
@@ -101,6 +101,12 @@ export function Sidebar() {
                     </button>
                   ))}
                 </div>
+              </div>
+            ) : (
+              <div className="mt-3 border-t border-border pt-2 px-2">
+                <p className="py-2 text-xs text-muted-foreground text-center">
+                  右键文件添加标签
+                </p>
               </div>
             )}
           </div>

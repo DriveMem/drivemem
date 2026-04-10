@@ -483,9 +483,17 @@ plugins:
 
             {/* Code block for non-MCP tabs */}
             {activeTab !== 1 && activeTab !== 3 && (
-              <pre className="mt-6 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
-                <code>{CODE_BLOCKS[activeTab]}</code>
-              </pre>
+              <div className="relative mt-6">
+                <pre className="overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
+                  <code>{CODE_BLOCKS[activeTab]}</code>
+                </pre>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(CODE_BLOCKS[activeTab]); setCopiedClient("code"); setTimeout(() => setCopiedClient(null), 2000) }}
+                  className="absolute top-2 right-2 rounded-md border border-white/20 bg-white/10 px-2.5 py-1 text-xs text-white hover:bg-white/20 transition"
+                >
+                  {copiedClient === "code" ? "✓ 已复制" : "复制"}
+                </button>
+              </div>
             )}
 
             {/* Webhook Delivery Log */}

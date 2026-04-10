@@ -307,6 +307,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
             })
           }
           toast.success(`${files.length} 个文件上传成功，AI 正在理解...`)
+          queryClient.invalidateQueries({ queryKey: ["files"] })
         } catch {
           toast.error("上传失败")
         } finally {
@@ -325,7 +326,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       )}
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <span className="text-xs text-muted-foreground">AI 记忆范围：</span>
-        <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined) }} className="gap-1 text-xs">
+        <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined); toast("记忆范围：全部文件", { duration: 1500 }) }} className="gap-1 text-xs">
           <Files className="h-3 w-3" />全部文件
         </Button>
         {scope !== "all" && scopeLabel && (
@@ -344,7 +345,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
             {foldersList.length === 0 ? (
               <DropdownMenuItem disabled>暂无文件夹</DropdownMenuItem>
             ) : foldersList.map((f: any) => (
-              <DropdownMenuItem key={f.id} onClick={() => { setScope("folder"); setScopeId(f.id); setScopeLabel(f.name) }}>
+              <DropdownMenuItem key={f.id} onClick={() => { setScope("folder"); setScopeId(f.id); setScopeLabel(f.name); toast(`记忆范围：${f.name}`, { duration: 1500 }) }}>
                 <Folder className="h-3 w-3 mr-2" />{f.name}
               </DropdownMenuItem>
             ))}
@@ -361,7 +362,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
             {indexedFiles.length === 0 ? (
               <DropdownMenuItem disabled>暂无已索引文件</DropdownMenuItem>
             ) : indexedFiles.map((f: any) => (
-              <DropdownMenuItem key={f.id} onClick={() => { setScope("file"); setScopeId(f.id); setScopeLabel(f.name) }}>
+              <DropdownMenuItem key={f.id} onClick={() => { setScope("file"); setScopeId(f.id); setScopeLabel(f.name); toast(`记忆范围：${f.name}`, { duration: 1500 }) }}>
                 <FileText className="h-3 w-3 mr-2" />{f.name}
               </DropdownMenuItem>
             ))}
