@@ -101,7 +101,7 @@ function StatusIcon({ status, error, compact }: { status: string; error?: string
 }
 
 export function FileList() {
-  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId, activeTagFilter, setActiveTagFilter } = useLayoutStore()
+  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId, activeTagFilter, setActiveTagFilter, drawerFileId, openDrawer, closeDrawer } = useLayoutStore()
   const router = useRouter()
   const { data, isLoading, error } = useFiles(currentFolderId)
   const deleteFile = useDeleteFile()
@@ -130,7 +130,6 @@ export function FileList() {
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [userTags, setUserTags] = useState<any[]>([])
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
-  const [drawerFileId, setDrawerFileId] = useState<string | null>(null)
   const [drawerTags, setDrawerTags] = useState<any[]>([])
   const [versionFileId, setVersionFileId] = useState<string | null>(null)
   const [versions, setVersions] = useState<any[]>([])
@@ -590,7 +589,7 @@ export function FileList() {
                     <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); setDrawerFileId(file.id) }}
+                    onClick={(e) => { e.stopPropagation(); openDrawer(file.id) }}
                     className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
                     title="文件详情"
                   >
@@ -848,7 +847,7 @@ export function FileList() {
 
       {/* File Detail Drawer Backdrop */}
       {drawerFileId && (
-        <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setDrawerFileId(null)} />
+        <div className="fixed inset-0 z-40 bg-black/20" onClick={() => closeDrawer()} />
       )}
       {/* File Detail Drawer */}
       {(() => {
@@ -858,7 +857,7 @@ export function FileList() {
           <div className="fixed inset-y-0 right-0 z-50 w-[400px] border-l bg-background shadow-xl">
             <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="text-sm font-semibold">文件详情</h3>
-              <button onClick={() => setDrawerFileId(null)} className="h-8 w-8 rounded-md hover:bg-accent flex items-center justify-center">
+              <button onClick={() => closeDrawer()} className="h-8 w-8 rounded-md hover:bg-accent flex items-center justify-center">
                 <X className="h-4 w-4" />
               </button>
             </div>

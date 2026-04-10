@@ -1,12 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { FileText, MessageSquare, Loader2, AlertCircle, Link2, Lightbulb, AlertTriangle, TrendingUp } from "lucide-react"
+import { FileText, Loader2, AlertCircle, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useFile, useMoveFile } from "@/hooks/use-files"
-import { useFolders } from "@/hooks/use-folders"
-import { apiFetch } from "@/lib/api"
-import Link from "next/link"
+import { useFile } from "@/hooks/use-files"
+import { useLayoutStore } from "@/stores/layout-store"
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return bytes + " B"
@@ -14,11 +11,15 @@ function formatSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + " MB"
 }
 
+function truncateSummary(summary: string, maxLen = 80): string {
+  const firstLine = summary.split("\n")[0]
+  if (firstLine.length <= maxLen) return firstLine
+  return firstLine.slice(0, maxLen) + "…"
+}
+
 export function FileInspector({ fileId }: { fileId: string }) {
   const { data: file, isLoading, error } = useFile(fileId)
-  const moveFile = useMoveFile()
-  const { data: foldersData } = useFolders()
-  const allFolders = foldersData?.folders || []
+  const { openDrawer } = useLayoutStore()
 
   if (isLoading) {
     return (
@@ -36,129 +37,29 @@ export function FileInspector({ fileId }: { fileId: string }) {
     )
   }
 
-  const typeLabels: Record<string, string> = { pdf: "PDF 文档", txt: "文本文件", md: "Markdown", image: "图片" }
-  const statusLabels: Record<string, string> = { parsing: "AI 正在记住...", done: "已记住", error: "记忆失败" }
-  const statusColors: Record<string, string> = { parsing: "text-yellow-500", done: "text-green-500", error: "text-red-500" }
-
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-3">
       <div className="flex items-center gap-3">
-        <FileText className="h-8 w-8 text-muted-foreground" />
-        <div>
-          <p className="font-medium text-sm">{file.name}</p>
-          <p className="text-xs text-muted-foreground">{typeLabels[file.type] || file.type}</p>
+        <FileText className="h-6 w-6 text-muted-foreground flex-shrink-0" />
+        <div className="min-w-0">
+          <p className="font-medium text-sm truncate">{file.name}</p>
+          <p className="text-xs text-muted-foreground">{formatSize(file.size)}</p>
         </div>
-      </div>
-      <div className="space-y-3 text-sm">
-        <div className="flex justify-between"><span className="text-muted-foreground">大小</span><span>{formatSize(file.size)}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">上传时间</span><span>{new Date(file.createdAt).toLocaleString("zh-CN")}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">状态</span><span className={statusColors[file.parseStatus]}>{statusLabels[file.parseStatus]}</span></div>
-        {file.parseError && <div className="text-xs text-red-500 bg-red-500/10 rounded p-2">{file.parseError}</div>}
       </div>
       {file.summary && (
-        <div className="space-y-1.5">
-          <p className="text-sm font-medium text-muted-foreground">AI 摘要</p>
-          <p className="text-sm leading-relaxed">{file.summary}</p>
-        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {truncateSummary(file.summary)}
+        </p>
       )}
-      {file.suggestedFolder && !file.folderId && (
-        <div className="space-y-2 rounded-lg bg-indigo-500/5 border border-indigo-500/20 p-3">
-          <p className="text-sm">🧠 AI 分类建议：{file.suggestedFolder}</p>
-          <Button
-            size="sm"
-            className="w-full"
-            onClick={() => {
-              const matched = allFolders.find((f: any) => f.name === file.suggestedFolder)
-              if (matched) {
-                moveFile.mutate({ fileId: file.id, folderId: matched.id })
-              } else {
-                alert("请先创建此文件夹")
-              }
-            }}
-          >
-            一键移入
-          </Button>
-        </div>
-      )}
-      <KnowledgeLinksForFile fileId={fileId} />
-      <InsightsForFile fileId={fileId} />
-      <Button className="w-full gap-2" asChild>
-        <Link href={"/chat?file=" + file.id}><MessageSquare className="h-4 w-4" />问 AI 关于这个文件</Link>
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full gap-1.5 text-xs"
+        onClick={() => openDrawer(fileId)}
+      >
+        <Info className="h-3.5 w-3.5" />
+        查看完整详情
       </Button>
-    </div>
-  )
-}
-
-function KnowledgeLinksForFile({ fileId }: { fileId: string }) {
-  const [links, setLinks] = useState<any[]>([])
-  useEffect(() => {
-    apiFetch("/api/users/me/knowledge-links")
-      .then((data: any) => {
-        const all = data?.links || []
-        setLinks(all.filter((l: any) => l.fileAId === fileId || l.fileBId === fileId))
-      })
-      .catch(() => {})
-  }, [fileId])
-  if (links.length === 0) return null
-  return (
-    <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">🔗 知识关联</p>
-      {links.map((l: any) => {
-        const otherName = l.fileAId === fileId ? l.fileBName : l.fileAName
-        const otherIdVal = l.fileAId === fileId ? l.fileBId : l.fileAId
-        return (
-          <Link key={l.id} href={`/files/${otherIdVal}/preview`} className="block text-xs text-blue-400 hover:underline truncate">
-            {l.relationType === "similar" ? "🔗" : l.relationType === "complementary" ? "🤝" : "⚡"} {otherName} — {l.description}
-          </Link>
-        )
-      })}
-    </div>
-  )
-}
-
-const insightTypeConfig: Record<string, { icon: typeof Lightbulb; label: string; color: string }> = {
-  correlation: { icon: Lightbulb, label: "关联", color: "text-amber-500" },
-  contradiction: { icon: AlertTriangle, label: "矛盾", color: "text-red-500" },
-  trend: { icon: TrendingUp, label: "趋势", color: "text-green-500" },
-}
-
-function InsightsForFile({ fileId }: { fileId: string }) {
-  const [insights, setInsights] = useState<any[]>([])
-  useEffect(() => {
-    apiFetch("/api/insights?limit=20")
-      .then((data: any) => {
-        const all = data?.insights || []
-        setInsights(all.filter((i: any) => i.sourceFileId === fileId || i.relatedFileId === fileId))
-      })
-      .catch(() => {})
-  }, [fileId])
-
-  return (
-    <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">💡 AI 关联</p>
-      {insights.length === 0 && (
-        <p className="text-xs text-muted-foreground">AI 尚未发现此文件与其他文件的关联</p>
-      )}
-      {insights.map((i: any) => {
-        const config = insightTypeConfig[i.type] || insightTypeConfig.correlation
-        const Icon = config.icon
-        const otherFile = i.sourceFileId === fileId ? i.relatedFileName : i.sourceFileName
-        return (
-          <Link
-            key={i.id}
-            href={`/chat?q=对比「${i.sourceFileName}」和「${i.relatedFileName}」&fileIds=${i.sourceFileId},${i.relatedFileId}`}
-            className="block rounded-lg border p-3 hover:bg-accent/50 transition text-xs"
-          >
-            <div className="flex items-center gap-1.5">
-              <Icon className={`h-3 w-3 ${config.color}`} />
-              <span className={`font-medium ${config.color}`}>{config.label}</span>
-            </div>
-            <p className="mt-1 text-sm font-medium line-clamp-1">{i.title}</p>
-            <p className="mt-0.5 text-muted-foreground line-clamp-2">{i.description}</p>
-            <p className="mt-1 text-muted-foreground">↔ {otherFile}</p>
-          </Link>
-        )
-      })}
     </div>
   )
 }
