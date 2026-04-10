@@ -201,6 +201,14 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
           )}
         </div>
 
+        {/* Security tip */}
+        <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3">
+          <p className="text-xs text-amber-700">
+            🔒 <strong>安全提示</strong>：MCP 连接通过 HTTPS 加密传输。请勿在不安全的网络中暴露 API Key。
+            建议为不同 agent 创建独立的 Key，并定期轮换。
+          </p>
+        </div>
+
         {/* Doc link */}
         <a href="/developers" className="inline-flex items-center gap-1 text-sm text-[#4F5BD5] hover:underline">
           查看完整开发者文档 ↗
