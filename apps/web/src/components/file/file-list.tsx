@@ -53,6 +53,31 @@ interface FileItem {
 }
 
 function fmtSize(b: number) { return !b ? "—" : b < 1024 ? "< 1 KB" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
+
+function formatFileType(mimeType?: string, name?: string): string {
+  if (name) {
+    const ext = name.split(".").pop()?.toLowerCase()
+    const extMap: Record<string, string> = {
+      md: "Markdown", markdown: "Markdown", txt: "纯文本", pdf: "PDF",
+      doc: "Word", docx: "Word", xls: "Excel", xlsx: "Excel",
+      ppt: "PowerPoint", pptx: "PowerPoint", csv: "CSV",
+      json: "JSON", html: "HTML", xml: "XML",
+      png: "PNG 图片", jpg: "JPEG 图片", jpeg: "JPEG 图片", gif: "GIF 图片", webp: "WebP 图片", svg: "SVG 图片",
+      mp3: "MP3 音频", wav: "WAV 音频", mp4: "MP4 视频",
+      zip: "ZIP 压缩包", rar: "RAR 压缩包", gz: "GZ 压缩包",
+    }
+    if (ext && extMap[ext]) return extMap[ext]
+  }
+  if (mimeType) {
+    if (mimeType.startsWith("image/")) return "图片"
+    if (mimeType.startsWith("audio/")) return "音频"
+    if (mimeType.startsWith("video/")) return "视频"
+    if (mimeType.includes("pdf")) return "PDF"
+    if (mimeType.includes("markdown") || mimeType.includes("x-markdown")) return "Markdown"
+    return mimeType.split("/").pop()?.toUpperCase() || mimeType
+  }
+  return "文件"
+}
 function fmtDate(iso: string) { return new Date(iso).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) }
 
 function formatRelativeTime(date: string): string {
@@ -889,7 +914,7 @@ export function FileList() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">类型</span>
-                  <span>{drawerFile.type}</span>
+                  <span>{formatFileType(drawerFile.mimeType, drawerFile.name)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">上传时间</span>
