@@ -8,18 +8,49 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
   const [value, setValue] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const [placeholder] = useState(() => {
+  const getPlaceholders = () => {
     if (fileCount === 0) {
-      const p = ["上传文件后，试试问 AI 任何问题...", "拖拽文件到这里开始，或直接输入问题..."]
-      return p[Math.floor(Math.random() * p.length)]
+      return [
+        "上传文件后，试试问 AI 任何问题...",
+        "拖拽文件到这里开始，或直接输入问题...",
+        "上传笔记、论文、报告，让 AI 帮你整理...",
+        "把学习资料丢进来，AI 帮你提炼重点...",
+      ]
     }
     if (!hasConversations) {
-      const p = ["总结我最近上传的文件", "我的文件里有哪些关键信息？", "帮我分析这些文件的共同点"]
-      return p[Math.floor(Math.random() * p.length)]
+      return [
+        "总结我最近上传的文件",
+        "我的文件里有哪些关键信息？",
+        "帮我分析这些文件的共同点",
+        "这些文件的核心观点是什么？",
+        "帮我梳理文件之间的关联",
+        "用一段话概括我的知识库",
+      ]
     }
-    const p = ["对比我最近上传的两个文件", "基于我的知识库，帮我写一份总结", "我的文件里有没有矛盾的信息？"]
+    return [
+      "对比我最近上传的两个文件",
+      "基于我的知识库，帮我写一份总结",
+      "我的文件里有没有矛盾的信息？",
+      "帮我找出文件中的关键数据",
+      "根据已有资料，给我一些建议",
+      "把我的笔记整理成行动清单",
+    ]
+  }
+
+  const [placeholder, setPlaceholder] = useState(() => {
+    const p = getPlaceholders()
     return p[Math.floor(Math.random() * p.length)]
   })
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (value) return // don't rotate while user is typing
+      const p = getPlaceholders()
+      setPlaceholder(p[Math.floor(Math.random() * p.length)])
+    }, 12000)
+    return () => clearInterval(interval)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, fileCount, hasConversations])
 
   useEffect(() => {
     const el = textareaRef.current
