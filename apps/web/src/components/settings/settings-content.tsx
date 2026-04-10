@@ -607,9 +607,26 @@ export default function SettingsContent() {
               )
             })()}
           </div>
-          <p className="text-sm text-muted-foreground">
-            今日对话：{chatUsedToday} / {chatLimitToday} 次
-          </p>
+          <div>
+            {(() => {
+              const chatPct = chatUsedToday !== "—" && chatLimitToday !== "—" ? (parseInt(chatUsedToday) / parseInt(chatLimitToday)) * 100 : 0
+              const chatBarColor = chatPct > 90 ? "bg-red-500" : chatPct > 70 ? "bg-yellow-500" : "bg-primary"
+              const chatTextColor = chatPct > 90 ? "text-red-500" : chatPct > 70 ? "text-yellow-600" : "text-muted-foreground"
+              return (
+                <>
+                  <p className={`mb-1 text-sm ${chatTextColor}`}>
+                    今日对话：{chatUsedToday} / {chatLimitToday} 次 {chatPct > 90 ? "⚠️ 即将用完" : chatPct > 70 ? "⚡ 接近上限" : ""}
+                  </p>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={`h-full rounded-full ${chatBarColor} transition-all`}
+                      style={{ width: `${chatPct}%` }}
+                    />
+                  </div>
+                </>
+              )
+            })()}
+          </div>
         </CardContent>
       </Card>
 
