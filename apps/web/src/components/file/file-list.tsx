@@ -4,7 +4,8 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2, MoreHorizontal, BotMessageSquare, Link2, Info, X, Sparkles } from "lucide-react"
-import { Lightbulb } from "lucide-react"
+import { Lightbulb, Tag } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -100,7 +101,7 @@ function StatusIcon({ status, error, compact }: { status: string; error?: string
 }
 
 export function FileList() {
-  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId, activeTagFilter } = useLayoutStore()
+  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId, activeTagFilter, setActiveTagFilter } = useLayoutStore()
   const router = useRouter()
   const { data, isLoading, error } = useFiles(currentFolderId)
   const deleteFile = useDeleteFile()
@@ -127,6 +128,7 @@ export function FileList() {
   const [showUpload, setShowUpload] = useState(false)
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [userTags, setUserTags] = useState<any[]>([])
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
   const [drawerFileId, setDrawerFileId] = useState<string | null>(null)
   const [drawerTags, setDrawerTags] = useState<any[]>([])
@@ -137,6 +139,10 @@ export function FileList() {
   const [shareLoading, setShareLoading] = useState(false)
   const [tagManagerFileId, setTagManagerFileId] = useState<string | null>(null)
   const parentRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    apiFetch("/api/tags").then((data: any) => setUserTags(Array.isArray(data) ? data : [])).catch(() => {})
+  }, [])
 
   const handleShare = useCallback(async (fileId: string) => {
     setShareLoading(true)
@@ -409,6 +415,25 @@ export function FileList() {
               {label}
             </button>
           ))}
+          {userTags.length > 0 && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent transition">
+                  <Tag className="h-3 w-3" />
+                  {activeTagFilter || "标签"}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-2" align="start">
+                {userTags.map((tag: any) => (
+                  <button key={tag.id} onClick={() => setActiveTagFilter(activeTagFilter === tag.name ? null : tag.name)}
+                    className="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm hover:bg-accent transition">
+                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: tag.color || '#6B7280' }} />
+                    <span className={activeTagFilter === tag.name ? "font-medium" : ""}>{tag.name}</span>
+                  </button>
+                ))}
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <Button size="sm" onClick={async () => {
