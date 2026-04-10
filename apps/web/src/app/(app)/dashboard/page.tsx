@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { FolderOpen, Sparkles, Upload } from "lucide-react"
+import { FolderOpen, Sparkles, Upload, X, Lightbulb, AlertTriangle, TrendingUp } from "lucide-react"
 import { FileList } from "@/components/file/file-list"
 import { MemoryOverview } from "@/components/dashboard/memory-overview"
 import { KnowledgeLinks } from "@/components/dashboard/knowledge-links"
@@ -98,6 +98,68 @@ function ActivitySummary({ activities }: { activities: any[] }) {
   )
 }
 
+// --- Insights summary card for files tab ---
+const insightTypeIcon: Record<string, typeof Lightbulb> = {
+  correlation: Lightbulb,
+  contradiction: AlertTriangle,
+  trend: TrendingUp,
+}
+const insightTypeColor: Record<string, string> = {
+  correlation: "text-amber-500",
+  contradiction: "text-red-500",
+  trend: "text-green-500",
+}
+
+function InsightsSummaryCard({ insights, onSwitchToAi }: { insights: any[]; onSwitchToAi: () => void }) {
+  const [dismissed, setDismissed] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setDismissed(localStorage.getItem("insights-card-dismissed") === "true")
+    }
+  }, [])
+
+  if (dismissed || insights.length === 0) return null
+
+  const unread = insights.filter(i => !i.read).length
+  const count = unread > 0 ? unread : insights.length
+  const label = unread > 0 ? `${count} 条新知识关联` : `${count} 条知识关联`
+  const previews = insights.slice(0, 3)
+
+  const handleDismiss = () => {
+    setDismissed(true)
+    localStorage.setItem("insights-card-dismissed", "true")
+  }
+
+  return (
+    <div className="mx-6 mb-3 rounded-xl border border-[#4F5BD5]/20 bg-[#4F5BD5]/5 p-3">
+      <div className="flex items-center justify-between mb-1.5">
+        <button onClick={onSwitchToAi} className="text-sm font-medium hover:underline">
+          💡 AI 发现了 {label}
+          <span className="ml-1.5 text-xs text-[#4F5BD5]">查看 →</span>
+        </button>
+        <button onClick={handleDismiss} className="text-muted-foreground hover:text-foreground p-0.5">
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <div className="space-y-1">
+        {previews.map((i: any) => {
+          const Icon = insightTypeIcon[i.type] || Lightbulb
+          const color = insightTypeColor[i.type] || "text-amber-500"
+          return (
+            <div key={i.id} className="flex items-center gap-2 text-xs text-muted-foreground truncate">
+              <Icon className={cn("h-3 w-3 shrink-0", color)} />
+              <span className="truncate">{i.title}</span>
+              <span className="shrink-0">·</span>
+              <span className="truncate">{i.sourceFileName} ↔ {i.relatedFileName}</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // --- Section header helper ---
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <h4 className="mx-3 mb-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">{children}</h4>
@@ -183,8 +245,11 @@ export default function DashboardPage() {
 
       {/* Tab content */}
       {activeTab === "files" ? (
-        <div className="flex-1 min-h-0">
-          <FileList />
+        <div className="flex-1 min-h-0 flex flex-col">
+          <InsightsSummaryCard insights={insights} onSwitchToAi={() => setActiveTab("ai")} />
+          <div className="flex-1 min-h-0">
+            <FileList />
+          </div>
         </div>
       ) : (
         <div className="flex-1 min-h-0 overflow-auto px-1 animate-in fade-in duration-200">

@@ -133,11 +133,12 @@ function InsightsForFile({ fileId }: { fileId: string }) {
       .catch(() => {})
   }, [fileId])
 
-  if (insights.length === 0) return null
-
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">💡 AI 洞察</p>
+      <p className="text-xs font-medium text-muted-foreground">💡 AI 关联</p>
+      {insights.length === 0 && (
+        <p className="text-xs text-muted-foreground">AI 尚未发现此文件与其他文件的关联</p>
+      )}
       {insights.map((i: any) => {
         const config = insightTypeConfig[i.type] || insightTypeConfig.correlation
         const Icon = config.icon
