@@ -474,10 +474,19 @@ plugins:
                     </pre>
                   </div>
                 ))}
-                <p className="text-xs text-[#6B6966]">
-                  💡 将 <code className="font-mono">YOUR_API_KEY</code> 替换为你的 API Key。
-                  在 <a href="/settings?tab=developer" className="text-[#4F5BD5] hover:underline">Settings → 开发者</a> 创建。
-                </p>
+                <div className="rounded-lg border border-[#E5E4E1] bg-white p-4 space-y-2">
+                  <p className="text-xs text-[#6B6966]">
+                    💡 将 <code className="font-mono">YOUR_API_KEY</code> 替换为你的 API Key。
+                    在 <a href="/settings?tab=developer" className="text-[#4F5BD5] hover:underline">Settings → 开发者</a> 创建。
+                  </p>
+                  <p className="text-xs text-[#6B6966]">
+                    🌐 <strong>公网地址</strong>：<code className="font-mono text-[#4F5BD5]">https://drive.verrrnm.cloud/mcp</code>
+                    {" "}| 自部署用户可替换为 <code className="font-mono text-[#4F5BD5]">http://localhost:3000/mcp</code>
+                  </p>
+                  <p className="text-xs text-amber-600">
+                    🔒 安全提示：API Key 等同于账户访问权限，请勿在公开仓库或客户端代码中暴露。建议使用环境变量管理。
+                  </p>
+                </div>
               </div>
             )}
 

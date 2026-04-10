@@ -12,7 +12,18 @@ export function TagList() {
     apiFetch("/api/tags").then((data: any) => setTags(Array.isArray(data) ? data : [])).catch(() => {})
   }, [])
 
-  if (tags.length === 0) return null
+  if (tags.length === 0) return (
+    <div className="border-t border-border p-2">
+      <p className="px-2 py-1 text-xs font-medium text-muted-foreground">标签</p>
+      <button
+        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent/50 transition cursor-default"
+        title="在文件列表中右键点击文件即可创建和分配标签"
+      >
+        <Tag className="h-3 w-3 shrink-0" />
+        <span className="truncate text-xs">右键文件创建第一个标签</span>
+      </button>
+    </div>
+  )
 
   return (
     <div className="border-t border-border p-2">

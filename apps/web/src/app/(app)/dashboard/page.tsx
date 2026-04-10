@@ -173,7 +173,7 @@ export default function DashboardPage() {
 
   const handleTabSwitch = (tab: "files" | "ai") => {
     setActiveTab(tab)
-    if (tab === "ai") closeInspector()
+    closeInspector()
   }
   const { data: filesData } = useFiles()
   const [activities, setActivities] = useState<any[]>([])
