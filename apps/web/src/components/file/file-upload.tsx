@@ -35,6 +35,7 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
     // Upload accepted files with progress tracking
     const total = accepted.length
     let doneCount = 0
+    let errorCount = 0
     accepted.forEach((file) => {
       const itemId = crypto.randomUUID()
       setUploads((p) => [...p, { id: itemId, name: file.name, progress: 0, status: "uploading" as const }])
@@ -50,15 +51,20 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
             if (total > 1) {
               toast(`文件上传完成 (${doneCount}/${total})`)
             }
-            if (doneCount === total) {
+            if (doneCount === total && errorCount === 0) {
               toast.success("AI 正在理解你的文件...")
             }
           },
           onError: (err: any) => {
-            setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "error" as const, error: err.message || "记住失败" } : u))
+            setUploads((p) => p.map((u) => u.id === itemId ? { ...u, status: "error" as const, error: err.message || "上传失败" } : u))
+            errorCount++
             doneCount++
             if (doneCount === total) {
-              toast.success("AI 正在理解你的文件...")
+              if (errorCount === total) {
+                toast.error("文件上传失败，请重试")
+              } else if (errorCount > 0) {
+                toast.warning(`${total - errorCount} 个文件上传成功，${errorCount} 个失败`)
+              }
             }
           },
         }
