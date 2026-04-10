@@ -1,5 +1,5 @@
 "use client"
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { MessageSquare, FileText, Folder, Files, ChevronDown, Link2, Download, Upload, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
@@ -105,6 +105,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   const [followUpSuggestions, setFollowUpSuggestions] = useState<string[]>([])
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const lastUserMessageRef = useRef<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
 
@@ -138,6 +139,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
 
 
   const handleSend = useCallback(async (content: string) => {
+    lastUserMessageRef.current = content
     setError(null)
     setFollowUpSuggestions([])
     const userMsg: ChatMessage = { id: "u-" + Date.now(), role: "user", content, createdAt: new Date().toISOString() }
@@ -394,8 +396,16 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       )}
 
       {error && (
-        <div className="px-4 py-2 text-sm text-destructive bg-destructive/10 border-b border-border">
-          {error}
+        <div className="px-4 py-2 text-sm text-destructive bg-destructive/10 border-b border-border flex items-center justify-between gap-2">
+          <span>{error}</span>
+          {lastUserMessageRef.current && (
+            <button
+              onClick={() => { const msg = lastUserMessageRef.current; if (msg) handleSend(msg) }}
+              className="shrink-0 rounded-md border border-destructive/30 px-2 py-0.5 text-xs hover:bg-destructive/20 transition"
+            >
+              重试
+            </button>
+          )}
         </div>
       )}
 
