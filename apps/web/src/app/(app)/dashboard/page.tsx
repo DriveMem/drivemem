@@ -161,11 +161,6 @@ function InsightsSummaryCard({ insights, onSwitchToAi }: { insights: any[]; onSw
   )
 }
 
-// --- Section header helper ---
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <h4 className="mx-3 mb-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">{children}</h4>
-}
-
 export default function DashboardPage() {
   const [showUpload, setShowUpload] = useState(false)
   const [activeTab, setActiveTab] = useState<"files" | "ai">("files")
@@ -276,22 +271,41 @@ export default function DashboardPage() {
                 上传第一个文件
               </button>
             </div>
-          ) : fileCount <= 3 ? (
+          ) : (
             <div>
               <QuickActions onGenerate={handleQuickGenerate} onOrganize={handleAutoOrganize} />
               <MemoryOverview />
-              {insights.length > 0 && (
-                <div className="mx-4 mb-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold flex items-center gap-2">
-                      💡 AI 主动洞察
-                      {insights.filter(i => !i.read).length > 0 && (
-                        <span className="rounded-full bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white">
-                          {insights.filter(i => !i.read).length} 条新
-                        </span>
-                      )}
-                    </h3>
+
+              {/* AI 报告区 */}
+              <div className="mx-4 mb-4 rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-blue-500/5 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/10">
+                    <Sparkles className="h-3.5 w-3.5 text-purple-400" />
                   </div>
+                  <h3 className="text-sm font-semibold">📊 AI 报告</h3>
+                </div>
+                <ReportSection ref={reportRef} />
+              </div>
+
+              {/* 分隔线 */}
+              <div className="mx-4 mb-4">
+                <div className="border-t border-border/60" />
+              </div>
+
+              {/* AI 洞察区 */}
+              <div className="mx-4 mb-4 rounded-xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 to-emerald-500/5 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-500/10">
+                    <Lightbulb className="h-3.5 w-3.5 text-indigo-400" />
+                  </div>
+                  <h3 className="text-sm font-semibold">💡 AI 洞察</h3>
+                  {insights.filter(i => !i.read).length > 0 && (
+                    <span className="rounded-full bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white">
+                      {insights.filter(i => !i.read).length} 条新
+                    </span>
+                  )}
+                </div>
+                {insights.length > 0 ? (
                   <div className="space-y-3">
                     {insights.map(insight => (
                       <InsightCard key={insight.id} insight={insight} onRead={() => {
@@ -299,43 +313,19 @@ export default function DashboardPage() {
                       }} />
                     ))}
                   </div>
-                </div>
-              )}
-              <SectionLabel>AI 报告</SectionLabel>
-              <ReportSection ref={reportRef} />
+                ) : (
+                  <p className="text-xs text-muted-foreground">AI 会在发现文件间的知识关联时自动展示洞察</p>
+                )}
+                {fileCount > 3 && (
+                  <>
+                    <AiInsights />
+                    <KnowledgeLinks />
+                  </>
+                )}
+              </div>
+
               <ActivitySummary activities={activities} />
             </div>
-          ) : (
-            <>
-              <QuickActions onGenerate={handleQuickGenerate} onOrganize={handleAutoOrganize} />
-              <MemoryOverview />
-              {insights.length > 0 && (
-                <div className="mx-4 mb-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold flex items-center gap-2">
-                      💡 AI 主动洞察
-                      {insights.filter(i => !i.read).length > 0 && (
-                        <span className="rounded-full bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white">
-                          {insights.filter(i => !i.read).length} 条新
-                        </span>
-                      )}
-                    </h3>
-                  </div>
-                  <div className="space-y-3">
-                    {insights.map(insight => (
-                      <InsightCard key={insight.id} insight={insight} onRead={() => {
-                        setInsights(prev => prev.map(i => i.id === insight.id ? { ...i, read: true } : i))
-                      }} />
-                    ))}
-                  </div>
-                </div>
-              )}
-              <AiInsights />
-              <KnowledgeLinks />
-              <SectionLabel>AI 报告</SectionLabel>
-              <ReportSection ref={reportRef} />
-              <ActivitySummary activities={activities} />
-            </>
           )}
         </div>
       )}
