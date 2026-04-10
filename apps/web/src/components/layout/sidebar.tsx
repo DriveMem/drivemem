@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const navItems = [
-  { href: "/dashboard", icon: FileText, label: "我的文件" },
+  { href: "/files", icon: FileText, label: "我的文件" },
   { href: "/chat", icon: MessageSquare, label: "AI 对话" },
   { href: "/timeline", icon: CalendarDays, label: "时间线" },
   { href: "/developers", icon: Code, label: "开发者" },
