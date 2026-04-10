@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { apiFetch } from "@/lib/api"
 import { FileText, Search } from "lucide-react"
@@ -56,21 +56,34 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 export function SearchResults({ query }: { query: string }) {
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(false)
+  const [total, setTotal] = useState(0)
+  const offsetRef = useRef(0)
+  const LIMIT = 20
 
   useEffect(() => {
     if (!query.trim()) {
       setResults([])
+      setHasMore(false)
+      setTotal(0)
       return
     }
 
     let cancelled = false
     setLoading(true)
     setError(null)
+    offsetRef.current = 0
 
-    apiFetch(`/api/search?q=${encodeURIComponent(query)}`)
-      .then((data) => {
-        if (!cancelled) setResults(normalizeResults(data))
+    apiFetch(`/api/search?q=${encodeURIComponent(query)}&limit=${LIMIT}&offset=0`)
+      .then((data: any) => {
+        if (!cancelled) {
+          setResults(normalizeResults(data))
+          setHasMore(!!data?.hasMore)
+          setTotal(data?.total ?? 0)
+          offsetRef.current = LIMIT
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err.message || "搜索失败")
@@ -81,6 +94,22 @@ export function SearchResults({ query }: { query: string }) {
 
     return () => { cancelled = true }
   }, [query])
+
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+    try {
+      const data: any = await apiFetch(`/api/search?q=${encodeURIComponent(query)}&limit=${LIMIT}&offset=${offsetRef.current}`)
+      const newResults = normalizeResults(data)
+      setResults(prev => [...prev, ...newResults])
+      setHasMore(!!data?.hasMore)
+      offsetRef.current += LIMIT
+    } catch (err: any) {
+      // silently fail on load more
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   if (!query.trim()) {
     return (
@@ -161,6 +190,17 @@ export function SearchResults({ query }: { query: string }) {
           </li>
         ))}
       </ul>
+      {hasMore && (
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="rounded-lg border px-6 py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition disabled:opacity-50"
+          >
+            {loadingMore ? "加载中…" : "加载更多"}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
