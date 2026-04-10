@@ -361,8 +361,12 @@ function WebhookCard() {
                     onClick={async () => {
                       try {
                         const { apiFetch: af } = await import("@/lib/api")
-                        await af(`/api/webhooks/${h.id}/test`, { method: "POST" })
-                        toast.success("测试事件已发送")
+                        const result = await af(`/api/webhooks/${h.id}/test`, { method: "POST" })
+                        if (result.success) {
+                          toast.success(`✅ 测试成功 — HTTP ${result.statusCode}`)
+                        } else {
+                          toast.error(`❌ 测试失败${result.statusCode ? ` — HTTP ${result.statusCode}` : ""}${result.error ? `: ${result.error}` : ""}`)
+                        }
                       } catch { toast.error("发送失败") }
                     }}
                     className="rounded-full px-2 py-0.5 text-xs bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition"
