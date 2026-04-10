@@ -42,7 +42,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
       <div className="flex items-center gap-3">
         <FileText className="h-6 w-6 text-muted-foreground flex-shrink-0" />
         <div className="min-w-0">
-          <p className="font-medium text-sm truncate">{file.name}</p>
+          <p className="font-medium text-sm truncate" title={file.name}>{file.name}</p>
           <p className="text-xs text-muted-foreground">{formatSize(file.size)}</p>
         </div>
       </div>

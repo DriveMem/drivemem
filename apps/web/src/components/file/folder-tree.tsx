@@ -27,7 +27,7 @@ function FolderNode({ folder, depth = 0 }: { folder: FolderItem; depth?: number 
       >
         {hasChildren ? (expanded ? <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />) : <span className="w-3.5" />}
         {expanded ? <FolderOpen className="h-4 w-4 flex-shrink-0 text-muted-foreground" /> : <Folder className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
-        <span className="truncate">{folder.name}</span>
+        <span className="truncate" title={folder.name}>{folder.name}</span>
       </button>
       {expanded && hasChildren && folder.children!.map((child) => <FolderNode key={child.id} folder={child} depth={depth + 1} />)}
     </div>

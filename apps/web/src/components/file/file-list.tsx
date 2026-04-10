@@ -629,7 +629,7 @@ export function FileList() {
                   className="shrink-0"
                 />
                 <TypeIcon type={file.type} name={file.name} />
-                <span className="truncate text-sm flex-1 min-w-0">{file.name}</span>
+                <span className="truncate text-sm flex-1 min-w-0" title={file.name}>{file.name}</span>
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">已更新</span>}
                 {file.archivedAt && <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">已归档</span>}
                 {file.tags?.slice(0, 2).map((tag: any) => (
@@ -714,12 +714,12 @@ export function FileList() {
                   onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                   draggable
                   onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
-                  className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-3", isSel && "bg-accent ring-2 ring-primary")}
+                  className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-3 overflow-hidden min-w-0", isSel && "bg-accent ring-2 ring-primary")}
                 >
                   <div className="flex h-28 items-center justify-center rounded-lg bg-muted/50">
                     <TypeIcon type={file.type} name={file.name} className="h-14 w-14" />
                   </div>
-                  <p className="text-sm font-medium truncate">{file.name}</p>
+                  <p className="text-sm font-medium truncate" title={file.name}>{file.name}</p>
                   {file.summary && (
                     <p className="text-xs text-muted-foreground line-clamp-2">{file.summary}</p>
                   )}
@@ -946,7 +946,7 @@ export function FileList() {
               <div className="flex justify-center py-4">
                 <TypeIcon type={drawerFile.type} name={drawerFile.name} className="h-16 w-16" />
               </div>
-              <h2 className="text-lg font-semibold text-center">{drawerFile.name}</h2>
+              <h2 className="text-lg font-semibold text-center truncate" title={drawerFile.name}>{drawerFile.name}</h2>
               {drawerFile.summary && (
                 <div className="rounded-lg border p-3">
                   <p className="text-xs font-medium text-muted-foreground mb-1">🧠 AI 摘要</p>
