@@ -102,12 +102,16 @@ export function ConversationList() {
             const now = new Date()
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
             const yesterday = today - 86400000
-            const weekAgo = today - 7 * 86400000
+            const startOfWeek = today - (now.getDay() || 7) * 86400000 + 86400000 // Monday of this week
+            const lastWeekStart = startOfWeek - 7 * 86400000
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime()
 
             const groups: { label: string; items: Conversation[] }[] = [
               { label: "今天", items: [] },
               { label: "昨天", items: [] },
               { label: "本周", items: [] },
+              { label: "上周", items: [] },
+              { label: "本月", items: [] },
               { label: "更早", items: [] },
             ]
 
@@ -115,8 +119,10 @@ export function ConversationList() {
               const t = new Date(c.updatedAt).getTime()
               if (t >= today) groups[0].items.push(c)
               else if (t >= yesterday) groups[1].items.push(c)
-              else if (t >= weekAgo) groups[2].items.push(c)
-              else groups[3].items.push(c)
+              else if (t >= startOfWeek) groups[2].items.push(c)
+              else if (t >= lastWeekStart) groups[3].items.push(c)
+              else if (t >= startOfMonth) groups[4].items.push(c)
+              else groups[5].items.push(c)
             })
 
             return groups.filter(g => g.items.length > 0).map(g => (
