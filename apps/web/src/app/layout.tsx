@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/providers/theme-provider'
 import { AuthProvider } from '@/providers/auth-provider'
 import { QueryProvider } from '@/providers/query-provider'
 import { Toaster } from '@/components/ui/sonner'
+import { UploadProgress } from '@/components/upload-progress'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </QueryProvider>
           </AuthProvider>
           <Toaster />
+          <UploadProgress />
         </ThemeProvider>
       </body>
     </html>
