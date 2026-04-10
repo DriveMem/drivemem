@@ -1,5 +1,5 @@
 import { apiFetch } from '@/lib/api'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query'
 
 export interface Tag {
   id: string
@@ -23,6 +23,18 @@ export function useFileTags(fileId: string | null) {
     queryFn: () => apiFetch(`/api/tags/file/${fileId}`),
     enabled: !!fileId,
   })
+}
+
+// Get tags for multiple files (returns array of Tag[] per file)
+export function useMultiFileTags(fileIds: string[]): Tag[][] {
+  const results = useQueries({
+    queries: fileIds.map((fid) => ({
+      queryKey: ['file-tags', fid],
+      queryFn: () => apiFetch(`/api/tags/file/${fid}`) as Promise<Tag[]>,
+      enabled: !!fid,
+    })),
+  })
+  return results.map((r) => r.data ?? [])
 }
 
 // Create a new tag

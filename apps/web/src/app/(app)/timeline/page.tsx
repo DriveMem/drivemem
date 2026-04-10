@@ -63,6 +63,7 @@ export default function TimelinePage() {
   const [hasMore, setHasMore] = useState(false)
   const [offset, setOffset] = useState(0)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [typeFilter, setTypeFilter] = useState<string | null>(null)
 
   const fetchEvents = async (newOffset: number) => {
     try {
@@ -89,10 +90,12 @@ export default function TimelinePage() {
     setLoadingMore(false)
   }
 
+  const filteredEvents = typeFilter ? events.filter(e => e.type === typeFilter) : events
+
   const groups: Record<string, TimelineEvent[]> = {}
   const today = new Date().toDateString()
   const yesterday = new Date(Date.now() - 86400000).toDateString()
-  events.forEach(e => {
+  filteredEvents.forEach(e => {
     const d = new Date(e.createdAt).toDateString()
     const label = d === today ? "今天" : d === yesterday ? "昨天" : new Date(e.createdAt).toLocaleDateString("zh-CN")
     if (!groups[label]) groups[label] = []
@@ -102,7 +105,30 @@ export default function TimelinePage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
       <h1 className="text-2xl font-bold mb-2">📅 知识时间线</h1>
-      <p className="text-sm text-muted-foreground mb-8">追踪文件上传、AI 分析和知识发现的完整历程</p>
+      <p className="text-sm text-muted-foreground mb-4">追踪文件上传、AI 分析和知识发现的完整历程</p>
+
+      {/* Type filter */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {[
+          { type: null, label: "全部" },
+          { type: "file_uploaded", label: "📄 上传" },
+          { type: "conversation", label: "💬 对话" },
+          { type: "insight", label: "💡 洞察" },
+          { type: "report", label: "📊 报告" },
+        ].map(f => (
+          <button
+            key={f.type || "all"}
+            onClick={() => setTypeFilter(f.type)}
+            className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+              typeFilter === f.type
+                ? "bg-[#4F5BD5] text-white"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">

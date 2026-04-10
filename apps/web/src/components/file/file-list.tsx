@@ -138,6 +138,7 @@ export function FileList() {
   const [shareUrl, setShareUrl] = useState("")
   const [shareLoading, setShareLoading] = useState(false)
   const [tagManagerFileId, setTagManagerFileId] = useState<string | null>(null)
+  const [tagManagerFileIds, setTagManagerFileIds] = useState<string[]>([])
   const parentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -746,7 +747,10 @@ export function FileList() {
           <Button variant="outline" size="sm" onClick={() => setBatchMoveOpen(true)}>移动</Button>
           <Button variant="outline" size="sm" onClick={handleBatchDownload}>下载</Button>
           <Button variant="outline" size="sm" onClick={() => {
-            if (selected.size > 0) setTagManagerFileId(Array.from(selected)[0])
+            if (selected.size > 0) {
+              setTagManagerFileIds(Array.from(selected))
+              setTagManagerFileId("__batch__")
+            }
           }}>标签</Button>
           <button
             onClick={() => {
@@ -959,10 +963,11 @@ export function FileList() {
 
       {/* Tag Manager Dialog */}
       <TagManagerDialog
-        fileId={tagManagerFileId}
-        fileName={rawFiles?.find((f: any) => f.id === tagManagerFileId)?.name}
+        fileId={tagManagerFileId === "__batch__" ? null : tagManagerFileId}
+        fileIds={tagManagerFileId === "__batch__" ? tagManagerFileIds : undefined}
+        fileName={tagManagerFileId && tagManagerFileId !== "__batch__" ? rawFiles?.find((f: any) => f.id === tagManagerFileId)?.name : undefined}
         open={!!tagManagerFileId}
-        onOpenChange={(open) => { if (!open) setTagManagerFileId(null) }}
+        onOpenChange={(open) => { if (!open) { setTagManagerFileId(null); setTagManagerFileIds([]) } }}
       />
     </div>
   )

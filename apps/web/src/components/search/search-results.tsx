@@ -109,9 +109,17 @@ export function SearchResults({ query }: { query: string }) {
 
   if (results.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+      <div className="flex flex-col items-center gap-4 py-16 text-muted-foreground">
         <Search className="h-8 w-8" />
-        <p className="text-sm">未找到相关内容，试试换个描述方式</p>
+        <div className="text-center space-y-2">
+          <p className="text-sm font-medium">未找到与「{query}」相关的内容</p>
+          <p className="text-xs">试试：</p>
+          <ul className="text-xs space-y-1">
+            <li>• 换个描述方式或使用不同关键词</li>
+            <li>• 用更简短的查询（如只搜核心概念）</li>
+            <li>• <a href="/dashboard" className="text-[#4F5BD5] hover:underline">上传更多文件</a> 丰富你的知识库</li>
+          </ul>
+        </div>
       </div>
     )
   }
