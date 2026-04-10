@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
 import { FileUpload } from "./file-upload"
 import { TagManagerDialog } from "./tag-manager-dialog"
+import { useTags, useAddTagToFile, useRemoveTagFromFile } from "@/hooks/use-tags"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
 import { toast } from "sonner"
 
@@ -115,6 +116,61 @@ function TypeIcon({ type, name, className }: { type: string; name?: string; clas
 }
 
 function StatusIcon({ status, error, compact }: { status: string; error?: string; compact?: boolean }) {
+
+function DrawerTagSection({ fileId, drawerTags, setDrawerTags }: { fileId: string; drawerTags: any[]; setDrawerTags: (tags: any[]) => void }) {
+  const { data: allTags = [] } = useTags()
+  const addTag = useAddTagToFile()
+  const removeTag = useRemoveTagFromFile()
+  const [showPicker, setShowPicker] = useState(false)
+  const tagIds = new Set(drawerTags.map((t: any) => t.id))
+  const availableTags = allTags.filter((t: any) => !tagIds.has(t.id))
+
+  const handleAdd = async (tag: any) => {
+    await addTag.mutateAsync({ fileId, tagId: tag.id })
+    setDrawerTags([...drawerTags, tag])
+    setShowPicker(false)
+  }
+
+  const handleRemove = async (tagId: string) => {
+    await removeTag.mutateAsync({ fileId, tagId })
+    setDrawerTags(drawerTags.filter((t: any) => t.id !== tagId))
+  }
+
+  return (
+    <div className="rounded-lg border p-3">
+      <p className="text-xs font-medium text-muted-foreground mb-2">🏷️ 标签</p>
+      <div className="flex flex-wrap gap-1.5">
+        {drawerTags.map((tag: any) => (
+          <span key={tag.id} className="group inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>
+            {tag.name}
+            <button onClick={() => handleRemove(tag.id)} className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 ml-0.5" title="移除标签">×</button>
+          </span>
+        ))}
+        <Popover open={showPicker} onOpenChange={setShowPicker}>
+          <PopoverTrigger asChild>
+            <button className="rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent transition">+ 添加</button>
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-2" align="start">
+            {availableTags.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-2">没有更多标签</p>
+            ) : (
+              <div className="space-y-1 max-h-40 overflow-auto">
+                {availableTags.map((tag: any) => (
+                  <button key={tag.id} onClick={() => handleAdd(tag)} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-accent transition">
+                    <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: tag.color || '#4F5BD5' }} />
+                    {tag.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      </div>
+    </div>
+  )
+}
+
+
   if (status === "uploading") return <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
   if (status === "parsing") {
     if (compact) return <Loader2 className="h-3 w-3 animate-spin text-yellow-500" />
@@ -897,15 +953,8 @@ export function FileList() {
                   <p className="text-sm">{drawerFile.summary}</p>
                 </div>
               )}
-              {drawerTags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {drawerTags.map((tag: any) => (
-                    <span key={tag.id} className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>
-                      {tag.name}
-                    </span>
-                  ))}
-                </div>
-              )}
+              {/* Tags section with add/remove */}
+              <DrawerTagSection fileId={drawerFile.id} drawerTags={drawerTags} setDrawerTags={setDrawerTags} />
               <div className="rounded-lg border p-3 space-y-2">
                 <p className="text-xs font-medium text-muted-foreground mb-1">📋 文件信息</p>
                 <div className="flex justify-between text-sm">
