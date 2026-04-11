@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { FolderOpen, Sparkles, Upload, X, Lightbulb, AlertTriangle, TrendingUp } from "lucide-react"
+import { FolderOpen, Sparkles, Upload, X, Lightbulb, AlertTriangle, TrendingUp, MessageSquare } from "lucide-react"
 import { FileList } from "@/components/file/file-list"
 import { MemoryOverview } from "@/components/dashboard/memory-overview"
 import { KnowledgeLinks } from "@/components/dashboard/knowledge-links"
@@ -162,6 +162,7 @@ function InsightsSummaryCard({ insights, onSwitchToAi }: { insights: any[]; onSw
 }
 
 export default function DashboardPage() {
+  const router = useRouter()
   const [showUpload, setShowUpload] = useState(false)
   const [activeTab, setActiveTab] = useState<"files" | "ai">("files")
   const { closeInspector } = useLayoutStore()
@@ -256,20 +257,70 @@ export default function DashboardPage() {
       ) : (
         <div className="flex-1 min-h-0 overflow-auto px-1 animate-in fade-in duration-200">
           {fileCount === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="rounded-full bg-indigo-500/10 p-4 mb-4">
-                <Upload className="h-8 w-8 text-blue-500" />
+            <div className="px-4 py-6 space-y-4">
+              {/* Hero section */}
+              <div className="rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 p-5 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/10">
+                  <Sparkles className="h-6 w-6 text-blue-500" />
+                </div>
+                <h3 className="text-lg font-semibold mb-1.5">上传文件，开启 AI 知识库</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
+                  上传文件后，AI 将自动理解内容、建立知识记忆，并为你提供智能洞察和跨文件关联分析。
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                  <button
+                    onClick={() => { setActiveTab("files"); setShowUpload(true) }}
+                    className="rounded-lg bg-[#4F5BD5] px-5 py-2.5 text-sm text-white hover:bg-[#3D49C4] transition inline-flex items-center gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    上传第一个文件
+                  </button>
+                  <button
+                    onClick={() => router.push("/chat?new=1")}
+                    className="rounded-lg border border-[#4F5BD5]/30 px-5 py-2.5 text-sm text-[#4F5BD5] hover:bg-[#4F5BD5]/5 transition inline-flex items-center gap-2"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    直接开始对话
+                  </button>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold mb-2">上传文件，开启 AI 知识库</h3>
-              <p className="text-sm text-muted-foreground max-w-sm">
-                上传文件后，AI 将自动理解内容、建立知识记忆，并为你提供智能洞察和跨文件关联分析。
-              </p>
-              <button
-                onClick={() => { setActiveTab("files"); setShowUpload(true) }}
-                className="mt-6 rounded-lg bg-[#4F5BD5] px-6 py-2.5 text-sm text-white hover:bg-[#3D49C4] transition"
-              >
-                上传第一个文件
-              </button>
+
+              {/* AI capabilities grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { icon: "🧠", title: "智能记忆", desc: "AI 自动理解并记住你的文件内容" },
+                  { icon: "🔗", title: "知识关联", desc: "发现文件之间隐藏的联系和矛盾" },
+                  { icon: "📊", title: "分析报告", desc: "一键生成跨文件的综合分析报告" },
+                  { icon: "💬", title: "AI 问答", desc: "基于你的文件进行智能对话" },
+                ].map((item) => (
+                  <div key={item.title} className="rounded-lg border border-border/60 bg-muted/30 p-3">
+                    <div className="text-lg mb-1">{item.icon}</div>
+                    <h4 className="text-sm font-medium mb-0.5">{item.title}</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* How it works */}
+              <div className="rounded-xl border border-dashed border-border/60 p-4">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">使用流程</h4>
+                <div className="flex items-start gap-4">
+                  {[
+                    { step: "1", label: "上传文件", sub: "PDF、文档、笔记等" },
+                    { step: "2", label: "AI 自动索引", sub: "理解内容并建立记忆" },
+                    { step: "3", label: "获取洞察", sub: "关联分析、报告、问答" },
+                  ].map((s, i) => (
+                    <div key={s.step} className="flex-1 flex flex-col items-center text-center">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#4F5BD5]/10 text-xs font-semibold text-[#4F5BD5] mb-1.5">
+                        {s.step}
+                      </div>
+                      <span className="text-xs font-medium">{s.label}</span>
+                      <span className="text-[11px] text-muted-foreground mt-0.5">{s.sub}</span>
+                      {i < 2 && <div className="hidden" />}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
             <div>
