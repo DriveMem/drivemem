@@ -65,32 +65,34 @@ export default function TimelinePage() {
   const [events, setEvents] = useState<TimelineEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [hasMore, setHasMore] = useState(false)
-  const [offset, setOffset] = useState(0)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
 
-  const fetchEvents = async (newOffset: number) => {
+  const fetchEvents = async (cursor?: string | null) => {
     try {
-      const data = await apiFetch(`/api/timeline?limit=20&offset=${newOffset}`) as any
-      if (newOffset === 0) {
+      const params = new URLSearchParams({ limit: '20' })
+      if (cursor) params.set('cursor', cursor)
+      const data = await apiFetch(`/api/timeline?${params}`) as any
+      if (!cursor) {
         setEvents(data.events || [])
       } else {
         setEvents(prev => [...prev, ...(data.events || [])])
       }
       setHasMore(data.hasMore || false)
-      setOffset(newOffset + (data.events?.length || 0))
+      setNextCursor(data.nextCursor || null)
     } catch {
       // fallback: keep existing
     }
   }
 
   useEffect(() => {
-    fetchEvents(0).finally(() => setLoading(false))
+    fetchEvents().finally(() => setLoading(false))
   }, [])
 
   const loadMore = async () => {
     setLoadingMore(true)
-    await fetchEvents(offset)
+    await fetchEvents(nextCursor)
     setLoadingMore(false)
   }
 

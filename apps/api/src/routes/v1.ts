@@ -469,11 +469,11 @@ export default async function v1Routes(fastify: FastifyInstance) {
   // GET /timeline
   fastify.get('/timeline', async (request, reply) => {
     const userId = request.user!.id;
-    const query = request.query as { limit?: string; offset?: string };
+    const query = request.query as { limit?: string; cursor?: string };
     const limit = Math.min(parseInt(query.limit || '50'), 100);
-    const offset = parseInt(query.offset || '0');
+    const cursor = query.cursor || undefined;
 
-    const result = await fetchTimeline(userId, limit, offset);
+    const result = await fetchTimeline(userId, limit, cursor);
     return reply.send(result);
   });
 }

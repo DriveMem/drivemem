@@ -255,14 +255,14 @@ export function createMcpServer(userId: string): Server {
         case 'aidrive_timeline': {
           const limit = ((args as any).limit as number) || 20;
           const { fetchTimeline } = await import('../routes/timeline.js');
-          const data = await fetchTimeline(userId, limit, 0);
+          const data = await fetchTimeline(userId, limit);
           if (data.events.length === 0) return { content: [{ type: 'text' as const, text: '暂无活动记录。上传文件或与 AI 对话后会出现活动。' }] };
           const text = data.events.map((e: any) => {
             const date = new Date(e.createdAt).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
             const desc = e.description ? ` — ${e.description.slice(0, 60)}` : '';
             return `${e.icon} [${date}] ${e.title}${desc}`;
           }).join('\n');
-          return { content: [{ type: 'text' as const, text: `最近 ${data.events.length} 条活动（共 ${data.total}）：\n\n${text}` }] };
+          return { content: [{ type: 'text' as const, text: `最近 ${data.events.length} 条活动：\n\n${text}${data.hasMore ? '\n\n（还有更多活动）' : ''}` }] };
         }
 
         case 'aidrive_upload_file': {

@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, desc, and, isNull, inArray, count, sql } from 'drizzle-orm';
+import { eq, desc, and, isNull, inArray, sql } from 'drizzle-orm';
 import { requireAuth } from '../plugins/auth.js';
 
 export interface TimelineEvent {
@@ -14,67 +14,72 @@ export interface TimelineEvent {
   metadata?: Record<string, unknown>;
 }
 
-export async function fetchTimeline(userId: string, limit: number, offset: number) {
-  // Fetch offset+limit from each table so merged pagination is correct
-  const fetchLimit = offset + limit;
+export async function fetchTimeline(userId: string, limit: number, cursor?: string) {
+  // cursor is an ISO timestamp string; fetch items older than cursor
+  const cursorDate = cursor ? new Date(cursor) : undefined;
 
-  const [files, conversations, insights, reports, totalCounts] = await Promise.all([
-    db.select({
-      id: schema.files.id,
-      name: schema.files.name,
-      mimeType: schema.files.mimeType,
-      size: schema.files.size,
-      summary: schema.files.summary,
-      status: schema.files.status,
-      createdAt: schema.files.createdAt,
-    })
-      .from(schema.files)
-      .where(and(eq(schema.files.userId, userId), isNull(schema.files.archivedAt)))
-      .orderBy(desc(schema.files.createdAt))
-      .limit(fetchLimit),
+  // Fetch limit+1 from each table to allow merged cursor pagination
+  const fetchLimit = limit + 1;
 
-    db.select({
-      id: schema.conversations.id,
-      title: schema.conversations.title,
-      createdAt: schema.conversations.createdAt,
-      updatedAt: schema.conversations.updatedAt,
-    })
-      .from(schema.conversations)
-      .where(eq(schema.conversations.userId, userId))
-      .orderBy(desc(schema.conversations.updatedAt))
-      .limit(fetchLimit),
+  const filesQuery = db.select({
+    id: schema.files.id,
+    name: schema.files.name,
+    mimeType: schema.files.mimeType,
+    size: schema.files.size,
+    summary: schema.files.summary,
+    status: schema.files.status,
+    createdAt: schema.files.createdAt,
+  })
+    .from(schema.files)
+    .where(cursorDate
+      ? and(eq(schema.files.userId, userId), isNull(schema.files.archivedAt), sql`${schema.files.createdAt} < ${cursorDate.toISOString()}`)
+      : and(eq(schema.files.userId, userId), isNull(schema.files.archivedAt)))
+    .orderBy(desc(schema.files.createdAt))
+    .limit(fetchLimit);
 
-    db.select({
-      id: schema.insights.id,
-      title: schema.insights.title,
-      description: schema.insights.description,
-      type: schema.insights.type,
-      sourceFileId: schema.insights.sourceFileId,
-      relatedFileId: schema.insights.relatedFileId,
-      createdAt: schema.insights.createdAt,
-    })
-      .from(schema.insights)
-      .where(eq(schema.insights.userId, userId))
-      .orderBy(desc(schema.insights.createdAt))
-      .limit(fetchLimit),
+  const conversationsQuery = db.select({
+    id: schema.conversations.id,
+    title: schema.conversations.title,
+    createdAt: schema.conversations.createdAt,
+    updatedAt: schema.conversations.updatedAt,
+  })
+    .from(schema.conversations)
+    .where(cursorDate
+      ? and(eq(schema.conversations.userId, userId), sql`COALESCE(${schema.conversations.updatedAt}, ${schema.conversations.createdAt}) < ${cursorDate.toISOString()}`)
+      : eq(schema.conversations.userId, userId))
+    .orderBy(desc(schema.conversations.updatedAt))
+    .limit(fetchLimit);
 
-    db.select({
-      id: schema.reports.id,
-      content: schema.reports.content,
-      createdAt: schema.reports.createdAt,
-    })
-      .from(schema.reports)
-      .where(eq(schema.reports.userId, userId))
-      .orderBy(desc(schema.reports.createdAt))
-      .limit(fetchLimit),
+  const insightsQuery = db.select({
+    id: schema.insights.id,
+    title: schema.insights.title,
+    description: schema.insights.description,
+    type: schema.insights.type,
+    sourceFileId: schema.insights.sourceFileId,
+    relatedFileId: schema.insights.relatedFileId,
+    createdAt: schema.insights.createdAt,
+  })
+    .from(schema.insights)
+    .where(cursorDate
+      ? and(eq(schema.insights.userId, userId), sql`${schema.insights.createdAt} < ${cursorDate.toISOString()}`)
+      : eq(schema.insights.userId, userId))
+    .orderBy(desc(schema.insights.createdAt))
+    .limit(fetchLimit);
 
-    // Get total counts for accurate pagination
-    Promise.all([
-      db.select({ c: count() }).from(schema.files).where(and(eq(schema.files.userId, userId), isNull(schema.files.archivedAt))),
-      db.select({ c: count() }).from(schema.conversations).where(eq(schema.conversations.userId, userId)),
-      db.select({ c: count() }).from(schema.insights).where(eq(schema.insights.userId, userId)),
-      db.select({ c: count() }).from(schema.reports).where(eq(schema.reports.userId, userId)),
-    ]).then(([f, c, i, r]) => f[0].c + c[0].c + i[0].c + r[0].c),
+  const reportsQuery = db.select({
+    id: schema.reports.id,
+    content: schema.reports.content,
+    createdAt: schema.reports.createdAt,
+  })
+    .from(schema.reports)
+    .where(cursorDate
+      ? and(eq(schema.reports.userId, userId), sql`${schema.reports.createdAt} < ${cursorDate.toISOString()}`)
+      : eq(schema.reports.userId, userId))
+    .orderBy(desc(schema.reports.createdAt))
+    .limit(fetchLimit);
+
+  const [files, conversations, insights, reports] = await Promise.all([
+    filesQuery, conversationsQuery, insightsQuery, reportsQuery,
   ]);
 
   // Batch-fetch file names for insights
@@ -132,20 +137,25 @@ export async function fetchTimeline(userId: string, limit: number, offset: numbe
   ];
 
   events.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  const paginated = events.slice(offset, offset + limit);
-  const hasMore = offset + limit < totalCounts;
 
-  return { events: paginated, total: totalCounts, hasMore, limit, offset };
+  // Take limit items; if we have more than limit, there are more pages
+  const hasMore = events.length > limit;
+  const paginated = events.slice(0, limit);
+  const nextCursor = hasMore && paginated.length > 0
+    ? new Date(paginated[paginated.length - 1].createdAt).toISOString()
+    : null;
+
+  return { events: paginated, hasMore, nextCursor };
 }
 
 export default async function timelineRoutes(fastify: FastifyInstance) {
   fastify.get('/', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;
-    const query = request.query as { limit?: string; offset?: string };
+    const query = request.query as { limit?: string; cursor?: string };
     const limit = Math.min(parseInt(query.limit || '20'), 100);
-    const offset = parseInt(query.offset || '0');
+    const cursor = query.cursor || undefined;
 
-    const result = await fetchTimeline(userId, limit, offset);
+    const result = await fetchTimeline(userId, limit, cursor);
     return reply.send(result);
   });
 }
