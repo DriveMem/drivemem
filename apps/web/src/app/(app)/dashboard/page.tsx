@@ -259,7 +259,7 @@ export default function DashboardPage() {
       ) : (
         <div className="flex-1 min-h-0 overflow-auto px-1 animate-in fade-in duration-200">
           {fileCount === 0 ? (
-            <div className="px-4 py-6 space-y-4">
+            <div className="px-4 py-5 space-y-4">
               {/* Hero section */}
               <div className="rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 p-5 text-center">
                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/10">
@@ -290,17 +290,66 @@ export default function DashboardPage() {
               {/* AI capabilities grid */}
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { icon: "🧠", title: "智能记忆", desc: "AI 自动理解并记住你的文件内容" },
-                  { icon: "🔗", title: "知识关联", desc: "发现文件之间隐藏的联系和矛盾" },
-                  { icon: "📊", title: "分析报告", desc: "一键生成跨文件的综合分析报告" },
-                  { icon: "💬", title: "AI 问答", desc: "基于你的文件进行智能对话" },
+                  { icon: "🔍", title: "语义搜索", desc: "用自然语言搜索文件内容，AI 理解你的意图而非关键词匹配", color: "border-blue-500/20" },
+                  { icon: "💬", title: "AI 问答", desc: "对文件提问，AI 引用原文给出有据可查的回答", color: "border-green-500/20" },
+                  { icon: "💡", title: "智能洞察", desc: "自动发现文件之间的关联、矛盾和共同趋势", color: "border-amber-500/20" },
+                  { icon: "📊", title: "分析报告", desc: "一键生成跨文件的综合分析、学习笔记和竞品对比", color: "border-purple-500/20" },
                 ].map((item) => (
-                  <div key={item.title} className="rounded-lg border border-border/60 bg-muted/30 p-3">
+                  <div key={item.title} className={cn("rounded-lg border p-3", item.color)}>
                     <div className="text-lg mb-1">{item.icon}</div>
                     <h4 className="text-sm font-medium mb-0.5">{item.title}</h4>
                     <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
                   </div>
                 ))}
+              </div>
+
+              {/* Example questions */}
+              <div className="rounded-xl border border-border/60 p-4">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">💬 试试这些问题</h4>
+                <div className="space-y-2">
+                  {[
+                    "帮我总结这份文档的核心观点",
+                    "这两份文件的观点有什么矛盾？",
+                    "基于我的笔记生成一份学习大纲",
+                    "找出所有提到竞品分析的内容",
+                  ].map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => router.push(`/chat?q=${encodeURIComponent(q)}`)}
+                      className="flex w-full items-center gap-2 rounded-lg border border-border/50 bg-muted/30 px-3 py-2 text-left text-sm hover:bg-muted/60 transition"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <span className="text-muted-foreground">{q}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick entries */}
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  onClick={() => { handleTabSwitch("files"); setShowUpload(true) }}
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
+                >
+                  <Upload className="h-5 w-5 text-[#4F5BD5]" />
+                  <span className="text-xs font-medium">上传文件</span>
+                </button>
+                <a
+                  href="https://chromewebstore.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
+                >
+                  <Sparkles className="h-5 w-5 text-amber-500" />
+                  <span className="text-xs font-medium">Web Clipper</span>
+                </a>
+                <Link
+                  href="/developers"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
+                >
+                  <FolderOpen className="h-5 w-5 text-purple-500" />
+                  <span className="text-xs font-medium">API 文档</span>
+                </Link>
               </div>
 
               {/* How it works */}
@@ -318,7 +367,6 @@ export default function DashboardPage() {
                       </div>
                       <span className="text-xs font-medium">{s.label}</span>
                       <span className="text-[11px] text-muted-foreground mt-0.5">{s.sub}</span>
-                      {i < 2 && <div className="hidden" />}
                     </div>
                   ))}
                 </div>
