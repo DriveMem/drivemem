@@ -293,10 +293,29 @@ export default function FilePreviewPage() {
             <OfficePreview fileId={params.id} fileName={fileName} />
           )}
           {fileType === "other" && (
-            <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
+            <div className="flex h-96 flex-col items-center justify-center gap-4 rounded border bg-muted text-muted-foreground">
               <FileText className="h-12 w-12" />
               <p>{(file.mimeType || "未知类型").toUpperCase()} 文件</p>
               <p className="text-xs">AI 已记住此文件内容，可在对话中提问</p>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    const res = await apiFetch(`/api/files/${params.id}/preview-url`) as { previewUrl: string }
+                    if (res.previewUrl) {
+                      const a = document.createElement("a")
+                      a.href = res.previewUrl
+                      a.download = fileName
+                      a.target = "_blank"
+                      a.click()
+                    }
+                  } catch {
+                    alert("获取下载链接失败")
+                  }
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />下载文件
+              </Button>
             </div>
           )}
           {fileType === "image" && (

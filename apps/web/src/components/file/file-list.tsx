@@ -219,8 +219,28 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
 
   if (fileType === "other") {
     return (
-      <div className="rounded-lg border p-4 text-center text-sm text-muted-foreground">
-        暂不支持预览，请下载查看
+      <div className="rounded-lg border p-4 text-center text-sm text-muted-foreground space-y-3">
+        <p>暂不支持预览，请下载查看</p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={async () => {
+            try {
+              const res = await apiFetch(`/api/files/${fileId}/preview-url`) as { previewUrl: string }
+              if (res.previewUrl) {
+                const a = document.createElement("a")
+                a.href = res.previewUrl
+                a.download = fileName
+                a.target = "_blank"
+                a.click()
+              }
+            } catch {
+              toast.error("获取下载链接失败")
+            }
+          }}
+        >
+          <Download className="h-3.5 w-3.5 mr-1.5" />下载文件
+        </Button>
       </div>
     )
   }
