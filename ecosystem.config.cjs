@@ -39,6 +39,9 @@ module.exports = {
       exp_backoff_restart_delay: 1000,
       max_restarts: 50,
       min_uptime: '10s',
+      watch: ['.next/BUILD_ID'],
+      watch_delay: 3000,
+      ignore_watch: [],
     },
   ],
 };
