@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, desc, and, isNull, inArray } from 'drizzle-orm';
+import { eq, desc, and, isNull, inArray, count, sql } from 'drizzle-orm';
 import { requireAuth } from '../plugins/auth.js';
 
 export interface TimelineEvent {
@@ -15,7 +15,10 @@ export interface TimelineEvent {
 }
 
 export async function fetchTimeline(userId: string, limit: number, offset: number) {
-  const [files, conversations, insights, reports] = await Promise.all([
+  // Fetch offset+limit from each table so merged pagination is correct
+  const fetchLimit = offset + limit;
+
+  const [files, conversations, insights, reports, totalCounts] = await Promise.all([
     db.select({
       id: schema.files.id,
       name: schema.files.name,
@@ -28,7 +31,7 @@ export async function fetchTimeline(userId: string, limit: number, offset: numbe
       .from(schema.files)
       .where(and(eq(schema.files.userId, userId), isNull(schema.files.archivedAt)))
       .orderBy(desc(schema.files.createdAt))
-      .limit(limit),
+      .limit(fetchLimit),
 
     db.select({
       id: schema.conversations.id,
@@ -39,7 +42,7 @@ export async function fetchTimeline(userId: string, limit: number, offset: numbe
       .from(schema.conversations)
       .where(eq(schema.conversations.userId, userId))
       .orderBy(desc(schema.conversations.updatedAt))
-      .limit(limit),
+      .limit(fetchLimit),
 
     db.select({
       id: schema.insights.id,
@@ -53,7 +56,7 @@ export async function fetchTimeline(userId: string, limit: number, offset: numbe
       .from(schema.insights)
       .where(eq(schema.insights.userId, userId))
       .orderBy(desc(schema.insights.createdAt))
-      .limit(limit),
+      .limit(fetchLimit),
 
     db.select({
       id: schema.reports.id,
@@ -63,7 +66,15 @@ export async function fetchTimeline(userId: string, limit: number, offset: numbe
       .from(schema.reports)
       .where(eq(schema.reports.userId, userId))
       .orderBy(desc(schema.reports.createdAt))
-      .limit(limit),
+      .limit(fetchLimit),
+
+    // Get total counts for accurate pagination
+    Promise.all([
+      db.select({ c: count() }).from(schema.files).where(and(eq(schema.files.userId, userId), isNull(schema.files.archivedAt))),
+      db.select({ c: count() }).from(schema.conversations).where(eq(schema.conversations.userId, userId)),
+      db.select({ c: count() }).from(schema.insights).where(eq(schema.insights.userId, userId)),
+      db.select({ c: count() }).from(schema.reports).where(eq(schema.reports.userId, userId)),
+    ]).then(([f, c, i, r]) => f[0].c + c[0].c + i[0].c + r[0].c),
   ]);
 
   // Batch-fetch file names for insights
@@ -122,9 +133,9 @@ export async function fetchTimeline(userId: string, limit: number, offset: numbe
 
   events.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const paginated = events.slice(offset, offset + limit);
-  const hasMore = offset + limit < events.length;
+  const hasMore = offset + limit < totalCounts;
 
-  return { events: paginated, total: events.length, hasMore, limit, offset };
+  return { events: paginated, total: totalCounts, hasMore, limit, offset };
 }
 
 export default async function timelineRoutes(fastify: FastifyInstance) {
