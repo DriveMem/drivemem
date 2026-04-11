@@ -9,6 +9,7 @@ import { KnowledgeLinks } from "@/components/dashboard/knowledge-links"
 import { AiInsights } from "@/components/dashboard/ai-insights"
 import { InsightCard } from "@/components/dashboard/insight-card"
 import { ReportSection, type ReportSectionHandle } from "@/components/dashboard/report-section"
+import { MobileUploadFab } from "@/components/file/mobile-upload-fab"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 import { useFiles } from "@/hooks/use-files"
 import { cn } from "@/lib/utils"
@@ -212,6 +213,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full">
       <WelcomeModal onUpload={() => setShowUpload(true)} />
+      <MobileUploadFab />
 
       {/* Tab switcher */}
       <div className="px-6 pt-6 pb-2">
