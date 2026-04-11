@@ -197,6 +197,9 @@ export function CommandPalette() {
         <CommandGroup heading="导航">
           <CommandItem value="nav-dashboard" onSelect={() => navigate("/dashboard")}>我的文件</CommandItem>
           <CommandItem value="nav-chat" onSelect={() => navigate("/chat")}>AI 对话</CommandItem>
+          <CommandItem value="nav-search" onSelect={() => navigate("/search")}>搜索</CommandItem>
+          <CommandItem value="nav-timeline" onSelect={() => navigate("/timeline")}>时间线</CommandItem>
+          <CommandItem value="nav-developers" onSelect={() => navigate("/developers")}>开发者</CommandItem>
           <CommandItem value="nav-settings" onSelect={() => navigate("/settings")}>设置</CommandItem>
         </CommandGroup>
 
