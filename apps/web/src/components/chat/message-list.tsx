@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
 import rehypeRaw from "rehype-raw"
-import { Loader2, Bot, User, Copy, Check, ThumbsUp, ThumbsDown } from "lucide-react"
+import { Loader2, Bot, User, Copy, Check, ThumbsUp, ThumbsDown, Bookmark, Share2 } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import type { ChatMessage } from "@/lib/mock-chat"
@@ -119,6 +119,45 @@ function MessageRating({ conversationId, messageId }: { conversationId?: string;
   )
 }
 
+function MessageActions({ content }: { content: string }) {
+  const [copied, setCopied] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(content)
+    setCopied(true)
+    toast.success("已复制")
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleSaveAsNote = async () => {
+    setSaving(true)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch("/api/v1/store", {
+        method: "POST",
+        body: JSON.stringify({ content, title: content.slice(0, 30).replace(/\n/g, " ") }),
+      })
+      toast.success("已保存为笔记")
+    } catch {
+      toast.error("保存失败")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition">
+      <button onClick={handleCopy} className="p-1 rounded hover:bg-accent" title="复制回答">
+        {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+      </button>
+      <button onClick={handleSaveAsNote} disabled={saving} className="p-1 rounded hover:bg-accent" title="保存为笔记">
+        <Bookmark className={cn("h-3.5 w-3.5", saving ? "animate-pulse text-[#4F5BD5]" : "text-muted-foreground")} />
+      </button>
+    </div>
+  )
+}
+
 export function MessageList({ messages, streaming, conversationId }: { messages: ChatMessage[]; streaming?: string; conversationId?: string }) {
   const bottomRef = useRef<HTMLDivElement>(null)
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }) }, [messages, streaming])
@@ -140,6 +179,7 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
                   </details>
                 )}
                 {!msg.id.startsWith("a-") && <MessageRating conversationId={conversationId} messageId={msg.id} />}
+                {!msg.id.startsWith("a-") && <MessageActions content={msg.content} />}
                 {msg.createdAt && (
                   <p className="text-[10px] text-muted-foreground/50 mt-1 text-right" title={formatFullTime(msg.createdAt)}>
                     {formatTime(msg.createdAt)}
