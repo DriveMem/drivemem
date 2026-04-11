@@ -8,6 +8,8 @@ import { Lightbulb, Tag } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Link from "next/link"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -116,8 +118,6 @@ function TypeIcon({ type, name, className }: { type: string; name?: string; clas
   return <FileText className={cn("h-4 w-4 flex-shrink-0", className, color)} />
 }
 
-function StatusIcon({ status, error, compact }: { status: string; error?: string; compact?: boolean }) {
-
 function DrawerTagSection({ fileId, drawerTags, setDrawerTags }: { fileId: string; drawerTags: any[]; setDrawerTags: (tags: any[]) => void }) {
   const { data: allTags = [] } = useTags()
   const addTag = useAddTagToFile()
@@ -172,6 +172,101 @@ function DrawerTagSection({ fileId, drawerTags, setDrawerTags }: { fileId: strin
 }
 
 
+function getDrawerFileType(name: string, mimeType?: string): string {
+  const ext = name?.split(".").pop()?.toLowerCase() || ""
+  if (ext === "md" || ext === "markdown") return "md"
+  if (ext === "txt") return "txt"
+  if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image"
+  if (mimeType?.startsWith("image/")) return "image"
+  return "other"
+}
+
+function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; fileName: string; mimeType?: string }) {
+  const fileType = getDrawerFileType(fileName, mimeType)
+  const [content, setContent] = useState<string | null>(null)
+  const [imgUrl, setImgUrl] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    if (fileType === "other") return
+    let cancelled = false
+    setLoading(true)
+    setError(false)
+    setContent(null)
+    setImgUrl(null)
+
+    ;(async () => {
+      try {
+        const res = await apiFetch(`/api/files/${fileId}/preview-url`) as { previewUrl: string }
+        if (cancelled) return
+        if (fileType === "image") {
+          setImgUrl(res.previewUrl)
+        } else {
+          const textRes = await fetch(res.previewUrl)
+          if (!textRes.ok) throw new Error("fetch failed")
+          const text = await textRes.text()
+          if (!cancelled) setContent(text.length > 5000 ? text.slice(0, 5000) + "\n\n…（内容过长，请点击完整预览查看）" : text)
+        }
+      } catch {
+        if (!cancelled) setError(true)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [fileId, fileType])
+
+  if (fileType === "other") {
+    return (
+      <div className="rounded-lg border p-4 text-center text-sm text-muted-foreground">
+        暂不支持预览，请下载查看
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-32 items-center justify-center rounded-lg border bg-muted/30">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-24 items-center justify-center rounded-lg border text-sm text-muted-foreground">
+        预览加载失败
+      </div>
+    )
+  }
+
+  if (fileType === "image" && imgUrl) {
+    return (
+      <div className="rounded-lg border bg-muted/30 p-2 flex items-center justify-center">
+        <img src={imgUrl} alt={fileName} className="max-h-[240px] max-w-full object-contain rounded" />
+      </div>
+    )
+  }
+
+  if ((fileType === "md" || fileType === "txt") && content !== null) {
+    return (
+      <div className="rounded-lg border bg-background p-3 max-h-[300px] overflow-auto">
+        {fileType === "md" ? (
+          <div className="prose prose-sm dark:prose-invert max-w-none text-xs">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+          </div>
+        ) : (
+          <pre className="whitespace-pre-wrap break-words text-xs leading-relaxed">{content}</pre>
+        )}
+      </div>
+    )
+  }
+
+  return null
+}
+
+function StatusIcon({ status, error, compact }: { status: string; error?: string; compact?: boolean }) {
   if (status === "uploading") return <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
   if (status === "parsing") {
     if (compact) return <Loader2 className="h-3 w-3 animate-spin text-yellow-500" />
@@ -987,11 +1082,13 @@ export function FileList() {
               >
                 💬 问 AI 关于这个文件
               </Link>
+              {/* Inline Preview */}
+              <DrawerInlinePreview fileId={drawerFile.id} fileName={drawerFile.name} mimeType={drawerFile.mimeType} />
               <Link
                 href={`/files/${drawerFile.id}/preview`}
                 className="flex items-center justify-center gap-2 w-full rounded-lg border hover:bg-accent py-2.5 text-sm transition"
               >
-                👁️ 预览文件
+                👁️ 查看完整预览
               </Link>
             </div>
           </div>
