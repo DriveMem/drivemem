@@ -249,7 +249,7 @@ export default function DashboardPage() {
       {/* Tab content */}
       {activeTab === "files" ? (
         <div className="flex-1 min-h-0 flex flex-col">
-          <InsightsSummaryCard insights={insights} onSwitchToAi={() => setActiveTab("ai")} />
+          <InsightsSummaryCard insights={insights} onSwitchToAi={() => handleTabSwitch("ai")} />
           <div className="flex-1 min-h-0">
             <FileList />
           </div>
@@ -269,7 +269,7 @@ export default function DashboardPage() {
                 </p>
                 <div className="flex items-center justify-center gap-3">
                   <button
-                    onClick={() => { setActiveTab("files"); setShowUpload(true) }}
+                    onClick={() => { handleTabSwitch("files"); setShowUpload(true) }}
                     className="rounded-lg bg-[#4F5BD5] px-5 py-2.5 text-sm text-white hover:bg-[#3D49C4] transition inline-flex items-center gap-2"
                   >
                     <Upload className="h-4 w-4" />
