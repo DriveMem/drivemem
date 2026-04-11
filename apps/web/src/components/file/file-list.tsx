@@ -600,8 +600,8 @@ export function FileList() {
   return (
     <div className="flex h-full flex-col" onDragOver={(e) => { e.preventDefault() }} onDrop={(e) => { e.preventDefault(); setShowUpload(true) }}>
       {/* Toolbar: filters left, actions right */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-2">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2 gap-2">
+        <div className="flex items-center gap-1 overflow-x-auto min-w-0">
           <Checkbox
             checked={filteredFiles.length > 0 && filteredFiles.every(f => selected.has(f.id))}
             onCheckedChange={(checked) => {
@@ -644,7 +644,7 @@ export function FileList() {
             </Popover>
           )}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <Button size="sm" onClick={async () => {
             try {
               const { toast } = await import("sonner")
@@ -770,7 +770,7 @@ export function FileList() {
                 <StatusIcon status={file.status} error={file.errorMessage} compact />
                 <span className="w-20 text-right text-xs text-muted-foreground shrink-0 hidden sm:inline" suppressHydrationWarning>{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
                 <span className="w-16 text-right text-xs text-muted-foreground shrink-0 hidden sm:inline">{fmtSize(file.size)}</span>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
+                <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDownload(file.id, e) }}
                     className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
