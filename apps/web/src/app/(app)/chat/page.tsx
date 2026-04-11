@@ -14,15 +14,16 @@ function ChatPageInner() {
   const compareMode = searchParams.get("mode") === "compare"
   const fileA = searchParams.get("fileA") || undefined
   const fileB = searchParams.get("fileB") || undefined
+  const isNewChat = !!searchParams.get("new")
   const { data: convsData, isLoading } = useConversations()
 
   useEffect(() => {
-    if (isLoading || fileId || fileIds || presetQuestion) return
+    if (isLoading || fileId || fileIds || presetQuestion || isNewChat) return
     const convs = Array.isArray(convsData) ? convsData : (convsData?.conversations || [])
     if (convs.length > 0 && convs[0].id) {
       router.replace("/chat/" + convs[0].id)
     }
-  }, [convsData, isLoading, fileId, fileIds, presetQuestion, router])
+  }, [convsData, isLoading, fileId, fileIds, presetQuestion, isNewChat, router])
 
   const resolvedFileScope = fileIds ? `files:${fileIds}` : fileId
   return <ChatView fileScope={resolvedFileScope} presetQuestion={presetQuestion} compareMode={compareMode} fileA={fileA} fileB={fileB} />
