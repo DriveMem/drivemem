@@ -41,7 +41,7 @@ export function Sidebar() {
                   "w-full justify-start gap-2 relative",
                   sidebarCollapsed && "justify-center px-2",
                   isActive
-                    ? "bg-muted/80 text-primary font-semibold border-l-[3px] border-primary rounded-l-none"
+                    ? "bg-primary/10 dark:bg-primary/15 text-primary font-semibold border-l-[3px] border-primary rounded-l-none shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border-l-[3px] border-transparent"
                 )}
                 size={sidebarCollapsed ? "icon" : "default"}
