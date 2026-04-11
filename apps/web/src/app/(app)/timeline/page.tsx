@@ -183,8 +183,8 @@ export default function TimelinePage() {
             </div>
           ))}
 
-          {hasMore && (
-            <div className="text-center">
+          {hasMore ? (
+            <div className="text-center py-4">
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
@@ -192,6 +192,10 @@ export default function TimelinePage() {
               >
                 {loadingMore ? "加载中..." : "加载更多"}
               </button>
+            </div>
+          ) : events.length > 0 && (
+            <div className="text-center py-4">
+              <p className="text-xs text-muted-foreground">没有更多了</p>
             </div>
           )}
         </div>
