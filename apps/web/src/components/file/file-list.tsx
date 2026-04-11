@@ -1069,14 +1069,8 @@ export function FileList() {
                   <p className="text-sm">{drawerFile.summary}</p>
                 </div>
               )}
-              {/* Tags display */}
-              {drawerTags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {drawerTags.map((t: any) => (
-                    <span key={t.id || t.name} className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ backgroundColor: (t.color || '#6B7280') + '20', color: t.color || '#6B7280' }}>{t.name}</span>
-                  ))}
-                </div>
-              )}
+              {/* Tags management */}
+              <DrawerTagSection fileId={drawerFile.id} drawerTags={drawerTags} setDrawerTags={setDrawerTags} />
               <div className="rounded-lg border p-3 space-y-2">
                 <p className="text-xs font-medium text-muted-foreground mb-1">📋 文件信息</p>
                 <div className="flex justify-between text-sm">
