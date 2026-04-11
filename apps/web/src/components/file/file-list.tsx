@@ -962,8 +962,52 @@ export function FileList() {
       )}
       <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
       {filteredFiles.length < 5 && filteredFiles.length > 0 && (
-        <div className="flex items-center justify-center py-8 text-xs text-muted-foreground/50">
-          拖拽文件到这里上传，或使用 Web Clipper 保存网页
+        <div className="border-t border-border/50 px-6 py-6">
+          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">快速上手</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button
+              onClick={() => setShowUpload(true)}
+              className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-[#4F5BD5]/30 bg-[#4F5BD5]/5 p-4 hover:border-[#4F5BD5]/60 hover:shadow-sm transition text-center"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#4F5BD5]/10">
+                <Upload className="h-4.5 w-4.5 text-[#4F5BD5]" />
+              </div>
+              <span className="text-xs font-medium">上传更多文件</span>
+              <span className="text-[11px] text-muted-foreground leading-tight">PDF、Word、笔记等</span>
+            </button>
+            <Link
+              href="/chat?new=1"
+              className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-green-500/30 bg-green-500/5 p-4 hover:border-green-500/60 hover:shadow-sm transition text-center"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-500/10">
+                <MessageSquare className="h-4.5 w-4.5 text-green-500" />
+              </div>
+              <span className="text-xs font-medium">试试 AI 对话</span>
+              <span className="text-[11px] text-muted-foreground leading-tight">基于你的知识库提问</span>
+            </Link>
+            <a
+              href="https://chromewebstore.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-amber-500/30 bg-amber-500/5 p-4 hover:border-amber-500/60 hover:shadow-sm transition text-center"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10">
+                <Sparkles className="h-4.5 w-4.5 text-amber-500" />
+              </div>
+              <span className="text-xs font-medium">安装 Web Clipper</span>
+              <span className="text-[11px] text-muted-foreground leading-tight">一键保存网页内容</span>
+            </a>
+            <Link
+              href="/developers"
+              className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-purple-500/30 bg-purple-500/5 p-4 hover:border-purple-500/60 hover:shadow-sm transition text-center"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/10">
+                <FileText className="h-4.5 w-4.5 text-purple-500" />
+              </div>
+              <span className="text-xs font-medium">查看开发者文档</span>
+              <span className="text-[11px] text-muted-foreground leading-tight">API 集成与自动化</span>
+            </Link>
+          </div>
         </div>
       )}
       <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
