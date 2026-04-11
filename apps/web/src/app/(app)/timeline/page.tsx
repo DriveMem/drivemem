@@ -71,7 +71,7 @@ export default function TimelinePage() {
 
   const fetchEvents = async (newOffset: number) => {
     try {
-      const data = await apiFetch(`/api/timeline?limit=50&offset=${newOffset}`) as any
+      const data = await apiFetch(`/api/timeline?limit=20&offset=${newOffset}`) as any
       if (newOffset === 0) {
         setEvents(data.events || [])
       } else {

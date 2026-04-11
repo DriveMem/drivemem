@@ -122,15 +122,16 @@ export async function fetchTimeline(userId: string, limit: number, offset: numbe
 
   events.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const paginated = events.slice(offset, offset + limit);
+  const hasMore = offset + limit < events.length;
 
-  return { events: paginated, total: events.length, limit, offset };
+  return { events: paginated, total: events.length, hasMore, limit, offset };
 }
 
 export default async function timelineRoutes(fastify: FastifyInstance) {
   fastify.get('/', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;
     const query = request.query as { limit?: string; offset?: string };
-    const limit = Math.min(parseInt(query.limit || '50'), 100);
+    const limit = Math.min(parseInt(query.limit || '20'), 100);
     const offset = parseInt(query.offset || '0');
 
     const result = await fetchTimeline(userId, limit, offset);
