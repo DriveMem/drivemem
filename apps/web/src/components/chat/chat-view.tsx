@@ -327,7 +327,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <span className="text-xs text-muted-foreground">AI 记忆范围：</span>
         <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined); toast("记忆范围：全部文件", { duration: 1500 }) }} className="gap-1 text-xs">
-          <Files className="h-3 w-3" />全部文件
+          <Files className="h-3 w-3" />全部文件{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}
         </Button>
         {scope !== "all" && scopeLabel && (
           <span className="rounded-full bg-[#4F5BD5]/10 px-2 py-0.5 text-[10px] text-[#4F5BD5] font-medium">
@@ -338,7 +338,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant={scope === "folder" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs">
-              <Folder className="h-3 w-3" />{scope === "folder" && scopeLabel ? scopeLabel : "指定文件夹"}<ChevronDown className="h-3 w-3 ml-0.5" />
+              <Folder className="h-3 w-3" />{scope === "folder" && scopeLabel ? scopeLabel : "指定文件夹"}{scope === "folder" && scopeId && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
@@ -355,7 +355,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant={scope === "file" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs">
-              <FileText className="h-3 w-3" />{scope === "file" && scopeLabel ? scopeLabel : "指定文件"}<ChevronDown className="h-3 w-3 ml-0.5" />
+              <FileText className="h-3 w-3" />{scope === "file" && scopeLabel ? scopeLabel : "指定文件"}{scope === "file" && scopeId && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
