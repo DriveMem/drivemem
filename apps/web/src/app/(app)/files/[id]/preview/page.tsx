@@ -9,6 +9,8 @@ import { useFolders } from "@/hooks/use-folders"
 import { apiFetch } from "@/lib/api"
 import { Loader2, FileText, ArrowLeft, AlertCircle, Download } from "lucide-react"
 import Link from "next/link"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 function getFileType(name: string, mimeType?: string): string {
   const ext = name?.split(".").pop()?.toLowerCase() || ""
@@ -151,6 +153,27 @@ function OfficePreview({ fileId, fileName }: { fileId: string; fileName: string 
   )
 }
 
+function ImagePreview({ fileId, fileName }: { fileId: string; fileName: string }) {
+  const [url, setUrl] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    apiFetch(`/api/files/${fileId}/preview-url`)
+      .then((res: any) => setUrl(res.previewUrl))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [fileId])
+
+  if (loading) return <div className="flex h-96 items-center justify-center rounded border bg-muted"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+  if (!url) return <div className="flex h-96 items-center justify-center rounded border bg-muted text-muted-foreground"><p>无法加载图片</p></div>
+
+  return (
+    <div className="flex items-center justify-center rounded border bg-muted/30 p-4">
+      <img src={url} alt={fileName} className="max-h-[600px] max-w-full object-contain rounded" />
+    </div>
+  )
+}
+
 export default function FilePreviewPage() {
   const params = useParams<{ id: string }>()
   const { data, isLoading, error } = useFile(params.id)
@@ -255,7 +278,13 @@ export default function FilePreviewPage() {
               )}
               {!contentLoading && !contentError && content !== null && (
                 <div className="min-h-96 overflow-auto rounded border bg-background p-6">
-                  <pre className="whitespace-pre-wrap break-words text-sm leading-relaxed">{content}</pre>
+                  {fileType === "md" ? (
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <pre className="whitespace-pre-wrap break-words text-sm leading-relaxed">{content}</pre>
+                  )}
                 </div>
               )}
             </>
@@ -271,9 +300,7 @@ export default function FilePreviewPage() {
             </div>
           )}
           {fileType === "image" && (
-            <div className="flex h-96 items-center justify-center rounded border bg-muted text-muted-foreground">
-              <p>图片预览暂不支持</p>
-            </div>
+            <ImagePreview fileId={params.id} fileName={fileName} />
           )}
         </div>
 
