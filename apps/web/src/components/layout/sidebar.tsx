@@ -38,11 +38,11 @@ export function Sidebar() {
               <Button
                 variant={isActive ? "secondary" : "ghost"}
                 className={cn(
-                  "w-full justify-start gap-2",
+                  "w-full justify-start gap-2 relative",
                   sidebarCollapsed && "justify-center px-2",
                   isActive
-                    ? "bg-muted text-foreground font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    ? "bg-muted/80 text-primary font-semibold border-l-[3px] border-primary rounded-l-none"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border-l-[3px] border-transparent"
                 )}
                 size={sidebarCollapsed ? "icon" : "default"}
                 asChild
