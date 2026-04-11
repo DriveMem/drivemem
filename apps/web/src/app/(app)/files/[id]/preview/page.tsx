@@ -9,8 +9,9 @@ import { useFolders } from "@/hooks/use-folders"
 import { apiFetch } from "@/lib/api"
 import { Loader2, FileText, ArrowLeft, AlertCircle, Download } from "lucide-react"
 import Link from "next/link"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
+import dynamic from "next/dynamic"
+
+const MarkdownRenderer = dynamic(() => import("react-markdown").then(mod => mod.default), { ssr: false, loading: () => <div className="animate-pulse h-96 bg-muted rounded" /> })
 
 function getFileType(name: string, mimeType?: string): string {
   const ext = name?.split(".").pop()?.toLowerCase() || ""
@@ -282,7 +283,7 @@ export default function FilePreviewPage() {
                 <div className="min-h-96 overflow-auto rounded border bg-background p-6">
                   {fileType === "md" ? (
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+                      <MarkdownRenderer>{content}</MarkdownRenderer>
                     </div>
                   ) : (
                     <pre className="whitespace-pre-wrap break-words text-sm leading-relaxed">{content}</pre>
