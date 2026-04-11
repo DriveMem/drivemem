@@ -696,6 +696,17 @@ export default function SettingsContent() {
           >
             修改密码
           </Button>
+          {(!currentPassword || !newPassword || newPassword.length < 6) && (
+            <p className="text-xs text-muted-foreground">
+              {!currentPassword && !newPassword
+                ? "请输入当前密码和新密码"
+                : !currentPassword
+                ? "请输入当前密码"
+                : !newPassword
+                ? "请输入新密码"
+                : "新密码至少 6 个字符"}
+            </p>
+          )}
         </CardContent>
       </Card>
 
