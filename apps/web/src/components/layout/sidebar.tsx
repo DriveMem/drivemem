@@ -33,7 +33,7 @@ export function Sidebar() {
         </div>
         <nav className="flex flex-col gap-1 p-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(item.href + "/")
+            const isActive = pathname === item.href || pathname?.startsWith(item.href + "/") || (item.href === "/files" && pathname === "/dashboard")
             const btn = (
               <Button
                 variant={isActive ? "secondary" : "ghost"}
