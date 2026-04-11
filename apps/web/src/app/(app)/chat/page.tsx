@@ -26,7 +26,8 @@ function ChatPageInner() {
   }, [convsData, isLoading, fileId, fileIds, presetQuestion, isNewChat, router])
 
   const resolvedFileScope = fileIds ? `files:${fileIds}` : fileId
-  return <ChatView fileScope={resolvedFileScope} presetQuestion={presetQuestion} compareMode={compareMode} fileA={fileA} fileB={fileB} />
+  const chatKey = searchParams.get("new") || resolvedFileScope || "default"
+  return <ChatView key={chatKey} fileScope={resolvedFileScope} presetQuestion={presetQuestion} compareMode={compareMode} fileA={fileA} fileB={fileB} />
 }
 
 export default function ChatPage() {
