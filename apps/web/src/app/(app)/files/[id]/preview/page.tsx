@@ -181,6 +181,14 @@ export default function FilePreviewPage() {
   const { data: foldersData } = useFolders()
   const allFolders = foldersData?.folders || []
 
+  // Handle both { file: {...} } and direct object — computed before hooks to keep hook order stable
+  const file = (!isLoading && !error) ? (data?.file || data) : null
+  const fileType = file ? getFileType(file.name || file.originalName || "", file.mimeType) : "other"
+  const fileName = file ? (file.name || file.originalName || "未命名文件") : ""
+
+  // All hooks must be called unconditionally (React rules of hooks)
+  const { content, previewUrl, loading: contentLoading, error: contentError } = useFileContent(params.id, fileType)
+
   if (isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -189,8 +197,6 @@ export default function FilePreviewPage() {
     )
   }
 
-  // Handle both { file: {...} } and direct object
-  const file = data?.file || data
   if (error || !file) {
     return (
       <div className="flex h-96 flex-col items-center justify-center gap-4 text-muted-foreground">
@@ -201,10 +207,6 @@ export default function FilePreviewPage() {
       </div>
     )
   }
-
-  const fileType = getFileType(file.name || file.originalName || "", file.mimeType)
-  const fileName = file.name || file.originalName || "未命名文件"
-  const { content, previewUrl, loading: contentLoading, error: contentError } = useFileContent(params.id, fileType)
 
   return (
     <div className="flex flex-col gap-6 p-6">
