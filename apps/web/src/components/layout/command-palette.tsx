@@ -205,8 +205,11 @@ export function CommandPalette() {
 
         {!effectiveQuery && (
           <CommandGroup heading="操作">
-            <CommandItem value="action-upload" onSelect={() => navigate("/dashboard")}>让 AI 记住文件</CommandItem>
-            <CommandItem value="action-new-chat" onSelect={() => navigate("/chat")}>新对话</CommandItem>
+            <CommandItem value="action-upload" onSelect={() => navigate("/dashboard")}>📄 上传文件</CommandItem>
+            <CommandItem value="action-new-chat" onSelect={() => navigate("/chat?new=" + Date.now())}>💬 新对话</CommandItem>
+            <CommandItem value="action-search" onSelect={() => navigate("/search")}>🔍 搜索知识库</CommandItem>
+            <CommandItem value="action-settings-keys" onSelect={() => navigate("/settings?tab=developer")}>🔑 管理 API Key</CommandItem>
+            <CommandItem value="action-developers" onSelect={() => navigate("/developers")}>📖 开发者文档</CommandItem>
           </CommandGroup>
         )}
       </CommandList>
