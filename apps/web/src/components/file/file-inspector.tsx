@@ -1,8 +1,9 @@
 "use client"
 
-import { FileText, Loader2, AlertCircle, Info } from "lucide-react"
+import { FileText, Loader2, AlertCircle, Info, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useFile } from "@/hooks/use-files"
+import { useFileTags } from "@/hooks/use-tags"
 import { useLayoutStore } from "@/stores/layout-store"
 
 function formatSize(bytes: number): string {
@@ -19,7 +20,8 @@ function truncateSummary(summary: string, maxLen = 80): string {
 
 export function FileInspector({ fileId }: { fileId: string }) {
   const { data: file, isLoading, error } = useFile(fileId)
-  const { openDrawer } = useLayoutStore()
+  const { data: tags = [] } = useFileTags(fileId)
+  const { openDrawer, setActiveTagFilter } = useLayoutStore()
 
   if (isLoading) {
     return (
@@ -51,6 +53,34 @@ export function FileInspector({ fileId }: { fileId: string }) {
           {truncateSummary(file.summary)}
         </p>
       )}
+      {/* Tags section */}
+      <div className="space-y-1.5">
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+          <Tag className="h-3 w-3" /> 标签
+        </p>
+        {tags.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {tags.map((tag: any) => (
+              <button
+                key={tag.id}
+                onClick={() => setActiveTagFilter(tag.name)}
+                className="rounded-full px-2 py-0.5 text-[10px] font-medium hover:opacity-80 transition cursor-pointer"
+                style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}
+                title={`按「${tag.name}」筛选`}
+              >
+                {tag.name}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <button
+            onClick={() => openDrawer(fileId)}
+            className="text-[11px] text-muted-foreground hover:text-foreground transition flex items-center gap-1"
+          >
+            + 添加标签
+          </button>
+        )}
+      </div>
       <Button
         variant="outline"
         size="sm"
