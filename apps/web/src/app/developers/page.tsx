@@ -645,11 +645,11 @@ plugins:
                 <h3 className="font-semibold text-[#1C1B18]">CLI 工具</h3>
                 <p className="mt-2 text-sm text-[#6B6966]">命令行操作知识库：</p>
                 <pre className="mt-3 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
-                  <code>{`# 安装
-npm install -g aidrive-cli
+                  <code>{`# 安装（Coming Soon — CLI 包即将发布到 npm）
+# npm install -g aidrive-cli
 
 # 配置 API Key
-aidrive login --key ak_your_api_key
+export AIDRIVE_API_KEY=ak_your_api_key
 
 # 常用命令
 aidrive search "关键词"
