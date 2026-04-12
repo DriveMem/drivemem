@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import { embedTexts } from '../services/embedding.service.js';
 import { searchSimilar, preprocessQuery } from '../services/vector.service.js';
@@ -11,7 +11,13 @@ import { eq, desc, and } from 'drizzle-orm';
 export function createMcpServer(userId: string): Server {
   const server = new Server(
     { name: 'ai-drive', version: '1.0.0' },
-    { capabilities: { tools: {} } }
+    {
+      capabilities: {
+        tools: {},
+        resources: {},
+      },
+      instructions: '你已连接到用户的 AI Drive 知识库。当对话中产生重要结论、决策或发现时，请主动使用 aidrive_store 将其存入知识库，以便未来跨模型检索。不需要用户明确要求——有价值的信息应自动沉淀。',
+    }
   );
 
   // List available tools
@@ -130,6 +136,19 @@ export function createMcpServer(userId: string): Server {
             tags: { type: 'string', description: '标签（可选，逗号分隔，如 decision,meeting）' },
           },
           required: ['content'],
+        },
+      },
+      {
+        name: 'aidrive_capture_conversation',
+        description: '自动捕获当前对话中的关键结论和决策，提取摘要存入知识库。当对话产生了有价值的分析、决定或发现时调用此工具。AI Drive 会自动提取要点、打标签、关联到相关文件。',
+        inputSchema: {
+          type: 'object' as const,
+          properties: {
+            summary: { type: 'string', description: '对话中的关键结论或决策摘要' },
+            context: { type: 'string', description: '相关上下文（可选，如讨论了什么主题）' },
+            tags: { type: 'string', description: '标签（可选，逗号分隔）' },
+          },
+          required: ['summary'],
         },
       },
     ],
@@ -346,6 +365,45 @@ export function createMcpServer(userId: string): Server {
           return { content: [{ type: 'text' as const, text: `✅ 已存入「${title}」到知识库。AI 正在理解内容，稍后可搜索和问答。` }] };
         }
 
+        case 'aidrive_capture_conversation': {
+          const summary = (args as any).summary as string;
+          if (!summary) return { content: [{ type: 'text' as const, text: '需要 summary 参数。' }], isError: true };
+
+          const context = (args as any).context as string || '';
+          const tagStr = (args as any).tags as string || 'conversation';
+          const title = summary.slice(0, 40).replace(/\n/g, ' ');
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+          const filename = `capture-${timestamp}.md`;
+          const mdContent = `# ${title}\n\n${summary}${context ? `\n\n## 上下文\n${context}` : ''}\n\n---\n_自动捕获: ${new Date().toLocaleString('zh-CN')}_`;
+
+          const { randomUUID } = await import('crypto');
+          const fileId = randomUUID();
+          const s3Key = `users/${userId}/files/${fileId}/${filename}`;
+          const buffer = Buffer.from(mdContent, 'utf-8');
+
+          const { uploadObject } = await import('../services/s3.service.js');
+          await uploadObject(s3Key, buffer, 'text/markdown');
+
+          await db.insert(schema.files).values({
+            id: fileId, name: filename, originalName: filename,
+            mimeType: 'text/markdown', size: buffer.length, status: 'parsing', userId, s3Key,
+          });
+
+          const { Queue } = await import('bullmq');
+          const queue = new Queue('file-parse', { connection: { host: 'localhost', port: 6379 } });
+          await queue.add('parse', { fileId, userId, s3Key, mimeType: 'text/markdown' });
+          await queue.close();
+
+          // Auto-tag as conversation capture
+          try {
+            let [tag] = await db.select().from(schema.tags).where(and(eq(schema.tags.userId, userId), eq(schema.tags.name, 'conversation')));
+            if (!tag) [tag] = await db.insert(schema.tags).values({ name: 'conversation', color: '#8B5CF6', userId }).returning();
+            if (tag) await db.insert(schema.fileTags).values({ fileId, tagId: tag.id });
+          } catch { /* skip */ }
+
+          return { content: [{ type: 'text' as const, text: `✅ 对话结论已自动捕获：「${title}」。知识库已更新。` }] };
+        }
+
         case 'aidrive_update_file': {
           const fileId = (args as any).fileId as string;
           if (!fileId) return { content: [{ type: 'text' as const, text: '需要 fileId 参数。' }], isError: true };
@@ -406,6 +464,45 @@ export function createMcpServer(userId: string): Server {
     } catch (err) {
       return { content: [{ type: 'text' as const, text: `错误: ${(err as Error).message}` }], isError: true };
     }
+  });
+
+  // Resources — expose recent knowledge for auto-injection
+  server.setRequestHandler(ListResourcesRequestSchema, async () => {
+    const recentFiles = await db.select({
+      id: schema.files.id,
+      name: schema.files.name,
+      summary: schema.files.summary,
+      createdAt: schema.files.createdAt,
+    })
+      .from(schema.files)
+      .where(eq(schema.files.userId, userId))
+      .orderBy(desc(schema.files.createdAt))
+      .limit(5);
+
+    return {
+      resources: recentFiles.map(f => ({
+        uri: `aidrive://files/${f.id}`,
+        name: f.name,
+        description: f.summary?.slice(0, 100) || '无摘要',
+        mimeType: 'text/plain',
+      })),
+    };
+  });
+
+  server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    const uri = request.params.uri;
+    const fileId = uri.replace('aidrive://files/', '');
+    const [file] = await db.select().from(schema.files).where(eq(schema.files.id, fileId));
+    if (!file || file.userId !== userId) {
+      return { contents: [{ uri, text: '文件不存在或无权访问', mimeType: 'text/plain' }] };
+    }
+    return {
+      contents: [{
+        uri,
+        text: `# ${file.name}\n\n${file.summary || '无摘要'}\n\n状态: ${file.status}\n创建: ${file.createdAt}`,
+        mimeType: 'text/plain',
+      }],
+    };
   });
 
   return server;
