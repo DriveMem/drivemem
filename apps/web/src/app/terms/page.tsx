@@ -26,7 +26,7 @@ export default function TermsPage() {
           <h2 className="text-lg font-semibold text-foreground">免费计划限制</h2>
           <ul className="list-disc pl-5 space-y-1">
             <li>存储空间：5 GB</li>
-            <li>每日 AI 对话：20 次</li>
+            <li>每日 AI 对话：50 次</li>
             <li>支持文件格式：PDF、Word、PPT、Excel、Markdown、TXT</li>
             <li>单文件大小限制：50 MB</li>
           </ul>
@@ -45,7 +45,7 @@ export default function TermsPage() {
         </section>
         <section>
           <h2 className="text-lg font-semibold text-foreground">联系方式</h2>
-          <p>如有任何问题，请联系 support@verrrnm.cloud。</p>
+          <p>如有任何问题，请联系 support@ai-drive.net。</p>
         </section>
       </div>
       </div>

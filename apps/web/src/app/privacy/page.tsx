@@ -20,7 +20,7 @@ export default function PrivacyPage() {
       <div className="mt-8 space-y-8 text-sm leading-relaxed text-muted-foreground">
         <section>
           <h2 className="text-lg font-semibold text-foreground">数据存储</h2>
-          <p>你上传的文件存储在腾讯云对象存储（MinIO）服务器上，位于中国境内。文件元数据和对话记录存储在 PostgreSQL 数据库中。向量索引存储在 Qdrant 向量数据库中。</p>
+          <p>你上传的文件存储在MinIO 对象存储服务器上，位于中国境内。文件元数据和对话记录存储在 PostgreSQL 数据库中。向量索引存储在 Qdrant 向量数据库中。</p>
         </section>
         <section>
           <h2 className="text-lg font-semibold text-foreground">数据隔离</h2>
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
         </section>
         <section>
           <h2 className="text-lg font-semibold text-foreground">联系我们</h2>
-          <p>如有隐私相关问题，请联系 privacy@verrrnm.cloud。</p>
+          <p>如有隐私相关问题，请联系 privacy@ai-drive.net。</p>
         </section>
       </div>
       </div>
