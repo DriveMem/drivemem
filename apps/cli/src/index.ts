@@ -30,7 +30,7 @@ async function apiCall(path: string, options: RequestInit = {}) {
     console.error('Error: No API key. Set AIDRIVE_API_KEY env var or run: aidrive config set-key <key>');
     process.exit(1);
   }
-  const baseUrl = process.env.AIDRIVE_API_URL || config.apiUrl || 'https://api.verrrnm.cloud';
+  const baseUrl = process.env.AIDRIVE_API_URL || config.apiUrl || 'https://api.drivemem.cloud';
   const url = `${baseUrl}/api/v1${path}`;
   
   const res = await fetch(url, {
@@ -232,7 +232,7 @@ switch (command) {
     
     const config = loadConfig();
     const apiKey = process.env.AIDRIVE_API_KEY || config.apiKey;
-    const baseUrl = process.env.AIDRIVE_API_URL || config.apiUrl || 'https://api.verrrnm.cloud';
+    const baseUrl = process.env.AIDRIVE_API_URL || config.apiUrl || 'https://api.drivemem.cloud';
     
     const res = await fetch(`${baseUrl}/api/v1/files/upload`, {
       method: 'POST',
@@ -322,7 +322,7 @@ switch (command) {
       console.log('✅ API key saved to ~/.aidrive/config.json');
     } else {
       console.log('🔑 获取 API Key:');
-      console.log('   1. 打开 https://drive.verrrnm.cloud/settings?tab=developer');
+      console.log('   1. 打开 https://drivemem.cloud/settings?tab=developer');
       console.log('   2. 点击"创建 Key"');
       console.log('   3. 复制 Key，然后运行:');
       console.log('');
@@ -365,7 +365,7 @@ switch (command) {
 认证:
   aidrive login --key <key>     设置 API Key
   aidrive config set-key <key>  设置 API Key（同 login --key）
-  aidrive config set-url <url>  设置 API URL（默认 https://api.verrrnm.cloud）
+  aidrive config set-url <url>  设置 API URL（默认 https://api.drivemem.cloud）
   aidrive config show           显示当前配置
 
 知识操作:

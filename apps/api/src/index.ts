@@ -27,7 +27,7 @@ app.addHook('onRequest', async (request) => {
   }
 });
 
-await app.register(cors, { origin: [config.FRONTEND_URL, 'http://localhost', 'http://localhost:3000', 'https://drive.verrrnm.cloud', 'https://verrrnm.cloud', 'https://web-indol-omega-43.vercel.app', /\.vercel\.app$/], credentials: true });
+await app.register(cors, { origin: [config.FRONTEND_URL, 'http://localhost', 'http://localhost:3000', 'https://drivemem.cloud', 'https://drivemem.cloud', 'https://web-indol-omega-43.vercel.app', /\.vercel\.app$/], credentials: true });
 await app.register(sensible);
 
 // Rate limiting — 100 req/min per IP, stricter for auth endpoints
@@ -51,7 +51,7 @@ await app.register(swagger, {
       description: 'AI 知识操作系统 — 让任何 AI agent 接入你的个人知识库',
       version: '1.0.0',
     },
-    servers: [{ url: 'https://api.verrrnm.cloud' }],
+    servers: [{ url: 'https://api.drivemem.cloud' }],
     components: {
       securitySchemes: {
         apiKey: {

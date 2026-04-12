@@ -50,7 +50,7 @@ async function clipPage(tab) {
 
 async function sendClip(body) {
   const { apiUrl, token } = await chrome.storage.sync.get({
-    apiUrl: 'https://api.verrrnm.cloud',
+    apiUrl: 'https://api.drivemem.cloud',
     token: '',
   });
 

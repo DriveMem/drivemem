@@ -127,7 +127,7 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
   const [urlCopied, setUrlCopied] = useState(false)
   const [configCopied, setConfigCopied] = useState(false)
 
-  const mcpUrl = "https://drive.verrrnm.cloud/mcp"
+  const mcpUrl = "https://drivemem.cloud/mcp"
   const keyDisplay = newKey || (apiKeyPrefix ? `${apiKeyPrefix}••••••••` : "YOUR_API_KEY")
   const keyForConfig = newKey || "YOUR_API_KEY"
 
@@ -515,7 +515,7 @@ export default function SettingsContent() {
       const s = await getSession()
       const token = (s as any)?.accessToken
       const isDev = typeof window !== "undefined" && window.location.hostname === "localhost"
-      const apiBase = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : "https://api.verrrnm.cloud"
+      const apiBase = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : "https://api.drivemem.cloud"
       const res = await fetch(apiBase + "/api/users/me/export", {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},

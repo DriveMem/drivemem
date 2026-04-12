@@ -46,7 +46,7 @@ const CODE_BLOCKS = [
   `# 1. 获取 API Key（Settings → API Keys）
 
 # 2. 语义搜索
-curl -X GET 'https://drive.verrrnm.cloud/api/v1/search?q=项目最新进展' \\
+curl -X GET 'https://drivemem.cloud/api/v1/search?q=项目最新进展' \\
   -H 'Authorization: Bearer YOUR_API_KEY'
 
 # 响应示例：
@@ -62,7 +62,7 @@ curl -X GET 'https://drive.verrrnm.cloud/api/v1/search?q=项目最新进展' \\
 # }
 
 # 3. 存入知识
-curl -X POST https://drive.verrrnm.cloud/api/v1/store \\
+curl -X POST https://drivemem.cloud/api/v1/store \\
   -H 'Authorization: Bearer YOUR_API_KEY' \\
   -H 'Content-Type: application/json' \\
   -d '{"content": "今天决定采用方案 A", "title": "决策记录"}'
@@ -77,9 +77,9 @@ curl -X POST https://drive.verrrnm.cloud/api/v1/store \\
   `{
   "mcpServers": {
     "ai-drive": {
-      // 公网: https://api.verrrnm.cloud/mcp
+      // 公网: https://api.drivemem.cloud/mcp
       // 本地: http://localhost:3000/mcp
-      "url": "https://api.verrrnm.cloud/mcp",
+      "url": "https://api.drivemem.cloud/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -88,7 +88,7 @@ curl -X POST https://drive.verrrnm.cloud/api/v1/store \\
 }`,
 
   `# 注册 Webhook 接收事件推送
-curl -X POST https://drive.verrrnm.cloud/api/webhooks \\
+curl -X POST https://drivemem.cloud/api/webhooks \\
   -H 'Authorization: Bearer YOUR_API_KEY' \\
   -H 'Content-Type: application/json' \\
   -d '{"url": "https://your-app.com/hook", "events": ["file.indexed", "insight.discovered"]}'
@@ -421,9 +421,9 @@ export default function DevelopersPage() {
                     config: `{
   "mcpServers": {
     "ai-drive": {
-      // 公网: https://api.verrrnm.cloud/mcp
+      // 公网: https://api.drivemem.cloud/mcp
       // 本地: http://localhost:3000/mcp
-      "url": "https://api.verrrnm.cloud/mcp",
+      "url": "https://api.drivemem.cloud/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -437,9 +437,9 @@ export default function DevelopersPage() {
                     config: `{
   "mcpServers": {
     "ai-drive": {
-      // 公网: https://api.verrrnm.cloud/mcp
+      // 公网: https://api.drivemem.cloud/mcp
       // 本地: http://localhost:3000/mcp
-      "url": "https://api.verrrnm.cloud/mcp",
+      "url": "https://api.drivemem.cloud/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
       }
@@ -457,9 +457,9 @@ plugins:
       kind: mcp
       transport:
         type: sse
-        # 公网: https://api.verrrnm.cloud/mcp
+        # 公网: https://api.drivemem.cloud/mcp
         # 本地: http://localhost:3000/mcp
-        url: "https://api.verrrnm.cloud/mcp"
+        url: "https://api.drivemem.cloud/mcp"
         headers:
           Authorization: "Bearer YOUR_API_KEY"`,
                   },
@@ -488,7 +488,7 @@ plugins:
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="rounded-lg border border-[#4F5BD5]/30 bg-[#4F5BD5]/5 p-3">
                       <p className="text-xs font-medium text-[#4F5BD5] mb-1">☁️ 公网地址（推荐）</p>
-                      <code className="text-xs font-mono text-[#1C1B18] break-all">https://api.verrrnm.cloud/mcp</code>
+                      <code className="text-xs font-mono text-[#1C1B18] break-all">https://api.drivemem.cloud/mcp</code>
                       <p className="text-[10px] text-[#6B6966] mt-1">无需自建，直接使用</p>
                     </div>
                     <div className="rounded-lg border border-[#E5E4E1] bg-[#F8F7F5] p-3">

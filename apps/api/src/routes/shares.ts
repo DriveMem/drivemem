@@ -26,7 +26,7 @@ export default async function sharesRoutes(fastify: FastifyInstance) {
       if (existing.permission !== permission) {
         await db.update(schema.shares).set({ permission }).where(eq(schema.shares.id, existing.id));
       }
-      return reply.send({ token: existing.token, permission, url: `${process.env.FRONTEND_URL || 'https://drive.verrrnm.cloud'}/share/${existing.token}` });
+      return reply.send({ token: existing.token, permission, url: `${process.env.FRONTEND_URL || 'https://drivemem.cloud'}/share/${existing.token}` });
     }
 
     // Generate token
@@ -44,7 +44,7 @@ export default async function sharesRoutes(fastify: FastifyInstance) {
     return reply.status(201).send({
       token,
       permission,
-      url: `${process.env.FRONTEND_URL || 'https://drive.verrrnm.cloud'}/share/${token}`,
+      url: `${process.env.FRONTEND_URL || 'https://drivemem.cloud'}/share/${token}`,
     });
   });
 

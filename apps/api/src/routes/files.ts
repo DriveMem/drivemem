@@ -152,7 +152,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     const uploadUrl = await generateUploadUrl(s3Key, body.mimeType);
 
     // Replace localhost URL with public URL for presigned access
-    const publicUploadUrl = uploadUrl.replace('http://localhost:9000', 'https://api.verrrnm.cloud/s3');
+    const publicUploadUrl = uploadUrl.replace('http://localhost:9000', 'https://api.drivemem.cloud/s3');
 
     return reply.send({ uploadUrl: publicUploadUrl, fileId: file.id, s3Key });
   });
@@ -310,7 +310,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     // Update lastAccessedAt (updatedAt) for recent files sorting
     await db.update(schema.files).set({ updatedAt: new Date() }).where(eq(schema.files.id, id));
     const previewUrl = await generatePreviewUrl(file.s3Key);
-    const publicPreviewUrl = previewUrl.replace('http://localhost:9000', 'https://api.verrrnm.cloud/s3');
+    const publicPreviewUrl = previewUrl.replace('http://localhost:9000', 'https://api.drivemem.cloud/s3');
     return reply.send({ previewUrl: publicPreviewUrl, mimeType: file.mimeType });
   });
 

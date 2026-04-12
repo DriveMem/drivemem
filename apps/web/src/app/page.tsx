@@ -106,7 +106,7 @@ export default function LandingPage() {
               <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
               <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
               <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
-              <span className="ml-2 text-xs text-[#6B6966]">drive.verrrnm.cloud</span>
+              <span className="ml-2 text-xs text-[#6B6966]">drivemem.cloud</span>
             </div>
                         <img src="/screenshots/dashboard.png" alt="AI Drive Dashboard" className="w-full rounded-b-lg" />
           </div>

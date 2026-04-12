@@ -1,6 +1,6 @@
 import { getSession } from "next-auth/react"
 
-const PRODUCTION_API = "https://api.verrrnm.cloud"
+const PRODUCTION_API = "https://api.drivemem.cloud"
 const isDev = typeof window !== "undefined" && window.location.hostname === "localhost"
 const API_BASE = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : PRODUCTION_API
 

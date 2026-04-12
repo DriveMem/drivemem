@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     title: "AI Drive - 让 AI 记住你的一切",
     description: "上传文件，AI 自动理解、记忆、分析。你的个人 AI 知识分析平台。",
     type: "website",
-    url: "https://drive.verrrnm.cloud",
+    url: "https://drivemem.cloud",
     siteName: "AI Drive",
   },
   icons: { icon: "/favicon.svg" },

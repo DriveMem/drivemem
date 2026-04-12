@@ -4,7 +4,7 @@ const tokenInput = document.getElementById('token');
 const statusEl = document.getElementById('status');
 
 // Load saved settings
-chrome.storage.sync.get({ apiUrl: 'https://api.verrrnm.cloud', token: '' }, (data) => {
+chrome.storage.sync.get({ apiUrl: 'https://api.drivemem.cloud', token: '' }, (data) => {
   apiUrlInput.value = data.apiUrl;
   tokenInput.value = data.token;
   updateStatus(data.token);
@@ -12,7 +12,7 @@ chrome.storage.sync.get({ apiUrl: 'https://api.verrrnm.cloud', token: '' }, (dat
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
-  const apiUrl = apiUrlInput.value.trim() || 'https://api.verrrnm.cloud';
+  const apiUrl = apiUrlInput.value.trim() || 'https://api.drivemem.cloud';
   const token = tokenInput.value.trim();
   chrome.storage.sync.set({ apiUrl, token }, () => {
     updateStatus(token);

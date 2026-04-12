@@ -131,7 +131,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
 
       const resetLink = `${config.FRONTEND_URL}/reset-password?token=${token}`;
       await resend.emails.send({
-        from: 'AI Drive <noreply@verrrnm.cloud>',
+        from: 'AI Drive <noreply@drivemem.cloud>',
         to: body.email,
         subject: 'Reset your password - AI Drive',
         html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link expires in 1 hour.</p>`,

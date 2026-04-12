@@ -166,7 +166,7 @@ ${linkInfo}
     // Check if share already exists
     const [existing] = await db.select().from(schema.shares).where(and(eq(schema.shares.reportId, id), eq(schema.shares.userId, userId)));
     if (existing) {
-      return reply.send({ token: existing.token, url: `${process.env.FRONTEND_URL || 'https://drive.verrrnm.cloud'}/share/report/${existing.token}` });
+      return reply.send({ token: existing.token, url: `${process.env.FRONTEND_URL || 'https://drivemem.cloud'}/share/report/${existing.token}` });
     }
 
     const token = randomBytes(16).toString('hex');
@@ -180,7 +180,7 @@ ${linkInfo}
 
     return reply.status(201).send({
       token,
-      url: `${process.env.FRONTEND_URL || 'https://drive.verrrnm.cloud'}/share/report/${token}`,
+      url: `${process.env.FRONTEND_URL || 'https://drivemem.cloud'}/share/report/${token}`,
     });
   });
 }

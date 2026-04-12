@@ -13,7 +13,7 @@ app.use(
   cors({
     origin: (origin) => {
       if (!origin) return '*';
-      if (origin.endsWith('.verrrnm.cloud') || origin === 'https://verrrnm.cloud' || origin.endsWith('.vrrrnm.cloud') || origin === 'https://vrrrnm.cloud' || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('pages.dev')) {
+      if (origin.endsWith('.verrrnm.cloud') || origin === 'https://verrrnm.cloud' || origin.endsWith('.drivemem.cloud') || origin === 'https://drivemem.cloud' || origin.endsWith('.vrrrnm.cloud') || origin === 'https://vrrrnm.cloud' || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('pages.dev')) {
         return origin;
       }
       return '';

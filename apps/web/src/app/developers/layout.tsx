@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     title: "AI Drive 开发者",
     description: "通过 API 和 MCP 将 AI Drive 接入你的工作流",
     type: "website",
-    url: "https://drive.verrrnm.cloud/developers",
+    url: "https://drivemem.cloud/developers",
   },
 }
 

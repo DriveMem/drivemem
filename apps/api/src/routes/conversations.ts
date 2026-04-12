@@ -253,7 +253,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
 
     // Start SSE immediately so client knows we're working
     const origin = request.headers.origin;
-    const allowedOrigins = ['https://drive.verrrnm.cloud', 'https://verrrnm.cloud', 'http://localhost', 'http://localhost:3000'];
+    const allowedOrigins = ['https://drivemem.cloud', 'https://drivemem.cloud', 'http://localhost', 'http://localhost:3000'];
     const corsOrigin = origin && (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) ? origin : '';
 
     reply.raw.writeHead(200, {
