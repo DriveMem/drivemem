@@ -133,16 +133,36 @@ function MessageActions({ content }: { content: string }) {
   const handleSaveAsNote = async () => {
     setSaving(true)
     try {
-      const { apiFetch } = await import("@/lib/api")
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)
       await apiFetch("/api/v1/store", {
         method: "POST",
-        body: JSON.stringify({ content, title: content.slice(0, 30).replace(/\n/g, " ") }),
+        body: JSON.stringify({
+          content,
+          title: `AI笔记-${timestamp}`,
+        }),
       })
       toast.success("已保存为笔记")
     } catch {
       toast.error("保存失败")
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleShare = async () => {
+    const shareData = { title: "AI 回答", text: content }
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData)
+      } catch (err: any) {
+        if (err?.name !== "AbortError") {
+          navigator.clipboard.writeText(content)
+          toast.success("已复制到剪贴板")
+        }
+      }
+    } else {
+      navigator.clipboard.writeText(content)
+      toast.success("已复制到剪贴板")
     }
   }
 
@@ -153,6 +173,9 @@ function MessageActions({ content }: { content: string }) {
       </button>
       <button onClick={handleSaveAsNote} disabled={saving} className="p-1 rounded hover:bg-accent" title="保存为笔记">
         <Bookmark className={cn("h-3.5 w-3.5", saving ? "animate-pulse text-[#4F5BD5]" : "text-muted-foreground")} />
+      </button>
+      <button onClick={handleShare} className="p-1 rounded hover:bg-accent" title="分享">
+        <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
       </button>
     </div>
   )
