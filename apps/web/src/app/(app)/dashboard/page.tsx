@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
 import { useLayoutStore } from "@/stores/layout-store"
 import { toast } from "sonner"
+import Link from "next/link"
 
 // --- helpers ---
 function relativeTime(dateStr: string): string {
