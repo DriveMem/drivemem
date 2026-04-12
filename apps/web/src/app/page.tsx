@@ -218,7 +218,7 @@ export default function LandingPage() {
             <div>
               <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">开发者</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><a href="/developers#api-reference" className="hover:text-[#4F5BD5] transition">API 文档</a></li>
+                <li><Link href="/developers#api" className="hover:text-[#4F5BD5] transition">API 文档</Link></li>
                 <li><Link href="/developers#mcp" className="hover:text-[#4F5BD5] transition">MCP 协议</Link></li>
                 <li><Link href="/developers#cli" className="hover:text-[#4F5BD5] transition">CLI 工具</Link></li>
               </ul>

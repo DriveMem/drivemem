@@ -196,10 +196,6 @@ export default function DashboardPage() {
   const files = Array.isArray(filesData) ? filesData : (filesData as any)?.files || []
   const fileCount = files.length
 
-  useEffect(() => {
-    document.title = "概览 - AI Drive"
-  }, [])
-
   const handleQuickGenerate = (type: "analysis" | "study") => {
     reportRef.current?.generate(type)
   }

@@ -564,7 +564,7 @@ plugins:
       </section>
 
       {/* API Reference */}
-      <section id="api-reference" className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5] px-6 py-24">
+      <section id="api" className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5] px-6 py-24">
         <div className="mx-auto max-w-3xl">
           <FadeIn>
             <h2 className="text-2xl font-bold sm:text-3xl">API 参考</h2>
