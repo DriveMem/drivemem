@@ -955,7 +955,7 @@ export function FileList() {
       {selected.size > 0 && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-background border shadow-lg px-4 py-3 z-50">
           <span className="text-sm font-medium">已选 {selected.size} 个文件</span>
-          <Button variant="outline" size="sm" onClick={handleBatchDelete}>删除</Button>
+          <Button variant="destructive" size="sm" onClick={handleBatchDelete}>删除</Button>
           <Button variant="outline" size="sm" onClick={handleBatchArchive}>归档</Button>
           <Button variant="outline" size="sm" onClick={() => setBatchMoveOpen(true)}>移动</Button>
           <Button variant="outline" size="sm" onClick={handleBatchDownload}>下载</Button>
@@ -965,15 +965,12 @@ export function FileList() {
               setTagManagerFileId("__batch__")
             }
           }}>标签</Button>
-          <button
-            onClick={() => {
+          <Button variant="outline" size="sm" onClick={() => {
               const ids = Array.from(selected).join(",")
               router.push(`/chat?fileIds=${ids}`)
-            }}
-            className="flex items-center gap-1.5 rounded-lg border border-[#4F5BD5]/30 px-3 py-1.5 text-xs text-[#4F5BD5] hover:bg-[#4F5BD5]/10"
-          >
+            }}>
             💬 问 AI
-          </button>
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>取消</Button>
         </div>
       )}
