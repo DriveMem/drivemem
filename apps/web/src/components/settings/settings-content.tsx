@@ -646,7 +646,7 @@ export default function SettingsContent() {
         </CardHeader>
         <CardContent>
           {memories.length === 0 ? (
-            <p className="text-sm text-muted-foreground">AI 会自动记住你们的对话要点。<a href="/chat" className="text-[#4F5BD5] hover:underline">开始一次对话试试 →</a></p>
+            <p className="text-sm text-muted-foreground">AI 正在学习你的偏好，多聊几次就会出现 ✨</p>
           ) : (
             <ul className="space-y-3">
               {memories.map(m => (
