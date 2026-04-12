@@ -110,10 +110,14 @@ export default async function onboardingRoutes(fastify: FastifyInstance) {
     let created = 0;
 
     try {
-      for (const demo of DEMO_FILES) {
+      for (let i = 0; i < DEMO_FILES.length; i++) {
+        const demo = DEMO_FILES[i];
         const fileId = randomUUID();
         const s3Key = `users/${userId}/files/${fileId}/${demo.name}`;
         const buffer = Buffer.from(demo.content, 'utf-8');
+        // Spread createdAt across last 7 days
+        const daysAgo = Math.floor((DEMO_FILES.length - 1 - i) * (6 / Math.max(DEMO_FILES.length - 1, 1)));
+        const createdAt = new Date(Date.now() - daysAgo * 86400000);
 
         await uploadObject(s3Key, buffer, demo.mimeType);
 
@@ -126,6 +130,7 @@ export default async function onboardingRoutes(fastify: FastifyInstance) {
           status: 'parsing',
           userId,
           s3Key,
+          createdAt,
         });
 
         await queue.add('parse', { fileId, userId, s3Key, mimeType: demo.mimeType });
@@ -140,6 +145,34 @@ export default async function onboardingRoutes(fastify: FastifyInstance) {
           // folder may already exist, ignore
         }
       }
+
+      // Seed demo conversation (3 days ago)
+      try {
+        const convId = randomUUID();
+        await db.insert(schema.conversations).values({
+          id: convId,
+          userId,
+          title: '了解 AI 产品设计',
+          createdAt: new Date(Date.now() - 3 * 86400000),
+          updatedAt: new Date(Date.now() - 3 * 86400000),
+        });
+      } catch { /* ignore if conversations table not ready */ }
+
+      // Seed demo insight (1 day ago)
+      try {
+        const fileIds = await db.select({ id: schema.files.id }).from(schema.files).where(eq(schema.files.userId, userId)).limit(2);
+        if (fileIds.length >= 2) {
+          await db.insert(schema.insights).values({
+            userId,
+            sourceFileId: fileIds[0].id,
+            relatedFileId: fileIds[1].id,
+            type: 'correlation',
+            title: 'AI 产品设计与科技趋势的关联',
+            description: 'AI 产品设计入门中的"渐进式智能"原则与科技趋势报告中的"AI Agent 自主化"方向高度吻合，两份文档可互为参考。',
+            createdAt: new Date(Date.now() - 1 * 86400000),
+          });
+        }
+      } catch { /* ignore */ }
     } finally {
       await queue.close();
     }
