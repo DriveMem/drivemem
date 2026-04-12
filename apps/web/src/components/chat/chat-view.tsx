@@ -39,6 +39,12 @@ const DEFAULT_SUGGESTIONS = [
   "📊 帮我分析文件内容",
 ]
 
+const FEATURE_CARDS = [
+  { icon: "📄", title: "文件问答", desc: "基于你的文件内容回答问题" },
+  { icon: "🔗", title: "关联发现", desc: "自动发现文件之间的联系" },
+  { icon: "📝", title: "内容总结", desc: "快速提取文件的关键信息" },
+]
+
 function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (msg: string) => void }) {
   const [suggestions, setSuggestions] = useState<string[]>([])
 
@@ -53,29 +59,43 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
   const chips = suggestions.length > 0 ? suggestions : DEFAULT_SUGGESTIONS
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 text-muted-foreground px-4">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#4F5BD5]/20 to-[#4F5BD5]/5">
-        <MessageSquare className="h-8 w-8 text-[#4F5BD5]" />
+    <div className="flex flex-1 flex-col items-center px-4 pt-8 pb-4 overflow-y-auto">
+      {/* Hero section */}
+      <div className="flex flex-col items-center gap-2 mb-6">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#4F5BD5]/20 to-[#4F5BD5]/5">
+          <MessageSquare className="h-7 w-7 text-[#4F5BD5]" />
+        </div>
+        <h2 className="text-xl font-semibold text-foreground">你的 AI 知识助手</h2>
+        <p className="text-sm text-muted-foreground text-center max-w-md">
+          {indexedCount > 0
+            ? `已理解 ${indexedCount} 个文件，随时为你解答`
+            : "基于你上传的文件，智能回答问题、发现关联、总结要点"}
+        </p>
       </div>
-      {indexedCount > 0 ? (
-        <>
-          <p className="text-lg font-medium text-foreground">AI 已记住 {indexedCount} 个文件</p>
-          <p className="text-sm text-muted-foreground">问问 AI 关于你的文件：</p>
-          <div className="mt-1 flex flex-wrap justify-center gap-2 max-w-lg">
-            {chips.map((q, i) => (
-              <button key={i} onClick={() => onSend(q)}
-                className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground/80 hover:bg-primary/10 hover:shadow-sm hover:scale-[1.02] transition-all cursor-pointer">
-                {suggestions.length > 0 ? `✨ ${q}` : q}
-              </button>
-            ))}
+
+      {/* Suggestion chips */}
+      <div className="w-full max-w-lg mb-6">
+        <p className="text-xs font-medium text-muted-foreground mb-2 text-center">试试这样问：</p>
+        <div className="flex flex-wrap justify-center gap-2">
+          {chips.map((q, i) => (
+            <button key={i} onClick={() => onSend(q)}
+              className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground/80 hover:bg-primary/10 hover:shadow-sm hover:scale-[1.02] transition-all cursor-pointer">
+              {suggestions.length > 0 ? `✨ ${q}` : q}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Feature cards */}
+      <div className="grid grid-cols-3 gap-3 w-full max-w-lg">
+        {FEATURE_CARDS.map((card, i) => (
+          <div key={i} className="flex flex-col items-center gap-1.5 rounded-xl border border-border/50 bg-muted/30 p-3 text-center">
+            <span className="text-xl">{card.icon}</span>
+            <span className="text-xs font-medium text-foreground">{card.title}</span>
+            <span className="text-[11px] text-muted-foreground leading-tight">{card.desc}</span>
           </div>
-        </>
-      ) : (
-        <>
-          <p className="text-lg font-medium text-foreground">开始和 AI 对话</p>
-          <p className="text-sm">先上传文件让 AI 记住，然后提问</p>
-        </>
-      )}
+        ))}
+      </div>
     </div>
   )
 }
