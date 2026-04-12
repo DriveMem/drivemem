@@ -564,7 +564,7 @@ plugins:
       </section>
 
       {/* API Reference */}
-      <section className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5] px-6 py-24">
+      <section id="api-reference" className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5] px-6 py-24">
         <div className="mx-auto max-w-3xl">
           <FadeIn>
             <h2 className="text-2xl font-bold sm:text-3xl">API 参考</h2>
@@ -627,7 +627,7 @@ plugins:
                 </div>
               </div>
 
-              <div>
+              <div id="mcp">
                 <h3 className="font-semibold text-[#1C1B18]">MCP 工具列表</h3>
                 <p className="mt-2 text-sm text-[#6B6966]">
                   AI Drive MCP Server 提供 {MCP_TOOLS.length} 个工具：
@@ -641,7 +641,7 @@ plugins:
                 </div>
               </div>
 
-              <div>
+              <div id="cli">
                 <h3 className="font-semibold text-[#1C1B18]">CLI 工具</h3>
                 <p className="mt-2 text-sm text-[#6B6966]">命令行操作知识库：</p>
                 <pre className="mt-3 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">

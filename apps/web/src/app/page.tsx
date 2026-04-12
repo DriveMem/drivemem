@@ -91,7 +91,7 @@ export default function LandingPage() {
               <Link href="#features">了解更多</Link>
             </Button>
             <Button asChild variant="ghost" size="lg" className="h-12 px-8 text-base text-[#6B6966] hover:text-[#1C1B18]">
-              <Link href="/login">体验 Demo →</Link>
+              <Link href="/login?demo=true">免费试用 →</Link>
             </Button>
           </div>
           <p className="mt-4 text-sm text-[#6B6966] text-center">✨ 免费 5GB 存储 · 每天 50 次 AI 对话 · 无需信用卡</p>
@@ -218,9 +218,9 @@ export default function LandingPage() {
             <div>
               <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">开发者</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><a href="/developers" className="hover:text-[#4F5BD5] transition">API 文档</a></li>
-                <li><Link href="/developers" className="hover:text-[#4F5BD5] transition">MCP 协议</Link></li>
-                <li><Link href="/developers" className="hover:text-[#4F5BD5] transition">CLI 工具</Link></li>
+                <li><a href="/developers#api-reference" className="hover:text-[#4F5BD5] transition">API 文档</a></li>
+                <li><Link href="/developers#mcp" className="hover:text-[#4F5BD5] transition">MCP 协议</Link></li>
+                <li><Link href="/developers#cli" className="hover:text-[#4F5BD5] transition">CLI 工具</Link></li>
               </ul>
             </div>
 
