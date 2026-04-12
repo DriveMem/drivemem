@@ -194,8 +194,15 @@ export default function TimelinePage() {
               </button>
             </div>
           ) : events.length > 0 && (
-            <div className="text-center py-4">
-              <p className="text-xs text-muted-foreground">没有更多了</p>
+            <div className="text-center py-6">
+              {events.length < 10 ? (
+                <>
+                  <p className="text-sm text-muted-foreground mb-1">🌱 这是你知识旅程的开始</p>
+                  <p className="text-xs text-muted-foreground">继续上传文件、与 AI 对话，时间线会越来越丰富</p>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">— 已到最早记录 —</p>
+              )}
             </div>
           )}
         </div>

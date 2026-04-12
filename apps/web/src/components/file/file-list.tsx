@@ -643,6 +643,23 @@ export function FileList() {
               </PopoverContent>
             </Popover>
           )}
+          {/* Sort dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent transition">
+                <ArrowUpDown className="h-3 w-3" />
+                {{ name: "名称", createdAt: "时间", size: "大小", type: "类型" }[sortKey]}
+                {sortDir === "asc" ? " ↑" : " ↓"}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-36">
+              {([["createdAt", "按时间"], ["name", "按名称"], ["size", "按大小"], ["type", "按类型"]] as [SortKey, string][]).map(([k, label]) => (
+                <DropdownMenuItem key={k} onClick={() => toggleSort(k)} className={sortKey === k ? "font-medium" : ""}>
+                  {label} {sortKey === k && (sortDir === "asc" ? "↑" : "↓")}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button size="sm" onClick={async () => {
