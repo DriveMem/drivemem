@@ -143,7 +143,7 @@ function LoginForm() {
           }}
           className="text-sm text-muted-foreground hover:text-foreground transition underline"
         >
-          体验 Demo →
+          使用 Demo 账号登录 →
         </button>
       </div>
     </div>

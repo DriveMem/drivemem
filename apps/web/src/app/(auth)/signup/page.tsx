@@ -161,7 +161,7 @@ export default function SignupPage() {
 
       <div className="mt-4 text-center">
         <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition underline">
-          体验 Demo →
+          使用 Demo 账号登录 →
         </Link>
       </div>
     </div>
