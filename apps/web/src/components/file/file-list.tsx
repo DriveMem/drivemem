@@ -551,27 +551,51 @@ export function FileList() {
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation() }}
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setShowUpload(true) }}
       >
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <h3 className="text-xl font-semibold mb-2">开始你的 AI 知识库</h3>
-          <p className="text-sm text-muted-foreground max-w-sm mb-8">
-            上传文件，AI 自动理解内容。随时提问，AI 用你的知识回答。
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg w-full">
+        <div className="flex flex-col items-center justify-center py-12 text-center max-w-xl mx-auto">
+          <div className="rounded-2xl bg-gradient-to-br from-[#4F5BD5]/10 via-green-500/5 to-amber-500/10 p-1 mb-6">
+            <div className="rounded-xl bg-background px-8 py-6">
+              <Sparkles className="h-8 w-8 text-[#4F5BD5] mx-auto mb-3" />
+              <h3 className="text-xl font-semibold mb-2">开始构建你的知识库</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                上传文件或创建笔记，AI 自动理解内容并建立关联。随时提问，AI 用你的知识回答。
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
             <button
               onClick={() => setShowUpload(true)}
-              className="rounded-xl border p-4 hover:border-[#4F5BD5]/50 hover:shadow-md transition text-center"
+              className="group rounded-xl border p-4 hover:border-[#4F5BD5]/50 hover:shadow-md transition-all text-center"
             >
-              <div className="rounded-lg bg-[#4F5BD5]/10 p-3 mx-auto w-fit mb-2">
+              <div className="rounded-lg bg-[#4F5BD5]/10 p-3 mx-auto w-fit mb-2 group-hover:scale-110 transition-transform">
                 <Upload className="h-5 w-5 text-[#4F5BD5]" />
               </div>
               <p className="text-sm font-medium">上传文件</p>
               <p className="text-xs text-muted-foreground mt-0.5">PDF、Word、PPT 等</p>
             </button>
+            <button
+              onClick={async () => {
+                try {
+                  await apiFetch("/api/v1/store", {
+                    method: "POST",
+                    body: JSON.stringify({ content: "", title: "未命名笔记" }),
+                  })
+                  queryClient.invalidateQueries({ queryKey: ["files"] })
+                  toast.success("笔记已创建")
+                } catch { toast.error("创建笔记失败") }
+              }}
+              className="group rounded-xl border p-4 hover:border-purple-500/50 hover:shadow-md transition-all text-center"
+            >
+              <div className="rounded-lg bg-purple-500/10 p-3 mx-auto w-fit mb-2 group-hover:scale-110 transition-transform">
+                <FileText className="h-5 w-5 text-purple-500" />
+              </div>
+              <p className="text-sm font-medium">创建笔记</p>
+              <p className="text-xs text-muted-foreground mt-0.5">快速记录想法</p>
+            </button>
             <Link
               href="/chat"
-              className="rounded-xl border p-4 hover:border-green-500/50 hover:shadow-md transition text-center"
+              className="group rounded-xl border p-4 hover:border-green-500/50 hover:shadow-md transition-all text-center"
             >
-              <div className="rounded-lg bg-green-500/10 p-3 mx-auto w-fit mb-2">
+              <div className="rounded-lg bg-green-500/10 p-3 mx-auto w-fit mb-2 group-hover:scale-110 transition-transform">
                 <MessageSquare className="h-5 w-5 text-green-500" />
               </div>
               <p className="text-sm font-medium">问 AI 问题</p>
@@ -579,9 +603,9 @@ export function FileList() {
             </Link>
             <Link
               href="/chat?q=帮我看看示例文件里有什么"
-              className="rounded-xl border p-4 hover:border-amber-500/50 hover:shadow-md transition text-center"
+              className="group rounded-xl border p-4 hover:border-amber-500/50 hover:shadow-md transition-all text-center"
             >
-              <div className="rounded-lg bg-amber-500/10 p-3 mx-auto w-fit mb-2">
+              <div className="rounded-lg bg-amber-500/10 p-3 mx-auto w-fit mb-2 group-hover:scale-110 transition-transform">
                 <Sparkles className="h-5 w-5 text-amber-500" />
               </div>
               <p className="text-sm font-medium">体验示例</p>
@@ -589,7 +613,7 @@ export function FileList() {
             </Link>
           </div>
           <p className="mt-6 text-xs text-muted-foreground">
-            支持 PDF、Word、PPT、Excel、TXT、Markdown 等格式
+            支持拖拽上传 · PDF、Word、PPT、Excel、TXT、Markdown 等格式
           </p>
         </div>
         {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
