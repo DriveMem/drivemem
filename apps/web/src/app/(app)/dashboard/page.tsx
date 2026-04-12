@@ -335,15 +335,14 @@ export default function DashboardPage() {
                   <Upload className="h-5 w-5 text-[#4F5BD5]" />
                   <span className="text-xs font-medium">上传文件</span>
                 </button>
-                <a
-                  href="https://chromewebstore.google.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
+                <div
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 opacity-50 cursor-default"
+                  title="Web Clipper 即将上线"
                 >
                   <Sparkles className="h-5 w-5 text-amber-500" />
                   <span className="text-xs font-medium">Web Clipper</span>
-                </a>
+                  <span className="text-[10px] text-muted-foreground">即将上线</span>
+                </div>
                 <Link
                   href="/developers"
                   className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
