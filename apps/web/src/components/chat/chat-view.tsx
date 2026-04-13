@@ -19,6 +19,7 @@ import { getSession } from "next-auth/react"
 import { useConversation } from "@/hooks/use-conversations"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { NetworkError, classifyError } from "@/components/ui/network-error"
 
 type ScopeType = "all" | "folder" | "file"
 
@@ -422,16 +423,13 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       )}
 
       {error && (
-        <div className="px-4 py-2 text-sm text-destructive bg-destructive/10 border-b border-border flex items-center justify-between gap-2">
-          <span>{error}</span>
-          {lastUserMessageRef.current && (
-            <button
-              onClick={() => { const msg = lastUserMessageRef.current; if (msg) handleSend(msg) }}
-              className="shrink-0 rounded-md border border-destructive/30 px-2 py-0.5 text-xs hover:bg-destructive/20 transition"
-            >
-              重试
-            </button>
-          )}
+        <div className="px-4 py-2 border-b border-border">
+          <NetworkError
+            mode="inline"
+            type={classifyError(error)}
+            message={error}
+            onRetry={lastUserMessageRef.current ? () => { const msg = lastUserMessageRef.current; if (msg) handleSend(msg) } : undefined}
+          />
         </div>
       )}
 

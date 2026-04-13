@@ -31,6 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
 import { FileUpload } from "./file-upload"
 import { TagManagerDialog } from "./tag-manager-dialog"
+import { NetworkError, classifyError } from "@/components/ui/network-error"
 import { useTags, useAddTagToFile, useRemoveTagFromFile } from "@/hooks/use-tags"
 import { FirstUploadGuide } from "@/components/onboarding/first-upload-guide"
 import { toast } from "sonner"
@@ -538,9 +539,12 @@ export function FileList() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-2 text-destructive">
-        <AlertCircle className="h-8 w-8" /><p className="text-sm">加载文件失败: {(error as Error).message}</p>
-      </div>
+      <NetworkError
+        mode="fullpage"
+        type={classifyError(error)}
+        message={(error as Error).message}
+        onRetry={() => queryClient.invalidateQueries({ queryKey: ["files"] })}
+      />
     )
   }
 

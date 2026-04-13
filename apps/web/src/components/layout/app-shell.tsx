@@ -8,6 +8,7 @@ import { TopNav } from "./top-nav"
 import { CommandPalette } from "./command-palette"
 import { FeedbackButton } from "@/components/feedback/feedback-button"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { OfflineBanner } from "@/hooks/use-network-status"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { sidebarCollapsed, inspectorOpen, mobileSidebarOpen, setMobileSidebarOpen } = useLayoutStore()
@@ -56,6 +57,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
       <CommandPalette />
       <FeedbackButton />
+      <OfflineBanner />
     </div>
   )
 }
