@@ -118,8 +118,8 @@ export default function LandingPage() {
       {/* ===== Scenario Cards ===== */}
       <section id="features" className="relative z-10 mx-auto max-w-6xl px-6 py-24">
         <FadeIn>
-          <h2 className="text-center text-3xl font-bold sm:text-4xl">Every agent. One memory.</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">Whether you use ChatGPT, Claude, Cursor, or your own agents — DriveMem gives them all a shared memory.</p>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">你的每个 Agent，共享一份记忆</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">无论你用 ChatGPT、Claude、Cursor 还是自己的 agent — DriveMem 让它们共享同一份记忆。</p>
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               { emoji: "📄", title: "学生写论文", desc: "上传参考文献，AI 帮你找关键论点、对比不同作者观点" },
@@ -142,7 +142,7 @@ export default function LandingPage() {
       {/* ===== How It Works ===== */}
       <section className="relative z-10 mx-auto max-w-5xl px-6 py-20">
         <FadeIn>
-          <h2 className="text-center text-3xl font-bold sm:text-4xl">How DriveMem works</h2>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">DriveMem 如何工作</h2>
           <div className="mt-16 grid gap-8 sm:grid-cols-3">
             {STEPS.map((s, i) => (
               <div key={s.title} className="relative flex flex-col items-center text-center">
@@ -166,7 +166,7 @@ export default function LandingPage() {
       <section className="relative z-10 mx-auto max-w-6xl px-6 py-24">
         <FadeIn>
           <h2 className="text-3xl font-bold text-center text-[#1C1B18] mb-4">核心功能</h2>
-          <p className="text-center text-[#6B6966] mb-12 max-w-2xl mx-auto">DriveMem is not just storage — it understands your knowledge</p>
+          <p className="text-center text-[#6B6966] mb-12 max-w-2xl mx-auto">DriveMem 不只是存储 — 它理解你的知识</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map((f, i) => (
               <div key={i} className="rounded-xl border border-[#E5E4E1] bg-white p-6 hover:shadow-lg transition-all duration-200">
