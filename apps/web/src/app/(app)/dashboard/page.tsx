@@ -12,6 +12,10 @@ import { ReportSection, type ReportSectionHandle } from "@/components/dashboard/
 import { MobileUploadFab } from "@/components/file/mobile-upload-fab"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 import { useFiles } from "@/hooks/use-files"
+import { useFolders, useCreateFolder } from "@/hooks/use-folders"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
 import { useLayoutStore } from "@/stores/layout-store"
@@ -167,13 +171,18 @@ export default function DashboardPage() {
   const router = useRouter()
   const [showUpload, setShowUpload] = useState(false)
   const [activeTab, setActiveTab] = useState<"files" | "ai">("files")
-  const { closeInspector } = useLayoutStore()
+  const { closeInspector, currentFolderId, setCurrentFolder } = useLayoutStore()
 
   const handleTabSwitch = (tab: "files" | "ai") => {
     setActiveTab(tab)
     closeInspector()
   }
   const { data: filesData } = useFiles()
+  const { data: foldersData } = useFolders()
+  const createFolder = useCreateFolder()
+  const folders = foldersData?.folders || []
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false)
+  const [newFolderName, setNewFolderName] = useState("")
   const [activities, setActivities] = useState<any[]>([])
   const [insights, setInsights] = useState<any[]>([])
   const reportRef = useRef<ReportSectionHandle>(null)
@@ -195,6 +204,7 @@ export default function DashboardPage() {
 
   const files = Array.isArray(filesData) ? filesData : (filesData as any)?.files || []
   const fileCount = files.length
+  const unfiledCount = files.filter((f: any) => !f.folderId).length
 
   const handleQuickGenerate = (type: "analysis" | "study") => {
     reportRef.current?.generate(type)
@@ -251,9 +261,97 @@ export default function DashboardPage() {
       {activeTab === "files" ? (
         <div className="flex-1 min-h-0 flex flex-col">
           <InsightsSummaryCard insights={insights} onSwitchToAi={() => handleTabSwitch("ai")} />
-          <div className="flex-1 min-h-0">
-            <FileList />
-          </div>
+          {!currentFolderId ? (
+            <div className="flex-1 min-h-0 overflow-auto p-6">
+              <h2 className="text-lg font-semibold mb-4">📁 我的项目</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {folders.map((folder: any) => (
+                  <div
+                    key={folder.id}
+                    onClick={() => setCurrentFolder(folder.id)}
+                    className="rounded-xl border p-4 hover:shadow-md hover:border-[#4F5BD5]/30 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl">📁</span>
+                      <h3 className="font-medium truncate">{folder.name}</h3>
+                      {folder.status && (
+                        <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                          folder.status === 'active' ? 'bg-green-500/10 text-green-600' :
+                          folder.status === 'completed' ? 'bg-blue-500/10 text-blue-600' :
+                          'bg-muted text-muted-foreground'
+                        }`}>
+                          {folder.status === 'active' ? '进行中' : folder.status === 'completed' ? '已完成' : folder.status}
+                        </span>
+                      )}
+                    </div>
+                    {folder.brief && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{folder.brief}</p>
+                    )}
+                    {folder.goal && (
+                      <p className="text-xs text-[#4F5BD5] mb-2">🎯 {folder.goal}</p>
+                    )}
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>📄 文件</span>
+                    </div>
+                  </div>
+                ))}
+
+                {/* 新建项目卡片 */}
+                <div
+                  onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }}
+                  className="rounded-xl border-2 border-dashed p-4 hover:border-[#4F5BD5]/30 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-[#4F5BD5]"
+                >
+                  <span className="text-2xl">+</span>
+                  <span className="text-sm">新建项目</span>
+                </div>
+              </div>
+
+              {/* 未归类文件区 */}
+              {unfiledCount > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">📄 未归类文件 ({unfiledCount})</h3>
+                  <button onClick={() => setCurrentFolder(null)} className="text-sm text-[#4F5BD5] hover:underline">
+                    查看所有文件 →
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex-1 min-h-0">
+              <FileList />
+            </div>
+          )}
+
+          {/* 新建项目对话框 */}
+          <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
+            <DialogContent>
+              <DialogHeader><DialogTitle>新建项目</DialogTitle></DialogHeader>
+              <Input
+                placeholder="项目名称"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newFolderName.trim()) {
+                    createFolder.mutate({ name: newFolderName.trim() })
+                    setFolderDialogOpen(false)
+                  }
+                }}
+                autoFocus
+              />
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>取消</Button>
+                <Button
+                  onClick={() => {
+                    if (newFolderName.trim()) {
+                      createFolder.mutate({ name: newFolderName.trim() })
+                      setFolderDialogOpen(false)
+                    }
+                  }}
+                  disabled={!newFolderName.trim()}
+                >创建</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       ) : (
         <div className="flex-1 min-h-0 overflow-auto px-1 animate-in fade-in duration-200">
