@@ -224,6 +224,80 @@ const WEBHOOK_EVENTS = [
   { id: 'file.deleted', label: '文件删除', desc: '文件被删除' },
 ]
 
+function ConnectedAgentsCard() {
+  const [keys, setKeys] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchKeys = async () => {
+      try {
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/api-keys")
+        setKeys(data?.keys || [])
+      } catch { /* ignore */ }
+    }
+    fetchKeys()
+  }, [])
+
+  const activeKeys = keys.filter(k => k.lastUsedAt)
+  const inactiveKeys = keys.filter(k => !k.lastUsedAt)
+
+  return (
+    <Card className="mt-4">
+      <CardHeader>
+        <CardTitle>🔗 已连接的 Agent</CardTitle>
+        <CardDescription>查看哪些 AI 工具正在使用你的知识库</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {keys.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">还没有 agent 连接。创建 API Key 来接入。</p>
+        ) : (
+          <>
+            {activeKeys.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">活跃连接</p>
+                {activeKeys.map(k => (
+                  <div key={k.id} className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="flex items-center gap-3">
+                      <span className="h-2.5 w-2.5 rounded-full bg-green-500 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium">{k.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          最后活跃: {new Date(k.lastUsedAt).toLocaleString("zh-CN")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      {k.scopes?.map((s: string) => (
+                        <span key={s} className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                          s === 'admin' ? 'bg-red-500/10 text-red-600' :
+                          s === 'write' ? 'bg-blue-500/10 text-blue-600' :
+                          'bg-green-500/10 text-green-600'
+                        }`}>{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {inactiveKeys.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">未使用</p>
+                {inactiveKeys.map(k => (
+                  <div key={k.id} className="flex items-center gap-3 rounded-lg border border-dashed p-3 opacity-60">
+                    <span className="h-2.5 w-2.5 rounded-full bg-muted shrink-0" />
+                    <p className="text-sm">{k.name}</p>
+                    <p className="text-xs text-muted-foreground ml-auto">从未使用</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 function WebhookCard() {
   const [hooks, setHooks] = useState<any[]>([])
   const [url, setUrl] = useState('')
@@ -601,6 +675,7 @@ export default function SettingsContent() {
         <>
           <p className="text-sm text-muted-foreground">这些功能面向需要通过 API 或 AI Agent 接入的高级用户</p>
           <ApiKeysCard />
+          <ConnectedAgentsCard />
           <WebhookCard />
         </>
       ) : (
