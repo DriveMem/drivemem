@@ -367,6 +367,30 @@ switch (command) {
     break;
   }
 
+  case 'project': {
+    const subCmd = args[0];
+    if (subCmd === 'set') {
+      const folderId = args[1];
+      const key = args[2];
+      const value = args.slice(3).join(' ');
+      if (!folderId || !key || !value) { console.error('Usage: aidrive project set <folder-id> <brief|status|goal> <value>'); break; }
+      await apiCall(`/folders/${folderId}`, { method: 'PATCH', body: JSON.stringify({ [key]: value }) });
+      console.log(`✅ 已设置 ${key}: ${value}`);
+    } else if (subCmd === 'list') {
+      const data = await apiCall('/folders');
+      const folders = Array.isArray(data) ? data : data?.folders || [];
+      if (jsonMode) { console.log(JSON.stringify(folders, null, 2)); break; }
+      for (const f of folders) {
+        console.log(`📁 ${f.name} ${f.status ? `[${f.status}]` : ''}`);
+        if (f.brief) console.log(`   ${f.brief}`);
+        if (f.goal) console.log(`   🎯 ${f.goal}`);
+      }
+    } else {
+      console.log('Usage: aidrive project <list|set>');
+    }
+    break;
+  }
+
   case 'profile': {
     if (args[0] === 'set') {
       const key = args[1];
@@ -411,6 +435,8 @@ AI 能力:
   aidrive insights              查看 AI 发现的知识关联
   aidrive timeline [--limit N]  知识活动时间线
   aidrive pack <folder-id>      生成项目交接包（跨模型任务接力）
+  aidrive project list          列出所有项目（文件夹）及其状态
+  aidrive project set <id> <key> <value>  设置项目属性（brief/status/goal）
   aidrive profile               查看 AI 档案
   aidrive profile set <k> <v>   设置档案字段（role/currentGoal/background/preferences）
 

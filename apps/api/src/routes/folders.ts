@@ -10,10 +10,16 @@ import { deleteObject } from '../services/s3.service.js';
 const createFolderSchema = z.object({
   name: z.string().min(1).max(255),
   parentId: z.string().uuid().nullable(),
+  brief: z.string().optional(),
+  status: z.string().optional(),
+  goal: z.string().optional(),
 });
 
-const renameFolderSchema = z.object({
-  name: z.string().min(1).max(255),
+const updateFolderSchema = z.object({
+  name: z.string().min(1).max(255).optional(),
+  brief: z.string().nullable().optional(),
+  status: z.string().nullable().optional(),
+  goal: z.string().nullable().optional(),
 });
 
 async function getOwnedFolder(folderId: string, userId: string) {
@@ -81,6 +87,9 @@ export default async function folderRoutes(fastify: FastifyInstance) {
       name: body.name,
       parentId: body.parentId,
       userId,
+      ...(body.brief !== undefined && { brief: body.brief }),
+      ...(body.status !== undefined && { status: body.status }),
+      ...(body.goal !== undefined && { goal: body.goal }),
     }).returning();
 
     return reply.status(201).send(folder);
@@ -104,31 +113,43 @@ export default async function folderRoutes(fastify: FastifyInstance) {
     return reply.send({ folders: foldersWithCount });
   });
 
-  // PATCH /:id — rename
+  // PATCH /:id — update folder (name, brief, status, goal)
   fastify.patch('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
-    const { name } = renameFolderSchema.parse(request.body);
+    const body = updateFolderSchema.parse(request.body);
     const userId = request.user!.id;
 
     const folder = await getOwnedFolder(id, userId);
 
-    // Check same-level name uniqueness
-    const conditions = [
-      eq(schema.folders.name, name),
-      eq(schema.folders.userId, userId),
-    ];
-    if (folder.parentId) {
-      conditions.push(eq(schema.folders.parentId, folder.parentId));
-    } else {
-      conditions.push(sql`${schema.folders.parentId} IS NULL`);
+    // Check same-level name uniqueness if name is being changed
+    if (body.name && body.name !== folder.name) {
+      const conditions = [
+        eq(schema.folders.name, body.name),
+        eq(schema.folders.userId, userId),
+      ];
+      if (folder.parentId) {
+        conditions.push(eq(schema.folders.parentId, folder.parentId));
+      } else {
+        conditions.push(sql`${schema.folders.parentId} IS NULL`);
+      }
+      const [existing] = await db.select({ id: schema.folders.id }).from(schema.folders).where(and(...conditions));
+      if (existing && existing.id !== id) {
+        throw new AppError(ErrorCodes.CONFLICT, 'A folder with this name already exists at this level', 409);
+      }
     }
-    const [existing] = await db.select({ id: schema.folders.id }).from(schema.folders).where(and(...conditions));
-    if (existing && existing.id !== id) {
-      throw new AppError(ErrorCodes.CONFLICT, 'A folder with this name already exists at this level', 409);
+
+    const updates: Record<string, any> = {};
+    if (body.name !== undefined) updates.name = body.name;
+    if (body.brief !== undefined) updates.brief = body.brief;
+    if (body.status !== undefined) updates.status = body.status;
+    if (body.goal !== undefined) updates.goal = body.goal;
+
+    if (Object.keys(updates).length === 0) {
+      return reply.send(folder);
     }
 
     const [updated] = await db.update(schema.folders)
-      .set({ name })
+      .set(updates)
       .where(eq(schema.folders.id, id))
       .returning();
 

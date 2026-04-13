@@ -525,6 +525,11 @@ export default async function v1Routes(fastify: FastifyInstance) {
       return reply.status(404).send({ error: 'No files found in this folder' });
     }
 
+    // Get folder info for project context
+    const [folderInfo] = await db.select()
+      .from(schema.folders)
+      .where(and(eq(schema.folders.id, folderId), eq(schema.folders.userId, userId)));
+
     const fileIds = folderFiles.map(f => f.id);
 
     // 2. Get related insights
@@ -547,6 +552,12 @@ export default async function v1Routes(fastify: FastifyInstance) {
       : '无';
 
     const prompt = `你是一个 AI 知识助手。请基于以下项目文件和 AI 洞察，生成一份精炼的项目交接包。
+
+## 项目信息
+名称: ${folderInfo?.name || '未知'}
+简介: ${folderInfo?.brief || '未设置'}
+状态: ${folderInfo?.status || '进行中'}
+目标: ${folderInfo?.goal || '未设置'}
 
 ## 项目文件
 ${filesSection}

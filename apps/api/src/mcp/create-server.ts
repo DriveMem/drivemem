@@ -494,6 +494,11 @@ export function createMcpServer(userId: string, agentName: string = ''): Server 
 
           if (folderFiles.length === 0) return { content: [{ type: 'text' as const, text: '该文件夹下没有文件。' }], isError: true };
 
+          // Get folder info for project context
+          const [folderInfo] = await db.select()
+            .from(schema.folders)
+            .where(and(eq(schema.folders.id, folderId), eq(schema.folders.userId, userId)));
+
           const fileIds = folderFiles.map(f => f.id);
 
           // Get related insights
@@ -510,6 +515,12 @@ export function createMcpServer(userId: string, agentName: string = ''): Server 
             ? relatedInsights.map(i => `- ${i.title}: ${i.description}`).join('\n') : '无';
 
           const prompt = `你是一个 AI 知识助手。请基于以下项目文件和 AI 洞察，生成一份精炼的项目交接包。
+
+## 项目信息
+名称: ${folderInfo?.name || '未知'}
+简介: ${folderInfo?.brief || '未设置'}
+状态: ${folderInfo?.status || '进行中'}
+目标: ${folderInfo?.goal || '未设置'}
 
 ## 项目文件
 ${filesSection}

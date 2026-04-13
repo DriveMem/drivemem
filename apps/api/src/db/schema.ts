@@ -30,6 +30,9 @@ export const folders = pgTable('folders', {
   name: varchar('name', { length: 255 }).notNull(),
   parentId: uuid('parent_id'),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  brief: text('brief'),
+  status: text('status'),
+  goal: text('goal'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
