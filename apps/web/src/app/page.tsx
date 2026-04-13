@@ -91,7 +91,7 @@ export default function LandingPage() {
               <Link href="#features">了解更多</Link>
             </Button>
             <Button asChild variant="ghost" size="lg" className="h-12 px-8 text-base text-[#6B6966] hover:text-[#1C1B18]">
-              <Link href="/login?demo=true">免费试用 →</Link>
+              <Link href="/signup">免费试用 →</Link>
             </Button>
           </div>
           <p className="mt-4 text-sm text-[#6B6966] text-center">✨ 免费 5GB 存储 · 每天 50 次 AI 对话 · 支持 MCP / API / CLI</p>

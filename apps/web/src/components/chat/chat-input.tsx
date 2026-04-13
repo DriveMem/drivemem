@@ -11,7 +11,7 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
   const getPlaceholders = () => {
     if (fileCount === 0 && !hasConversations) {
       return [
-        "上传文件后，AI 就能回答你的问题",
+        "先上传一份文件，AI 就能帮你分析和回答问题",
       ]
     }
     if (hasConversations) {
