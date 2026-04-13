@@ -184,7 +184,7 @@ export default function LandingPage() {
       {/* ===== Final CTA ===== */}
       <section className="relative z-10 px-6 py-32 text-center">
         <FadeIn>
-          <h2 className="text-3xl font-bold sm:text-4xl">准备好了吗？让 AI 记住你的一切</h2>
+          <h2 className="text-3xl font-bold sm:text-4xl">One memory layer for every agent you use</h2>
           <div className="mt-8">
             <Button asChild size="lg" className="h-12 px-10 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
               <Link href="/signup">免费开始 <ArrowRight className="ml-1 h-4 w-4" /></Link>

@@ -10,15 +10,20 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: "AI Drive - 让 AI 记住你的一切",
-  description: "上传文件，AI 自动理解、记忆、分析。智能摘要、知识关联、跨文件对比、一键生成分析报告。你的个人 AI 知识分析平台。",
-  keywords: ["AI Drive", "AI 网盘", "智能文档", "知识管理", "RAG", "文件分析"],
+  title: "AI Drive — One memory. Every agent.",
+  description: "Your AI agents' shared memory layer. Upload docs, AI auto-indexes — then any agent can search, recall, and build on your knowledge via API, MCP, or CLI.",
+  keywords: ["AI Drive", "Agent Context OS", "AI memory", "knowledge management", "RAG", "MCP", "agent memory", "context packet"],
   openGraph: {
-    title: "AI Drive - 让 AI 记住你的一切",
-    description: "上传文件，AI 自动理解、记忆、分析。你的个人 AI 知识分析平台。",
+    title: "AI Drive — One memory. Every agent.",
+    description: "Your AI agents' shared memory layer. Upload once, every agent remembers.",
     type: "website",
     url: "https://drivemem.cloud",
     siteName: "AI Drive",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Drive — One memory. Every agent.",
+    description: "Your AI agents' shared memory layer. Upload once, every agent remembers.",
   },
   icons: { icon: "/favicon.svg" },
 }
