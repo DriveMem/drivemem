@@ -14,9 +14,10 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     if (reply.sent) return;
 
     const userId = request.user!.id;
+    const agentName = (request as any).apiKeyName || '';
 
     // Create per-session MCP server + transport
-    const mcpServer = createMcpServer(userId);
+    const mcpServer = createMcpServer(userId, agentName);
     // SSEServerTransport: constructor(endpoint, res) — endpoint is the POST path relative to SSE
     const transport = new SSEServerTransport('/mcp', reply.raw);
 

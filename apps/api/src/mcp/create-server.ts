@@ -8,7 +8,7 @@ import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { eq, desc, and } from 'drizzle-orm';
 
-export function createMcpServer(userId: string): Server {
+export function createMcpServer(userId: string, agentName: string = ''): Server {
   const server = new Server(
     { name: 'ai-drive', version: '1.0.0' },
     {
@@ -477,19 +477,50 @@ export function createMcpServer(userId: string): Server {
 
   // Resources — expose recent knowledge for auto-injection
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
-    const recentFiles = await db.select({
-      id: schema.files.id,
-      name: schema.files.name,
-      summary: schema.files.summary,
-      createdAt: schema.files.createdAt,
-    })
-      .from(schema.files)
-      .where(eq(schema.files.userId, userId))
-      .orderBy(desc(schema.files.createdAt))
-      .limit(5);
+    let relevantFiles;
+
+    if (agentName) {
+      // Smart matching: use agent name/description as semantic query
+      try {
+        const [queryVec] = await embedTexts([agentName]);
+        const chunks = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: 5 });
+        // Get unique file IDs from semantic search results
+        const fileIds = [...new Set(chunks.map(c => c.fileId))].slice(0, 5);
+        if (fileIds.length > 0) {
+          relevantFiles = await db.select({
+            id: schema.files.id,
+            name: schema.files.name,
+            summary: schema.files.summary,
+            createdAt: schema.files.createdAt,
+          })
+            .from(schema.files)
+            .where(eq(schema.files.userId, userId))
+            .orderBy(desc(schema.files.createdAt))
+            .limit(5);
+          // Filter to only semantically matched files
+          relevantFiles = relevantFiles.filter(f => fileIds.includes(f.id));
+        }
+      } catch {
+        // Fallback to recent files if embedding fails
+      }
+    }
+
+    // Fallback: recent files
+    if (!relevantFiles || relevantFiles.length === 0) {
+      relevantFiles = await db.select({
+        id: schema.files.id,
+        name: schema.files.name,
+        summary: schema.files.summary,
+        createdAt: schema.files.createdAt,
+      })
+        .from(schema.files)
+        .where(eq(schema.files.userId, userId))
+        .orderBy(desc(schema.files.createdAt))
+        .limit(5);
+    }
 
     return {
-      resources: recentFiles.map(f => ({
+      resources: relevantFiles.map(f => ({
         uri: `aidrive://files/${f.id}`,
         name: f.name,
         description: f.summary?.slice(0, 100) || '无摘要',
