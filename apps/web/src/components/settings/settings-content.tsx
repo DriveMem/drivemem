@@ -470,6 +470,43 @@ export default function SettingsContent() {
 
   const [memories, setMemories] = useState<any[]>([])
 
+  // Profile state
+  const [profileRole, setProfileRole] = useState("")
+  const [profileGoal, setProfileGoal] = useState("")
+  const [profileBg, setProfileBg] = useState("")
+  const [profilePrefs, setProfilePrefs] = useState("")
+  const [profileSaving, setProfileSaving] = useState(false)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/users/me/profile")
+        setProfileRole(data.role || "")
+        setProfileGoal(data.currentGoal || "")
+        setProfileBg(data.background || "")
+        setProfilePrefs(data.preferences || "")
+      } catch { /* ignore */ }
+    }
+    fetchProfile()
+  }, [])
+
+  const saveProfile = async () => {
+    setProfileSaving(true)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch("/api/users/me/profile", {
+        method: "PATCH",
+        body: JSON.stringify({ role: profileRole, currentGoal: profileGoal, background: profileBg, preferences: profilePrefs }),
+      })
+      toast.success("档案已保存")
+    } catch {
+      toast.error("保存失败")
+    } finally {
+      setProfileSaving(false)
+    }
+  }
+
   const fetchMemories = async () => {
     try {
       const { apiFetch } = await import("@/lib/api")
@@ -586,6 +623,35 @@ export default function SettingsContent() {
             </div>
           )}
           <Button size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white" onClick={() => toast.success("已保存")}>保存</Button>
+        </CardContent>
+      </Card>
+
+      {/* AI Profile */}
+      <Card>
+        <CardHeader>
+          <CardTitle>🧠 AI 档案</CardTitle>
+          <CardDescription>帮助 AI 更好地理解你——连接的所有 AI 工具都会自动获得这些信息</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="role">你的角色</Label>
+            <Input id="role" placeholder="如：产品经理、开发者、研究员" value={profileRole} onChange={(e) => setProfileRole(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="goal">当前目标</Label>
+            <Input id="goal" placeholder="如：做一个 AI 知识管理产品" value={profileGoal} onChange={(e) => setProfileGoal(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="background">背景简介</Label>
+            <Input id="background" placeholder="如：3 年 AI 产品经验" value={profileBg} onChange={(e) => setProfileBg(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="prefs">AI 偏好</Label>
+            <Input id="prefs" placeholder="如：喜欢结构化输出、中文回答" value={profilePrefs} onChange={(e) => setProfilePrefs(e.target.value)} />
+          </div>
+          <Button size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white" onClick={saveProfile} disabled={profileSaving}>
+            {profileSaving ? "保存中..." : "保存档案"}
+          </Button>
         </CardContent>
       </Card>
 

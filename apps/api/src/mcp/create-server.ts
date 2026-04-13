@@ -561,6 +561,18 @@ ${insightsSection}
 
   // Resources — expose recent knowledge for auto-injection
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
+    // Identity resource
+    const [user] = await db.select({ name: schema.users.name, email: schema.users.email, profile: schema.users.profile })
+      .from(schema.users).where(eq(schema.users.id, userId));
+    const profile = (user?.profile as Record<string, any>) || {};
+    const identityText = [
+      user?.name ? `名称: ${user.name}` : '',
+      profile.role ? `角色: ${profile.role}` : '',
+      profile.currentGoal ? `当前目标: ${profile.currentGoal}` : '',
+      profile.background ? `背景: ${profile.background}` : '',
+      profile.preferences ? `偏好: ${profile.preferences}` : '',
+    ].filter(Boolean).join('\n');
+
     let relevantFiles;
 
     if (agentName) {
@@ -604,17 +616,41 @@ ${insightsSection}
     }
 
     return {
-      resources: relevantFiles.map(f => ({
+      resources: [
+        {
+          uri: 'aidrive://identity',
+          name: '用户档案',
+          description: identityText || '未设置个人档案',
+          mimeType: 'text/plain',
+        },
+        ...relevantFiles.map(f => ({
         uri: `aidrive://files/${f.id}`,
         name: f.name,
         description: f.summary?.slice(0, 100) || '无摘要',
         mimeType: 'text/plain',
       })),
+      ],
     };
   });
 
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const uri = request.params.uri;
+
+    if (uri === 'aidrive://identity') {
+      const [user] = await db.select({ name: schema.users.name, email: schema.users.email, profile: schema.users.profile })
+        .from(schema.users).where(eq(schema.users.id, userId));
+      const profile = (user?.profile as Record<string, any>) || {};
+      const text = [
+        user?.name ? `名称: ${user.name}` : '',
+        user?.email ? `邮箱: ${user.email}` : '',
+        profile.role ? `角色: ${profile.role}` : '',
+        profile.currentGoal ? `当前目标: ${profile.currentGoal}` : '',
+        profile.background ? `背景: ${profile.background}` : '',
+        profile.preferences ? `偏好: ${profile.preferences}` : '',
+      ].filter(Boolean).join('\n');
+      return { contents: [{ uri, text: text || '未设置个人档案', mimeType: 'text/plain' }] };
+    }
+
     const fileId = uri.replace('aidrive://files/', '');
     const [file] = await db.select().from(schema.files).where(eq(schema.files.id, fileId));
     if (!file || file.userId !== userId) {

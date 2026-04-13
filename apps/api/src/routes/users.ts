@@ -301,4 +301,24 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
     return reply.send({ message: '密码修改成功' });
   });
+
+  // GET /me/profile — 获取个人档案
+  fastify.get('/me/profile', { preHandler: [requireAuth] }, async (request, reply) => {
+    const [user] = await db.select({ profile: users.profile, name: users.name, email: users.email })
+      .from(users).where(eq(users.id, request.user!.id));
+    if (!user) return reply.status(404).send({ error: 'User not found' });
+    const profile = (user.profile as Record<string, any>) || {};
+    return reply.send({ ...profile, name: user.name, email: user.email });
+  });
+
+  // PATCH /me/profile — 更新个人档案
+  fastify.patch('/me/profile', { preHandler: [requireAuth] }, async (request, reply) => {
+    const body = request.body as { role?: string; currentGoal?: string; background?: string; preferences?: string };
+    const userId = request.user!.id;
+    const [user] = await db.select({ profile: users.profile }).from(users).where(eq(users.id, userId));
+    const existingProfile = (user?.profile as Record<string, any>) || {};
+    const newProfile = { ...existingProfile, ...body };
+    await db.update(users).set({ profile: newProfile, updatedAt: new Date() }).where(eq(users.id, userId));
+    return reply.send(newProfile);
+  });
 }

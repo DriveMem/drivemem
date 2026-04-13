@@ -15,6 +15,27 @@ import { Queue } from 'bullmq';
 export default async function v1Routes(fastify: FastifyInstance) {
   fastify.addHook('preHandler', requireApiKey);
 
+  // GET /users/me/profile
+  fastify.get('/users/me/profile', async (request, reply) => {
+    const userId = request.user!.id;
+    const [user] = await db.select({ profile: schema.users.profile, name: schema.users.name, email: schema.users.email })
+      .from(schema.users).where(eq(schema.users.id, userId));
+    if (!user) return reply.status(404).send({ error: 'User not found' });
+    const profile = (user.profile as Record<string, any>) || {};
+    return reply.send({ ...profile, name: user.name, email: user.email });
+  });
+
+  // PATCH /users/me/profile
+  fastify.patch('/users/me/profile', async (request, reply) => {
+    const body = request.body as { role?: string; currentGoal?: string; background?: string; preferences?: string };
+    const userId = request.user!.id;
+    const [user] = await db.select({ profile: schema.users.profile }).from(schema.users).where(eq(schema.users.id, userId));
+    const existingProfile = (user?.profile as Record<string, any>) || {};
+    const newProfile = { ...existingProfile, ...body };
+    await db.update(schema.users).set({ profile: newProfile, updatedAt: new Date() }).where(eq(schema.users.id, userId));
+    return reply.send(newProfile);
+  });
+
   // GET /files — detail=brief|full (default: full)
   fastify.get('/files', async (request, reply) => {
     const userId = request.user!.id;

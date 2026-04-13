@@ -17,6 +17,7 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   insight: text('insight'),
   notificationPreferences: jsonb('notification_preferences'),
+  profile: jsonb('profile').default({}),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

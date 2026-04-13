@@ -367,6 +367,20 @@ switch (command) {
     break;
   }
 
+  case 'profile': {
+    if (args[0] === 'set') {
+      const key = args[1];
+      const value = args.slice(2).join(' ');
+      if (!key || !value) { console.error('Usage: aidrive profile set <key> <value>'); break; }
+      await apiCall('/users/me/profile', { method: 'PATCH', body: JSON.stringify({ [key]: value }) });
+      console.log(`✅ 已设置 ${key}: ${value}`);
+    } else {
+      const data = await apiCall('/users/me/profile');
+      output(data, `🧠 AI 档案\n  角色: ${data.role || '未设置'}\n  目标: ${data.currentGoal || '未设置'}\n  背景: ${data.background || '未设置'}\n  偏好: ${data.preferences || '未设置'}`);
+    }
+    break;
+  }
+
   case 'help':
   case undefined:
   default:
@@ -397,6 +411,8 @@ AI 能力:
   aidrive insights              查看 AI 发现的知识关联
   aidrive timeline [--limit N]  知识活动时间线
   aidrive pack <folder-id>      生成项目交接包（跨模型任务接力）
+  aidrive profile               查看 AI 档案
+  aidrive profile set <k> <v>   设置档案字段（role/currentGoal/background/preferences）
 
 全局选项:
   --json                        输出 JSON 格式（适合 agent/脚本）
