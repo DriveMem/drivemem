@@ -101,7 +101,7 @@ export function AiHub() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-sm">AI 助手</h3>
+              <h3 className="font-semibold text-sm">AI 对话</h3>
               {indexedFiles.length > 0 && (
                 <span className="flex items-center gap-1 rounded-full bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">
                   <Sparkles className="h-2.5 w-2.5" /> 活跃

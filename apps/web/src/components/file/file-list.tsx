@@ -1027,16 +1027,16 @@ export function FileList() {
               <span className="text-xs font-medium">试试 AI 对话</span>
               <span className="text-[11px] text-muted-foreground leading-tight">基于你的知识库提问</span>
             </Link>
-            <div
-              className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-amber-500/30 bg-amber-500/5 p-4 cursor-default text-center opacity-70"
-              title="Web Clipper 即将上线"
+            <Link
+              href="/chat"
+              className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-green-500/30 bg-green-500/5 p-4 hover:border-green-500/60 hover:shadow-sm transition text-center"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10">
-                <Sparkles className="h-4.5 w-4.5 text-amber-500" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-500/10">
+                <Lightbulb className="h-4.5 w-4.5 text-green-500" />
               </div>
-              <span className="text-xs font-medium">Web Clipper</span>
-              <span className="text-[11px] text-muted-foreground leading-tight">即将上线</span>
-            </div>
+              <span className="text-xs font-medium">知识洞察</span>
+              <span className="text-[11px] text-muted-foreground leading-tight">浏览 AI 发现</span>
+            </Link>
             <Link
               href="/developers"
               className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-purple-500/30 bg-purple-500/5 p-4 hover:border-purple-500/60 hover:shadow-sm transition text-center"

@@ -220,7 +220,7 @@ export function createMcpServer(userId: string, agentName: string = ''): Server 
           const citations = chunks.map((c, i) => `来源 ${i + 1} (${c.fileName}): ${c.text.slice(0, chunkChars)}`).join('\n\n');
           const lengthHint = budget && budget < 1000 ? `\n请简洁回答，控制在 ${budget} 字以内。` : '';
           const formatHint = format === 'summary' ? '\n用要点列表（bullet points）回答，每点一行。' : format === 'structured' ? '\n用 JSON 格式回答：{"answer":"...","keyPoints":["..."],"confidence":"high/medium/low"}' : '';
-          const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于文档内容回答。用上标¹²³引用来源。${lengthHint}${formatHint}\n\n[文档片段]\n${citations || '(未找到相关文档)'}`;
+          const systemPrompt = `你是 DriveMem AI，用户的个人知识助手。严格基于文档内容回答。用上标¹²³引用来源。${lengthHint}${formatHint}\n\n[文档片段]\n${citations || '(未找到相关文档)'}`;
           const answer = await chat([{ role: 'system', content: systemPrompt }, { role: 'user', content: question }]);
           return { content: [{ type: 'text' as const, text: answer }] };
         }

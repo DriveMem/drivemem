@@ -239,7 +239,7 @@ export default function DashboardPage() {
             )}
           >
             <Sparkles className="h-4 w-4" />
-            AI 助手
+            AI 对话
             {fileCount > 3 && activeTab !== "ai" && (
               <span className="absolute top-1.5 right-1 h-2 w-2 rounded-full bg-blue-500" />
             )}
@@ -333,14 +333,13 @@ export default function DashboardPage() {
                   <Upload className="h-5 w-5 text-[#4F5BD5]" />
                   <span className="text-xs font-medium">上传文件</span>
                 </button>
-                <div
-                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 opacity-50 cursor-default"
-                  title="Web Clipper 即将上线"
+                <Link
+                  href="/chat"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
                 >
-                  <Sparkles className="h-5 w-5 text-amber-500" />
-                  <span className="text-xs font-medium">Web Clipper</span>
-                  <span className="text-[10px] text-muted-foreground">即将上线</span>
-                </div>
+                  <MessageSquare className="h-5 w-5 text-green-500" />
+                  <span className="text-xs font-medium">AI 对话</span>
+                </Link>
                 <Link
                   href="/developers"
                   className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"

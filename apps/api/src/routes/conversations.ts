@@ -285,6 +285,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
       .where(eq(schema.files.userId, user.id));
     const oldVersionIds = new Set(filesWithVersions.filter(f => f.previousVersionId).map(f => f.previousVersionId));
     const archivedIds = new Set(filesWithVersions.filter(f => f.archivedAt).map(f => f.id));
+    const userFileCount = filesWithVersions.filter(f => !f.archivedAt && !oldVersionIds.has(f.id)).length;
     const filteredChunks = chunks.filter(c => !oldVersionIds.has(c.fileId) && !archivedIds.has(c.fileId));
     // Fall back to original if filtering removes everything
     const finalChunks = filteredChunks.length > 0 ? filteredChunks : chunks;
@@ -296,7 +297,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
     const citationSources = finalChunks.map(
       (c, i) => `来源 ${i + 1} (${c.fileName} 第${c.chunkIndex + 1}段): ${c.text}`,
     );
-    const systemPrompt = `你是 AI Drive 的文档 AI 助手。你的职责是**严格基于用户上传的文档内容**回答问题。
+    const systemPrompt = `你是 DriveMem AI，用户的个人知识助手。用户当前知识库中有 ${userFileCount} 个文件。你的职责是**严格基于用户上传的文档内容**回答问题。
 
 重要规则：
 1. **只使用下方提供的文档片段**来回答问题，不要使用你自己的知识补充
@@ -304,11 +305,12 @@ export default async function conversationRoutes(app: FastifyInstance) {
 3. 回答时**必须用上标数字引用来源**，格式：¹ ² ³。例如"根据文档¹，核心功能包括..."。不要使用 [来源: xxx] 格式
 4. 当检索到**多个文件**的内容时，主动进行**跨文件分析**：对比不同文件的观点、综合多份文档的信息、指出文件间的异同
 5. 使用中文回答，保持专业友好的语气
-6. 如果用户没有上传任何文件或检索结果为空，提醒用户先上传文件
+6. ${userFileCount === 0 ? '用户还没有上传任何文件，提醒用户先上传文件' : '不要提醒用户上传文件，用户已经有文件了。如果检索结果为空，说明没有找到与问题相关的内容'}
 7. 回答结构清晰，使用标题、列表等格式提升可读性
+8. 当用户发送问候（如"你好"、"hi"）时，友好回复并简要介绍你能做什么，不要引用任何来源
 
 [文档片段]
-${citationSources.length > 0 ? citationSources.join('\n\n') : '（未找到相关文档内容。请告诉用户在他们的文件中没有找到相关信息，或者提醒他们先上传文件。）'}`;
+${citationSources.length > 0 ? citationSources.join('\n\n') : userFileCount > 0 ? '（当前问题未匹配到相关文档片段）' : '（用户尚未上传文件）'}`;
 
     // Get user memories for context
     const userMemories = await db.select({ key: schema.userMemory.key, value: schema.userMemory.value })

@@ -193,7 +193,7 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
             {msg.role === "assistant" ? (
               <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight, rehypeRaw]} components={markdownComponents}>{transformCitations(msg.content)}</ReactMarkdown>
-                {msg.citations && msg.citations.length > 0 && (
+                {msg.citations && msg.citations.length > 0 && /[¹²³⁴⁵⁶⁷⁸⁹⁰]/.test(msg.content) && (
                   <details className="mt-3 pt-3 border-t border-border">
                     <summary className="text-xs text-muted-foreground font-medium cursor-pointer select-none hover:text-foreground">📎 {msg.citations.length} 个来源引用</summary>
                     <div className="mt-2 space-y-1">

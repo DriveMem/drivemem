@@ -434,7 +434,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
     const askFormat = body.preferFormat || 'text';
     const lengthHint = askBudget && askBudget < 1000 ? `\n请简洁回答，控制在 ${askBudget} 字以内。` : '';
     const formatHint = askFormat === 'summary' ? '\n用要点列表回答。' : askFormat === 'structured' ? '\n用 JSON 格式回答：{"answer":"...","keyPoints":["..."],"confidence":"high/medium/low"}' : '';
-    const systemPrompt = `你是 AI Drive 的文档 AI 助手。严格基于文档内容回答。用上标¹²³引用来源。${lengthHint}${formatHint}\n\n[文档片段]\n${citationSources.join('\n\n') || '（未找到相关文档）'}`;
+    const systemPrompt = `你是 DriveMem AI，用户的个人知识助手。严格基于文档内容回答。用上标¹²³引用来源。${lengthHint}${formatHint}\n\n[文档片段]\n${citationSources.join('\n\n') || '（未找到相关文档）'}`;
 
     const { chat } = await import('../services/llm.service.js');
     const answer = await chat([
