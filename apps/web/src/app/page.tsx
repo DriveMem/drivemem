@@ -44,18 +44,18 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
 /* ---------- page ---------- */
 
 const STEPS = [
-  { icon: Upload, title: "上传文件", desc: "拖拽或选择你的 PDF、Word、PPT、Excel、TXT、Markdown 文件" },
-  { icon: Search, title: "AI 自动索引", desc: "AI 自动解析文件内容，建立语义索引" },
-  { icon: MessageSquare, title: "对话提问", desc: "用自然语言提问，获得精准答案" },
+  { icon: Upload, title: "存入知识", desc: "上传文件、保存对话结论、AI 自动理解和索引" },
+  { icon: Search, title: "AI 自动关联", desc: "语义搜索、跨文件洞察、自动发现知识关联" },
+  { icon: MessageSquare, title: "Agent 无缝接力", desc: "任何 AI 工具接入你的知识库，任务接力不断片" },
 ] as const
 
 const FEATURES = [
-  { icon: MessageSquare, title: "AI 智能对话", desc: "问你的 AI 任何关于你文件的问题，获得基于文档内容的精准回答。就像拥有一个读过你所有资料的私人助手。", reverse: false },
-  { icon: Lightbulb, title: "AI 主动发现知识关联", desc: "AI 自动分析文件间的联系、矛盾和趋势，主动推送洞察给你，无需你提问。", reverse: true },
-  { icon: Quote, title: "精准引用来源", desc: "每个回答都标注来自哪个文件、哪一段。让你对答案的准确性充满信心，随时可以回溯原文验证。", reverse: false },
-  { icon: FileSearch, title: "一键查看文件摘要", desc: "AI 自动生成文件摘要、提取关键信息，无需逐页阅读。一眼掌握文件核心内容。", reverse: true },
-  { icon: Command, title: "全文语义搜索", desc: "⌘K 一键搜索所有文件内容。不只是关键词匹配，AI 理解你的意思，在海量文档中找到真正相关的信息。", reverse: false },
-  { icon: History, title: "对话历史记录", desc: "所有对话自动保存，随时回顾。你的每一次提问和 AI 的每一次回答都被完整记录。", reverse: true },
+  { icon: MessageSquare, title: "跨 Agent 任务接力", desc: "在一个 AI 做了调研，切到另一个写方案。Context Packet 一键打包上下文，新 agent 接着做。", reverse: false },
+  { icon: Lightbulb, title: "AI 主动发现关联", desc: "AI 自动分析文件间的联系、矛盾和趋势，主动推送洞察。", reverse: true },
+  { icon: Quote, title: "用户档案自动同步", desc: "设置你的角色、目标和偏好，所有连接的 agent 自动获得。不用每次重新自我介绍。", reverse: false },
+  { icon: FileSearch, title: "项目记忆", desc: "按项目组织知识。每个项目有简介、目标和状态，agent 连接后立即了解项目全貌。", reverse: true },
+  { icon: Command, title: "MCP / API / CLI 接入", desc: "标准 MCP 协议、REST API、CLI 工具。任何 AI agent 一行配置接入。", reverse: false },
+  { icon: History, title: "知识时间线", desc: "追踪所有知识活动——文件上传、AI 分析、对话结论、洞察发现。完整审计轨迹。", reverse: true },
 ] as const
 
 export default function LandingPage() {
@@ -78,10 +78,10 @@ export default function LandingPage() {
       <section className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center bg-gradient-to-b from-[#F4F5FD] to-white px-6 text-center">
         <FadeIn>
           <h1 className="mx-auto max-w-4xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-7xl">
-            你的 AI 知识助手
+            让你的所有 AI 接着做，不用从头讲
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-[#6B6966] sm:text-xl">
-            上传文件，AI 自动理解。随时提问，AI 用你的知识回答。
+            所有 agent 共享一个记忆，任务无缝接力
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" className="h-12 px-8 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
@@ -94,7 +94,7 @@ export default function LandingPage() {
               <Link href="/login?demo=true">免费试用 →</Link>
             </Button>
           </div>
-          <p className="mt-4 text-sm text-[#6B6966] text-center">✨ 免费 5GB 存储 · 每天 50 次 AI 对话 · 无需信用卡</p>
+          <p className="mt-4 text-sm text-[#6B6966] text-center">✨ 免费 5GB 存储 · 每天 50 次 AI 对话 · 支持 MCP / API / CLI</p>
         </FadeIn>
       </section>
 
@@ -190,7 +190,7 @@ export default function LandingPage() {
               <Link href="/signup">免费开始 <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>
-          <p className="mt-4 text-sm text-[#6B6966]">✨ 免费 5GB 存储 · 每天 50 次 AI 对话 · 无需信用卡</p>
+          <p className="mt-4 text-sm text-[#6B6966]">✨ 免费 5GB 存储 · 每天 50 次 AI 对话 · 支持 MCP / API / CLI</p>
         </FadeIn>
       </section>
 
