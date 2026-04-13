@@ -28,7 +28,9 @@ const signupSchema = z
 
 type SignupForm = z.infer<typeof signupSchema>
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
+const PRODUCTION_API = "https://api.drivemem.cloud"
+const isDev = typeof window !== "undefined" && window.location.hostname === "localhost"
+const API_BASE = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : PRODUCTION_API
 
 export default function SignupPage() {
   const router = useRouter()

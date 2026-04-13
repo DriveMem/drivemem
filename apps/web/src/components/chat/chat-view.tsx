@@ -31,7 +31,9 @@ interface ChatMessage {
   citations?: Array<{ fileId: string; fileName: string; chunkIndex: number; text: string }>
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
+const PRODUCTION_API = "https://api.drivemem.cloud"
+const isDev = typeof window !== "undefined" && window.location.hostname === "localhost"
+const API_BASE = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : PRODUCTION_API
 
 const DEFAULT_SUGGESTIONS = [
   "📄 总结我最近上传的文件",

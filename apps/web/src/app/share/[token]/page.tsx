@@ -33,7 +33,8 @@ export default function SharePage() {
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || ""
+    const isDev = typeof window !== "undefined" && window.location.hostname === "localhost"
+    const apiUrl = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : "https://api.drivemem.cloud"
     fetch(`${apiUrl}/api/shares/${token}`)
       .then((res) => {
         if (!res.ok) throw new Error("not found")

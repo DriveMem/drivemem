@@ -7,7 +7,9 @@ import remarkGfm from "remark-gfm"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || ""
+const PRODUCTION_API = "https://api.drivemem.cloud"
+const isDev = typeof window !== "undefined" && window.location.hostname === "localhost"
+const API_URL = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : PRODUCTION_API
 
 interface ShareData {
   report: string
