@@ -78,7 +78,7 @@ export default function LandingPage() {
       <section className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center bg-gradient-to-b from-[#F4F5FD] to-white px-6 text-center">
         <FadeIn>
           <h1 className="mx-auto max-w-4xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-7xl">
-            One memory. Every agent.
+            每个 agent，一份记忆
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-[#6B6966] sm:text-xl">
             一份记忆，每个 agent 都知道你。你的背景、偏好、项目 — 接入即共享。
@@ -201,7 +201,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div>
               <h3 className="text-lg font-bold text-[#1C1B18]">DriveMem</h3>
-              <p className="mt-2 text-sm text-[#6B6966]">One memory. Every agent.</p>
+              <p className="mt-2 text-sm text-[#6B6966]">每个 agent，一份记忆</p>
             </div>
 
             {/* 产品 */}
