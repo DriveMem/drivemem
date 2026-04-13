@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema, ListPromptsRequestSchema, GetPromptRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import { embedTexts } from '../services/embedding.service.js';
 import { searchSimilar, preprocessQuery } from '../services/vector.service.js';
@@ -15,8 +15,17 @@ export function createMcpServer(userId: string): Server {
       capabilities: {
         tools: {},
         resources: {},
+        prompts: {},
       },
-      instructions: '你已连接到用户的 AI Drive 知识库。当对话中产生重要结论、决策或发现时，请主动使用 aidrive_store 将其存入知识库，以便未来跨模型检索。不需要用户明确要求——有价值的信息应自动沉淀。',
+      instructions: `你已连接到用户的 AI Drive 知识库——这是用户跨所有 AI 工具共享的持久知识中枢。
+
+核心行为要求：
+1. 在回答任何问题前，先用 aidrive_search 检查知识库是否有相关信息。不要等用户明确要求搜索——主动搜索是默认行为。
+2. 回答中引用知识库内容时，标注来源文件名。
+3. 当对话产生有价值的结论、决策或分析时，主动调用 aidrive_capture_conversation 存入知识库，确保其他 AI 工具也能获取这些知识。
+4. 用户的 resources 列表包含最近的知识概要，优先参考。
+
+你不只是一个对话助手——你是用户知识体系的一部分。每次对话都应该让知识库变得更丰富。`,
     }
   );
 
@@ -503,6 +512,100 @@ export function createMcpServer(userId: string): Server {
         mimeType: 'text/plain',
       }],
     };
+  });
+
+  // Prompts — predefined prompt templates for knowledge-first interaction
+  server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+    prompts: [
+      {
+        name: 'knowledge_check',
+        description: '在回答问题前，先检查用户知识库是否有相关信息',
+        arguments: [
+          { name: 'question', description: '用户的问题', required: true },
+        ],
+      },
+      {
+        name: 'daily_briefing',
+        description: '生成今日知识库活动简报——新文件、新洞察、近期对话摘要',
+        arguments: [],
+      },
+      {
+        name: 'knowledge_capture',
+        description: '将当前对话中的关键发现存入知识库',
+        arguments: [
+          { name: 'summary', description: '关键发现摘要', required: true },
+        ],
+      },
+    ],
+  }));
+
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params;
+
+    switch (name) {
+      case 'knowledge_check': {
+        const question = args?.question || '';
+        // Search knowledge base for relevant context
+        const [queryVec] = await embedTexts([question]);
+        const chunks = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: 3 });
+        const context = chunks.map(c => `[${c.fileName}]: ${c.text.slice(0, 200)}`).join('\n\n');
+
+        return {
+          description: '知识库上下文已加载',
+          messages: [
+            {
+              role: 'user' as const,
+              content: {
+                type: 'text' as const,
+                text: `以下是用户知识库中与问题相关的内容：\n\n${context || '（知识库中未找到直接相关内容）'}\n\n基于以上知识库内容和你自己的知识，回答用户问题：${question}`,
+              },
+            },
+          ],
+        };
+      }
+
+      case 'daily_briefing': {
+        const recentFiles = await db.select({ name: schema.files.name, summary: schema.files.summary, createdAt: schema.files.createdAt })
+          .from(schema.files)
+          .where(eq(schema.files.userId, userId))
+          .orderBy(desc(schema.files.createdAt))
+          .limit(5);
+
+        const recentInsights = await db.select({ title: schema.insights.title, description: schema.insights.description })
+          .from(schema.insights)
+          .where(eq(schema.insights.userId, userId))
+          .orderBy(desc(schema.insights.createdAt))
+          .limit(3);
+
+        const briefing = `## 知识库简报\n\n### 最近文件\n${recentFiles.map(f => `- ${f.name}: ${f.summary?.slice(0, 80) || '处理中...'}`).join('\n')}\n\n### AI 洞察\n${recentInsights.map(i => `- ${i.title}: ${i.description?.slice(0, 80)}`).join('\n') || '暂无新洞察'}`;
+
+        return {
+          description: '今日知识库简报',
+          messages: [
+            { role: 'user' as const, content: { type: 'text' as const, text: briefing } },
+          ],
+        };
+      }
+
+      case 'knowledge_capture': {
+        const summary = args?.summary || '';
+        return {
+          description: '准备存入知识库',
+          messages: [
+            {
+              role: 'user' as const,
+              content: {
+                type: 'text' as const,
+                text: `请将以下内容存入 AI Drive 知识库：\n\n${summary}\n\n调用 aidrive_capture_conversation 工具执行存储。`,
+              },
+            },
+          ],
+        };
+      }
+
+      default:
+        return { description: '未知 prompt', messages: [] };
+    }
   });
 
   return server;
