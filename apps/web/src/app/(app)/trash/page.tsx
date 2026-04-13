@@ -21,7 +21,7 @@ function daysRemaining(deletedAt: string): number {
 }
 
 export default function TrashPage() {
-  useEffect(() => { document.title = "回收站 - AI Drive" }, [])
+  useEffect(() => { document.title = "回收站 - DriveMem" }, [])
   const [files, setFiles] = useState<TrashedFile[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)

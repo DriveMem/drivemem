@@ -27,7 +27,7 @@
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
 
-    /* === AI Drive Design System === */
+    /* === DriveMem Design System === */
     /* 背景 */
     --bg-primary: #FFFFFF;
     --bg-secondary: #F8F7F5;
@@ -76,7 +76,7 @@
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
 
-    /* AI Drive Design System — Dark Mode */
+    /* DriveMem Design System — Dark Mode */
     --bg-primary: #1a1a1a;
     --bg-secondary: #252525;
     --bg-tertiary: #303030;

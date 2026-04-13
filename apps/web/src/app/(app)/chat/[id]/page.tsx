@@ -1,4 +1,4 @@
-export const metadata = { title: "AI 对话 - AI Drive" }
+export const metadata = { title: "AI 对话 - DriveMem" }
 
 import { ChatView } from "@/components/chat/chat-view"
 export default function ConversationPage({ params }: { params: Promise<{ id: string }> }) {

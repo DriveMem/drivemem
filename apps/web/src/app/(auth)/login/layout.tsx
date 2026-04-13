@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "登录 - AI Drive",
+  title: "登录 - DriveMem",
 }
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {

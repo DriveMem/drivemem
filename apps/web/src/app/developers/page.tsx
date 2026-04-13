@@ -303,7 +303,7 @@ export default function DevelopersPage() {
     <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-[#4F5BD5]/30">
       {/* Nav */}
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-[#E5E4E1] bg-white/80 px-6 py-4 backdrop-blur">
-        <Link href={isLoggedIn ? "/dashboard" : "/"} className="text-lg font-bold text-[#1C1B18]">AI Drive</Link>
+        <Link href={isLoggedIn ? "/dashboard" : "/"} className="text-lg font-bold text-[#1C1B18]">DriveMem</Link>
         <div className="flex items-center gap-4">
           <a href="#features" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">功能</a>
           {isLoggedIn ? (
@@ -335,7 +335,7 @@ export default function DevelopersPage() {
             让你的 Agent 拥有记忆
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-[#6B6966]">
-            AI Drive 是 agent 的知识基建 — 通过 API 和 MCP 协议接入你的知识库
+            DriveMem 是 agent 的知识基建 — 通过 API 和 MCP 协议接入你的知识库
           </p>
           <div className="mt-10">
             <Button asChild size="lg" className="h-12 px-10 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
@@ -371,7 +371,7 @@ export default function DevelopersPage() {
         <div className="mx-auto max-w-3xl">
           <FadeIn>
             <h2 className="text-center text-3xl font-bold sm:text-4xl">快速接入</h2>
-            <p className="mt-4 text-center text-[#6B6966]">三步接入 AI Drive</p>
+            <p className="mt-4 text-center text-[#6B6966]">三步接入 DriveMem</p>
 
             {/* Step guide */}
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -630,7 +630,7 @@ plugins:
               <div id="mcp">
                 <h3 className="font-semibold text-[#1C1B18]">MCP 工具列表</h3>
                 <p className="mt-2 text-sm text-[#6B6966]">
-                  AI Drive MCP Server 提供 {MCP_TOOLS.length} 个工具：
+                  DriveMem MCP Server 提供 {MCP_TOOLS.length} 个工具：
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {MCP_TOOLS.map((t) => (
@@ -673,7 +673,7 @@ aidrive insights           # AI 洞察
         <div className="mx-auto max-w-6xl px-6 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-bold text-[#1C1B18]">AI Drive</h3>
+              <h3 className="text-lg font-bold text-[#1C1B18]">DriveMem</h3>
               <p className="mt-2 text-sm text-[#6B6966]">你的 AI 知识助手</p>
             </div>
             <div>
@@ -701,7 +701,7 @@ aidrive insights           # AI 洞察
             </div>
           </div>
           <div className="mt-8 border-t border-[#E5E4E1] pt-6 text-center text-xs text-[#6B6966]">
-            © {new Date().getFullYear()} AI Drive. All rights reserved.
+            © {new Date().getFullYear()} DriveMem. All rights reserved.
           </div>
         </div>
       </footer>

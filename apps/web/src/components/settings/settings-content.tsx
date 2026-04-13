@@ -152,7 +152,7 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
     <Card className="mt-4">
       <CardHeader>
         <CardTitle>🔌 MCP 快速接入</CardTitle>
-        <CardDescription>将 AI Drive 接入支持 MCP 的 AI 工具</CardDescription>
+        <CardDescription>Connect DriveMem to MCP-compatible AI tools</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* MCP Server URL */}

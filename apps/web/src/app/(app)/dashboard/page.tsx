@@ -178,7 +178,7 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState<any[]>([])
   const reportRef = useRef<ReportSectionHandle>(null)
 
-  useEffect(() => { document.title = "概览 - AI Drive" }, [])
+  useEffect(() => { document.title = "概览 - DriveMem" }, [])
 
   useEffect(() => {
     apiFetch("/api/insights?limit=5").then((data: any) => {

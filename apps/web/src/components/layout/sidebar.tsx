@@ -26,7 +26,7 @@ export function Sidebar() {
     <TooltipProvider delayDuration={0}>
       <div className="flex h-full flex-col">
         <div className="flex h-14 items-center justify-between px-3 border-b border-border">
-          {!sidebarCollapsed && <span className="text-lg font-bold">AI Drive</span>}
+          {!sidebarCollapsed && <span className="text-lg font-bold">DriveMem</span>}
           <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8">
             {sidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
           </Button>

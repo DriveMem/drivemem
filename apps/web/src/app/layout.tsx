@@ -10,21 +10,21 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: "AI Drive — One memory. Every agent.",
-  description: "Your AI agents' shared memory layer. Upload docs, AI auto-indexes — then any agent can search, recall, and build on your knowledge via API, MCP, or CLI.",
-  keywords: ["AI Drive", "Agent Context OS", "AI memory", "knowledge management", "RAG", "MCP", "agent memory", "context packet"],
+  title: "DriveMem - One memory. Every agent.",
+  description: "The shared memory layer for all your AI agents. Store knowledge once, use it everywhere.",
+  keywords: ["agent memory", "AI context", "knowledge base", "MCP", "agent memory layer", "DriveMem", "Agent Context OS", "RAG"],
   openGraph: {
-    title: "AI Drive — One memory. Every agent.",
-    description: "Your AI agents' shared memory layer. Upload once, every agent remembers.",
+    title: "DriveMem - One memory. Every agent.",
+    description: "The shared memory layer for all your AI agents. Store knowledge once, use it everywhere.",
     type: "website",
     url: "https://drivemem.cloud",
-    siteName: "AI Drive",
-    images: [{ url: "https://drivemem.cloud/og-image.png", width: 1200, height: 630, alt: "DriveMem — One memory. Every agent." }],
+    siteName: "DriveMem",
+    images: [{ url: "https://drivemem.cloud/og-image.png", width: 1200, height: 630, alt: "DriveMem - One memory. Every agent." }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Drive — One memory. Every agent.",
-    description: "Your AI agents' shared memory layer. Upload once, every agent remembers.",
+    title: "DriveMem - One memory. Every agent.",
+    description: "The shared memory layer for all your AI agents. Store knowledge once, use it everywhere.",
     images: ["https://drivemem.cloud/og-image.png"],
   },
   icons: { icon: "/favicon.svg" },

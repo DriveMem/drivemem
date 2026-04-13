@@ -1,21 +1,21 @@
 import Link from "next/link"
 
 export const metadata = {
-  title: "隐私政策 - AI Drive",
-  description: "AI Drive 隐私政策和数据保护说明",
-  openGraph: { title: "隐私政策 - AI Drive", description: "AI Drive 隐私政策和数据保护说明" },
+  title: "隐私政策 - DriveMem",
+  description: "DriveMem 隐私政策和数据保护说明",
+  openGraph: { title: "隐私政策 - DriveMem", description: "DriveMem 隐私政策和数据保护说明" },
 }
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen">
       <nav className="flex items-center justify-between border-b px-6 py-4">
-        <Link href="/" className="text-lg font-bold">AI Drive</Link>
+        <Link href="/" className="text-lg font-bold">DriveMem</Link>
         <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← 返回首页</Link>
       </nav>
       <div className="mx-auto max-w-3xl px-6 py-16">
       <h1 className="text-3xl font-bold">数据隐私政策</h1>
-      <p className="mt-4 text-muted-foreground">最后更新：2026 年 4 月 · AI Drive</p>
+      <p className="mt-4 text-muted-foreground">最后更新：2026 年 4 月 · DriveMem</p>
 
       <div className="mt-8 space-y-8 text-sm leading-relaxed text-muted-foreground">
         <section>
@@ -32,7 +32,7 @@ export default function PrivacyPage() {
         </section>
         <section>
           <h2 className="text-lg font-semibold text-foreground">第三方服务</h2>
-          <p>AI Drive 使用百炼 API（阿里云）进行文本嵌入和 LLM 对话。你的文件内容片段会发送到百炼 API 进行处理，但不会被百炼存储或用于模型训练。</p>
+          <p>DriveMem 使用百炼 API（阿里云）进行文本嵌入和 LLM 对话。你的文件内容片段会发送到百炼 API 进行处理，但不会被百炼存储或用于模型训练。</p>
         </section>
         <section>
           <h2 className="text-lg font-semibold text-foreground">数据导出</h2>
