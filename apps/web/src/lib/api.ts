@@ -4,6 +4,28 @@ const PRODUCTION_API = "https://api.drivemem.cloud"
 const isDev = typeof window !== "undefined" && window.location.hostname === "localhost"
 const API_BASE = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : PRODUCTION_API
 
+/** 带 status 字段的 API 错误，方便下游 classifyError 识别 */
+export class ApiError extends Error {
+  status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = "ApiError"
+    this.status = status
+  }
+}
+
+/** 去重：同一条网络错误 toast 短时间内只弹一次 */
+let lastNetworkToastAt = 0
+
+async function showNetworkToast(msg: string) {
+  const now = Date.now()
+  if (now - lastNetworkToastAt < 3000) return // 3 秒内不重复弹
+  lastNetworkToastAt = now
+  if (typeof window === "undefined") return
+  const { toast } = await import("sonner")
+  toast.error(msg)
+}
+
 export async function apiFetch(path: string, options?: RequestInit) {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -18,20 +40,40 @@ export async function apiFetch(path: string, options?: RequestInit) {
   } catch {}
 
   const url = `${API_BASE}${path}`
-  const res = await fetch(url, {
-    ...options,
-    headers,
-    credentials: "include",
-  })
+
+  let res: Response
+  try {
+    res = await fetch(url, {
+      ...options,
+      headers,
+      credentials: "include",
+    })
+  } catch (err) {
+    // 网络错误（Failed to fetch / TypeError）或超时（AbortError）
+    const isTimeout = err instanceof DOMException && err.name === "AbortError"
+    if (isTimeout) {
+      showNetworkToast("请求超时，请检查网络后重试")
+      throw new ApiError("Request timeout", 0)
+    }
+    showNetworkToast("网络连接失败，请检查网络后重试")
+    throw err
+  }
 
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({ error: { message: res.statusText } }))
     const errMsg = errBody?.error?.message || res.statusText
+
     if (res.status === 403 && errBody?.error?.code === "DEMO_READONLY") {
       const { toast } = await import("sonner")
       toast.error("Demo 账号为只读模式，注册后可使用完整功能")
     }
-    throw new Error(errMsg)
+
+    // 5xx 服务端错误 → toast
+    if (res.status >= 500) {
+      showNetworkToast("服务暂时不可用，请稍后重试")
+    }
+
+    throw new ApiError(errMsg, res.status)
   }
 
   if (res.status === 204) return null

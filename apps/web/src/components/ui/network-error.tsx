@@ -45,7 +45,13 @@ const ERROR_CONFIG: Record<NetworkErrorType, { icon: typeof WifiOff; title: stri
 
 /** 根据错误信息推断错误类型 */
 export function classifyError(error: unknown): NetworkErrorType {
-  if (!navigator.onLine) return "offline"
+  if (typeof navigator !== "undefined" && !navigator.onLine) return "offline"
+  // 检查 ApiError.status
+  if (error && typeof error === "object" && "status" in error) {
+    const status = (error as { status: number }).status
+    if (status === 0) return "timeout" // AbortError mapped to status 0
+    if (status >= 500) return "server"
+  }
   const msg = error instanceof Error ? error.message : String(error)
   const lower = msg.toLowerCase()
   if (lower.includes("failed to fetch") || lower.includes("networkerror") || lower.includes("network")) return "offline"
