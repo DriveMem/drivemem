@@ -44,18 +44,18 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
 /* ---------- page ---------- */
 
 const STEPS = [
-  { icon: Upload, title: "存入知识", desc: "上传文件、保存对话结论、AI 自动理解和索引" },
-  { icon: Search, title: "AI 自动关联", desc: "语义搜索、跨文件洞察、自动发现知识关联" },
-  { icon: MessageSquare, title: "Agent 无缝接力", desc: "任何 AI 工具接入你的知识库，任务接力不断片" },
+  { icon: Upload, title: "Store knowledge", desc: "Upload files, save conversations, AI auto-indexes everything" },
+  { icon: Search, title: "AI auto-linking", desc: "Semantic search, cross-file insights, auto-discovered connections" },
+  { icon: MessageSquare, title: "Seamless agent handoff", desc: "Any AI tool connects to your knowledge base — tasks never lose context" },
 ] as const
 
 const FEATURES = [
-  { icon: MessageSquare, title: "跨 Agent 任务接力", desc: "在一个 AI 做了调研，切到另一个写方案。Context Packet 一键打包上下文，新 agent 接着做。", reverse: false },
-  { icon: Lightbulb, title: "AI 主动发现关联", desc: "AI 自动分析文件间的联系、矛盾和趋势，主动推送洞察。", reverse: true },
-  { icon: Quote, title: "用户档案自动同步", desc: "设置你的角色、目标和偏好，所有连接的 agent 自动获得。不用每次重新自我介绍。", reverse: false },
-  { icon: FileSearch, title: "项目记忆", desc: "按项目组织知识。每个项目有简介、目标和状态，agent 连接后立即了解项目全貌。", reverse: true },
-  { icon: Command, title: "MCP / API / CLI 接入", desc: "标准 MCP 协议、REST API、CLI 工具。任何 AI agent 一行配置接入。", reverse: false },
-  { icon: History, title: "知识时间线", desc: "追踪所有知识活动——文件上传、AI 分析、对话结论、洞察发现。完整审计轨迹。", reverse: true },
+  { icon: MessageSquare, title: "Cross-agent task handoff", desc: "Research with one AI, write with another. Context Packet bundles your context — the next agent picks up where you left off.", reverse: false },
+  { icon: Lightbulb, title: "AI discovers connections", desc: "AI automatically analyzes links, contradictions, and trends across your files. Proactive insights, delivered.", reverse: true },
+  { icon: Quote, title: "Auto-synced profile", desc: "Set your role, goals, and preferences once. Every connected agent knows you. No more re-introductions.", reverse: false },
+  { icon: FileSearch, title: "Project memory", desc: "Organize knowledge by project. Each project has a brief, goal, and status — agents understand the full picture instantly.", reverse: true },
+  { icon: Command, title: "MCP / API / CLI access", desc: "Standard MCP protocol, REST API, CLI tools. Any AI agent connects with a single config line.", reverse: false },
+  { icon: History, title: "Knowledge timeline", desc: "Track all knowledge activity — uploads, AI analysis, conversations, insights. Full audit trail.", reverse: true },
 ] as const
 
 export default function LandingPage() {
@@ -64,9 +64,9 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-[#E5E4E1] bg-white/80 px-6 py-4 backdrop-blur">
         <Link href="/" className="text-lg font-bold text-[#1C1B18]">DriveMem</Link>
         <div className="flex items-center gap-4">
-          <a href="#features" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">功能</a>
-          <Link href="/login" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">登录</Link>
-          <Link href="/signup" className="rounded-lg bg-[#4F5BD5] px-4 py-2 text-sm font-medium text-white hover:bg-[#3D49C4] transition">免费开始</Link>
+          <a href="#features" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Features</a>
+          <Link href="/login" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Sign in</Link>
+          <Link href="/signup" className="rounded-lg bg-[#4F5BD5] px-4 py-2 text-sm font-medium text-white hover:bg-[#3D49C4] transition">Get started free</Link>
         </div>
       </nav>
 
@@ -78,23 +78,23 @@ export default function LandingPage() {
       <section className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center bg-gradient-to-b from-[#F4F5FD] to-white px-6 text-center">
         <FadeIn>
           <h1 className="mx-auto max-w-4xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-7xl">
-            每个 agent，一份记忆
+            Every agent, one memory
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-[#6B6966] sm:text-xl">
-            一份记忆，每个 agent 都知道你。你的背景、偏好、项目 — 接入即共享。
+            Your background, preferences, and projects — shared with every agent you connect.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" className="h-12 px-8 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
-              <Link href="/signup">免费开始 <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              <Link href="/signup">Get started free <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 border-[#E5E4E1] px-8 text-base text-[#6B6966] hover:bg-[#F8F7F5] hover:text-[#1C1B18]">
-              <Link href="#features">了解更多</Link>
+              <Link href="#features">Learn more</Link>
             </Button>
             <Button asChild variant="ghost" size="lg" className="h-12 px-8 text-base text-[#6B6966] hover:text-[#1C1B18]">
-              <Link href="/signup">免费试用 →</Link>
+              <Link href="/signup">Try free →</Link>
             </Button>
           </div>
-          <p className="mt-4 text-sm text-[#6B6966] text-center">✨ 免费 5GB 存储 · 每天 50 次 AI 对话 · 支持 MCP / API / CLI</p>
+          <p className="mt-4 text-sm text-[#6B6966] text-center">✨ Free 5GB storage · 50 AI chats/day · MCP / API / CLI</p>
         </FadeIn>
       </section>
 
@@ -118,16 +118,16 @@ export default function LandingPage() {
       {/* ===== Scenario Cards ===== */}
       <section id="features" className="relative z-10 mx-auto max-w-6xl px-6 py-24">
         <FadeIn>
-          <h2 className="text-center text-3xl font-bold sm:text-4xl">你的每个 Agent，共享一份记忆</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">无论你用 ChatGPT、Claude、Cursor 还是自己的 agent — DriveMem 让它们共享同一份记忆。</p>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">Every agent you use, sharing one memory</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">Whether you use ChatGPT, Claude, Cursor, or your own agents — DriveMem gives them shared memory.</p>
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { emoji: "📄", title: "学生写论文", desc: "上传参考文献，AI 帮你找关键论点、对比不同作者观点" },
-              { emoji: "💼", title: "职场人做汇报", desc: "上传项目文档，一键生成分析报告，数据引用有据可查" },
-              { emoji: "🔬", title: "研究员做调研", desc: "上传多篇论文，AI 自动发现观点关联和数据矛盾" },
-              { emoji: "📊", title: "创业者做竞品分析", desc: "上传竞品资料，AI 对比分析差异，生成结构化报告" },
-              { emoji: "🤖", title: "AI 开发者", desc: "通过 API 和 MCP 协议，让你的 AI agent 接入个人知识库" },
-              { emoji: "📚", title: "终身学习者", desc: "所有笔记和资料统一管理，AI 帮你建立知识体系" },
+              { emoji: "📄", title: "Students", desc: "Upload references, AI finds key arguments and compares perspectives" },
+              { emoji: "💼", title: "Professionals", desc: "Upload project docs, generate reports with cited sources" },
+              { emoji: "🔬", title: "Researchers", desc: "Upload papers, AI discovers connections and contradictions" },
+              { emoji: "📊", title: "Founders", desc: "Upload competitive intel, get structured comparison reports" },
+              { emoji: "🤖", title: "AI developers", desc: "Connect your AI agents to personal knowledge via API and MCP" },
+              { emoji: "📚", title: "Lifelong learners", desc: "Unified notes and resources, AI builds your knowledge graph" },
             ].map((s) => (
               <div key={s.title} className="rounded-xl border border-[#E5E4E1] bg-white p-6 transition hover:shadow-lg hover:shadow-black/5">
                 <span className="text-3xl">{s.emoji}</span>
@@ -142,7 +142,7 @@ export default function LandingPage() {
       {/* ===== How It Works ===== */}
       <section className="relative z-10 mx-auto max-w-5xl px-6 py-20">
         <FadeIn>
-          <h2 className="text-center text-3xl font-bold sm:text-4xl">DriveMem 如何工作</h2>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">How DriveMem works</h2>
           <div className="mt-16 grid gap-8 sm:grid-cols-3">
             {STEPS.map((s, i) => (
               <div key={s.title} className="relative flex flex-col items-center text-center">
@@ -153,7 +153,7 @@ export default function LandingPage() {
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#4F5BD5]/10 text-[#4F5BD5]">
                   <s.icon className="h-7 w-7" />
                 </div>
-                <span className="mt-2 text-xs font-medium text-[#6B6966]">步骤 {i + 1}</span>
+                <span className="mt-2 text-xs font-medium text-[#6B6966]">Step {i + 1}</span>
                 <h3 className="mt-2 text-lg font-semibold">{s.title}</h3>
                 <p className="mt-1 text-sm text-[#6B6966]">{s.desc}</p>
               </div>
@@ -165,8 +165,8 @@ export default function LandingPage() {
       {/* ===== Feature Highlights (2x3 Grid) ===== */}
       <section className="relative z-10 mx-auto max-w-6xl px-6 py-24">
         <FadeIn>
-          <h2 className="text-3xl font-bold text-center text-[#1C1B18] mb-4">核心功能</h2>
-          <p className="text-center text-[#6B6966] mb-12 max-w-2xl mx-auto">DriveMem 不只是存储 — 它理解你的知识</p>
+          <h2 className="text-3xl font-bold text-center text-[#1C1B18] mb-4">Core features</h2>
+          <p className="text-center text-[#6B6966] mb-12 max-w-2xl mx-auto">DriveMem doesn&apos;t just store — it understands your knowledge</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map((f, i) => (
               <div key={i} className="rounded-xl border border-[#E5E4E1] bg-white p-6 hover:shadow-lg transition-all duration-200">
@@ -184,13 +184,13 @@ export default function LandingPage() {
       {/* ===== Final CTA ===== */}
       <section className="relative z-10 px-6 py-32 text-center">
         <FadeIn>
-          <h2 className="text-3xl font-bold sm:text-4xl">一份记忆，每个 agent 都知道你</h2>
+          <h2 className="text-3xl font-bold sm:text-4xl">One memory. Every agent knows you.</h2>
           <div className="mt-8">
             <Button asChild size="lg" className="h-12 px-10 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
-              <Link href="/signup">免费开始 <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              <Link href="/signup">Get started free <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>
-          <p className="mt-4 text-sm text-[#6B6966]">✨ 免费 5GB 存储 · 每天 50 次 AI 对话 · 支持 MCP / API / CLI</p>
+          <p className="mt-4 text-sm text-[#6B6966]">✨ Free 5GB storage · 50 AI chats/day · MCP / API / CLI</p>
         </FadeIn>
       </section>
 
@@ -201,40 +201,40 @@ export default function LandingPage() {
             {/* Brand */}
             <div>
               <h3 className="text-lg font-bold text-[#1C1B18]">DriveMem</h3>
-              <p className="mt-2 text-sm text-[#6B6966]">每个 agent，一份记忆</p>
+              <p className="mt-2 text-sm text-[#6B6966]">Every agent, one memory</p>
             </div>
 
-            {/* 产品 */}
+            {/* Product */}
             <div>
-              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">产品</h4>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Product</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><a href="#features" className="hover:text-[#4F5BD5] transition">功能介绍</a></li>
-                <li><Link href="/login" className="hover:text-[#4F5BD5] transition">登录</Link></li>
-                <li><Link href="/signup" className="hover:text-[#4F5BD5] transition">免费注册</Link></li>
+                <li><a href="#features" className="hover:text-[#4F5BD5] transition">Features</a></li>
+                <li><Link href="/login" className="hover:text-[#4F5BD5] transition">Sign in</Link></li>
+                <li><Link href="/signup" className="hover:text-[#4F5BD5] transition">Sign up free</Link></li>
               </ul>
             </div>
 
-            {/* 开发者 */}
+            {/* Developers */}
             <div>
-              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">开发者</h4>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Developers</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><Link href="/developers#api" className="hover:text-[#4F5BD5] transition">API 文档</Link></li>
-                <li><Link href="/developers#mcp" className="hover:text-[#4F5BD5] transition">MCP 协议</Link></li>
-                <li><Link href="/developers#cli" className="hover:text-[#4F5BD5] transition">CLI 工具</Link></li>
+                <li><Link href="/developers#api" className="hover:text-[#4F5BD5] transition">API Docs</Link></li>
+                <li><Link href="/developers#mcp" className="hover:text-[#4F5BD5] transition">MCP Protocol</Link></li>
+                <li><Link href="/developers#cli" className="hover:text-[#4F5BD5] transition">CLI Tools</Link></li>
               </ul>
             </div>
 
-            {/* 法律 */}
+            {/* Legal */}
             <div>
-              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">法律</h4>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Legal</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><Link href="/terms" className="hover:text-[#4F5BD5] transition">使用条款</Link></li>
-                <li><Link href="/privacy" className="hover:text-[#4F5BD5] transition">隐私政策</Link></li>
+                <li><Link href="/terms" className="hover:text-[#4F5BD5] transition">Terms of Service</Link></li>
+                <li><Link href="/privacy" className="hover:text-[#4F5BD5] transition">Privacy Policy</Link></li>
               </ul>
             </div>
           </div>
 
-          {/* 版权 */}
+          {/* Copyright */}
           <div className="mt-8 border-t border-[#E5E4E1] pt-6 text-center text-xs text-[#6B6966]">
             © {new Date().getFullYear()} DriveMem. All rights reserved.
           </div>
