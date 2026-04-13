@@ -356,6 +356,17 @@ switch (command) {
     break;
   }
 
+  case 'pack': {
+    const folderId = args[0];
+    if (!folderId) { console.error('Usage: aidrive pack <folder-id> [--json]'); break; }
+    const format = jsonMode ? 'json' : 'markdown';
+    if (!jsonMode) console.log('📦 正在生成交接包...');
+    const data = await apiCall(`/context-packet?folderId=${encodeURIComponent(folderId)}&format=${format}`);
+    if (jsonMode) { console.log(JSON.stringify(data, null, 2)); }
+    else { console.log(data.packet || data.content || JSON.stringify(data)); }
+    break;
+  }
+
   case 'help':
   case undefined:
   default:
@@ -385,6 +396,7 @@ switch (command) {
 AI 能力:
   aidrive insights              查看 AI 发现的知识关联
   aidrive timeline [--limit N]  知识活动时间线
+  aidrive pack <folder-id>      生成项目交接包（跨模型任务接力）
 
 全局选项:
   --json                        输出 JSON 格式（适合 agent/脚本）

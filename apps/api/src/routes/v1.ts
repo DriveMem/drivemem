@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc, sql, inArray } from 'drizzle-orm';
 import { requireApiKey, requireScope } from '../plugins/api-key-auth.js';
 import { fetchTimeline } from './timeline.js';
 import { embedTexts } from '../services/embedding.service.js';
@@ -475,5 +475,112 @@ export default async function v1Routes(fastify: FastifyInstance) {
 
     const result = await fetchTimeline(userId, limit, cursor);
     return reply.send(result);
+  });
+
+  // GET /context-packet — generate a context packet for cross-model task handoff
+  fastify.get('/context-packet', async (request, reply) => {
+    const userId = request.user!.id;
+    const query = request.query as { folderId?: string; format?: string };
+    const folderId = query.folderId;
+    if (!folderId) return reply.status(400).send({ error: 'folderId parameter is required' });
+    const format = query.format === 'json' ? 'json' : 'markdown';
+
+    // 1. Get all files in this folder
+    const folderFiles = await db.select({
+      id: schema.files.id,
+      name: schema.files.name,
+      summary: schema.files.summary,
+      status: schema.files.status,
+    })
+      .from(schema.files)
+      .where(and(
+        eq(schema.files.userId, userId),
+        eq(schema.files.folderId, folderId),
+        sql`${schema.files.archivedAt} IS NULL`,
+      ))
+      .orderBy(desc(schema.files.createdAt));
+
+    if (folderFiles.length === 0) {
+      return reply.status(404).send({ error: 'No files found in this folder' });
+    }
+
+    const fileIds = folderFiles.map(f => f.id);
+
+    // 2. Get related insights
+    const relatedInsights = await db.select({
+      title: schema.insights.title,
+      description: schema.insights.description,
+    })
+      .from(schema.insights)
+      .where(and(
+        eq(schema.insights.userId, userId),
+        sql`(${schema.insights.sourceFileId} IN (${sql.join(fileIds.map(id => sql`${id}`), sql`,`)}) OR ${schema.insights.relatedFileId} IN (${sql.join(fileIds.map(id => sql`${id}`), sql`,`)}))`,
+      ))
+      .orderBy(desc(schema.insights.createdAt))
+      .limit(20);
+
+    // 3. Build prompt and call LLM
+    const filesSection = folderFiles.map(f => `- ${f.name}: ${f.summary || '无摘要'}`).join('\n');
+    const insightsSection = relatedInsights.length > 0
+      ? relatedInsights.map(i => `- ${i.title}: ${i.description}`).join('\n')
+      : '无';
+
+    const prompt = `你是一个 AI 知识助手。请基于以下项目文件和 AI 洞察，生成一份精炼的项目交接包。
+
+## 项目文件
+${filesSection}
+
+## AI 发现的关联
+${insightsSection}
+
+请生成以下格式的交接包：
+# 项目概要
+（一句话描述项目）
+
+## 当前状态
+（项目做到哪了）
+
+## 关键决策
+（已做出的重要决定）
+
+## 待解决问题
+（还没解决的问题）
+
+## 关键文件
+（最重要的几个文件及其摘要）
+
+## 建议下一步
+（下一步应该做什么）`;
+
+    const { chat } = await import('../services/llm.service.js');
+    const packet = await chat([{ role: 'user', content: prompt }]);
+
+    if (format === 'json') {
+      // Parse markdown sections into structured fields
+      const sections: Record<string, string> = {};
+      const sectionRegex = /^#{1,2}\s+(.+)$/gm;
+      const parts = packet.split(sectionRegex);
+      for (let i = 1; i < parts.length; i += 2) {
+        const key = parts[i].trim();
+        const value = (parts[i + 1] || '').trim();
+        sections[key] = value;
+      }
+      return reply.send({
+        format: 'json',
+        folderId,
+        fileCount: folderFiles.length,
+        insightCount: relatedInsights.length,
+        packet: sections,
+        raw: packet,
+      });
+    }
+
+    return reply.send({
+      format: 'markdown',
+      folderId,
+      fileCount: folderFiles.length,
+      insightCount: relatedInsights.length,
+      packet,
+    });
   });
 }
