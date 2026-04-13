@@ -356,6 +356,69 @@ switch (command) {
     break;
   }
 
+  case 'init': {
+    const name = args.join(' ');
+    if (!name) { console.error('Usage: aidrive init <project-name>'); break; }
+    const data = await apiCall('/folders', { method: 'POST', body: JSON.stringify({ name }) });
+    output(data, `📁 项目「${name}」已创建 (ID: ${data.id})`);
+    break;
+  }
+
+  case 'recall': {
+    const query = args.join(' ');
+    if (!query) { console.error('Usage: aidrive recall <query>'); break; }
+    const data = await apiCall(`/search?q=${encodeURIComponent(query)}`);
+    if (jsonMode) { console.log(JSON.stringify(data, null, 2)); break; }
+    if (data.results?.length === 0) {
+      console.log('🔍 未找到相关记忆');
+    } else {
+      for (const r of data.results) {
+        console.log(`\n🧠 [${r.fileName}] (score: ${r.score.toFixed(2)})`);
+        console.log(`   ${r.text.slice(0, 200)}`);
+      }
+    }
+    break;
+  }
+
+  case 'commit': {
+    const content = args.filter(a => !a.startsWith('--')).join(' ');
+    if (!content) { console.error('Usage: aidrive commit "<content>" [--title <t>] [--tags <t1,t2>]'); break; }
+    const titleIdx = args.indexOf('--title');
+    const tagsIdx = args.indexOf('--tags');
+    const storeBody: Record<string, string> = { content };
+    if (titleIdx > -1 && args[titleIdx + 1]) storeBody.title = args[titleIdx + 1];
+    if (tagsIdx > -1 && args[tagsIdx + 1]) storeBody.tags = args[tagsIdx + 1];
+    const data = await apiCall('/store', { method: 'POST', body: JSON.stringify(storeBody) });
+    output(data, `✅ 已存入: ${data.name || data.fileName || 'note'} (${data.id || data.fileId})`);
+    break;
+  }
+
+  case 'handoff': {
+    const folderId = args[0];
+    if (!folderId) { console.error('Usage: aidrive handoff <folder-id> [--json]'); break; }
+    const format = jsonMode ? 'json' : 'markdown';
+    const data = await apiCall(`/context-packet?folderId=${folderId}&format=${format}`);
+    if (jsonMode) { console.log(JSON.stringify(data, null, 2)); }
+    else { console.log(data.packet || data.content || JSON.stringify(data)); }
+    break;
+  }
+
+  case 'context': {
+    const profileData = await apiCall('/users/me/profile');
+    const foldersData = await apiCall('/folders');
+    const folders = Array.isArray(foldersData) ? foldersData : foldersData?.folders || [];
+    if (jsonMode) { console.log(JSON.stringify({ profile: profileData, projects: folders }, null, 2)); break; }
+    console.log('🧠 Identity');
+    console.log(`   角色: ${profileData.role || '未设置'}`);
+    console.log(`   目标: ${profileData.currentGoal || '未设置'}`);
+    console.log(`   背景: ${profileData.background || '未设置'}`);
+    console.log(`\n📁 Projects (${folders.length})`);
+    for (const f of folders) {
+      console.log(`   ${f.name} ${f.status ? `[${f.status}]` : ''} ${f.brief ? `— ${f.brief}` : ''}`);
+    }
+    break;
+  }
+
   case 'pack': {
     const folderId = args[0];
     if (!folderId) { console.error('Usage: aidrive pack <folder-id> [--json]'); break; }
@@ -409,48 +472,43 @@ switch (command) {
   case undefined:
   default:
     console.log(`
-🧠 AI Drive CLI — 你的 AI 知识操作系统
+🧠 DriveMem CLI — Agent 的共享记忆运行时
 
-认证:
-  aidrive login --key <key>     设置 API Key
-  aidrive config set-key <key>  设置 API Key（同 login --key）
-  aidrive config set-url <url>  设置 API URL（默认 https://api.drivemem.cloud）
-  aidrive config show           显示当前配置
+记忆操作:
+  aidrive init <project>        创建项目
+  aidrive recall <query>        回忆（语义搜索）
+  aidrive commit <content>      存入知识
+  aidrive pack <folder-id>      项目交接包
+  aidrive handoff <folder-id>   交接包（pack 别名）
+  aidrive context               查看 Identity + 项目列表
 
-知识操作:
-  aidrive upload <file>         上传文件到知识库
-  aidrive store <text>          快速存入一段知识
-  aidrive search <query>        语义搜索知识库
-  aidrive ask <question>        基于知识库 AI 问答
+知识管理:
+  aidrive upload <file>         上传文件
+  aidrive store <text>          快速存入
+  aidrive search <query>        语义搜索
+  aidrive ask <question>        RAG 问答
 
-文件管理:
-  aidrive files [--brief]       列出知识库文件
-  aidrive info <file-id>        查看文件详情和 AI 摘要
-  aidrive rename <id> <name>    重命名文件
-  aidrive archive <id> [id...]  归档文件（支持批量）
-  aidrive unarchive <id> [id...] 取消归档（支持批量）
-  aidrive delete <file-id>      删除文件（需确认，--force 跳过）
+文件操作:
+  aidrive files [--brief]       列出文件
+  aidrive info <file-id>        文件详情
+  aidrive delete <file-id>      删除文件
+  aidrive rename <id> <name>    重命名
+
+项目管理:
+  aidrive project list          列出项目
+  aidrive project set <id> <key> <value>  设置项目属性
 
 AI 能力:
-  aidrive insights              查看 AI 发现的知识关联
-  aidrive timeline [--limit N]  知识活动时间线
-  aidrive pack <folder-id>      生成项目交接包（跨模型任务接力）
-  aidrive project list          列出所有项目（文件夹）及其状态
-  aidrive project set <id> <key> <value>  设置项目属性（brief/status/goal）
-  aidrive profile               查看 AI 档案
-  aidrive profile set <k> <v>   设置档案字段（role/currentGoal/background/preferences）
+  aidrive insights              AI 洞察
+  aidrive timeline              时间线
+  aidrive profile               查看/设置个人档案
+
+配置:
+  aidrive login --key <key>     设置 API Key
+  aidrive config show           显示配置
 
 全局选项:
-  --json                        输出 JSON 格式（适合 agent/脚本）
-
-示例:
-  aidrive login --key ak_xxxxxxxxxxxx
-  aidrive search "去年的营收数据"
-  aidrive ask "竞品分析的核心结论是什么"
-  aidrive store "今天决定使用 PostgreSQL" --title "技术决策"
-  echo "meeting notes" | aidrive store --title "会议记录"
-  aidrive upload ./report.pdf
-  aidrive info abc-123-def
+  --json                        JSON 输出
 `);
     break;
 }
