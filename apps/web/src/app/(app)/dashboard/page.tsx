@@ -315,6 +315,55 @@ export default function DashboardPage() {
                   </button>
                 </div>
               )}
+
+              {/* Empty state guide — shown when no projects and no files */}
+              {folders.length === 0 && fileCount === 0 && (
+                <div className="mt-8">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-3">Get started</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }}
+                      className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-left hover:border-[#4F5BD5]/30 hover:bg-[#4F5BD5]/5 transition-all"
+                    >
+                      <span className="text-2xl shrink-0">📁</span>
+                      <div>
+                        <p className="text-sm font-medium">Create your first project</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Organize knowledge by project</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => { handleTabSwitch("files"); setShowUpload(true) }}
+                      className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-left hover:border-[#4F5BD5]/30 hover:bg-[#4F5BD5]/5 transition-all"
+                    >
+                      <span className="text-2xl shrink-0">📄</span>
+                      <div>
+                        <p className="text-sm font-medium">Upload your first file</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">PDF, docs, notes — AI indexes everything</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => router.push("/chat?new=1")}
+                      className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-left hover:border-[#4F5BD5]/30 hover:bg-[#4F5BD5]/5 transition-all"
+                    >
+                      <span className="text-2xl shrink-0">💬</span>
+                      <div>
+                        <p className="text-sm font-medium">Try AI Chat</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Ask questions, get cited answers</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => router.push("/developers")}
+                      className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-left hover:border-[#4F5BD5]/30 hover:bg-[#4F5BD5]/5 transition-all"
+                    >
+                      <span className="text-2xl shrink-0">🔌</span>
+                      <div>
+                        <p className="text-sm font-medium">Connect via CLI / MCP</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Let your AI agents access your knowledge</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex-1 min-h-0">
