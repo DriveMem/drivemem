@@ -94,7 +94,7 @@ function ActivitySummary({ activities }: { activities: any[] }) {
           <div key={a.id} className="flex items-center gap-2 text-sm truncate">
             <span className="shrink-0 text-xs">{activityEmoji(a.type)}</span>
             <span className="truncate flex-1">{a.title}</span>
-            <span className="shrink-0 text-xs text-muted-foreground">{a.createdAt ? relativeTime(a.createdAt) : ""}</span>
+            <span className="shrink-0 text-xs text-muted-foreground" title={a.createdAt ? new Date(a.createdAt).toLocaleString() : ""}>{a.createdAt ? relativeTime(a.createdAt) : ""}</span>
           </div>
         ))}
       </div>

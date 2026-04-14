@@ -197,7 +197,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
         {step === 2 && (
           <div className="space-y-4">
             <p className="text-center text-sm text-muted-foreground">
-              Createa project to organize your files and knowledge
+              Create a project to organize your files and knowledge
             </p>
             <div className="space-y-3">
               <div className="space-y-1.5">

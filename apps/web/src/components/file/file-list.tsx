@@ -699,7 +699,7 @@ export function FileList() {
               queryClient.invalidateQueries({ queryKey: ["files"] })
               queryClient.invalidateQueries({ queryKey: ["folders"] })
             } catch (e: any) { const { toast } = await import("sonner"); toast.error(e.message || "Organization failed") }
-          }} variant="outline" className="gap-1">✨ One-click organize</Button>
+          }} variant="outline" className="gap-1" title="AI automatically organizes your files into folders based on content">✨ One-click organize</Button>
           <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />New folder</Button>
           <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"><Upload className="h-3.5 w-3.5" />Quick Note</Button>
           <div className="flex items-center rounded-md border border-border ml-2">
