@@ -10,23 +10,29 @@ import { useFiles } from "@/hooks/use-files"
 import { useTags } from "@/hooks/use-tags"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Suspense } from "react"
-import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
 interface CompileSource {
-  fileId?: string
+  fileId: string
   fileName: string
-  similarity?: number
-  snippet?: string
+  relevanceScore: number
+  tokensUsed: number
+}
+
+interface CompileMetadata {
+  sources: CompileSource[]
+  coverage: "full" | "partial" | "insufficient"
+  totalTokens: number
+  tokenBudget: number
+  compilationTimeMs: number
+  fragmentCount: number
 }
 
 interface CompileResult {
-  context: string
-  sources: CompileSource[]
-  tokenCount?: number
-  model?: string
+  compiledContext: string
+  metadata: CompileMetadata
 }
 
 function CompileContent() {
@@ -40,8 +46,7 @@ function CompileContent() {
   const [result, setResult] = useState<CompileResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [copiedAll, setCopiedAll] = useState(false)
-  const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   const { data: foldersData } = useFolders()
   const { data: filesData } = useFiles()
@@ -66,12 +71,21 @@ function CompileContent() {
     setResult(null)
 
     try {
-      const body: Record<string, any> = { task: task.trim() }
-      if (selectedProject) body.project = selectedProject
-      if (selectedTags) body.tags = selectedTags
+      const tagsArray = selectedTags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean)
+
       const data = await apiFetch("/api/v1/context/compile", {
         method: "POST",
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          task: task.trim(),
+          hints: {
+            project: selectedProject || undefined,
+            tags: tagsArray.length > 0 ? tagsArray : undefined,
+          },
+          tokenBudget: 8000,
+        }),
       })
       setResult(data)
     } catch (err: any) {
@@ -85,17 +99,13 @@ function CompileContent() {
     }
   }, [task, selectedProject, selectedTags])
 
-  const copyToClipboard = async (text: string, type: "all" | string) => {
+  const copyContext = async () => {
+    if (!result?.compiledContext) return
     try {
-      await navigator.clipboard.writeText(text)
-      if (type === "all") {
-        setCopiedAll(true)
-        setTimeout(() => setCopiedAll(false), 2000)
-      } else {
-        setCopiedSnippet(type)
-        setTimeout(() => setCopiedSnippet(null), 2000)
-      }
-      toast.success("Copied to clipboard")
+      await navigator.clipboard.writeText(result.compiledContext)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+      toast.success("Copied!")
     } catch {
       toast.error("Failed to copy")
     }
@@ -121,7 +131,7 @@ function CompileContent() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="flex-1 overflow-auto p-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
@@ -129,23 +139,23 @@ function CompileContent() {
           <h1 className="text-2xl font-bold">Compile Context</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          Describe your task and get a compiled context packet from your knowledge base — ready to paste into any AI.
+          Generate task-relevant context from your knowledge base
         </p>
       </div>
 
-      {/* Input area */}
-      <div className="rounded-xl border border-border p-4 mb-6 space-y-4">
+      {/* Input section */}
+      <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-4 mb-6 space-y-4">
         <div>
           <label className="text-sm font-medium mb-1.5 block">Task description</label>
           <textarea
             value={task}
             onChange={(e) => setTask(e.target.value)}
-            placeholder="Describe what you're working on... e.g. 'Write a competitive analysis report for Q2'"
+            placeholder="Describe your task... e.g. 'Write a competitive analysis report for Q2'"
             className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none transition min-h-[100px] resize-y focus:border-[#4F5BD5] focus:ring-2 focus:ring-[#4F5BD5]/20"
           />
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 items-end">
           <div className="flex-1 min-w-[140px]">
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Project</label>
             <select
@@ -160,21 +170,15 @@ function CompileContent() {
             </select>
           </div>
           <div className="flex-1 min-w-[140px]">
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Tags</label>
-            <select
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">Tags (comma-separated)</label>
+            <input
+              type="text"
               value={selectedTags}
               onChange={(e) => setSelectedTags(e.target.value)}
+              placeholder="e.g. decision, engineering"
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#4F5BD5]"
-            >
-              <option value="">Any tag</option>
-              {tags.map((t: any) => (
-                <option key={t.id} value={t.name}>{t.name}</option>
-              ))}
-            </select>
+            />
           </div>
-        </div>
-
-        <div className="flex justify-end">
           <Button
             onClick={handleCompile}
             disabled={!task.trim() || loading}
@@ -221,7 +225,7 @@ function CompileContent() {
       )}
 
       {/* No results state */}
-      {result && !result.context && !result.sources?.length && !loading && (
+      {result && !result.compiledContext && !result.metadata?.sources?.length && !loading && (
         <div className="rounded-xl border border-border p-6 text-center">
           <SearchX className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
           <p className="text-sm font-medium mb-1">No relevant knowledge found</p>
@@ -230,62 +234,59 @@ function CompileContent() {
       )}
 
       {/* Results */}
-      {result && (result.context || result.sources?.length > 0) && !loading && (
+      {result && (result.compiledContext || result.metadata?.sources?.length > 0) && !loading && (
         <div className="space-y-4">
-          {/* Sources */}
-          {result.sources && result.sources.length > 0 && (
+          {/* Metadata summary */}
+          {result.metadata && (
             <div className="rounded-xl border border-border p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium">
-                  Sources ({result.sources.length} files{result.tokenCount ? `, ${(result.tokenCount / 1000).toFixed(1)}k tokens` : ""})
-                </h3>
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mb-3">
+                <span>{result.metadata.fragmentCount} fragments</span>
+                <span>·</span>
+                <span>{result.metadata.totalTokens} / {result.metadata.tokenBudget} tokens</span>
+                <span>·</span>
+                <span>{result.metadata.compilationTimeMs}ms</span>
+                <span>·</span>
+                <span className={
+                  result.metadata.coverage === "full" ? "text-green-600 dark:text-green-400" :
+                  result.metadata.coverage === "partial" ? "text-yellow-600 dark:text-yellow-400" :
+                  "text-red-600 dark:text-red-400"
+                }>
+                  Coverage: {result.metadata.coverage}
+                </span>
               </div>
-              <div className="space-y-2">
-                {result.sources.map((source, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2 text-sm hover:bg-muted/50 transition">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="truncate">{source.fileName}</span>
+
+              {/* Source list */}
+              {result.metadata.sources.length > 0 && (
+                <div className="space-y-1.5">
+                  <h3 className="text-sm font-medium mb-2">Sources ({result.metadata.sources.length} files)</h3>
+                  {result.metadata.sources.map((source) => (
+                    <div key={source.fileId} className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2 text-sm hover:bg-muted/50 transition">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="truncate">{source.fileName}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground font-mono shrink-0 ml-2">
+                        {source.relevanceScore.toFixed(2)}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {source.similarity != null && (
-                        <span className="text-xs text-muted-foreground font-mono">
-                          {(source.similarity).toFixed(2)}
-                        </span>
-                      )}
-                      {source.snippet && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => copyToClipboard(source.snippet!, source.fileId || String(i))}
-                        >
-                          {copiedSnippet === (source.fileId || String(i)) ? (
-                            <Check className="h-3.5 w-3.5 text-green-500" />
-                          ) : (
-                            <Copy className="h-3.5 w-3.5" />
-                          )}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
           {/* Compiled context */}
-          {result.context && (
+          {result.compiledContext && (
             <div className="rounded-xl border border-border p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-medium">Compiled Context</h3>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => copyToClipboard(result.context, "all")}
+                  onClick={copyContext}
                   className="h-8"
                 >
-                  {copiedAll ? (
+                  {copied ? (
                     <>
                       <Check className="h-3.5 w-3.5 mr-1.5 text-green-500" />
                       Copied!
@@ -300,7 +301,7 @@ function CompileContent() {
               </div>
               <div className="prose prose-sm dark:prose-invert max-w-none rounded-lg bg-muted/30 p-4 overflow-auto max-h-[500px]">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {result.context}
+                  {result.compiledContext}
                 </ReactMarkdown>
               </div>
             </div>
