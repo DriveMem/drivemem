@@ -787,7 +787,7 @@ export default function SettingsContent() {
         </CardHeader>
         <CardContent>
           {memories.length === 0 ? (
-            <p className="text-sm text-muted-foreground">AI Learning your preferences, chat more and it will appear ✨</p>
+            <p className="text-sm text-muted-foreground">AI is learning your preferences. Chat more and insights will appear here ✨</p>
           ) : (
             <ul className="space-y-3">
               {memories.map(m => (
