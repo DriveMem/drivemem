@@ -316,10 +316,10 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {/* Empty state guide — shown when no projects and no files */}
-              {folders.length === 0 && fileCount === 0 && (
+              {/* Empty state guide — hidden when user has ≥1 project AND ≥1 file */}
+              {(folders.length === 0 || fileCount === 0) && (
                 <div className="mt-8">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-3">Get started</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-3">🚀 开始使用</h3>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }}
@@ -327,8 +327,8 @@ export default function DashboardPage() {
                     >
                       <span className="text-2xl shrink-0">📁</span>
                       <div>
-                        <p className="text-sm font-medium">Create your first project</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Organize knowledge by project</p>
+                        <p className="text-sm font-medium">创建你的第一个项目</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">按项目组织你的知识库</p>
                       </div>
                     </button>
                     <button
@@ -337,8 +337,8 @@ export default function DashboardPage() {
                     >
                       <span className="text-2xl shrink-0">📄</span>
                       <div>
-                        <p className="text-sm font-medium">Upload your first file</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">PDF, docs, notes — AI indexes everything</p>
+                        <p className="text-sm font-medium">上传第一份文件</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">PDF、文档、笔记——AI 自动索引一切</p>
                       </div>
                     </button>
                     <button
@@ -347,8 +347,8 @@ export default function DashboardPage() {
                     >
                       <span className="text-2xl shrink-0">💬</span>
                       <div>
-                        <p className="text-sm font-medium">Try AI Chat</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Ask questions, get cited answers</p>
+                        <p className="text-sm font-medium">试试 AI 对话</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">提问即可获得带引用的精准回答</p>
                       </div>
                     </button>
                     <button
@@ -357,8 +357,8 @@ export default function DashboardPage() {
                     >
                       <span className="text-2xl shrink-0">🔌</span>
                       <div>
-                        <p className="text-sm font-medium">Connect via CLI / MCP</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Let your AI agents access your knowledge</p>
+                        <p className="text-sm font-medium">用 CLI / MCP 连接</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">让你的 AI 助手访问知识库</p>
                       </div>
                     </button>
                   </div>
