@@ -263,7 +263,7 @@ export default function DashboardPage() {
           <InsightsSummaryCard insights={insights} onSwitchToAi={() => handleTabSwitch("ai")} />
           {!currentFolderId ? (
             <div className="flex-1 min-h-0 overflow-auto p-6">
-              <h2 className="text-lg font-semibold mb-4">📁 My Projects</h2>
+              <h2 className="text-lg font-semibold mb-4">📁 Projects</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {folders.map((folder: any) => (
                   <div
@@ -291,7 +291,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-[#4F5BD5] mb-2">🎯 {folder.goal}</p>
                     )}
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>📄 {folder.fileCount ?? 0}  files</span>
+                      <span>📄 {folder.fileCount ?? 0} {(folder.fileCount ?? 0) === 1 ? 'file' : 'files'}</span>
                     </div>
                   </div>
                 ))}
