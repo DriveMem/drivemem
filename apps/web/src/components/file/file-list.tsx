@@ -699,7 +699,9 @@ export function FileList() {
               queryClient.invalidateQueries({ queryKey: ["files"] })
               queryClient.invalidateQueries({ queryKey: ["folders"] })
             } catch (e: any) { const { toast } = await import("sonner"); toast.error(e.message || "Organization failed") }
-          }} variant="outline" className="gap-1" title="AI automatically organizes your files into folders based on content">✨ One-click organize</Button>
+          }} variant="outline" className="gap-1">
+              <TooltipProvider><Tooltip><TooltipTrigger asChild><span>✨ One-click organize</span></TooltipTrigger><TooltipContent><p>AI will automatically organize your files into folders</p></TooltipContent></Tooltip></TooltipProvider>
+            </Button>
           <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />New folder</Button>
           <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"><Upload className="h-3.5 w-3.5" />Quick Note</Button>
           <div className="flex items-center rounded-md border border-border ml-2">
@@ -821,7 +823,7 @@ export function FileList() {
                   </TooltipProvider>
                 )}
                 <StatusIcon status={file.status} error={file.errorMessage} compact />
-                <span className="w-20 text-right text-xs text-muted-foreground shrink-0 hidden sm:inline" suppressHydrationWarning>{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
+                <span className="w-20 text-right text-xs text-muted-foreground shrink-0 hidden sm:inline" title={new Date(file.updatedAt || file.createdAt).toLocaleString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })} suppressHydrationWarning>{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
                 <span className="w-16 text-right text-xs text-muted-foreground shrink-0 hidden sm:inline">{fmtSize(file.size)}</span>
                 <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
                   <button
@@ -857,7 +859,7 @@ export function FileList() {
               </HoverCardTrigger>
               {file.summary && (
                 <HoverCardContent side="right" className="w-80">
-                  <p className="text-xs text-muted-foreground line-clamp-4">{file.summary}</p>
+                  <p className="text-xs text-muted-foreground">{file.summary}</p>
                   <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground/70">
                     <span>{fmtSize(file.size)}</span>
                     <span>·</span>
@@ -890,7 +892,7 @@ export function FileList() {
                   </div>
                   <p className="text-sm font-medium truncate" title={file.name}>{file.name}</p>
                   {file.summary && (
-                    <p className="text-xs text-muted-foreground line-clamp-2">{file.summary}</p>
+                    <TooltipProvider><Tooltip><TooltipTrigger asChild><p className="text-xs text-muted-foreground line-clamp-1 cursor-help">{file.summary}</p></TooltipTrigger><TooltipContent side="bottom" className="max-w-xs"><p>{file.summary}</p></TooltipContent></Tooltip></TooltipProvider>
                   )}
                   {file.tags && file.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
