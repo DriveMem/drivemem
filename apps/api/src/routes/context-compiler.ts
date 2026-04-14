@@ -21,7 +21,7 @@ const compileSchema = z.object({
 
 export default async function contextCompilerRoutes(fastify: FastifyInstance) {
   // POST /context/compile
-  fastify.post('/context/compile', { preHandler: [requireApiKey] }, async (request, reply) => {
+  fastify.post('/compile', { preHandler: [requireApiKey] }, async (request, reply) => {
     const body = compileSchema.parse(request.body);
     const userId = request.user!.id;
 
