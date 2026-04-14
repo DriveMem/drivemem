@@ -615,4 +615,19 @@ ${insightsSection}
       packet,
     });
   });
+
+  // Context Compiler
+  fastify.post('/context/compile', { preHandler: [requireApiKey] }, async (request, reply) => {
+    const { compileContext } = await import('../services/context-compiler/index.js');
+    const body = request.body as any;
+    if (!body?.task) return reply.status(400).send({ error: 'task is required' });
+    const result = await compileContext(request.user!.id, {
+      task: body.task,
+      model: body.model,
+      tokenBudget: body.tokenBudget,
+      hints: body.hints,
+      format: body.format,
+    });
+    return reply.send(result);
+  });
 }
