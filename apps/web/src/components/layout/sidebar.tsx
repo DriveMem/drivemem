@@ -1,6 +1,6 @@
 "use client"
 
-import { FileText, MessageSquare, CalendarDays, Settings, PanelLeftClose, PanelLeft, Code, Tag } from "lucide-react"
+import { FileText, MessageSquare, CalendarDays, Settings, PanelLeftClose, PanelLeft, Code, Tag, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useLayoutStore } from "@/stores/layout-store"
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils"
 const navItems = [
   { href: "/files", icon: FileText, label: "My Files" },
   { href: "/chat", icon: MessageSquare, label: "AI Chat" },
+  { href: "/compile", icon: Sparkles, label: "Compile" },
   { href: "/timeline", icon: CalendarDays, label: "Timeline" },
   { href: "/developers", icon: Code, label: "Developers" },
   { href: "/settings", icon: Settings, label: "Settings" },

@@ -711,25 +711,33 @@ export function FileList() {
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 px-4 py-2 text-sm text-muted-foreground border-b border-border">
-        <span className={cn("cursor-pointer hover:text-foreground", !currentFolderId && "text-foreground font-medium")} onClick={() => setCurrentFolder(null)}>All files</span>
-        {(() => {
-          if (!currentFolderId) return null
-          // Build full path from root to current folder
-          const path: Array<{ id: string; name: string }> = []
-          let f = allFolders.find((f: any) => f.id === currentFolderId)
-          while (f) {
-            path.unshift({ id: f.id, name: f.name })
-            f = f.parentId ? allFolders.find((p: any) => p.id === f!.parentId) : null
-          }
-          return path.map((p, i) => (
-            <span key={p.id} className="flex items-center gap-1">
-              <ChevronRight className="h-3.5 w-3.5" />
-              <span className={cn("cursor-pointer hover:text-foreground", i === path.length - 1 && "text-foreground font-medium")} onClick={() => setCurrentFolder(i === path.length - 1 ? p.id : p.id)}>
-                {p.name}
+        <div className="flex items-center gap-1 flex-1 min-w-0">
+          <span className={cn("cursor-pointer hover:text-foreground", !currentFolderId && "text-foreground font-medium")} onClick={() => setCurrentFolder(null)}>All files</span>
+          {(() => {
+            if (!currentFolderId) return null
+            // Build full path from root to current folder
+            const path: Array<{ id: string; name: string }> = []
+            let f = allFolders.find((f: any) => f.id === currentFolderId)
+            while (f) {
+              path.unshift({ id: f.id, name: f.name })
+              f = f.parentId ? allFolders.find((p: any) => p.id === f!.parentId) : null
+            }
+            return path.map((p, i) => (
+              <span key={p.id} className="flex items-center gap-1">
+                <ChevronRight className="h-3.5 w-3.5" />
+                <span className={cn("cursor-pointer hover:text-foreground", i === path.length - 1 && "text-foreground font-medium")} onClick={() => setCurrentFolder(i === path.length - 1 ? p.id : p.id)}>
+                  {p.name}
+                </span>
               </span>
-            </span>
-          ))
-        })()}
+            ))
+          })()}
+        </div>
+        {currentFolderId && (
+          <Link href={`/compile?project=${currentFolderId}`} className="shrink-0 inline-flex items-center gap-1 rounded-md border border-[#4F5BD5]/20 bg-[#4F5BD5]/5 px-2.5 py-1 text-xs font-medium text-[#4F5BD5] hover:bg-[#4F5BD5]/10 transition">
+            <Sparkles className="h-3 w-3" />
+            Compile context
+          </Link>
+        )}
       </div>
       {viewMode === "grid" && visibleFolders.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4 border-b border-border">
