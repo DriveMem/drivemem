@@ -34,40 +34,40 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
 
 /* ---------- Data ---------- */
 const CAPABILITIES = [
-  { icon: Search, emoji: "🔍", title: "语义搜索", desc: "自然语言检索知识库，找到真正相关的内容" },
-  { icon: FileText, emoji: "🤖", title: "RAG 问答", desc: "基于知识库的 AI 问答，自动引用来源生成结构化回答" },
-  { icon: Plug, emoji: "📝", title: "知识存储", desc: "agent 自动存入笔记、分析结论、决策记录" },
-  { icon: Bell, emoji: "💡", title: "AI 洞察", desc: "AI 主动发现文件间的关联、矛盾和趋势" },
+  { icon: Search, emoji: "🔍", title: "Semantic search", desc: "Natural language search across your knowledge base" },
+  { icon: FileText, emoji: "🤖", title: "RAG Q&A", desc: "AI answers grounded in your files, with cited sources" },
+  { icon: Plug, emoji: "📝", title: "Knowledge storage", desc: "Agents auto-save notes, analysis, and decisions" },
+  { icon: Bell, emoji: "💡", title: "AI Insights", desc: "AI discovers connections, contradictions, and trends" },
 ] as const
 
-const TABS = ["REST API", "MCP 配置", "Webhook", "Try it"] as const
+const TABS = ["REST API", "MCP Config", "Webhook", "Try it"] as const
 
 const CODE_BLOCKS = [
-  `# 1. 获取 API Key（Settings → API Keys）
+  `# 1. Get API Key (Settings → API Keys)
 
-# 2. 语义搜索
-curl -X GET 'https://drivemem.cloud/api/v1/search?q=项目最新进展' \\
+# 2. Semantic search
+curl -X GET 'https://drivemem.cloud/api/v1/search?q=latest%20updates' \\
   -H 'Authorization: Bearer YOUR_API_KEY'
 
-# 响应示例：
+# Response:
 # {
 #   "results": [
 #     {
 #       "fileId": "abc-123",
-#       "fileName": "项目周报.md",
-#       "text": "本周完成了用户认证模块...",
+#       "fileName": "weekly-report.md",
+#       "text": "Completed user auth module this week...",
 #       "score": 0.92
 #     }
 #   ]
 # }
 
-# 3. 存入知识
+# 3. Store knowledge
 curl -X POST https://drivemem.cloud/api/v1/store \\
   -H 'Authorization: Bearer YOUR_API_KEY' \\
   -H 'Content-Type: application/json' \\
-  -d '{"content": "今天决定采用方案 A", "title": "决策记录"}'
+  -d '{"content": "Decision: adopting plan A", "title": "Decision log"}'
 
-# 响应示例：
+# Response:
 # {
 #   "id": "def-456",
 #   "name": "note-2026-04-09.md",
@@ -77,8 +77,8 @@ curl -X POST https://drivemem.cloud/api/v1/store \\
   `{
   "mcpServers": {
     "ai-drive": {
-      // 公网: https://api.drivemem.cloud/mcp
-      // 本地: http://localhost:3000/mcp
+      // Public: https://api.drivemem.cloud/mcp
+      // Local: http://localhost:3000/mcp
       "url": "https://api.drivemem.cloud/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
@@ -87,20 +87,20 @@ curl -X POST https://drivemem.cloud/api/v1/store \\
   }
 }`,
 
-  `# 注册 Webhook 接收事件推送
+  `# Register webhook for event notifications
 curl -X POST https://drivemem.cloud/api/webhooks \\
   -H 'Authorization: Bearer YOUR_API_KEY' \\
   -H 'Content-Type: application/json' \\
   -d '{"url": "https://your-app.com/hook", "events": ["file.indexed", "insight.discovered"]}'
 
-# 支持的事件类型：
-# - file.indexed     文件上传并完成 AI 索引
-# - insight.discovered  AI 发现新知识关联
-# - file.deleted     文件被删除
+# Supported events:
+# - file.indexed     File uploaded and AI-indexed
+# - insight.discovered  AI discovered new knowledge link
+# - file.deleted     File deleted
 
-# 响应示例：
+# Response:
 # { "id": "...", "url": "...", "events": [...], "secret": "..." }
-# 用 secret 验证签名：X-AIDrive-Signature: sha256=<HMAC(secret, body)>`,
+# Verify signature with secret：X-AIDrive-Signature: sha256=<HMAC(secret, body)>`,
 ]
 
 const MCP_TOOLS = [
@@ -134,13 +134,13 @@ function relativeTime(dateStr: string): string {
   const then = new Date(dateStr).getTime()
   const diff = Math.max(0, now - then)
   const seconds = Math.floor(diff / 1000)
-  if (seconds < 60) return `${seconds}秒前`
+  if (seconds < 60) return `${seconds}s ago`
   const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}分钟前`
+  if (minutes < 60) return `${minutes}m ago`
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}小时前`
+  if (hours < 24) return `${hours}h ago`
   const days = Math.floor(hours / 24)
-  return `${days}天前`
+  return `${days}d ago`
 }
 
 function truncateUrl(url: string, max = 40): string {
@@ -160,11 +160,11 @@ function WebhookDeliveryLog() {
     setError(null)
     try {
       const res = await fetch("/api/webhooks/deliveries?limit=20")
-      if (!res.ok) throw new Error(`请求失败 (${res.status})`)
+      if (!res.ok) throw new Error(`Request failed (${res.status})`)
       const data = await res.json()
       setDeliveries(data.deliveries || [])
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "加载失败")
+      setError(e instanceof Error ? e.message : "Failed to load")
     } finally {
       setLoading(false)
     }
@@ -177,7 +177,7 @@ function WebhookDeliveryLog() {
   if (!isLoggedIn) {
     return (
       <div className="mt-8 rounded-xl border border-[#E5E4E1] bg-white p-6 text-center">
-        <p className="text-sm text-[#6B6966]">登录后查看 Webhook 日志</p>
+        <p className="text-sm text-[#6B6966]">Sign in to view webhook logs</p>
       </div>
     )
   }
@@ -185,14 +185,14 @@ function WebhookDeliveryLog() {
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-[#1C1B18]">📋 Webhook 事件日志</h3>
+        <h3 className="font-semibold text-[#1C1B18]">📋 Webhook Event Log</h3>
         <button
           onClick={fetchDeliveries}
           disabled={loading}
           className="flex items-center gap-1.5 rounded-lg border border-[#E5E4E1] px-3 py-1.5 text-xs font-medium text-[#6B6966] hover:bg-[#F8F7F5] transition disabled:opacity-50"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-          刷新
+          Refresh
         </button>
       </div>
 
@@ -206,7 +206,7 @@ function WebhookDeliveryLog() {
       {!loading && !error && deliveries.length === 0 && (
         <div className="rounded-xl border border-[#E5E4E1] bg-white p-8 text-center">
           <p className="text-sm text-[#6B6966]">
-            暂无 Webhook 投递记录。注册 Webhook 后，事件触发时会在这里显示投递历史。
+            No webhook deliveries yet. Events will appear here after you register a webhook.
           </p>
         </div>
       )}
@@ -216,11 +216,11 @@ function WebhookDeliveryLog() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#E5E4E1] bg-white">
-                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">事件</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Event</th>
                 <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">URL</th>
-                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">状态码</th>
-                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">耗时</th>
-                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">时间</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Status</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Duration</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Time</th>
                 <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]"></th>
               </tr>
             </thead>
@@ -285,7 +285,7 @@ function WebhookDeliveryLog() {
       {loading && deliveries.length === 0 && (
         <div className="rounded-xl border border-[#E5E4E1] bg-white p-8 text-center">
           <RefreshCw className="mx-auto h-5 w-5 animate-spin text-[#6B6966]" />
-          <p className="mt-2 text-sm text-[#6B6966]">加载中...</p>
+          <p className="mt-2 text-sm text-[#6B6966]">Loading...</p>
         </div>
       )}
     </div>
@@ -303,13 +303,13 @@ export default function DevelopersPage() {
     <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-[#4F5BD5]/30">
       {/* Nav */}
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-[#E5E4E1] bg-white/80 px-6 py-4 backdrop-blur">
-        <Link href={isLoggedIn ? "/dashboard" : "/"} className="text-lg font-bold text-[#1C1B18]">DriveMem</Link>
+        <Link href={isLoggedIn ? "/dashboard" : "/"} className="text-lg font-bold text-[#1C1B18]">AI Drive</Link>
         <div className="flex items-center gap-4">
-          <a href="#features" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">功能</a>
+          <a href="#features" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Features</a>
           {isLoggedIn ? (
             <>
               <Link href="/dashboard" className="rounded-lg border border-[#E5E4E1] px-4 py-2 text-sm font-medium text-[#1C1B18] hover:bg-[#F8F7F5] transition">
-                返回 Dashboard
+                Back to Dashboard
               </Link>
               <Link href="/settings" className="flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-medium text-white">
                 {(session?.user?.name || "U").charAt(0).toUpperCase()}
@@ -317,8 +317,8 @@ export default function DevelopersPage() {
             </>
           ) : (
             <>
-              <Link href="/login" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">登录</Link>
-              <Link href="/signup" className="rounded-lg bg-[#4F5BD5] px-4 py-2 text-sm font-medium text-white hover:bg-[#3D49C4] transition">免费开始</Link>
+              <Link href="/login" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Sign in</Link>
+              <Link href="/signup" className="rounded-lg bg-[#4F5BD5] px-4 py-2 text-sm font-medium text-white hover:bg-[#3D49C4] transition">Get started free</Link>
             </>
           )}
         </div>
@@ -332,14 +332,14 @@ export default function DevelopersPage() {
       <section className="relative z-10 flex min-h-[70vh] flex-col items-center justify-center bg-gradient-to-b from-[#F4F5FD] to-white px-6 text-center">
         <FadeIn>
           <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-            让你的 Agent 拥有记忆
+            Give your agents memory
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-[#6B6966]">
-            DriveMem 是 agent 的知识基建 — 通过 API 和 MCP 协议接入你的知识库
+            DriveMem is the knowledge infrastructure for agents — connect via API and MCP
           </p>
           <div className="mt-10">
             <Button asChild size="lg" className="h-12 px-10 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
-              <a href="#quickstart">开始使用 <ArrowRight className="ml-1 h-4 w-4" /></a>
+              <a href="#quickstart">Get started <ArrowRight className="ml-1 h-4 w-4" /></a>
             </Button>
           </div>
         </FadeIn>
@@ -348,8 +348,8 @@ export default function DevelopersPage() {
       {/* Capabilities */}
       <section id="features" className="relative z-10 mx-auto max-w-5xl px-6 py-24">
         <FadeIn>
-          <h2 className="text-center text-3xl font-bold sm:text-4xl">核心能力</h2>
-          <p className="mt-4 text-center text-[#6B6966]">一套完整的 API，让你的应用拥有 AI 知识能力</p>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">Core capabilities</h2>
+          <p className="mt-4 text-center text-[#6B6966]">A complete API to give your app AI knowledge</p>
         </FadeIn>
         <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
           {CAPABILITIES.map((c, i) => (
@@ -370,25 +370,25 @@ export default function DevelopersPage() {
       <section id="quickstart" className="relative z-10 bg-[#F8F7F5] px-6 py-24">
         <div className="mx-auto max-w-3xl">
           <FadeIn>
-            <h2 className="text-center text-3xl font-bold sm:text-4xl">快速接入</h2>
-            <p className="mt-4 text-center text-[#6B6966]">三步接入 DriveMem</p>
+            <h2 className="text-center text-3xl font-bold sm:text-4xl">Quick start</h2>
+            <p className="mt-4 text-center text-[#6B6966]">Three steps to connect</p>
 
             {/* Step guide */}
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-bold text-white">1</span>
-                <p className="mt-2 text-sm font-medium">获取 API Key</p>
-                <p className="mt-1 text-xs text-[#6B6966]">在 <a href="/settings?tab=developer" className="text-[#4F5BD5] hover:underline">Settings</a> 创建你的 Key</p>
+                <p className="mt-2 text-sm font-medium">Get API Key</p>
+                <p className="mt-1 text-xs text-[#6B6966]">Create your key in <a href="/settings?tab=developer" className="text-[#4F5BD5] hover:underline">Settings</a></p>
               </div>
               <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-bold text-white">2</span>
-                <p className="mt-2 text-sm font-medium">复制配置</p>
-                <p className="mt-1 text-xs text-[#6B6966]">选择 REST API 或 MCP 配置</p>
+                <p className="mt-2 text-sm font-medium">Copy config</p>
+                <p className="mt-1 text-xs text-[#6B6966]">Choose REST API or MCP</p>
               </div>
               <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-bold text-white">3</span>
-                <p className="mt-2 text-sm font-medium">粘贴使用</p>
-                <p className="mt-1 text-xs text-[#6B6966]">粘贴到 Claude / Cursor / 你的应用</p>
+                <p className="mt-2 text-sm font-medium">Paste and go</p>
+                <p className="mt-1 text-xs text-[#6B6966]">Paste into Claude / Cursor / your app</p>
               </div>
             </div>
           </FadeIn>
@@ -421,8 +421,8 @@ export default function DevelopersPage() {
                     config: `{
   "mcpServers": {
     "ai-drive": {
-      // 公网: https://api.drivemem.cloud/mcp
-      // 本地: http://localhost:3000/mcp
+      // Public: https://api.drivemem.cloud/mcp
+      // Local: http://localhost:3000/mcp
       "url": "https://api.drivemem.cloud/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
@@ -437,8 +437,8 @@ export default function DevelopersPage() {
                     config: `{
   "mcpServers": {
     "ai-drive": {
-      // 公网: https://api.drivemem.cloud/mcp
-      // 本地: http://localhost:3000/mcp
+      // Public: https://api.drivemem.cloud/mcp
+      // Local: http://localhost:3000/mcp
       "url": "https://api.drivemem.cloud/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_KEY"
@@ -449,16 +449,16 @@ export default function DevelopersPage() {
                   },
                   {
                     name: "OpenClaw",
-                    path: "openclaw.yaml 或 TOOLS.md",
-                    config: `# OpenClaw MCP 配置（openclaw.yaml）
+                    path: "openclaw.yaml or TOOLS.md",
+                    config: `# OpenClaw MCP Config（openclaw.yaml）
 plugins:
   entries:
     ai-drive:
       kind: mcp
       transport:
         type: sse
-        # 公网: https://api.drivemem.cloud/mcp
-        # 本地: http://localhost:3000/mcp
+        # Public: https://api.drivemem.cloud/mcp
+        # Local: http://localhost:3000/mcp
         url: "https://api.drivemem.cloud/mcp"
         headers:
           Authorization: "Bearer YOUR_API_KEY"`,
@@ -474,7 +474,7 @@ plugins:
                         onClick={() => { navigator.clipboard.writeText(client.config); setCopiedClient(client.name) ; setTimeout(() => setCopiedClient(null), 2000) }}
                         className="rounded-md border border-[#E5E4E1] px-2.5 py-1 text-xs text-[#6B6966] hover:bg-[#F8F7F5] transition"
                       >
-                        {copiedClient === client.name ? "✓ 已复制" : "复制"}
+                        {copiedClient === client.name ? "✓ Copied" : "Copy"}
                       </button>
                     </div>
                     <pre className="overflow-x-auto bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
@@ -484,40 +484,40 @@ plugins:
                 ))}
                 {/* URL options */}
                 <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 space-y-3">
-                  <p className="text-sm font-medium text-[#1C1B18]">🌐 MCP 服务地址</p>
+                  <p className="text-sm font-medium text-[#1C1B18]">🌐 MCP Server</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="rounded-lg border border-[#4F5BD5]/30 bg-[#4F5BD5]/5 p-3">
-                      <p className="text-xs font-medium text-[#4F5BD5] mb-1">☁️ 公网地址（推荐）</p>
+                      <p className="text-xs font-medium text-[#4F5BD5] mb-1">☁️ Public URL (recommended)</p>
                       <code className="text-xs font-mono text-[#1C1B18] break-all">https://api.drivemem.cloud/mcp</code>
-                      <p className="text-[10px] text-[#6B6966] mt-1">无需自建，直接使用</p>
+                      <p className="text-[10px] text-[#6B6966] mt-1">Ready to use, no self-hosting</p>
                     </div>
                     <div className="rounded-lg border border-[#E5E4E1] bg-[#F8F7F5] p-3">
-                      <p className="text-xs font-medium text-[#6B6966] mb-1">🏠 本地 / 自部署</p>
+                      <p className="text-xs font-medium text-[#6B6966] mb-1">🏠 Local / Self-hosted</p>
                       <code className="text-xs font-mono text-[#1C1B18] break-all">http://localhost:3000/mcp</code>
-                      <p className="text-[10px] text-[#6B6966] mt-1">适合本地开发或私有部署</p>
+                      <p className="text-[10px] text-[#6B6966] mt-1">For local dev or private deployment</p>
                     </div>
                   </div>
                   <p className="text-xs text-[#6B6966]">
-                    💡 将 <code className="font-mono">YOUR_API_KEY</code> 替换为你的 API Key。
-                    在 <a href="/settings?tab=developer" className="text-[#4F5BD5] hover:underline">Settings → 开发者</a> 创建。
+                    💡 Replace <code className="font-mono">YOUR_API_KEY</code> with your API key.
+                    Create one in <a href="/settings?tab=developer" className="text-[#4F5BD5] hover:underline">Settings → Developer</a>.
                   </p>
                 </div>
 
                 {/* Security tips */}
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
-                  <p className="text-sm font-medium text-amber-800">🔒 安全最佳实践</p>
+                  <p className="text-sm font-medium text-amber-800">🔒 Security Best Practices</p>
                   <ul className="space-y-1.5 text-xs text-amber-700">
                     <li className="flex items-start gap-2">
                       <span className="shrink-0 mt-0.5">•</span>
-                      <span><strong>最小权限原则</strong> — 创建 API Key 时仅勾选所需的 scope，避免授予不必要的权限</span>
+                      <span><strong>Least privilege</strong> — Only grant the scopes your agent needs</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="shrink-0 mt-0.5">•</span>
-                      <span><strong>使用环境变量</strong> — 不要在配置文件中硬编码 API Key，使用 <code className="font-mono bg-amber-100 px-1 rounded">$AIDRIVE_API_KEY</code> 等环境变量代替</span>
+                      <span><strong>Use env vars</strong> — Never hardcode API keys. Use <code className="font-mono bg-amber-100 px-1 rounded">$AIDRIVE_API_KEY</code> instead</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="shrink-0 mt-0.5">•</span>
-                      <span><strong>定期轮换</strong> — 建议每 90 天轮换一次 API Key，及时撤销不再使用的 Key</span>
+                      <span><strong>Rotate regularly</strong> — Rotate API keys every 90 days. Revoke unused keys promptly</span>
                     </li>
                   </ul>
                 </div>
@@ -534,7 +534,7 @@ plugins:
                   onClick={() => { navigator.clipboard.writeText(CODE_BLOCKS[activeTab]); setCopiedClient("code"); setTimeout(() => setCopiedClient(null), 2000) }}
                   className="absolute top-2 right-2 rounded-md border border-white/20 bg-white/10 px-2.5 py-1 text-xs text-white hover:bg-white/20 transition"
                 >
-                  {copiedClient === "code" ? "✓ 已复制" : "复制"}
+                  {copiedClient === "code" ? "✓ Copied" : "Copy"}
                 </button>
               </div>
             )}
@@ -551,13 +551,13 @@ plugins:
       {/* API Key Guide */}
       <section className="relative z-10 mx-auto max-w-3xl px-6 py-24 text-center">
         <FadeIn>
-          <h2 className="text-2xl font-bold sm:text-3xl">获取 API Key</h2>
+          <h2 className="text-2xl font-bold sm:text-3xl">Get API Key</h2>
           <p className="mt-4 text-[#6B6966]">
-            在 Settings 页面创建你的 API Key，即可开始集成。
+            Create your API key in Settings to start integrating.
           </p>
           <div className="mt-8">
             <Button asChild size="lg" className="h-12 px-8 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
-              <Link href="/settings?tab=developer">前往创建 API Key <ChevronRight className="ml-1 h-4 w-4" /></Link>
+              <Link href="/settings?tab=developer">Create API Key <ChevronRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>
         </FadeIn>
@@ -567,14 +567,14 @@ plugins:
       <section id="api" className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5] px-6 py-24">
         <div className="mx-auto max-w-3xl">
           <FadeIn>
-            <h2 className="text-2xl font-bold sm:text-3xl">API 参考</h2>
+            <h2 className="text-2xl font-bold sm:text-3xl">API Reference</h2>
 
             <div className="mt-8 space-y-6">
               {/* REST API Endpoints */}
               <div>
                 <h3 className="font-semibold text-[#1C1B18]">REST API Endpoints</h3>
                 <p className="mt-2 text-sm text-[#6B6966]">
-                  所有 v1 端点前缀为 <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">/api/v1</code>，需携带 API Key 认证。Webhook 端点前缀为 <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">/api/webhooks</code>。
+                  All v1 endpoints are prefixed with <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">/api/v1</code>. Auth via API Key. Webhook endpoints use <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">/api/webhooks</code>.
                 </p>
                 <div className="mt-3 overflow-x-auto rounded-lg border border-[#E5E4E1]">
                   <table className="w-full text-sm">
@@ -587,24 +587,24 @@ plugins:
                     </thead>
                     <tbody className="divide-y divide-[#E5E4E1]">
                       {[
-                        ["GET", "/api/v1/search?q=…", "语义搜索知识库"],
-                        ["POST", "/api/v1/ask", "RAG 问答（基于文档的 AI 回答）"],
-                        ["POST", "/api/v1/store", "快速存入一段知识笔记"],
-                        ["POST", "/api/v1/files/upload", "上传文件（multipart）"],
-                        ["GET", "/api/v1/files", "列出所有文件（?detail=brief|full）"],
-                        ["GET", "/api/v1/files/:id", "获取文件详情"],
-                        ["PATCH", "/api/v1/files/:id", "更新文件元数据（名称、标签）"],
-                        ["PUT", "/api/v1/files/:id/content", "替换文件内容"],
-                        ["DELETE", "/api/v1/files/:id", "删除文件"],
-                        ["POST", "/api/v1/files/batch", "批量操作（delete/archive/unarchive）"],
-                        ["PATCH", "/api/v1/files/:id/archive", "归档文件"],
-                        ["PATCH", "/api/v1/files/:id/unarchive", "取消归档"],
-                        ["GET", "/api/v1/insights", "获取 AI 洞察（文件关联与趋势）"],
-                        ["GET", "/api/v1/timeline", "知识库活动时间线"],
-                        ["GET", "/api/webhooks", "列出已注册的 Webhook"],
-                        ["POST", "/api/webhooks", "注册新 Webhook"],
-                        ["PATCH", "/api/webhooks/:id", "更新 Webhook"],
-                        ["DELETE", "/api/webhooks/:id", "删除 Webhook"],
+                        ["GET", "/api/v1/search?q=…", "Semantic search"],
+                        ["POST", "/api/v1/ask", "RAG Q&A (AI answers from docs)"],
+                        ["POST", "/api/v1/store", "Store a knowledge note"],
+                        ["POST", "/api/v1/files/upload", "Upload file (multipart)"],
+                        ["GET", "/api/v1/files", "List files (?detail=brief|full)"],
+                        ["GET", "/api/v1/files/:id", "Get file details"],
+                        ["PATCH", "/api/v1/files/:id", "Update file metadata (name, tags)"],
+                        ["PUT", "/api/v1/files/:id/content", "Replace file content"],
+                        ["DELETE", "/api/v1/files/:id", "Delete file"],
+                        ["POST", "/api/v1/files/batch", "Batch ops (delete/archive/unarchive)"],
+                        ["PATCH", "/api/v1/files/:id/archive", "Archive file"],
+                        ["PATCH", "/api/v1/files/:id/unarchive", "Unarchive file"],
+                        ["GET", "/api/v1/insights", "Get AI Insights"],
+                        ["GET", "/api/v1/timeline", "Knowledge timeline"],
+                        ["GET", "/api/webhooks", "List webhooks"],
+                        ["POST", "/api/webhooks", "Register webhook"],
+                        ["PATCH", "/api/webhooks/:id", "Update webhook"],
+                        ["DELETE", "/api/webhooks/:id", "Delete webhook"],
                       ].map(([method, path, desc], i) => (
                         <tr key={i} className="hover:bg-white/60 transition">
                           <td className="px-4 py-2 whitespace-nowrap">
@@ -628,9 +628,9 @@ plugins:
               </div>
 
               <div id="mcp">
-                <h3 className="font-semibold text-[#1C1B18]">MCP 工具列表</h3>
+                <h3 className="font-semibold text-[#1C1B18]">MCP Tools</h3>
                 <p className="mt-2 text-sm text-[#6B6966]">
-                  DriveMem MCP Server 提供 {MCP_TOOLS.length} 个工具：
+                  DriveMem MCP Server provides {MCP_TOOLS.length} tools:
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {MCP_TOOLS.map((t) => (
@@ -642,25 +642,25 @@ plugins:
               </div>
 
               <div id="cli">
-                <h3 className="font-semibold text-[#1C1B18]">CLI 工具</h3>
-                <p className="mt-2 text-sm text-[#6B6966]">命令行操作知识库：</p>
+                <h3 className="font-semibold text-[#1C1B18]">CLI Tools</h3>
+                <p className="mt-2 text-sm text-[#6B6966]">CLI for your knowledge base:</p>
                 <pre className="mt-3 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
-                  <code>{`# 安装（Coming Soon — CLI 包即将发布到 npm）
-# npm install -g aidrive-cli
+                  <code>{`# Install
+npm install -g aidrive
 
-# 配置 API Key
+# Configure API Key
 export AIDRIVE_API_KEY=ak_your_api_key
 
-# 常用命令
-aidrive search "关键词"
-aidrive ask "基于文件回答问题"
-aidrive store "快速存入一段知识"
+# Commands
+aidrive search "keyword"
+aidrive ask "answer based on files"
+aidrive store "save knowledge"
 aidrive upload report.md
-aidrive files              # 列出文件
-aidrive info <file-id>     # 文件详情 + AI 摘要
-aidrive insights           # AI 洞察
+aidrive files              # list files
+aidrive info <file-id>     # file details + AI summary
+aidrive insights           # AI insights
 
-# 所有命令支持 --json 输出（适合 agent/脚本）`}</code>
+# All commands support --json (for agents/scripts)`}</code>
                 </pre>
               </div>
             </div>
@@ -673,35 +673,35 @@ aidrive insights           # AI 洞察
         <div className="mx-auto max-w-6xl px-6 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-bold text-[#1C1B18]">DriveMem</h3>
-              <p className="mt-2 text-sm text-[#6B6966]">你的 AI 知识助手</p>
+              <h3 className="text-lg font-bold text-[#1C1B18]">AI Drive</h3>
+              <p className="mt-2 text-sm text-[#6B6966]">The memory layer for AI agents</p>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">产品</h4>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Product</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><a href="#features" className="hover:text-[#4F5BD5] transition">功能介绍</a></li>
-                <li><Link href="/login" className="hover:text-[#4F5BD5] transition">登录</Link></li>
-                <li><Link href="/signup" className="hover:text-[#4F5BD5] transition">免费注册</Link></li>
+                <li><a href="#features" className="hover:text-[#4F5BD5] transition">Features</a></li>
+                <li><Link href="/login" className="hover:text-[#4F5BD5] transition">Sign in</Link></li>
+                <li><Link href="/signup" className="hover:text-[#4F5BD5] transition">Sign up free</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">开发者</h4>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Developers</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><Link href="/developers#api" className="hover:text-[#4F5BD5] transition">API 文档</Link></li>
-                <li><Link href="/developers#mcp" className="hover:text-[#4F5BD5] transition">MCP 协议</Link></li>
-                <li><Link href="/developers#cli" className="hover:text-[#4F5BD5] transition">CLI 工具</Link></li>
+                <li><Link href="/developers#api" className="hover:text-[#4F5BD5] transition">API Docs</Link></li>
+                <li><Link href="/developers#mcp" className="hover:text-[#4F5BD5] transition">MCP Protocol</Link></li>
+                <li><Link href="/developers#cli" className="hover:text-[#4F5BD5] transition">CLI Tools</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">法律</h4>
+              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Legal</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><Link href="/terms" className="hover:text-[#4F5BD5] transition">使用条款</Link></li>
-                <li><Link href="/privacy" className="hover:text-[#4F5BD5] transition">隐私政策</Link></li>
+                <li><Link href="/terms" className="hover:text-[#4F5BD5] transition">Terms of Service</Link></li>
+                <li><Link href="/privacy" className="hover:text-[#4F5BD5] transition">Privacy Policy</Link></li>
               </ul>
             </div>
           </div>
           <div className="mt-8 border-t border-[#E5E4E1] pt-6 text-center text-xs text-[#6B6966]">
-            © {new Date().getFullYear()} DriveMem. All rights reserved.
+            © {new Date().getFullYear()} AI Drive. All rights reserved.
           </div>
         </div>
       </footer>
