@@ -291,7 +291,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-[#4F5BD5] mb-2">🎯 {folder.goal}</p>
                     )}
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>📄 文件</span>
+                      <span>📄 {folder.fileCount ?? 0} 个文件</span>
                     </div>
                   </div>
                 ))}
