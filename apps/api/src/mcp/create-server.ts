@@ -161,6 +161,22 @@ export function createMcpServer(userId: string, agentName: string = ''): Server 
         },
       },
       {
+        name: 'aidrive_compile_context',
+        description: 'Compile task-relevant context from knowledge base. Returns structured markdown optimized for the target model.',
+        inputSchema: {
+          type: 'object' as const,
+          properties: {
+            task: { type: 'string', description: 'Current task description' },
+            tokenBudget: { type: 'number', description: 'Max output tokens (default 8000)' },
+            model: { type: 'string', description: 'Target model name (e.g. claude-opus, gpt-4o)' },
+            project: { type: 'string', description: 'Project scope filter' },
+            tags: { type: 'string', description: 'Tag filter (comma-separated)' },
+            recency: { type: 'string', description: 'Time range preference (e.g. 7d, 30d)' },
+          },
+          required: ['task'],
+        },
+      },
+      {
         name: 'aidrive_context_packet',
         description: '生成项目的交接包——将项目的文件、决策、进展打包成精炼的上下文摘要，用于跨模型/跨 agent 任务接力',
         inputSchema: {
@@ -477,6 +493,24 @@ export function createMcpServer(userId: string, agentName: string = ''): Server 
             } catch { fail++; }
           }
           return { content: [{ type: 'text' as const, text: `✅ 批量${action}完成：成功 ${ok}，失败 ${fail}` }] };
+        }
+
+        case 'aidrive_compile_context': {
+          const task = (args as any).task as string;
+          if (!task) return { content: [{ type: 'text' as const, text: '需要 task 参数。' }], isError: true };
+          const { compileContext } = await import('../services/context-compiler/index.js');
+          const result = await compileContext(userId, {
+            task,
+            tokenBudget: (args as any).tokenBudget as number | undefined,
+            model: (args as any).model ? { name: (args as any).model as string } : undefined,
+            hints: {
+              project: (args as any).project as string | undefined,
+              tags: (args as any).tags ? ((args as any).tags as string).split(',').map((t: string) => t.trim()) : undefined,
+              recency: (args as any).recency as string | undefined,
+            },
+          });
+          const summary = `${result.compiledContext}\n\n---\n_Compilation: ${result.metadata.fragmentCount} fragments, ${result.metadata.totalTokens}/${result.metadata.tokenBudget} tokens, ${result.metadata.compilationTimeMs}ms, coverage: ${result.metadata.coverage}_`;
+          return { content: [{ type: 'text' as const, text: summary }] };
         }
 
         case 'aidrive_context_packet': {

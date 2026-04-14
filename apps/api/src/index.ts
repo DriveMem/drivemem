@@ -131,6 +131,9 @@ await app.register(v1Routes, { prefix: '/api/v1' });
 import webhookRoutes from './routes/webhooks.js';
 await app.register(webhookRoutes, { prefix: '/api/webhooks' });
 
+import contextCompilerRoutes from './routes/context-compiler.js';
+await app.register(contextCompilerRoutes, { prefix: '/api/v1' });
+
 import mcpHttpRoutes from './routes/mcp-http.js';
 await app.register(mcpHttpRoutes, { prefix: '/mcp' });
 
