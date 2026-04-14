@@ -84,14 +84,11 @@ export default function LandingPage() {
             Your background, preferences, and projects — shared with every agent you connect.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Button asChild size="lg" className="h-12 px-8 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
-              <Link href="/signup">Get started free <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            <Button asChild size="lg" className="h-14 px-10 text-lg font-semibold bg-[#4F5BD5] hover:bg-[#3D49C4] text-white shadow-lg shadow-[#4F5BD5]/25">
+              <Link href="/login">免费开始 <ArrowRight className="ml-1 h-5 w-5" /></Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 border-[#E5E4E1] px-8 text-base text-[#6B6966] hover:bg-[#F8F7F5] hover:text-[#1C1B18]">
               <Link href="#features">Learn more</Link>
-            </Button>
-            <Button asChild variant="ghost" size="lg" className="h-12 px-8 text-base text-[#6B6966] hover:text-[#1C1B18]">
-              <Link href="/signup">Try free →</Link>
             </Button>
           </div>
           <p className="mt-4 text-sm text-[#6B6966] text-center">✨ Free 5GB storage · 50 AI chats/day · MCP / API / CLI</p>
@@ -235,8 +232,13 @@ export default function LandingPage() {
           </div>
 
           {/* Copyright */}
-          <div className="mt-8 border-t border-[#E5E4E1] pt-6 text-center text-xs text-[#6B6966]">
-            © {new Date().getFullYear()} AI Drive. All rights reserved.
+          <div className="mt-8 border-t border-[#E5E4E1] pt-6 flex flex-col items-center gap-3">
+            <Button asChild size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white px-6">
+              <Link href="/login">免费开始</Link>
+            </Button>
+            <p className="text-xs text-[#6B6966]">
+              © {new Date().getFullYear()} AI Drive. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>

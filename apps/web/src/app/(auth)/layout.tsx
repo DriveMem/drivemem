@@ -14,24 +14,24 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
           <div className="space-y-6 max-w-sm">
             <div className="flex items-start gap-4">
-              <span className="text-2xl">🧠</span>
+              <span className="text-2xl">🔗</span>
               <div>
-                <p className="text-white font-medium">智能理解</p>
-                <p className="text-sm text-white/60">AI 自动解析你的文件内容</p>
+                <p className="text-white font-medium">Agent 记忆层</p>
+                <p className="text-sm text-white/60">所有 Agent 共享一份持久记忆</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <span className="text-2xl">💬</span>
+              <span className="text-2xl">🔄</span>
               <div>
-                <p className="text-white font-medium">随时对话</p>
-                <p className="text-sm text-white/60">用自然语言和你的文件对话</p>
+                <p className="text-white font-medium">跨 Agent 上下文</p>
+                <p className="text-sm text-white/60">Context Packet 让任务无缝交接</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <span className="text-2xl">🔒</span>
+              <span className="text-2xl">⚡</span>
               <div>
-                <p className="text-white font-medium">数据安全</p>
-                <p className="text-sm text-white/60">你的文件只属于你</p>
+                <p className="text-white font-medium">MCP / API 接入</p>
+                <p className="text-sm text-white/60">一行配置连接任意 AI Agent</p>
               </div>
             </div>
           </div>
