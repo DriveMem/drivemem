@@ -24,7 +24,7 @@ const SEED_FILES: SeedFile[] = [
 
 ### 1. 上传文件
 - 点击左上角「上传」按钮，或直接拖拽文件到页面
-- 支持 PDF、Word、PPT、Excel、TXT、Markdown 等格式
+- 支持 PDF, Word, PPT, Excel, TXT, Markdown 等格式
 - 免费版提供 5GB 存储空间
 
 ### 2. AI 自动解析

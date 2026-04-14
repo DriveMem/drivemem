@@ -10,7 +10,7 @@ export function InspectorPanel() {
   return (
     <div className="flex h-full w-[360px] flex-col">
       <div className="flex h-14 items-center justify-between border-b border-border px-4">
-        <span className="text-sm font-medium">FilesDetails</span>
+        <span className="text-sm font-medium">File Details</span>
         <Button variant="ghost" size="icon" onClick={closeInspector} className="h-8 w-8">
           <X className="h-4 w-4" />
         </Button>

@@ -33,7 +33,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
       .limit(3);
 
     if (recentFiles.length === 0) {
-      return reply.send({ suggestions: ['上传一个文件，让 AI 记住它', '试试拖拽文件到页面上传', '支持 PDF、Word、TXT、Markdown 格式'] });
+      return reply.send({ suggestions: ['上传一个文件，让 AI 记住它', '试试拖拽文件到页面上传', '支持 PDF, Word, TXT, Markdown 格式'] });
     }
 
     const fileInfo = recentFiles.map(f => `${f.name}: ${f.summary?.substring(0, 100)}`).join('\n');

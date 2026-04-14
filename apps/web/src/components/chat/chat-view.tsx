@@ -350,7 +350,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <span className="text-xs text-muted-foreground">AI Memory scope: </span>
         <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined); toast("Memory scope: All files", { duration: 1500 }) }} className="gap-1 text-xs">
-          <Files className="h-3 w-3" />AllFiles{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}
+          <Files className="h-3 w-3" />All Files{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}
         </Button>
         {scope !== "all" && scopeLabel && (
           <span className="rounded-full bg-[#4F5BD5]/10 px-2 py-0.5 text-[10px] text-[#4F5BD5] font-medium">

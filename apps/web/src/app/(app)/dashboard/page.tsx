@@ -338,7 +338,7 @@ export default function DashboardPage() {
                       <span className="text-2xl shrink-0">📄</span>
                       <div>
                         <p className="text-sm font-medium">上传第一份文件</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">PDF、文档、笔记——AI 自动索引一切</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">PDF, 文档, 笔记——AI 自动索引一切</p>
                       </div>
                     </button>
                     <button

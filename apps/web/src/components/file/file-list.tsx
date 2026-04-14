@@ -574,7 +574,7 @@ export function FileList() {
                 <Upload className="h-5 w-5 text-[#4F5BD5]" />
               </div>
               <p className="text-sm font-medium">Upload files</p>
-              <p className="text-xs text-muted-foreground mt-0.5">PDF、Word、PPT etc.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">PDF, Word, PPT etc.</p>
             </button>
             <button
               onClick={async () => {
@@ -701,7 +701,7 @@ export function FileList() {
             } catch (e: any) { const { toast } = await import("sonner"); toast.error(e.message || "Organization failed") }
           }} variant="outline" className="gap-1">✨ One-click organize</Button>
           <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />New folder</Button>
-          <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"><Upload className="h-3.5 w-3.5" />Let AI remember</Button>
+          <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"><Upload className="h-3.5 w-3.5" />Quick Note</Button>
           <div className="flex items-center rounded-md border border-border ml-2">
             <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-r-none", viewMode === "list" && "bg-accent")} onClick={() => setViewMode("list")}><List className="h-3.5 w-3.5" /></Button>
             <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-l-none", viewMode === "grid" && "bg-accent")} onClick={() => setViewMode("grid")}><LayoutGrid className="h-3.5 w-3.5" /></Button>
@@ -841,7 +841,7 @@ export function FileList() {
                   <button
                     onClick={(e) => { e.stopPropagation(); openDrawer(file.id) }}
                     className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
-                    title="FilesDetails"
+                    title="File Details"
                   >
                     <Info className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
@@ -1023,7 +1023,7 @@ export function FileList() {
                 <Upload className="h-4.5 w-4.5 text-[#4F5BD5]" />
               </div>
               <span className="text-xs font-medium">Upload more files</span>
-              <span className="text-[11px] text-muted-foreground leading-tight">PDF、Word、notes, etc.</span>
+              <span className="text-[11px] text-muted-foreground leading-tight">PDF, Word, notes, etc.</span>
             </button>
             <Link
               href="/chat?new=1"
@@ -1145,7 +1145,7 @@ export function FileList() {
         return (
           <div className="fixed inset-y-0 right-0 z-50 w-[400px] border-l bg-background shadow-xl">
             <div className="flex items-center justify-between border-b px-4 py-3">
-              <h3 className="text-sm font-semibold">FilesDetails</h3>
+              <h3 className="text-sm font-semibold">File Details</h3>
               <button onClick={() => closeDrawer()} className="h-8 w-8 rounded-md hover:bg-accent flex items-center justify-center">
                 <X className="h-4 w-4" />
               </button>

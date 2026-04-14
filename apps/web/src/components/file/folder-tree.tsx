@@ -59,7 +59,7 @@ export function FolderTree() {
   return (
     <div className="space-y-0.5">
       <button onClick={() => setCurrentFolder(null)} className={cn("flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-sm hover:bg-accent", currentFolderId === null && "bg-accent text-accent-foreground")}>
-        <Folder className="h-4 w-4 text-muted-foreground" /><span>AllFiles</span>
+        <Folder className="h-4 w-4 text-muted-foreground" /><span>All Files</span>
       </button>
       {folders.map((f) => <FolderNode key={f.id} folder={f} />)}
     </div>

@@ -62,7 +62,7 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
   return (
     <div className="border-b border-border p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium">Let AI remember files</span>
+        <span className="text-sm font-medium">Quick Note</span>
         <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6"><X className="h-4 w-4" /></Button>
       </div>
       <div {...getRootProps()} className={cn("flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 cursor-pointer transition-colors", isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground")}>
