@@ -26,12 +26,12 @@ import Link from "next/link"
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 1) return "刚刚"
-  if (mins < 60) return `${mins}分钟前`
+  if (mins < 1) return "just now"
+  if (mins < 60) return `${mins}m ago`
   const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}小时前`
+  if (hours < 24) return `${hours}h ago`
   const days = Math.floor(hours / 24)
-  return `${days}天前`
+  return `${days}d ago`
 }
 
 function activityEmoji(type: string) {
@@ -48,10 +48,10 @@ function QuickActions({ onGenerate, onOrganize }: {
 }) {
   const router = useRouter()
   const chips: { icon: string; label: string; action: () => void }[] = [
-    { icon: "💬", label: "新 AI 对话", action: () => router.push("/chat?new=1") },
-    { icon: "📊", label: "生成分析报告", action: () => onGenerate("analysis") },
-    { icon: "📝", label: "生成学习笔记", action: () => onGenerate("study") },
-    { icon: "🔍", label: "AI 整理文件", action: onOrganize },
+    { icon: "💬", label: "New AI Chat", action: () => router.push("/chat?new=1") },
+    { icon: "📊", label: "Generate report", action: () => onGenerate("analysis") },
+    { icon: "📝", label: "Study notes", action: () => onGenerate("study") },
+    { icon: "🔍", label: "AI organize", action: onOrganize },
   ]
   return (
     <div className="mx-3 mb-3 flex flex-wrap gap-2">
@@ -78,16 +78,16 @@ function ActivitySummary({ activities }: { activities: any[] }) {
   if (activities.length === 0) {
     return (
       <div className="mx-3 mb-3 rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
-        AI 会在发现知识关联时自动通知你
+        AI will notify you when it discovers knowledge links
       </div>
     )
   }
 
   return (
     <div className="mx-3 mb-3">
-      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">最近活动</h4>
+      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Recent activity</h4>
       <div className="text-xs text-muted-foreground mb-2">
-        今日索引 {fileCount} 文件 · {insightCount} 条洞察 · {linkCount} 个关联
+        Indexed {fileCount} files · {insightCount}  insights · {linkCount}  links
       </div>
       <div className="space-y-1">
         {shown.map((a: any) => (
@@ -99,7 +99,7 @@ function ActivitySummary({ activities }: { activities: any[] }) {
         ))}
       </div>
       {activities.length > 5 && (
-        <button className="mt-2 text-xs text-[#4F5BD5] hover:underline">查看全部</button>
+        <button className="mt-2 text-xs text-[#4F5BD5] hover:underline">View all</button>
       )}
     </div>
   )
@@ -130,7 +130,7 @@ function InsightsSummaryCard({ insights, onSwitchToAi }: { insights: any[]; onSw
 
   const unread = insights.filter(i => !i.read).length
   const count = unread > 0 ? unread : insights.length
-  const label = unread > 0 ? `${count} 条新知识关联` : `${count} 条知识关联`
+  const label = unread > 0 ? `${count}  new knowledge links` : `${count}  knowledge links`
   const previews = insights.slice(0, 3)
 
   const handleDismiss = () => {
@@ -142,8 +142,8 @@ function InsightsSummaryCard({ insights, onSwitchToAi }: { insights: any[]; onSw
     <div className="mx-6 mb-3 rounded-xl border border-[#4F5BD5]/20 bg-[#4F5BD5]/5 p-3">
       <div className="flex items-center justify-between mb-1.5">
         <button onClick={onSwitchToAi} className="text-sm font-medium hover:underline">
-          💡 AI 发现了 {label}
-          <span className="ml-1.5 text-xs text-[#4F5BD5]">查看 →</span>
+          💡 AI discovered {label}
+          <span className="ml-1.5 text-xs text-[#4F5BD5]">View →</span>
         </button>
         <button onClick={handleDismiss} className="text-muted-foreground hover:text-foreground p-0.5">
           <X className="h-3.5 w-3.5" />
@@ -187,7 +187,7 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState<any[]>([])
   const reportRef = useRef<ReportSectionHandle>(null)
 
-  useEffect(() => { document.title = "概览 - AI Drive" }, [])
+  useEffect(() => { document.title = "Dashboard - DriveMem" }, [])
 
   useEffect(() => {
     apiFetch("/api/insights?limit=5").then((data: any) => {
@@ -213,9 +213,9 @@ export default function DashboardPage() {
   const handleAutoOrganize = async () => {
     try {
       await apiFetch("/api/files/auto-organize", { method: "POST" })
-      toast.success("文件整理已开始")
+      toast.success("File organization started")
     } catch {
-      toast.error("文件整理失败")
+      toast.error("File organization failed")
     }
   }
 
@@ -237,7 +237,7 @@ export default function DashboardPage() {
             )}
           >
             <FolderOpen className="h-4 w-4" />
-            最近文件
+            Files
           </button>
           <button
             onClick={() => handleTabSwitch("ai")}
@@ -249,7 +249,7 @@ export default function DashboardPage() {
             )}
           >
             <Sparkles className="h-4 w-4" />
-            AI 对话
+            AI Chat
             {fileCount > 3 && activeTab !== "ai" && (
               <span className="absolute top-1.5 right-1 h-2 w-2 rounded-full bg-blue-500" />
             )}
@@ -263,7 +263,7 @@ export default function DashboardPage() {
           <InsightsSummaryCard insights={insights} onSwitchToAi={() => handleTabSwitch("ai")} />
           {!currentFolderId ? (
             <div className="flex-1 min-h-0 overflow-auto p-6">
-              <h2 className="text-lg font-semibold mb-4">📁 我的项目</h2>
+              <h2 className="text-lg font-semibold mb-4">📁 My Projects</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {folders.map((folder: any) => (
                   <div
@@ -280,7 +280,7 @@ export default function DashboardPage() {
                           folder.status === 'completed' ? 'bg-blue-500/10 text-blue-600' :
                           'bg-muted text-muted-foreground'
                         }`}>
-                          {folder.status === 'active' ? '进行中' : folder.status === 'completed' ? '已完成' : folder.status}
+                          {folder.status === 'active' ? 'Active' : folder.status === 'completed' ? 'Completed' : folder.status}
                         </span>
                       )}
                     </div>
@@ -291,27 +291,27 @@ export default function DashboardPage() {
                       <p className="text-xs text-[#4F5BD5] mb-2">🎯 {folder.goal}</p>
                     )}
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>📄 {folder.fileCount ?? 0} 个文件</span>
+                      <span>📄 {folder.fileCount ?? 0} 个files</span>
                     </div>
                   </div>
                 ))}
 
-                {/* 新建项目卡片 */}
+                {/* New project卡片 */}
                 <div
                   onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }}
                   className="rounded-xl border-2 border-dashed p-4 hover:border-[#4F5BD5]/30 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-[#4F5BD5]"
                 >
                   <span className="text-2xl">+</span>
-                  <span className="text-sm">新建项目</span>
+                  <span className="text-sm">New project</span>
                 </div>
               </div>
 
-              {/* 未归类文件区 */}
+              {/* Unfiled区 */}
               {unfiledCount > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">📄 未归类文件 ({unfiledCount})</h3>
-                  <button onClick={() => setCurrentFolder(null)} className="text-sm text-[#4F5BD5] hover:underline">
-                    查看所有文件 →
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">📄 Unfiled ({unfiledCount})</h3>
+                  <button onClick={() => router.push("/files")} className="text-sm text-[#4F5BD5] hover:underline">
+                    View all files →
                   </button>
                 </div>
               )}
@@ -322,10 +322,10 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* 新建项目对话框 */}
+          {/* New project对话框 */}
           <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
             <DialogContent>
-              <DialogHeader><DialogTitle>新建项目</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>New project</DialogTitle></DialogHeader>
               <Input
                 placeholder="项目名称"
                 value={newFolderName}
@@ -362,9 +362,9 @@ export default function DashboardPage() {
                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/10">
                   <Sparkles className="h-6 w-6 text-blue-500" />
                 </div>
-                <h3 className="text-lg font-semibold mb-1.5">上传文件，开启 AI 知识库</h3>
+                <h3 className="text-lg font-semibold mb-1.5">Upload files to start your AI knowledge base</h3>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
-                  上传文件后，AI 将自动理解内容、建立知识记忆，并为你提供智能洞察和跨文件关联分析。
+                  After uploading, AI will understand your content, build knowledge memory, and provide insights and cross-file analysis.
                 </p>
                 <div className="flex items-center justify-center gap-3">
                   <button
@@ -372,14 +372,14 @@ export default function DashboardPage() {
                     className="rounded-lg bg-[#4F5BD5] px-5 py-2.5 text-sm text-white hover:bg-[#3D49C4] transition inline-flex items-center gap-2"
                   >
                     <Upload className="h-4 w-4" />
-                    上传第一个文件
+                    Upload your first file
                   </button>
                   <button
                     onClick={() => router.push("/chat?new=1")}
                     className="rounded-lg border border-[#4F5BD5]/30 px-5 py-2.5 text-sm text-[#4F5BD5] hover:bg-[#4F5BD5]/5 transition inline-flex items-center gap-2"
                   >
                     <MessageSquare className="h-4 w-4" />
-                    直接开始对话
+                    Start a conversation
                   </button>
                 </div>
               </div>
@@ -387,10 +387,10 @@ export default function DashboardPage() {
               {/* AI capabilities grid */}
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { icon: "🔍", title: "语义搜索", desc: "用自然语言搜索文件内容，AI 理解你的意图而非关键词匹配", color: "border-blue-500/20" },
-                  { icon: "💬", title: "AI 问答", desc: "对文件提问，AI 引用原文给出有据可查的回答", color: "border-green-500/20" },
-                  { icon: "💡", title: "智能洞察", desc: "自动发现文件之间的关联、矛盾和共同趋势", color: "border-amber-500/20" },
-                  { icon: "📊", title: "分析报告", desc: "一键生成跨文件的综合分析、学习笔记和竞品对比", color: "border-purple-500/20" },
+                  { icon: "🔍", title: "Semantic search", desc: "Search with natural language, AI understands intent not just keywords", color: "border-blue-500/20" },
+                  { icon: "💬", title: "AI Q&A", desc: "Ask questions, get cited answers from your files", color: "border-green-500/20" },
+                  { icon: "💡", title: "Smart insights", desc: "Auto-discover connections, contradictions, and trends", color: "border-amber-500/20" },
+                  { icon: "📊", title: "Analysis reports", desc: "Generate cross-file analysis, study notes, and comparisons", color: "border-purple-500/20" },
                 ].map((item) => (
                   <div key={item.title} className={cn("rounded-lg border p-3", item.color)}>
                     <div className="text-lg mb-1">{item.icon}</div>
@@ -402,13 +402,13 @@ export default function DashboardPage() {
 
               {/* Example questions */}
               <div className="rounded-xl border border-border/60 p-4">
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">💬 试试这些问题</h4>
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">💬 Try these questions</h4>
                 <div className="space-y-2">
                   {[
-                    "帮我总结这份文档的核心观点",
-                    "这两份文件的观点有什么矛盾？",
-                    "基于我的笔记生成一份学习大纲",
-                    "找出所有提到竞品分析的内容",
+                    "Summarize the key points of this document",
+                    "What contradictions exist between these two files?",
+                    "Generate a study outline from my notes",
+                    "Find all content mentioning competitive analysis",
                   ].map((q) => (
                     <button
                       key={q}
@@ -429,32 +429,32 @@ export default function DashboardPage() {
                   className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
                 >
                   <Upload className="h-5 w-5 text-[#4F5BD5]" />
-                  <span className="text-xs font-medium">上传文件</span>
+                  <span className="text-xs font-medium">Upload files</span>
                 </button>
                 <Link
                   href="/chat"
                   className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
                 >
                   <MessageSquare className="h-5 w-5 text-green-500" />
-                  <span className="text-xs font-medium">AI 对话</span>
+                  <span className="text-xs font-medium">AI Chat</span>
                 </Link>
                 <Link
                   href="/developers"
                   className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
                 >
                   <FolderOpen className="h-5 w-5 text-purple-500" />
-                  <span className="text-xs font-medium">API 文档</span>
+                  <span className="text-xs font-medium">API Docs</span>
                 </Link>
               </div>
 
               {/* How it works */}
               <div className="rounded-xl border border-dashed border-border/60 p-4">
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">使用流程</h4>
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">How it works</h4>
                 <div className="flex items-start gap-4">
                   {[
-                    { step: "1", label: "上传文件", sub: "PDF、文档、笔记等" },
-                    { step: "2", label: "AI 自动索引", sub: "理解内容并建立记忆" },
-                    { step: "3", label: "获取洞察", sub: "关联分析、报告、问答" },
+                    { step: "1", label: "Upload files", sub: "PDF, docs, notes, etc." },
+                    { step: "2", label: "AI auto-indexes", sub: "Understands content and builds memory" },
+                    { step: "3", label: "Get insights", sub: "Analysis, reports, Q&A" },
                   ].map((s, i) => (
                     <div key={s.step} className="flex-1 flex flex-col items-center text-center">
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#4F5BD5]/10 text-xs font-semibold text-[#4F5BD5] mb-1.5">
@@ -478,7 +478,7 @@ export default function DashboardPage() {
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/10">
                     <Sparkles className="h-3.5 w-3.5 text-purple-400" />
                   </div>
-                  <h3 className="text-sm font-semibold">📊 AI 报告</h3>
+                  <h3 className="text-sm font-semibold">📊 AI Reports</h3>
                 </div>
                 <ReportSection ref={reportRef} />
               </div>
@@ -494,7 +494,7 @@ export default function DashboardPage() {
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-500/10">
                     <Lightbulb className="h-3.5 w-3.5 text-indigo-400" />
                   </div>
-                  <h3 className="text-sm font-semibold">💡 AI 洞察</h3>
+                  <h3 className="text-sm font-semibold">💡 AI Insights</h3>
                   {insights.filter(i => !i.read).length > 0 && (
                     <span className="rounded-full bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white">
                       {insights.filter(i => !i.read).length} 条新
@@ -510,7 +510,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground">AI 会在发现文件间的知识关联时自动展示洞察</p>
+                  <p className="text-xs text-muted-foreground">AI will show insights when it discovers connections between files</p>
                 )}
                 {fileCount > 3 && (
                   <>

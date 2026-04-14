@@ -11,11 +11,11 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const navItems = [
-  { href: "/files", icon: FileText, label: "我的文件" },
-  { href: "/chat", icon: MessageSquare, label: "AI 对话" },
-  { href: "/timeline", icon: CalendarDays, label: "时间线" },
-  { href: "/developers", icon: Code, label: "开发者" },
-  { href: "/settings", icon: Settings, label: "设置" },
+  { href: "/files", icon: FileText, label: "My Files" },
+  { href: "/chat", icon: MessageSquare, label: "AI Chat" },
+  { href: "/timeline", icon: CalendarDays, label: "Timeline" },
+  { href: "/developers", icon: Code, label: "Developers" },
+  { href: "/settings", icon: Settings, label: "Settings" },
 ] as const
 
 export function Sidebar() {
@@ -105,7 +105,7 @@ export function Sidebar() {
             ) : (
               <div className="mt-3 border-t border-border pt-2 px-2">
                 <p className="py-2 text-xs text-muted-foreground text-center">
-                  右键文件添加标签
+                  Right-click to add tags
                 </p>
               </div>
             )}
