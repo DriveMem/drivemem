@@ -45,7 +45,7 @@ function ApiKeysCard() {
       setKeys(list?.keys || [])
       toast.success("API Key Created")
     } catch {
-      toast.error("CreateFailed")
+      toast.error("Create failed")
     } finally {
       setCreating(false)
     }
@@ -58,7 +58,7 @@ function ApiKeysCard() {
       setKeys(prev => prev.filter(k => k.id !== id))
       toast.success("Deleted")
     } catch {
-      toast.error("DeleteFailed")
+      toast.error("Delete failed")
     }
   }
 
@@ -112,7 +112,7 @@ function ApiKeysCard() {
         )}
 
         <p className="mt-4 text-xs text-muted-foreground">
-          📖 API Documentation: Upload files, search knowledge, AI Q&A. See <a href="/developers" className="text-[#4F5BD5] hover:underline">DeveloperDocument</a>
+          📖 API Documentation: Upload files, search knowledge, AI Q&A. See <a href="/developers" className="text-[#4F5BD5] hover:underline">Developer Docs</a>
         </p>
       </CardContent>
     </Card>
@@ -331,7 +331,7 @@ function WebhookCard() {
       setHooks(list?.webhooks || [])
       toast.success("Webhook Created")
     } catch {
-      toast.error("CreateFailed")
+      toast.error("Create failed")
     } finally {
       setCreating(false)
     }
@@ -344,7 +344,7 @@ function WebhookCard() {
       setHooks(prev => prev.filter(h => h.id !== id))
       toast.success("Deleted")
     } catch {
-      toast.error("DeleteFailed")
+      toast.error("Delete failed")
     }
   }
 
@@ -357,7 +357,7 @@ function WebhookCard() {
       })
       setHooks(prev => prev.map(h => h.id === id ? { ...h, active } : h))
     } catch {
-      toast.error("UpdateFailed")
+      toast.error("Update failed")
     }
   }
 
@@ -597,7 +597,7 @@ export default function SettingsContent() {
       await apiFetch(`/api/users/me/memories/${id}`, { method: "DELETE" })
       toast.success("Deleted")
       fetchMemories()
-    } catch { toast.error("DeleteFailed") }
+    } catch { toast.error("Delete failed") }
   }
 
   const [storageUsed, setStorageUsed] = useState<string>("—")

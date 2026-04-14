@@ -26,7 +26,7 @@ const SHORTCUT_GROUPS = [
       { keys: ["Ctrl", "K"], description: "Search" },
       { keys: ["?"], description: "Keyboard shortcuts" },
       { keys: ["Ctrl", "/"], description: "Keyboard shortcuts" },
-      { keys: ["Esc"], description: "CloseDialog" },
+      { keys: ["Esc"], description: "Close dialog" },
     ],
   },
 ]

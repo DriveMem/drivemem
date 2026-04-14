@@ -35,7 +35,7 @@ function SearchContent() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="SearchYour files and knowledge..."
+            placeholder="Search your files and knowledge..."
             className="w-full rounded-xl border border-border bg-background pl-12 pr-4 py-4 text-lg outline-none transition focus:border-[#4F5BD5] focus:ring-2 focus:ring-[#4F5BD5]/20"
           />
         </div>

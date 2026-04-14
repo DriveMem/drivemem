@@ -561,7 +561,7 @@ export function FileList() {
               <Sparkles className="h-8 w-8 text-[#4F5BD5] mx-auto mb-3" />
               <h3 className="text-xl font-semibold mb-2">StartBuild your knowledge library</h3>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                Upload filesorCreatenotes. AI automatically understands content and builds connections. Ask anytime, AI answers using your knowledge.
+                Upload files or create notes. AI automatically understands content and builds connections. Ask anytime, AI answers using your knowledge.
               </p>
             </div>
           </div>
@@ -1014,7 +1014,7 @@ export function FileList() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#4F5BD5]/10">
                 <Upload className="h-4.5 w-4.5 text-[#4F5BD5]" />
               </div>
-              <span className="text-xs font-medium">UploadMore files</span>
+              <span className="text-xs font-medium">Upload more files</span>
               <span className="text-[11px] text-muted-foreground leading-tight">PDF、Word、notes, etc.</span>
             </button>
             <Link
@@ -1044,7 +1044,7 @@ export function FileList() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/10">
                 <FileText className="h-4.5 w-4.5 text-purple-500" />
               </div>
-              <span className="text-xs font-medium">ViewDeveloperDocument</span>
+              <span className="text-xs font-medium">Developer docs</span>
               <span className="text-[11px] text-muted-foreground leading-tight">API Integrations & Automation</span>
             </Link>
           </div>

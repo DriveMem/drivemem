@@ -20,7 +20,7 @@ export function FeedbackButton() {
       setText("")
       setOpen(false)
     } catch {
-      toast.error("SendFailed，Please try again later")
+      toast.error("Send failed. Please try again later")
     } finally {
       setSending(false)
     }

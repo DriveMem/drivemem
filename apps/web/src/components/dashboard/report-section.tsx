@@ -52,7 +52,7 @@ export const ReportSection = forwardRef<ReportSectionHandle>(function ReportSect
         setShareUrl(data.url)
         setShareDialogOpen(true)
       }
-    } catch { toast.error("ShareFailed") } finally { setSharing(false) }
+    } catch { toast.error("Share failed") } finally { setSharing(false) }
   }
 
   const handleCopy = async () => {

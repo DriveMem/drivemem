@@ -72,7 +72,7 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
         <p className="text-sm text-muted-foreground text-center max-w-md">
           {indexedCount > 0
             ? `Remembered ${indexedCount} files. Ready to answer questions and discover connections`
-            : "Upload filesto your knowledge library. I'll help you memorize, analyze, and connect"}
+            : "Upload files to your knowledge library. I'll help you memorize, analyze, and connect"}
         </p>
       </div>
 

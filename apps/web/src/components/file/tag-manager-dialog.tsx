@@ -165,7 +165,7 @@ export function TagManagerDialog({ fileId, fileIds, fileName, open, onOpenChange
           <p className="text-xs text-muted-foreground">Create new tag</p>
           <div className="flex items-center gap-2">
             <Input
-              placeholder="TagsName"
+              placeholder="Tag name"
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreateTag()}
