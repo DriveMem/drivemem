@@ -12,7 +12,7 @@ function SearchContent() {
   const [input, setInput] = useState(query)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => { document.title = query ? `搜索: ${query} - AI Drive` : "搜索 - AI Drive" }, [query])
+  useEffect(() => { document.title = query ? `Search: ${query} - AI Drive` : "Search - AI Drive" }, [query])
   useEffect(() => { setInput(query) }, [query])
   useEffect(() => { inputRef.current?.focus() }, [])
 
@@ -35,12 +35,12 @@ function SearchContent() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="搜索你的文件和知识…"
+            placeholder="SearchYour files and knowledge..."
             className="w-full rounded-xl border border-border bg-background pl-12 pr-4 py-4 text-lg outline-none transition focus:border-[#4F5BD5] focus:ring-2 focus:ring-[#4F5BD5]/20"
           />
         </div>
         <p className="mt-2 text-xs text-muted-foreground text-center">
-          AI 语义搜索 — 支持问题、关键词、自然语言描述
+          AI Semantic search — supports questions, keywords, natural language
         </p>
       </form>
 
@@ -52,7 +52,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="py-8 text-center text-muted-foreground">加载中…</div>}>
+    <Suspense fallback={<div className="py-8 text-center text-muted-foreground">Loading…</div>}>
       <SearchContent />
     </Suspense>
   )

@@ -59,7 +59,7 @@ export function AiHub() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `AI-Drive-分析报告-${new Date().toISOString().slice(0, 10)}.md`
+    a.download = `AI-Drive-Analysis-Report-${new Date().toISOString().slice(0, 10)}.md`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -84,10 +84,10 @@ export function AiHub() {
   }
 
   const quickActions = [
-    { label: "问 AI", icon: MessageSquare, href: "/chat", color: "text-blue-400", bg: "bg-blue-500/10" },
-    { label: "分析报告", icon: FileBarChart, action: () => handleGenerate("analysis"), color: "text-purple-400", bg: "bg-purple-500/10" },
-    { label: "学习笔记", icon: BookOpen, action: () => handleGenerate("study"), color: "text-pink-400", bg: "bg-pink-500/10" },
-    { label: "知识关联", icon: Network, href: "#knowledge-links", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+    { label: "Ask AI", icon: MessageSquare, href: "/chat", color: "text-blue-400", bg: "bg-blue-500/10" },
+    { label: "Analysis Report", icon: FileBarChart, action: () => handleGenerate("analysis"), color: "text-purple-400", bg: "bg-purple-500/10" },
+    { label: "Study Notes", icon: BookOpen, action: () => handleGenerate("study"), color: "text-pink-400", bg: "bg-pink-500/10" },
+    { label: "Knowledge connections", icon: Network, href: "#knowledge-links", color: "text-emerald-400", bg: "bg-emerald-500/10" },
   ]
 
   return (
@@ -101,30 +101,30 @@ export function AiHub() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-sm">AI 对话</h3>
+              <h3 className="font-semibold text-sm">AI conversations</h3>
               {indexedFiles.length > 0 && (
                 <span className="flex items-center gap-1 rounded-full bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">
-                  <Sparkles className="h-2.5 w-2.5" /> 活跃
+                  <Sparkles className="h-2.5 w-2.5" /> Active
                 </span>
               )}
             </div>
           </div>
           <Link href="/chat" className="text-xs text-blue-500 hover:underline shrink-0">
-            对话 →
+            Chat →
           </Link>
         </div>
 
         {/* Stats Row */}
         <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3 px-1">
           <span className="flex items-center gap-1">
-            <FileText className="h-3 w-3" /> {indexedFiles.length}/{totalFiles} 文件已索引
+            <FileText className="h-3 w-3" /> {indexedFiles.length}/{totalFiles} FilesIndexed
           </span>
           <span className="flex items-center gap-1">
-            <MessageSquare className="h-3 w-3" /> {totalConvs} 次对话
+            <MessageSquare className="h-3 w-3" /> {totalConvs}  conversations
           </span>
           {weeklyStats && (
             <span className="flex items-center gap-1 text-blue-400">
-              本周 +{weeklyStats.filesThisWeek ?? 0} 文件 · +{weeklyStats.conversationsThisWeek ?? 0} 对话
+              This week +{weeklyStats.filesThisWeek ?? 0} Files · +{weeklyStats.conversationsThisWeek ?? 0} conversations
             </span>
           )}
         </div>
@@ -143,8 +143,8 @@ export function AiHub() {
         <div className="grid grid-cols-2 gap-2">
           {quickActions.map((action) => {
             const isGenerating = generating && (
-              (action.label === "分析报告" && generatingType === "analysis") ||
-              (action.label === "学习笔记" && generatingType === "study")
+              (action.label === "Analysis Report" && generatingType === "analysis") ||
+              (action.label === "Study Notes" && generatingType === "study")
             )
             const Icon = action.icon
 
@@ -177,7 +177,7 @@ export function AiHub() {
                     <Icon className={`h-3.5 w-3.5 ${action.color}`} />
                   )}
                 </div>
-                <span className="text-xs font-medium">{isGenerating ? "生成中..." : action.label}</span>
+                <span className="text-xs font-medium">{isGenerating ? "Generating..." : action.label}</span>
               </button>
             )
           })}
@@ -204,13 +204,13 @@ export function AiHub() {
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>分享报告</DialogTitle>
+            <DialogTitle>Share report</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">任何拥有此链接的人都可以查看报告</p>
+          <p className="text-sm text-muted-foreground">Anyone with this link can view the report</p>
           <div className="flex items-center gap-2">
             <input readOnly value={shareUrl || ""} className="flex-1 rounded-md border bg-muted px-3 py-2 text-sm" />
             <Button size="sm" onClick={handleCopy}>
-              {copied ? <><Check className="h-4 w-4 mr-1" />已复制</> : <><Copy className="h-4 w-4 mr-1" />复制</>}
+              {copied ? <><Check className="h-4 w-4 mr-1" />Copied</> : <><Copy className="h-4 w-4 mr-1" />Copy</>}
             </Button>
           </div>
         </DialogContent>

@@ -11,22 +11,22 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
   const getPlaceholders = () => {
     if (fileCount === 0 && !hasConversations) {
       return [
-        "先上传一份文件，AI 就能帮你分析和回答问题",
+        "Upload a file first, and AI can help you analyze and answer questions",
       ]
     }
     if (hasConversations) {
       return [
-        "继续提问...",
-        "追问更多...",
+        "ContinueAsk a question...",
+        "Ask more...",
       ]
     }
     return [
-      "总结我最近上传的文件",
-      "帮我整理这篇论文的要点",
-      "对比这两个文件的观点",
-      "我的文件里有哪些关键信息？",
-      "帮我梳理文件之间的关联",
-      "用一段话概括我的知识库",
+      "Summarize my recently uploaded files",
+      "Organize the key points of this paper",
+      "Compare the viewpoints of these two files",
+      "What key information is in my files?",
+      "Help me map out connections between files",
+      "Summarize my knowledge library in one paragraph",
     ]
   }
 
@@ -67,7 +67,7 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
   if (dailyLimitReached) {
     return (
       <div className="border-t border-border px-4 py-3 text-center">
-        <p className="text-sm text-muted-foreground">今天的对话次数已用完，明天再来 💤</p>
+        <p className="text-sm text-muted-foreground">Today's chat quota used up. Come back tomorrow 💤</p>
       </div>
     )
   }

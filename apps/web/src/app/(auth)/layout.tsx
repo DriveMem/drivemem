@@ -10,28 +10,28 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative z-10 flex flex-col items-center justify-center w-full px-12">
           <h1 className="text-5xl font-bold text-white mb-3">AI Drive</h1>
-          <p className="text-lg text-white/70 mb-12">Agent 的记忆层</p>
+          <p className="text-lg text-white/70 mb-12">Agent 's memory layer</p>
 
           <div className="space-y-6 max-w-sm">
             <div className="flex items-start gap-4">
               <span className="text-2xl">🔗</span>
               <div>
-                <p className="text-white font-medium">Agent 记忆层</p>
-                <p className="text-sm text-white/60">所有 Agent 共享一份持久记忆</p>
+                <p className="text-white font-medium">Agent Memory layer</p>
+                <p className="text-sm text-white/60">All agents share one persistent memory</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <span className="text-2xl">🔄</span>
               <div>
-                <p className="text-white font-medium">跨 Agent 上下文</p>
-                <p className="text-sm text-white/60">Context Packet 让任务无缝交接</p>
+                <p className="text-white font-medium">Cross-agent context</p>
+                <p className="text-sm text-white/60">Context Packet Seamless task handoff</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
               <span className="text-2xl">⚡</span>
               <div>
-                <p className="text-white font-medium">MCP / API 接入</p>
-                <p className="text-sm text-white/60">一行配置连接任意 AI Agent</p>
+                <p className="text-white font-medium">MCP / API Integration</p>
+                <p className="text-sm text-white/60">Connect any AI Agent with one line of configuration</p>
               </div>
             </div>
           </div>

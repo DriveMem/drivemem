@@ -49,7 +49,7 @@ export default function SharePage() {
     <div className="min-h-screen bg-background">
       <nav className="flex items-center justify-between border-b px-6 py-4">
         <Link href="/" className="text-lg font-bold">AI Drive</Link>
-        <Button asChild><Link href="/signup">免费注册</Link></Button>
+        <Button asChild><Link href="/signup">Sign up free</Link></Button>
       </nav>
 
       <div className="mx-auto max-w-2xl px-6 py-12">
@@ -65,9 +65,9 @@ export default function SharePage() {
         ) : error || !data ? (
           <Card>
             <CardContent className="p-8 text-center">
-              <p className="text-lg text-muted-foreground">链接已过期或不存在</p>
+              <p className="text-lg text-muted-foreground">Link has expired or does not exist</p>
               <Button variant="outline" asChild className="mt-4">
-                <Link href="/">返回首页</Link>
+                <Link href="/">Back to home</Link>
               </Button>
             </CardContent>
           </Card>
@@ -82,22 +82,22 @@ export default function SharePage() {
 
               {data.file.summary && (
                 <div className="mt-6 rounded-lg border border-indigo-500/20 bg-indigo-500/5 p-4">
-                  <h2 className="text-sm font-semibold flex items-center gap-1">🧠 AI 摘要</h2>
+                  <h2 className="text-sm font-semibold flex items-center gap-1">🧠 AI Summary</h2>
                   <p className="mt-2 text-sm text-muted-foreground">{data.file.summary}</p>
                 </div>
               )}
 
               <Button className="mt-6 w-full" onClick={() => window.open(data.downloadUrl)}>
-                下载文件
+                DownloadFiles
               </Button>
             </CardContent>
           </Card>
 
           <div className="mt-8 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-600/10 to-pink-600/10 border border-indigo-500/20 p-8 text-center">
-            <h2 className="text-xl font-bold">🚀 免费创建你的 AI 知识库</h2>
-            <p className="mt-2 text-sm text-muted-foreground">上传文件即可开始 — AI 自动理解、记忆、分析</p>
+            <h2 className="text-xl font-bold">🚀 Create your AI knowledge library for free</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Upload filesto get started — AI automatically understands, memorizes, and analyzes</p>
             <Button asChild className="mt-4 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white px-8">
-              <Link href="/signup">免费注册</Link>
+              <Link href="/signup">Sign up free</Link>
             </Button>
           </div>
         </>

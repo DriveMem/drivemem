@@ -12,12 +12,12 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 const resetSchema = z.object({
-  password: z.string().min(8, '密码至少 8 位')
-    .regex(/[a-zA-Z]/, '密码需包含字母')
-    .regex(/[0-9]/, '密码需包含数字'),
+  password: z.string().min(8, 'PasswordAt least 8 characters')
+    .regex(/[a-zA-Z]/, 'PasswordMust contain letters')
+    .regex(/[0-9]/, 'PasswordMust contain numbers'),
   confirmPassword: z.string(),
 }).refine(data => data.password === data.confirmPassword, {
-  message: '两次输入的密码不一致',
+  message: 'Passwords do not match',
   path: ['confirmPassword'],
 })
 
@@ -41,13 +41,13 @@ function ResetPasswordForm() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-center">链接无效</CardTitle>
+          <CardTitle className="text-center">Invalid link</CardTitle>
         </CardHeader>
         <CardContent className="text-center text-sm text-muted-foreground">
-          重置链接无效或已过期。
+          ResetLink is invalid or has expired.
         </CardContent>
         <CardFooter className="justify-center">
-          <Link href="/forgot-password" className="text-sm text-primary hover:underline">重新获取</Link>
+          <Link href="/forgot-password" className="text-sm text-primary hover:underline">Re-fetch</Link>
         </CardFooter>
       </Card>
     )
@@ -57,13 +57,13 @@ function ResetPasswordForm() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-center">密码已重置</CardTitle>
+          <CardTitle className="text-center">PasswordReset</CardTitle>
         </CardHeader>
         <CardContent className="text-center text-sm text-muted-foreground">
-          你的密码已成功重置。
+          Your password has been successfully reset.
         </CardContent>
         <CardFooter className="justify-center">
-          <Button onClick={() => router.push('/login')}>去登录</Button>
+          <Button onClick={() => router.push('/login')}>Go to sign in</Button>
         </CardFooter>
       </Card>
     )
@@ -80,13 +80,13 @@ function ResetPasswordForm() {
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        setError(err.message || '重置失败，链接可能已过期')
+        setError(err.message || 'ResetFailed，Link may have expired')
         setLoading(false)
         return
       }
       setSuccess(true)
     } catch {
-      setError('网络错误，请重试')
+      setError('Network error, please try again')
     }
     setLoading(false)
   }
@@ -94,23 +94,23 @@ function ResetPasswordForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-center">设置新密码</CardTitle>
+        <CardTitle className="text-center">SettingsNew password</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password">新密码</Label>
+            <Label htmlFor="password">New password</Label>
             <Input id="password" type="password" placeholder="••••••••" {...register('password')} />
             {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">确认新密码</Label>
+            <Label htmlFor="confirmPassword">ConfirmNew password</Label>
             <Input id="confirmPassword" type="password" placeholder="••••••••" {...register('confirmPassword')} />
             {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>}
           </div>
           {error && <p className="text-sm text-destructive text-center">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? '重置中...' : '重置密码'}
+            {loading ? 'Reset...' : 'ResetPassword'}
           </Button>
         </form>
       </CardContent>
@@ -120,7 +120,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center p-8">加载中...</div>}>
+    <Suspense fallback={<div className="flex justify-center p-8">Loading...</div>}>
       <ResetPasswordForm />
     </Suspense>
   )

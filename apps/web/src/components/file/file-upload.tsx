@@ -27,7 +27,7 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
   const onDrop = useCallback((accepted: File[], rejected: FileRejection[]) => {
     // Add rejected files with error to the global upload store
     rejected.forEach((r) => {
-      const msg = r.errors[0]?.code === "file-too-large" ? "文件超过 50MB 限制" : "不支持的文件格式"
+      const msg = r.errors[0]?.code === "file-too-large" ? "FilesExceeds 50MB limit" : "Unsupported file format"
       addEntry({ id: crypto.randomUUID(), name: r.file.name, progress: 0, status: "error", error: msg })
     })
 
@@ -45,7 +45,7 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
             updateEntry(itemId, { status: "done", progress: 100 })
           },
           onError: (err: any) => {
-            updateEntry(itemId, { status: "error", error: err.message || "上传失败" })
+            updateEntry(itemId, { status: "error", error: err.message || "UploadFailed" })
           },
         }
       )
@@ -62,14 +62,14 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
   return (
     <div className="border-b border-border p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium">让 AI 记住文件</span>
+        <span className="text-sm font-medium">Let AI remember files</span>
         <Button variant="ghost" size="icon" onClick={onClose} className="h-6 w-6"><X className="h-4 w-4" /></Button>
       </div>
       <div {...getRootProps()} className={cn("flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 cursor-pointer transition-colors", isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground")}>
         <input {...getInputProps()} />
         <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-        <p className="text-sm text-muted-foreground">{isDragActive ? "松手让 AI 记住" : "把文件拖到这里，让 AI 记住它"}</p>
-        <p className="text-xs text-muted-foreground mt-1">支持 PDF、Word、PPT、Excel、TXT、Markdown，单个文件最大 50MB</p>
+        <p className="text-sm text-muted-foreground">{isDragActive ? "Release to let AI remember" : "Drag files here to let AI remember them"}</p>
+        <p className="text-xs text-muted-foreground mt-1">Supports PDF, Word, PPT, Excel, TXT, Markdown, max 50MB per file</p>
       </div>
     </div>
   )

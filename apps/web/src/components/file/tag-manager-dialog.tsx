@@ -114,8 +114,8 @@ export function TagManagerDialog({ fileId, fileIds, fileName, open, onOpenChange
   }
 
   const dialogTitle = isMulti
-    ? `管理标签 — ${effectiveFileIds.length} 个文件`
-    : `管理标签${fileName ? ` — ${fileName}` : ""}`
+    ? `Manage tags — ${effectiveFileIds.length} files`
+    : `Manage tags${fileName ? ` — ${fileName}` : ""}`
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -126,7 +126,7 @@ export function TagManagerDialog({ fileId, fileIds, fileName, open, onOpenChange
 
         {/* Existing tags */}
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">点击标签添加或移除</p>
+          <p className="text-xs text-muted-foreground">ClickTagsAddorRemove</p>
           <div className="flex flex-wrap gap-2 max-h-48 overflow-auto">
             {allTags.map((tag: any) => {
               const state = getTagState(tag.id)
@@ -155,24 +155,24 @@ export function TagManagerDialog({ fileId, fileIds, fileName, open, onOpenChange
               )
             })}
             {allTags.length === 0 && (
-              <p className="text-xs text-muted-foreground">还没有标签，创建一个吧</p>
+              <p className="text-xs text-muted-foreground">No tags yet, create one</p>
             )}
           </div>
         </div>
 
         {/* Create new tag */}
         <div className="border-t pt-3 space-y-2">
-          <p className="text-xs text-muted-foreground">创建新标签</p>
+          <p className="text-xs text-muted-foreground">Create new tag</p>
           <div className="flex items-center gap-2">
             <Input
-              placeholder="标签名称"
+              placeholder="TagsName"
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreateTag()}
               className="h-8 text-sm"
             />
             <Button size="sm" onClick={handleCreateTag} disabled={!newTagName.trim()} className="h-8 gap-1">
-              <Plus className="h-3 w-3" /> 创建
+              <Plus className="h-3 w-3" /> Create
             </Button>
           </div>
           <div className="flex gap-1.5">

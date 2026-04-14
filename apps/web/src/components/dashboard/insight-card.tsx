@@ -5,9 +5,9 @@ import Link from "next/link"
 import { apiFetch } from "@/lib/api"
 
 const typeConfig = {
-  correlation: { icon: Lightbulb, label: "关联发现", color: "text-amber-500", bg: "bg-amber-500/10" },
-  contradiction: { icon: AlertTriangle, label: "矛盾检测", color: "text-red-500", bg: "bg-red-500/10" },
-  trend: { icon: TrendingUp, label: "趋势识别", color: "text-green-500", bg: "bg-green-500/10" },
+  correlation: { icon: Lightbulb, label: "Correlation found", color: "text-amber-500", bg: "bg-amber-500/10" },
+  contradiction: { icon: AlertTriangle, label: "Contradiction detected", color: "text-red-500", bg: "bg-red-500/10" },
+  trend: { icon: TrendingUp, label: "Trend identified", color: "text-green-500", bg: "bg-green-500/10" },
 }
 
 interface Insight {
@@ -39,7 +39,7 @@ export function InsightCard({ insight, onRead }: { insight: Insight; onRead?: ()
 
   return (
     <Link
-      href={`/chat?q=对比「${insight.sourceFileName}」和「${insight.relatedFileName}」&fileIds=${insight.sourceFileId},${insight.relatedFileId}`}
+      href={`/chat?q=Compare "${insight.sourceFileName}" and "${insight.relatedFileName}"&fileIds=${insight.sourceFileId},${insight.relatedFileId}`}
       onClick={handleClick}
       className={cn(
         "block rounded-xl border p-4 hover:shadow-md transition-all duration-150",

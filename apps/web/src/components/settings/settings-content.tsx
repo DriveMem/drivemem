@@ -43,9 +43,9 @@ function ApiKeysCard() {
       setKeyName("")
       const list = await apiFetch("/api/api-keys")
       setKeys(list?.keys || [])
-      toast.success("API Key 已创建")
+      toast.success("API Key Created")
     } catch {
-      toast.error("创建失败")
+      toast.error("CreateFailed")
     } finally {
       setCreating(false)
     }
@@ -56,9 +56,9 @@ function ApiKeysCard() {
       const { apiFetch } = await import("@/lib/api")
       await apiFetch(`/api/api-keys/${id}`, { method: "DELETE" })
       setKeys(prev => prev.filter(k => k.id !== id))
-      toast.success("已删除")
+      toast.success("Deleted")
     } catch {
-      toast.error("删除失败")
+      toast.error("DeleteFailed")
     }
   }
 
@@ -67,30 +67,30 @@ function ApiKeysCard() {
     <Card>
       <CardHeader>
         <CardTitle>🔑 API Keys</CardTitle>
-        <CardDescription>创建 API Key 让 AI agent 接入你的知识库</CardDescription>
+        <CardDescription>Create API Key Let AI agents access your knowledge library</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex gap-2 mb-4">
-          <Input placeholder="Key 名称（如 My Agent）" value={keyName} onChange={(e) => setKeyName(e.target.value)} />
+          <Input placeholder="Key Name（e.g., My Agent)" value={keyName} onChange={(e) => setKeyName(e.target.value)} />
           <Button onClick={createKey} disabled={!keyName.trim() || creating}>
-            {creating ? "创建中..." : "创建 Key"}
+            {creating ? "Create..." : "Create Key"}
           </Button>
         </div>
 
         {newKey && (
           <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
-            <p className="text-sm font-medium text-amber-600 mb-2">⚠️ 请保存你的 API Key — 只显示一次</p>
+            <p className="text-sm font-medium text-amber-600 mb-2">⚠️ Please save your API Key — shown only once</p>
             <div className="flex items-center gap-2">
               <code className="flex-1 rounded bg-muted px-3 py-2 text-sm font-mono select-all">{newKey}</code>
-              <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newKey); toast.success("已复制") }}>
-                复制
+              <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newKey); toast.success("Copied") }}>
+                Copy
               </Button>
             </div>
           </div>
         )}
 
         {keys.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">还没有 API Key</p>
+          <p className="text-sm text-muted-foreground text-center py-4">No API Keys yet</p>
         ) : (
           <div className="space-y-2">
             {keys.map(k => (
@@ -99,12 +99,12 @@ function ApiKeysCard() {
                   <p className="text-sm font-medium">{k.name}</p>
                   <p className="text-xs text-muted-foreground font-mono">{k.keyPrefix}••••••••</p>
                   <p className="text-xs text-muted-foreground">
-                    创建于 {new Date(k.createdAt).toLocaleDateString("zh-CN")}
-                    {k.lastUsedAt && ` · 最后使用 ${new Date(k.lastUsedAt).toLocaleDateString("zh-CN")}`}
+                    Created on {new Date(k.createdAt).toLocaleDateString("zh-CN")}
+                    {k.lastUsedAt && ` · Last used ${new Date(k.lastUsedAt).toLocaleDateString("zh-CN")}`}
                   </p>
                 </div>
                 <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteKey(k.id)}>
-                  删除
+                  Delete
                 </Button>
               </div>
             ))}
@@ -112,7 +112,7 @@ function ApiKeysCard() {
         )}
 
         <p className="mt-4 text-xs text-muted-foreground">
-          📖 API 文档：上传文件、搜索知识、AI 问答。详见 <a href="/developers" className="text-[#4F5BD5] hover:underline">开发者文档</a>
+          📖 API Documentation: Upload files, search knowledge, AI Q&A. See <a href="/developers" className="text-[#4F5BD5] hover:underline">DeveloperDocument</a>
         </p>
       </CardContent>
     </Card>
@@ -151,7 +151,7 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
   return (
     <Card className="mt-4">
       <CardHeader>
-        <CardTitle>🔌 MCP 快速接入</CardTitle>
+        <CardTitle>🔌 MCP Quick integration</CardTitle>
         <CardDescription>Connect AI Drive to MCP-compatible AI tools</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -161,16 +161,16 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
           <div className="mt-1 flex items-center gap-2">
             <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm font-mono select-all">{mcpUrl}</code>
             <Button size="sm" variant="outline" onClick={() => copyWithFeedback(mcpUrl, setUrlCopied)}>
-              {urlCopied ? "✓ 已复制" : "复制"}
+              {urlCopied ? "✓ Copied" : "Copy"}
             </Button>
           </div>
         </div>
 
         {/* Config JSON */}
         <div>
-          <label className="text-sm font-medium">配置示例</label>
+          <label className="text-sm font-medium">Configuration example</label>
           <p className="mt-1 text-xs text-muted-foreground">
-            将以下 JSON 添加到你的 MCP 客户端配置文件：
+            Add the following JSON to your MCP client configuration file:
           </p>
           <ul className="mt-1 text-xs text-muted-foreground space-y-0.5 ml-3">
             <li>• <strong>Claude Desktop</strong>: <code className="rounded bg-muted px-1 text-[11px]">~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
@@ -186,17 +186,17 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
               className="absolute top-2 right-2 h-7 text-xs bg-white/10 border-white/20 text-white hover:bg-white/20"
               onClick={() => copyWithFeedback(configJson, setConfigCopied)}
             >
-              {configCopied ? "✓ 已复制" : "复制"}
+              {configCopied ? "✓ Copied" : "Copy"}
             </Button>
           </div>
           {!newKey && apiKeyPrefix && (
             <p className="mt-2 text-xs text-amber-600">
-              💡 配置中显示的是占位符。请用你的完整 API Key 替换 <code className="font-mono">YOUR_API_KEY</code>
+              💡 The configuration shows a placeholder. Replace with your full API Key <code className="font-mono">YOUR_API_KEY</code>
             </p>
           )}
           {newKey && (
             <p className="mt-2 text-xs text-emerald-600">
-              ✅ 已自动填入你刚创建的 API Key，可直接复制使用
+              ✅ Your newly created API Key has been auto-filled and is ready to copy
             </p>
           )}
         </div>
@@ -204,14 +204,14 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
         {/* Security tip */}
         <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3">
           <p className="text-xs text-amber-700">
-            🔒 <strong>安全提示</strong>：MCP 连接通过 HTTPS 加密传输。请勿在不安全的网络中暴露 API Key。
-            建议为不同 agent 创建独立的 Key，并定期轮换。
+            🔒 <strong>Security notice</strong>：MCP Connections are encrypted via HTTPS. Do not expose your API Key on insecure networks.
+            We recommend creating separate keys for different agents and rotating them regularly.
           </p>
         </div>
 
         {/* Doc link */}
         <a href="/developers" className="inline-flex items-center gap-1 text-sm text-[#4F5BD5] hover:underline">
-          查看完整开发者文档 ↗
+          ViewFull developer docs ↗
         </a>
       </CardContent>
     </Card>
@@ -219,9 +219,9 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
 }
 
 const WEBHOOK_EVENTS = [
-  { id: 'file.indexed', label: '文件索引完成', desc: '文件上传并完成 AI 索引' },
-  { id: 'insight.discovered', label: 'AI 发现洞察', desc: '发现新的知识关联' },
-  { id: 'file.deleted', label: '文件删除', desc: '文件被删除' },
+  { id: 'file.indexed', label: 'File indexing complete', desc: 'File uploaded and AI indexing complete' },
+  { id: 'insight.discovered', label: 'AI discovered insights', desc: 'New knowledge connections discovered' },
+  { id: 'file.deleted', label: 'FilesDelete', desc: 'Fileswas deleted' },
 ]
 
 function ConnectedAgentsCard() {
@@ -244,17 +244,17 @@ function ConnectedAgentsCard() {
   return (
     <Card className="mt-4">
       <CardHeader>
-        <CardTitle>🔗 已连接的 Agent</CardTitle>
-        <CardDescription>查看哪些 AI 工具正在使用你的知识库</CardDescription>
+        <CardTitle>🔗 Connected Agents</CardTitle>
+        <CardDescription>ViewWhich AI tools are using your knowledge library</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {keys.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">还没有 agent 连接。创建 API Key 来接入。</p>
+          <p className="text-sm text-muted-foreground text-center py-4">No agents connected yet. Create an API Key to get started.</p>
         ) : (
           <>
             {activeKeys.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">活跃连接</p>
+                <p className="text-xs font-medium text-muted-foreground">Active connections</p>
                 {activeKeys.map(k => (
                   <div key={k.id} className="flex items-center justify-between rounded-lg border p-3">
                     <div className="flex items-center gap-3">
@@ -262,7 +262,7 @@ function ConnectedAgentsCard() {
                       <div>
                         <p className="text-sm font-medium">{k.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          最后活跃: {new Date(k.lastUsedAt).toLocaleString("zh-CN")}
+                          Last active: {new Date(k.lastUsedAt).toLocaleString("zh-CN")}
                         </p>
                       </div>
                     </div>
@@ -281,12 +281,12 @@ function ConnectedAgentsCard() {
             )}
             {inactiveKeys.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">未使用</p>
+                <p className="text-xs font-medium text-muted-foreground">Not used</p>
                 {inactiveKeys.map(k => (
                   <div key={k.id} className="flex items-center gap-3 rounded-lg border border-dashed p-3 opacity-60">
                     <span className="h-2.5 w-2.5 rounded-full bg-muted shrink-0" />
                     <p className="text-sm">{k.name}</p>
-                    <p className="text-xs text-muted-foreground ml-auto">从未使用</p>
+                    <p className="text-xs text-muted-foreground ml-auto">Never used</p>
                   </div>
                 ))}
               </div>
@@ -329,9 +329,9 @@ function WebhookCard() {
       setUrl('')
       const list = await apiFetch("/api/webhooks")
       setHooks(list?.webhooks || [])
-      toast.success("Webhook 已创建")
+      toast.success("Webhook Created")
     } catch {
-      toast.error("创建失败")
+      toast.error("CreateFailed")
     } finally {
       setCreating(false)
     }
@@ -342,9 +342,9 @@ function WebhookCard() {
       const { apiFetch } = await import("@/lib/api")
       await apiFetch(`/api/webhooks/${id}`, { method: "DELETE" })
       setHooks(prev => prev.filter(h => h.id !== id))
-      toast.success("已删除")
+      toast.success("Deleted")
     } catch {
-      toast.error("删除失败")
+      toast.error("DeleteFailed")
     }
   }
 
@@ -357,7 +357,7 @@ function WebhookCard() {
       })
       setHooks(prev => prev.map(h => h.id === id ? { ...h, active } : h))
     } catch {
-      toast.error("更新失败")
+      toast.error("UpdateFailed")
     }
   }
 
@@ -372,8 +372,8 @@ function WebhookCard() {
   return (
     <Card className="mt-4">
       <CardHeader>
-        <CardTitle>🔔 Webhook 事件推送</CardTitle>
-        <CardDescription>当文件索引完成或 AI 发现新洞察时，自动通知你的应用</CardDescription>
+        <CardTitle>🔔 Webhook Event push</CardTitle>
+        <CardDescription>Automatically notify your app when file indexing is complete or AI discovers new insights</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Create form */}
@@ -386,7 +386,7 @@ function WebhookCard() {
               className="flex-1"
             />
             <Button onClick={createHook} disabled={!url.trim() || events.length === 0 || creating}>
-              {creating ? "创建中..." : "添加"}
+              {creating ? "Create..." : "Add"}
             </Button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -410,22 +410,22 @@ function WebhookCard() {
         {/* New secret warning */}
         {newSecret && (
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
-            <p className="text-sm font-medium text-amber-600 mb-2">⚠️ 请保存你的 Signing Secret — 只显示一次</p>
+            <p className="text-sm font-medium text-amber-600 mb-2">⚠️ Please save your Signing Secret — shown only once</p>
             <div className="flex items-center gap-2">
               <code className="flex-1 rounded bg-muted px-3 py-2 text-xs font-mono select-all break-all">{newSecret}</code>
-              <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newSecret); toast.success("已复制") }}>
-                复制
+              <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newSecret); toast.success("Copied") }}>
+                Copy
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              用此 secret 验证 <code className="font-mono">X-AIDrive-Signature</code> header（HMAC-SHA256）
+              Use this secret to verify <code className="font-mono">X-AIDrive-Signature</code> header（HMAC-SHA256）
             </p>
           </div>
         )}
 
         {/* Webhook list */}
         {hooks.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">还没有 Webhook</p>
+          <p className="text-sm text-muted-foreground text-center py-4">No Webhooks yet</p>
         ) : (
           <div className="space-y-2">
             {hooks.map(h => (
@@ -445,24 +445,24 @@ function WebhookCard() {
                         const { apiFetch: af } = await import("@/lib/api")
                         const result = await af(`/api/webhooks/${h.id}/test`, { method: "POST" })
                         if (result.success) {
-                          toast.success(`✅ 测试成功 — HTTP ${result.statusCode}`)
+                          toast.success(`✅ Test successful — HTTP ${result.statusCode}`)
                         } else {
-                          toast.error(`❌ 测试失败${result.statusCode ? ` — HTTP ${result.statusCode}` : ""}${result.error ? `: ${result.error}` : ""}`)
+                          toast.error(`❌ Test failed${result.statusCode ? ` — HTTP ${result.statusCode}` : ""}${result.error ? `: ${result.error}` : ""}`)
                         }
-                      } catch { toast.error("发送失败") }
+                      } catch { toast.error("SendFailed") }
                     }}
                     className="rounded-full px-2 py-0.5 text-xs bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition"
                   >
-                    测试
+                    Test
                   </button>
                   <button
                     onClick={() => toggleHook(h.id, !h.active)}
                     className={`rounded-full px-2 py-0.5 text-xs ${h.active ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"}`}
                   >
-                    {h.active ? "启用" : "停用"}
+                    {h.active ? "Enabled" : "Disabled"}
                   </button>
                   <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteHook(h.id)}>
-                    删除
+                    Delete
                   </Button>
                 </div>
               </div>
@@ -471,8 +471,8 @@ function WebhookCard() {
         )}
 
         <p className="text-xs text-muted-foreground">
-          每个事件发送 JSON POST，含 <code className="font-mono">X-AIDrive-Signature</code> 签名。
-          <a href="/developers" className="text-[#4F5BD5] hover:underline ml-1">查看文档 ↗</a>
+          Each event sends a JSON POST containing <code className="font-mono">X-AIDrive-Signature</code> Signature。
+          <a href="/developers" className="text-[#4F5BD5] hover:underline ml-1">ViewDocs ↗</a>
         </p>
 
         {/* Delivery Log */}
@@ -498,12 +498,12 @@ function WebhookDeliveryLog() {
     fetchDeliveries()
   }, [])
 
-  if (loading) return <p className="text-xs text-muted-foreground py-2">加载投递记录...</p>
-  if (deliveries.length === 0) return <p className="text-xs text-muted-foreground py-2">暂无投递记录</p>
+  if (loading) return <p className="text-xs text-muted-foreground py-2">Loading delivery records...</p>
+  if (deliveries.length === 0) return <p className="text-xs text-muted-foreground py-2">NoneDelivery records</p>
 
   return (
     <div className="mt-4 border-t pt-4">
-      <h4 className="text-sm font-medium mb-2">📋 最近投递记录</h4>
+      <h4 className="text-sm font-medium mb-2">📋 RecentDelivery records</h4>
       <div className="space-y-1.5 max-h-60 overflow-y-auto">
         {deliveries.map((d: any) => (
           <div key={d.id} className="flex items-center gap-2 rounded-md border px-3 py-2 text-xs">
@@ -527,7 +527,7 @@ export default function SettingsContent() {
   const initialTab = searchParams.get("tab") === "developer" ? "developer" : "general"
   const [settingsTab, setSettingsTab] = useState<SettingsTab>(initialTab)
   const [session, setSession] = useState<any>(null)
-  const [name, setName] = useState("用户")
+  const [name, setName] = useState("User")
   const [deleteConfirm, setDeleteConfirm] = useState("")
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
@@ -537,7 +537,7 @@ export default function SettingsContent() {
     getSession().then((s) => {
       if (s) {
         setSession(s)
-        setName(s.user?.name || "用户")
+        setName(s.user?.name || "User")
       }
     })
   }, [])
@@ -573,9 +573,9 @@ export default function SettingsContent() {
         method: "PATCH",
         body: JSON.stringify({ role: profileRole, currentGoal: profileGoal, background: profileBg, preferences: profilePrefs }),
       })
-      toast.success("档案已保存")
+      toast.success("ProfileSaved")
     } catch {
-      toast.error("保存失败")
+      toast.error("SaveFailed")
     } finally {
       setProfileSaving(false)
     }
@@ -595,9 +595,9 @@ export default function SettingsContent() {
     try {
       const { apiFetch } = await import("@/lib/api")
       await apiFetch(`/api/users/me/memories/${id}`, { method: "DELETE" })
-      toast.success("已删除")
+      toast.success("Deleted")
       fetchMemories()
-    } catch { toast.error("删除失败") }
+    } catch { toast.error("DeleteFailed") }
   }
 
   const [storageUsed, setStorageUsed] = useState<string>("—")
@@ -631,7 +631,7 @@ export default function SettingsContent() {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
-      if (!res.ok) throw new Error("导出失败")
+      if (!res.ok) throw new Error("ExportFailed")
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
@@ -640,20 +640,20 @@ export default function SettingsContent() {
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      alert("导出失败，请稍后重试")
+      alert("ExportFailed，Please try again later")
     }
   }
 
   const handleDelete = () => {
-    if (deleteConfirm === "确认删除") {
-      alert("账号已删除（mock）")
+    if (deleteConfirm === "ConfirmDelete") {
+      alert("Account deleted (mock)")
       setDeleteOpen(false)
     }
   }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-6">
-      <h1 className="text-2xl font-bold">设置</h1>
+      <h1 className="text-2xl font-bold">Settings</h1>
 
       {/* Tab switcher */}
       <div className="flex gap-1 rounded-lg bg-muted p-1">
@@ -661,19 +661,19 @@ export default function SettingsContent() {
           onClick={() => setSettingsTab("general")}
           className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "general" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
         >
-          ⚙️ 通用
+          ⚙️ General
         </button>
         <button
           onClick={() => setSettingsTab("developer")}
           className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "developer" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
         >
-          🔧 开发者
+          🔧 Developer
         </button>
       </div>
 
       {settingsTab === "developer" ? (
         <>
-          <p className="text-sm text-muted-foreground">这些功能面向需要通过 API 或 AI Agent 接入的高级用户</p>
+          <p className="text-sm text-muted-foreground">These features are for advanced users who need access via API or AI Agent</p>
           <ApiKeysCard />
           <ConnectedAgentsCard />
           <WebhookCard />
@@ -684,48 +684,48 @@ export default function SettingsContent() {
       {/* Profile */}
       <Card>
         <CardHeader>
-          <CardTitle>个人信息</CardTitle>
+          <CardTitle>Profile</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">名称</Label>
+            <Label htmlFor="name">Name</Label>
             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           {session?.user?.email && (
             <div className="space-y-2">
-              <Label htmlFor="email">邮箱</Label>
+              <Label htmlFor="email">Email</Label>
               <Input id="email" value={session.user.email} readOnly className="bg-muted" />
             </div>
           )}
-          <Button size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white" onClick={() => toast.success("已保存")}>保存</Button>
+          <Button size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white" onClick={() => toast.success("Saved")}>Save</Button>
         </CardContent>
       </Card>
 
       {/* AI Profile */}
       <Card>
         <CardHeader>
-          <CardTitle>🧠 AI 档案</CardTitle>
-          <CardDescription>帮助 AI 更好地理解你——连接的所有 AI 工具都会自动获得这些信息</CardDescription>
+          <CardTitle>🧠 AI Profile</CardTitle>
+          <CardDescription>Help AI understand you better — all connected AI tools will automatically receive this information</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="role">你的角色</Label>
-            <Input id="role" placeholder="如：产品经理、开发者、研究员" value={profileRole} onChange={(e) => setProfileRole(e.target.value)} />
+            <Label htmlFor="role">Your role</Label>
+            <Input id="role" placeholder="e.g., Product Manager, Developer, Researcher" value={profileRole} onChange={(e) => setProfileRole(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="goal">当前目标</Label>
-            <Input id="goal" placeholder="如：做一个 AI 知识管理产品" value={profileGoal} onChange={(e) => setProfileGoal(e.target.value)} />
+            <Label htmlFor="goal">Current goal</Label>
+            <Input id="goal" placeholder="e.g., Build an AI knowledge management product" value={profileGoal} onChange={(e) => setProfileGoal(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="background">背景简介</Label>
-            <Input id="background" placeholder="如：3 年 AI 产品经验" value={profileBg} onChange={(e) => setProfileBg(e.target.value)} />
+            <Label htmlFor="background">Background</Label>
+            <Input id="background" placeholder="e.g., 3 years of AI product experience" value={profileBg} onChange={(e) => setProfileBg(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="prefs">AI 偏好</Label>
-            <Input id="prefs" placeholder="如：喜欢结构化输出、中文回答" value={profilePrefs} onChange={(e) => setProfilePrefs(e.target.value)} />
+            <Label htmlFor="prefs">AI Preferences</Label>
+            <Input id="prefs" placeholder="e.g., Prefer structured output" value={profilePrefs} onChange={(e) => setProfilePrefs(e.target.value)} />
           </div>
           <Button size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white" onClick={saveProfile} disabled={profileSaving}>
-            {profileSaving ? "保存中..." : "保存档案"}
+            {profileSaving ? "Save..." : "SaveProfile"}
           </Button>
         </CardContent>
       </Card>
@@ -733,7 +733,7 @@ export default function SettingsContent() {
       {/* Usage */}
       <Card>
         <CardHeader>
-          <CardTitle>用量</CardTitle>
+          <CardTitle>Usage</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -744,7 +744,7 @@ export default function SettingsContent() {
               return (
                 <>
                   <p className={`mb-1 text-sm ${textColor}`}>
-                    存储空间：{storageUsed} GB / {storageTotal} GB {pct > 95 ? "⚠️ 即将用完" : pct > 80 ? "⚡ 接近上限" : ""}
+                    Storage: {storageUsed} GB / {storageTotal} GB {pct > 95 ? "⚠️ Almost used up" : pct > 80 ? "⚡ Approaching limit" : ""}
                   </p>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                     <div
@@ -764,7 +764,7 @@ export default function SettingsContent() {
               return (
                 <>
                   <p className={`mb-1 text-sm ${chatTextColor}`}>
-                    今日对话：{chatUsedToday} / {chatLimitToday} 次 {chatPct > 95 ? "⚠️ 即将用完" : chatPct > 80 ? "⚡ 接近上限" : ""}
+                    Today's chats: {chatUsedToday} / {chatLimitToday} {chatPct > 95 ? "⚠️ Almost used up" : chatPct > 80 ? "⚡ Approaching limit" : ""}
                   </p>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                     <div
@@ -782,12 +782,12 @@ export default function SettingsContent() {
       {/* AI Memory */}
       <Card>
         <CardHeader>
-          <CardTitle>🧠 AI 记忆</CardTitle>
-          <p className="text-sm text-muted-foreground">AI 从你的对话中学到的偏好和关注点</p>
+          <CardTitle>🧠 AI Memory</CardTitle>
+          <p className="text-sm text-muted-foreground">AI Preferences and interests learned from your conversations</p>
         </CardHeader>
         <CardContent>
           {memories.length === 0 ? (
-            <p className="text-sm text-muted-foreground">AI 正在学习你的偏好，多聊几次就会出现 ✨</p>
+            <p className="text-sm text-muted-foreground">AI Learning your preferences, chat more and it will appear ✨</p>
           ) : (
             <ul className="space-y-3">
               {memories.map(m => (
@@ -810,15 +810,15 @@ export default function SettingsContent() {
       {/* Password */}
       <Card>
         <CardHeader>
-          <CardTitle>修改密码</CardTitle>
+          <CardTitle>ModifyPassword</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="currentPassword">当前密码</Label>
+            <Label htmlFor="currentPassword">Current password</Label>
             <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="rounded-xl h-12" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="newPassword">新密码</Label>
+            <Label htmlFor="newPassword">New password</Label>
             <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="rounded-xl h-12" />
           </div>
           <Button
@@ -829,23 +829,23 @@ export default function SettingsContent() {
               try {
                 const { apiFetch } = await import("@/lib/api")
                 await apiFetch("/api/users/me/password", { method: "PATCH", body: JSON.stringify({ currentPassword, newPassword }) })
-                toast.success("密码已修改")
+                toast.success("PasswordModified")
                 setCurrentPassword("")
                 setNewPassword("")
-              } catch (e: any) { toast.error(e.message || "修改失败") }
+              } catch (e: any) { toast.error(e.message || "ModifyFailed") }
             }}
           >
-            修改密码
+            ModifyPassword
           </Button>
           {(!currentPassword || !newPassword || newPassword.length < 6) && (
             <p className="text-xs text-muted-foreground">
               {!currentPassword && !newPassword
-                ? "请输入当前密码和新密码"
+                ? "Please enterCurrent and new password"
                 : !currentPassword
-                ? "请输入当前密码"
+                ? "Please enterCurrent password"
                 : !newPassword
-                ? "请输入新密码"
-                : "新密码至少 6 个字符"}
+                ? "Please enterNew password"
+                : "New password must be at least 6 characters"}
             </p>
           )}
         </CardContent>
@@ -854,8 +854,8 @@ export default function SettingsContent() {
       {/* Data */}
       <Card>
         <CardHeader>
-          <CardTitle>数据管理</CardTitle>
-          <CardDescription>管理你的文件、对话数据和账号</CardDescription>
+          <CardTitle>Data Management</CardTitle>
+          <CardDescription>Manage your files, conversation data, and account</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-4">
@@ -863,41 +863,41 @@ export default function SettingsContent() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" onClick={handleExport}>
-                    导出数据
+                    Export data
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>导出所有文件和对话记录为 ZIP 压缩包</p>
+                  <p>ExportAll files and conversation history as a ZIP archive</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
           <div className="rounded-lg border border-red-200 bg-red-50/50 p-4 space-y-3">
             <p className="text-sm text-red-600">
-              ⚠️ 删除账号将永久移除所有文件、对话记录和 AI 记忆，此操作不可撤销。
+              ⚠️ DeleteThis will permanently delete all files, conversations, and AI memory. This action cannot be undone.
             </p>
             <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
               <DialogTrigger asChild>
-                <Button variant="destructive" size="sm">删除账号</Button>
+                <Button variant="destructive" size="sm">Delete account</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle className="text-red-600">⚠️ 确认删除账号</DialogTitle>
+                  <DialogTitle className="text-red-600">⚠️ ConfirmDelete account</DialogTitle>
                 </DialogHeader>
                 <p className="text-sm text-muted-foreground">
-                  删除账号将永久清除所有文件、对话记录和 AI 记忆，此操作不可撤销。请输入 <strong>确认删除</strong> 以继续。
+                  DeleteThis will permanently delete all files, conversations, and AI memory. This action cannot be undone. Please enter <strong>ConfirmDelete</strong> to continue.
                 </p>
                 <Input
                   value={deleteConfirm}
                   onChange={(e) => setDeleteConfirm(e.target.value)}
-                  placeholder='输入「确认删除」'
+                  placeholder='Type "Confirm delete"'
                 />
                 <Button
                   variant="destructive"
-                  disabled={deleteConfirm !== "确认删除"}
+                  disabled={deleteConfirm !== "ConfirmDelete"}
                   onClick={handleDelete}
                 >
-                  永久删除
+                  Permanently delete
                 </Button>
               </DialogContent>
             </Dialog>

@@ -7,9 +7,9 @@ export default function NotFound() {
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background text-foreground">
       <FileQuestion className="h-16 w-16 text-muted-foreground" />
       <h1 className="text-4xl font-bold">404</h1>
-      <p className="text-muted-foreground">页面不存在</p>
+      <p className="text-muted-foreground">Page not found</p>
       <Button asChild>
-        <Link href="/">回到首页</Link>
+        <Link href="/">Back to home</Link>
       </Button>
     </div>
   )

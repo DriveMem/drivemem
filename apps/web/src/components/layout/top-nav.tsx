@@ -33,13 +33,13 @@ function formatRelativeTime(dateStr: string): string {
   const then = new Date(dateStr).getTime()
   const diff = Math.max(0, now - then)
   const seconds = Math.floor(diff / 1000)
-  if (seconds < 60) return "刚刚"
+  if (seconds < 60) return "Just now"
   const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes} 分钟前`
+  if (minutes < 60) return `${minutes}  min ago`
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} 小时前`
+  if (hours < 24) return `${hours}  hours ago`
   const days = Math.floor(hours / 24)
-  if (days < 30) return `${days} 天前`
+  if (days < 30) return `${days}  days ago`
   return new Date(dateStr).toLocaleDateString("zh-CN")
 }
 
@@ -105,7 +105,7 @@ export function TopNav() {
           )
         }}
       >
-        <span className="mr-auto">搜索…</span>
+        <span className="mr-auto">Search…</span>
         <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">⌘K</kbd>
       </Button>
 
@@ -125,16 +125,16 @@ export function TopNav() {
           </PopoverTrigger>
           <PopoverContent className="w-80 p-0" align="end">
             <div className="flex items-center justify-between border-b px-4 py-3">
-              <h3 className="text-sm font-semibold">通知</h3>
+              <h3 className="text-sm font-semibold">Notifications</h3>
               {unreadCount > 0 && (
                 <button onClick={markAllRead} className="text-xs text-indigo-500 hover:underline">
-                  全部已读
+                  AllRead
                 </button>
               )}
             </div>
             <div className="max-h-80 overflow-y-auto">
               {notifications.length === 0 ? (
-                <p className="py-8 text-center text-sm text-muted-foreground">暂无通知</p>
+                <p className="py-8 text-center text-sm text-muted-foreground">NoneNotifications</p>
               ) : (
                 notifications.map(n => (
                   <div
@@ -160,7 +160,7 @@ export function TopNav() {
           variant="ghost"
           size="icon"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          aria-label="切换主题"
+          aria-label="Toggle theme"
         >
           {theme === "dark" ? "☀️" : "🌙"}
         </Button>
@@ -175,11 +175,11 @@ export function TopNav() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>个人信息</DropdownMenuItem>
+            <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <a href="/settings">设置</a>
+              <a href="/settings">Settings</a>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => { import("next-auth/react").then(m => m.signOut({ callbackUrl: "/" })) }}>退出登录</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { import("next-auth/react").then(m => m.signOut({ callbackUrl: "/" })) }}>Sign out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

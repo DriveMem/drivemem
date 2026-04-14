@@ -4,15 +4,15 @@ import { useState, useEffect, useCallback, useRef, useSyncExternalStore } from "
 import { useQueryClient } from "@tanstack/react-query"
 
 interface NetworkStatus {
-  /** 浏览器报告的在线状态 */
+  /** Browser-reported online status */
   isOnline: boolean
-  /** API 是否可达（仅在 isOnline 时有意义） */
+  /** API Whether API is reachable (only meaningful when isOnline) */
   isApiReachable: boolean
-  /** 上一次成功连接的时间 */
+  /** Last successful connection time */
   lastOnlineAt: number | null
 }
 
-// ─── 外部 store（避免 SSR hydration mismatch）───
+// ─── External store (avoid SSR hydration mismatch) ───
 
 let status: NetworkStatus = {
   isOnline: true,
@@ -30,7 +30,7 @@ function setStatus(partial: Partial<NetworkStatus>) {
   emit()
 }
 
-// ─── 初始化（仅客户端运行一次）───
+// ─── Initialization (client-side only, runs once) ───
 
 let initialized = false
 
@@ -54,12 +54,12 @@ export function useNetworkStatus() {
   const queryClient = useQueryClient()
   const wasOfflineRef = useRef(false)
 
-  // 确保初始化
+  // Ensure initialization
   useEffect(() => { init() }, [])
 
   const current = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 
-  // 恢复上线后自动刷新关键数据
+  // Auto-refresh key data after coming back online
   useEffect(() => {
     if (!current.isOnline) {
       wasOfflineRef.current = true
@@ -67,7 +67,7 @@ export function useNetworkStatus() {
     }
     if (wasOfflineRef.current) {
       wasOfflineRef.current = false
-      // 延迟 500ms 让连接稳定
+      // Delay 500ms for connection stability
       const t = setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ["files"] })
         queryClient.invalidateQueries({ queryKey: ["conversations"] })
@@ -80,7 +80,7 @@ export function useNetworkStatus() {
   return current
 }
 
-// ─── Offline Banner 组件 ───
+// ─── Offline Banner Component ───
 
 export function OfflineBanner() {
   const { isOnline } = useNetworkStatus()
@@ -92,7 +92,7 @@ export function OfflineBanner() {
       setShow(true)
       setJustReconnected(false)
     } else if (show) {
-      // 刚恢复，短暂显示绿色横条
+      // Just reconnected, briefly show green bar
       setJustReconnected(true)
       const t = setTimeout(() => {
         setShow(false)
@@ -112,7 +112,7 @@ export function OfflineBanner() {
           : "bg-yellow-500 text-yellow-950"
       }`}
     >
-      {justReconnected ? "✅ 网络已恢复" : "⚠️ 网络连接中断，正在重试..."}
+      {justReconnected ? "✅ Network restored" : "⚠️ Network disconnected, retrying..."}
     </div>
   )
 }

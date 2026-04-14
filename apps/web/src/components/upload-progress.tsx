@@ -55,8 +55,8 @@ export function UploadProgress() {
   return (
     <div className="fixed bottom-4 right-4 z-50 w-72 rounded-lg border bg-background shadow-lg">
       <div className="px-3 py-2 border-b border-border flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">上传中</span>
-        <span className="text-xs text-muted-foreground">{entries.filter((e) => e.status === "uploading").length} 个文件</span>
+        <span className="text-xs font-medium text-muted-foreground">Uploading</span>
+        <span className="text-xs text-muted-foreground">{entries.filter((e) => e.status === "uploading").length}  files</span>
       </div>
       <div className="px-3 py-2 space-y-2 max-h-48 overflow-y-auto">
         {entries.map((entry) => (

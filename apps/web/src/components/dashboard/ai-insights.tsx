@@ -27,12 +27,12 @@ export function AiInsights() {
           <Sparkles className="h-4 w-4 text-indigo-400" />
         </div>
         <div>
-          <h3 className="text-sm font-semibold mb-1">✨ AI 洞察</h3>
+          <h3 className="text-sm font-semibold mb-1">✨ AI Insights</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {displayText}
             {isLong && (
               <button onClick={() => setExpanded(!expanded)} className="ml-1 text-indigo-400 hover:underline text-xs">
-                {expanded ? "收起" : "展开"}
+                {expanded ? "Collapse" : "Expand"}
               </button>
             )}
           </p>

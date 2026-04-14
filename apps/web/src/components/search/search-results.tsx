@@ -86,7 +86,7 @@ export function SearchResults({ query }: { query: string }) {
         }
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message || "搜索失败")
+        if (!cancelled) setError(err.message || "SearchFailed")
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -115,7 +115,7 @@ export function SearchResults({ query }: { query: string }) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
         <Search className="h-8 w-8" />
-        <p className="text-sm">用自然语言描述你想找的内容</p>
+        <p className="text-sm">Describe what you're looking for in natural language</p>
       </div>
     )
   }
@@ -123,7 +123,7 @@ export function SearchResults({ query }: { query: string }) {
   if (loading) {
     return (
       <div className="py-16 text-center text-sm text-muted-foreground">
-        搜索中…
+        Search...
       </div>
     )
   }
@@ -131,7 +131,7 @@ export function SearchResults({ query }: { query: string }) {
   if (error) {
     return (
       <div className="py-16 text-center text-sm text-destructive">
-        搜索出错: {error}
+        SearchError: {error}
       </div>
     )
   }
@@ -141,12 +141,12 @@ export function SearchResults({ query }: { query: string }) {
       <div className="flex flex-col items-center gap-4 py-16 text-muted-foreground">
         <Search className="h-8 w-8" />
         <div className="text-center space-y-2">
-          <p className="text-sm font-medium">未找到与「{query}」相关的内容</p>
-          <p className="text-xs">试试：</p>
+          <p className="text-sm font-medium">No results found for "{query}"</p>
+          <p className="text-xs">Try: </p>
           <ul className="text-xs space-y-1">
-            <li>• 换个描述方式或使用不同关键词</li>
-            <li>• 用更简短的查询（如只搜核心概念）</li>
-            <li>• <a href="/dashboard" className="text-[#4F5BD5] hover:underline">上传更多文件</a> 丰富你的知识库</li>
+            <li>• Try rephrasing or using different keywords</li>
+            <li>• Try a shorter query (e.g., search for core concepts only)</li>
+            <li>• <a href="/dashboard" className="text-[#4F5BD5] hover:underline">UploadMore files</a> Enrich your knowledge library</li>
           </ul>
         </div>
       </div>
@@ -156,7 +156,7 @@ export function SearchResults({ query }: { query: string }) {
   return (
     <div>
       <p className="mb-4 text-sm text-muted-foreground">
-        找到 {results.length} 条结果
+        Found {results.length} results
       </p>
       <ul className="space-y-3">
         {results.map((r, i) => (
@@ -172,7 +172,7 @@ export function SearchResults({ query }: { query: string }) {
                 </p>
                 {r.type === "chunk" && (
                   <span className="ml-auto shrink-0 rounded bg-blue-500/10 px-2 py-0.5 text-xs text-blue-400">
-                    内容匹配
+                    ContentMatch
                   </span>
                 )}
                 {r.score != null && (
@@ -197,7 +197,7 @@ export function SearchResults({ query }: { query: string }) {
             disabled={loadingMore}
             className="rounded-lg border px-6 py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition disabled:opacity-50"
           >
-            {loadingMore ? "加载中…" : "加载更多"}
+            {loadingMore ? "Loading…" : "Load more"}
           </button>
         </div>
       )}

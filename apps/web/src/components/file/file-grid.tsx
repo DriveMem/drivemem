@@ -22,9 +22,9 @@ const TYPE_ICONS: Record<string, string> = {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  parsing: "解析中…",
-  done: "已就绪",
-  error: "解析失败",
+  parsing: "Parsing...",
+  done: "Ready",
+  error: "Parse failed",
 }
 
 type ViewMode = "list" | "grid"
@@ -35,8 +35,8 @@ export function FileGrid({ files = [] }: { files?: FileItem[] }) {
   return (
     <div>
       <div className="mb-4 flex items-center gap-2">
-        <Button size="sm" variant={view === "list" ? "default" : "outline"} onClick={() => setView("list")}>列表</Button>
-        <Button size="sm" variant={view === "grid" ? "default" : "outline"} onClick={() => setView("grid")}>网格</Button>
+        <Button size="sm" variant={view === "list" ? "default" : "outline"} onClick={() => setView("list")}>List</Button>
+        <Button size="sm" variant={view === "grid" ? "default" : "outline"} onClick={() => setView("grid")}>Grid</Button>
       </div>
 
       {view === "grid" ? (

@@ -5,7 +5,7 @@ import { ChatView } from "@/components/chat/chat-view"
 import { useConversations } from "@/hooks/use-conversations"
 
 function ChatPageInner() {
-  useEffect(() => { document.title = "对话 - AI Drive" }, [])
+  useEffect(() => { document.title = "Chat - AI Drive" }, [])
   const searchParams = useSearchParams()
   const router = useRouter()
   const fileId = searchParams.get("file") || undefined
@@ -32,7 +32,7 @@ function ChatPageInner() {
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="flex h-full items-center justify-center text-muted-foreground">加载中...</div>}>
+    <Suspense fallback={<div className="flex h-full items-center justify-center text-muted-foreground">Loading...</div>}>
       <ChatPageInner />
     </Suspense>
   )

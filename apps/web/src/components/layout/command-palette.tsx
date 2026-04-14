@@ -103,10 +103,10 @@ export function CommandPalette() {
     setSearchResults([])
   }
 
-  const searchHeading = effectiveAiMode ? "AI 语义搜索结果" : "搜索结果"
+  const searchHeading = effectiveAiMode ? "AI Semantic search results" : "SearchResults"
   const emptyText = searching
-    ? (effectiveAiMode ? "AI 搜索中..." : "搜索中...")
-    : "未找到结果"
+    ? (effectiveAiMode ? "AI Search..." : "Search...")
+    : "No results found"
 
   return (
     <CommandDialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setInputValue(""); setSearchResults([]); setAiMode(false) } }}>
@@ -118,13 +118,13 @@ export function CommandPalette() {
               ? "bg-[#4F5BD5]/10 text-[#4F5BD5] border border-[#4F5BD5]/30"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
           }`}
-          title={effectiveAiMode ? "切换到普通搜索" : "切换到 AI 语义搜索（或输入 ? 前缀）"}
+          title={effectiveAiMode ? "Switch to regular search" : "Switch to AI semantic search (or type ? prefix)"}
         >
           {effectiveAiMode ? <Sparkles className="h-3.5 w-3.5" /> : <Search className="h-3.5 w-3.5" />}
-          {effectiveAiMode ? "AI" : "普通"}
+          {effectiveAiMode ? "AI" : "Regular"}
         </button>
         <CommandInput
-          placeholder={effectiveAiMode ? "输入问题进行 AI 语义搜索…" : "搜索文件内容、导航、操作… (输入 ? 切换 AI 搜索)"}
+          placeholder={effectiveAiMode ? "Enter a question for AI semantic search..." : "SearchFilesContent、Navigate, actions... (type ? to switch to AI Search)"}
           value={inputValue}
           onValueChange={setInputValue}
           onKeyDown={(e) => {
@@ -160,7 +160,7 @@ export function CommandPalette() {
                     <span className={`rounded px-1.5 py-0.5 text-[10px] ${
                       effectiveAiMode ? "bg-purple-500/10 text-purple-400" : "bg-blue-500/10 text-blue-400"
                     }`}>
-                      {effectiveAiMode ? "语义匹配" : "内容匹配"}
+                      {effectiveAiMode ? "Semantic match" : "ContentMatch"}
                     </span>
                   )}
                   {r.score !== undefined && effectiveAiMode && (
@@ -169,10 +169,10 @@ export function CommandPalette() {
                     </span>
                   )}
                   <button
-                    onClick={(e) => { e.stopPropagation(); navigate(`/chat?q=关于${encodeURIComponent(r.fileName)}的问题`) }}
+                    onClick={(e) => { e.stopPropagation(); navigate(`/chat?q=Questions about ${encodeURIComponent(r.fileName)}`) }}
                     className="rounded bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white hover:bg-[#3D49C4] transition"
                   >
-                    💬 问 AI
+                    💬 Ask AI
                   </button>
                 </div>
               </CommandItem>
@@ -181,7 +181,7 @@ export function CommandPalette() {
         )}
 
         {!effectiveQuery && files.length > 0 && (
-          <CommandGroup heading="最近文件">
+          <CommandGroup heading="RecentFiles">
             {files.slice(0, 5).map((f: any) => (
               <CommandItem
                 key={f.id}
@@ -194,22 +194,22 @@ export function CommandPalette() {
           </CommandGroup>
         )}
 
-        <CommandGroup heading="导航">
-          <CommandItem value="nav-dashboard" onSelect={() => navigate("/dashboard")}>我的文件</CommandItem>
-          <CommandItem value="nav-chat" onSelect={() => navigate("/chat")}>AI 对话</CommandItem>
-          <CommandItem value="nav-search" onSelect={() => navigate("/search")}>搜索</CommandItem>
-          <CommandItem value="nav-timeline" onSelect={() => navigate("/timeline")}>时间线</CommandItem>
-          <CommandItem value="nav-developers" onSelect={() => navigate("/developers")}>开发者</CommandItem>
-          <CommandItem value="nav-settings" onSelect={() => navigate("/settings")}>设置</CommandItem>
+        <CommandGroup heading="Navigation">
+          <CommandItem value="nav-dashboard" onSelect={() => navigate("/dashboard")}>My files</CommandItem>
+          <CommandItem value="nav-chat" onSelect={() => navigate("/chat")}>AI conversations</CommandItem>
+          <CommandItem value="nav-search" onSelect={() => navigate("/search")}>Search</CommandItem>
+          <CommandItem value="nav-timeline" onSelect={() => navigate("/timeline")}>Timeline</CommandItem>
+          <CommandItem value="nav-developers" onSelect={() => navigate("/developers")}>Developer</CommandItem>
+          <CommandItem value="nav-settings" onSelect={() => navigate("/settings")}>Settings</CommandItem>
         </CommandGroup>
 
         {!effectiveQuery && (
-          <CommandGroup heading="操作">
-            <CommandItem value="action-upload" onSelect={() => navigate("/dashboard")}>📄 上传文件</CommandItem>
-            <CommandItem value="action-new-chat" onSelect={() => navigate("/chat?new=" + Date.now())}>💬 新对话</CommandItem>
-            <CommandItem value="action-search" onSelect={() => navigate("/search")}>🔍 搜索知识库</CommandItem>
-            <CommandItem value="action-settings-keys" onSelect={() => navigate("/settings?tab=developer")}>🔑 管理 API Key</CommandItem>
-            <CommandItem value="action-developers" onSelect={() => navigate("/developers")}>📖 开发者文档</CommandItem>
+          <CommandGroup heading="Action">
+            <CommandItem value="action-upload" onSelect={() => navigate("/dashboard")}>📄 Upload files</CommandItem>
+            <CommandItem value="action-new-chat" onSelect={() => navigate("/chat?new=" + Date.now())}>💬 New conversation</CommandItem>
+            <CommandItem value="action-search" onSelect={() => navigate("/search")}>🔍 SearchKnowledge library</CommandItem>
+            <CommandItem value="action-settings-keys" onSelect={() => navigate("/settings?tab=developer")}>🔑 Manage API Keys</CommandItem>
+            <CommandItem value="action-developers" onSelect={() => navigate("/developers")}>📖 DeveloperDocument</CommandItem>
           </CommandGroup>
         )}
       </CommandList>

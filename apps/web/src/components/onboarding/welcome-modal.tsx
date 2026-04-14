@@ -8,17 +8,17 @@ import { apiFetch } from "@/lib/api"
 import { toast } from "sonner"
 
 const personas = [
-  { id: "student", emoji: "📚", title: "学生", desc: "写论文、做笔记、整理资料" },
-  { id: "worker", emoji: "💼", title: "职场人", desc: "做汇报、管项目、写方案" },
-  { id: "researcher", emoji: "🔬", title: "研究员", desc: "读论文、做调研、分析数据" },
-  { id: "creator", emoji: "✍️", title: "创作者", desc: "写文章、做内容、找灵感" },
+  { id: "student", emoji: "📚", title: "Student", desc: "Write papers, take notes, organize materials" },
+  { id: "worker", emoji: "💼", title: "Professional", desc: "Write reports, manage projects, create proposals" },
+  { id: "researcher", emoji: "🔬", title: "Researcher", desc: "Read papers, do research, analyze data" },
+  { id: "creator", emoji: "✍️", title: "Creator", desc: "Write articles, create content, find inspiration" },
 ]
 
 const personaConfig: Record<string, { uploadHint: string; question: string }> = {
-  student: { uploadHint: "上传你的参考文献或课堂笔记", question: "帮我总结这篇论文的核心观点" },
-  worker: { uploadHint: "上传你的项目文档或会议纪要", question: "用这份材料帮我写一段汇报摘要" },
-  researcher: { uploadHint: "上传你的研究论文或数据报告", question: "对比这两份资料的关键发现" },
-  creator: { uploadHint: "上传你的素材文件或参考资料", question: "帮我从这些资料中提炼写作灵感" },
+  student: { uploadHint: "UploadYour references or class notes", question: "Summarize the key points of this paper" },
+  worker: { uploadHint: "UploadYour project documents or meeting notes", question: "Help me write a report summary using this material" },
+  researcher: { uploadHint: "UploadYour research papers or data reports", question: "Compare the key findings of these two documents" },
+  creator: { uploadHint: "UploadYour material files or references", question: "Help me extract writing inspiration from these materials" },
 }
 
 export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
@@ -60,10 +60,10 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
         method: "PATCH",
         body: JSON.stringify({ role: role.trim(), currentGoal: currentGoal.trim() }),
       })
-      toast.success("AI 档案已保存")
+      toast.success("AI ProfileSaved")
       setStep(2)
     } catch {
-      toast.error("保存失败，请重试")
+      toast.error("Save failed, please try again")
     } finally {
       setSaving(false)
     }
@@ -77,25 +77,25 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
         method: "POST",
         body: JSON.stringify({ name: projectName.trim() }),
       })
-      toast.success("项目已创建")
+      toast.success("ProjectCreated")
       handleFinish()
     } catch {
-      toast.error("创建失败，请重试")
+      toast.error("Create failed, please try again")
     } finally {
       setSaving(false)
     }
   }
 
-  const uploadHint = persona ? personaConfig[persona].uploadHint : "上传你的第一份文件"
+  const uploadHint = persona ? personaConfig[persona].uploadHint : "UploadYour first file"
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleSkip() }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl">
-            {step === 0 && "👋 你好，你是？"}
-            {step === 1 && "📝 设置你的 AI 档案"}
-            {step === 2 && "📁 创建你的第一个项目"}
+            {step === 0 && "👋 Hello, who are you?"}
+            {step === 1 && "📝 SettingsYour AI profile"}
+            {step === 2 && "📁 CreateYour first project"}
           </DialogTitle>
         </DialogHeader>
 
@@ -128,11 +128,11 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
                 disabled={!persona}
                 className="bg-[#4F5BD5] hover:bg-[#3D49C4] disabled:opacity-50"
               >
-                继续
+                Continue
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
               <Button variant="ghost" onClick={handleSkip} className="text-muted-foreground">
-                跳过
+                Skip
               </Button>
             </div>
           </div>
@@ -142,30 +142,30 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
         {step === 1 && (
           <div className="space-y-4">
             <p className="text-center text-sm text-muted-foreground">
-              告诉 AI 你是谁，它会更懂你
+              Tell AI who you are and it will understand you better
             </p>
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <UserPen className="h-4 w-4 text-indigo-500" />
-                  你的角色
+                  Your role
                 </label>
                 <input
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  placeholder="如产品经理、开发者、研究员"
+                  placeholder="e.g., Product Manager, Developer, Researcher"
                   className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[#4F5BD5]"
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <Brain className="h-4 w-4 text-purple-500" />
-                  当前目标
+                  Current goal
                 </label>
                 <input
                   value={currentGoal}
                   onChange={(e) => setCurrentGoal(e.target.value)}
-                  placeholder="如做一个 AI 产品、写毕业论文"
+                  placeholder="e.g., build an AI product, write a thesis"
                   className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[#4F5BD5]"
                 />
               </div>
@@ -176,16 +176,16 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
                 disabled={saving}
                 className="bg-[#4F5BD5] hover:bg-[#3D49C4] disabled:opacity-50"
               >
-                {saving ? "保存中..." : "继续"}
+                {saving ? "Save..." : "Continue"}
                 {!saving && <ChevronRight className="ml-1 h-4 w-4" />}
               </Button>
               <div className="flex gap-2">
                 <Button variant="ghost" onClick={() => setStep(0)} className="flex-1 text-muted-foreground">
                   <ChevronLeft className="mr-1 h-4 w-4" />
-                  返回
+                  Back
                 </Button>
                 <Button variant="ghost" onClick={() => setStep(2)} className="flex-1 text-muted-foreground">
-                  跳过
+                  Skip
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
@@ -197,18 +197,18 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
         {step === 2 && (
           <div className="space-y-4">
             <p className="text-center text-sm text-muted-foreground">
-              创建一个项目来组织你的文件和知识
+              Createa project to organize your files and knowledge
             </p>
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <FolderPlus className="h-4 w-4 text-indigo-500" />
-                  项目名称
+                  Project name
                 </label>
                 <input
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  placeholder="如 AI 产品调研、毕业论文"
+                  placeholder="e.g., AI product research, thesis"
                   className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[#4F5BD5]"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !saving && projectName.trim()) handleCreateProject()
@@ -222,23 +222,23 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
                 disabled={saving || !projectName.trim()}
                 className="bg-[#4F5BD5] hover:bg-[#3D49C4] disabled:opacity-50"
               >
-                {saving ? "创建中..." : "创建项目"}
+                {saving ? "Create..." : "CreateProject"}
               </Button>
               <Button variant="outline" onClick={async () => {
                 try {
                   await apiFetch("/api/onboarding/demo-files", { method: "POST" })
-                  toast.success("示例文件已创建，AI 正在理解...")
+                  toast.success("Sample files created. AI is processing...")
                   handleFinish()
-                } catch { toast.error("创建失败，请重试") }
+                } catch { toast.error("Create failed, please try again") }
               }}>
-                📎 用示例文件体验
+                📎 Try with sample files
               </Button>
               <Button onClick={handleFinish} className="bg-[#4F5BD5] hover:bg-[#3D49C4]">
-                开始使用 AI Drive 🚀
+                Start using AI Drive 🚀
               </Button>
               <Button variant="ghost" onClick={() => setStep(1)} className="text-muted-foreground">
                 <ChevronLeft className="mr-1 h-4 w-4" />
-                返回
+                Back
               </Button>
             </div>
           </div>

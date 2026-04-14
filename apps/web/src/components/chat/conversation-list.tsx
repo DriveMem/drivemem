@@ -65,11 +65,11 @@ export function ConversationList() {
   return (
     <div className="flex h-full flex-col border-r">
       <div className="flex items-center justify-between border-b p-3">
-        <h2 className="text-sm font-semibold">对话历史</h2>
+        <h2 className="text-sm font-semibold">Conversation history</h2>
       </div>
       <div className="px-3 pt-3">
         <Button className="w-full bg-[#4F5BD5] hover:bg-[#3D49C4] text-white rounded-lg py-2.5 text-sm font-medium" onClick={() => router.push("/chat?new=" + Date.now())}>
-          + 新对话
+          + New conversation
         </Button>
       </div>
       <div className="px-3 py-2 border-b">
@@ -78,7 +78,7 @@ export function ConversationList() {
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索对话..."
+            placeholder="Searchconversations..."
             className="w-full bg-transparent text-xs outline-none placeholder-muted-foreground"
           />
         </div>
@@ -93,8 +93,8 @@ export function ConversationList() {
           <div className="rounded-full bg-[#4F5BD5]/10 p-3">
             <MessageCircle className="h-5 w-5 text-[#4F5BD5]" />
           </div>
-          <p className="text-sm text-muted-foreground">还没有对话</p>
-          <p className="text-xs text-muted-foreground/60">点击上方按钮开始第一次 AI 对话</p>
+          <p className="text-sm text-muted-foreground">No conversations yet</p>
+          <p className="text-xs text-muted-foreground/60">Clickbutton above to start your first AI conversation</p>
         </div>
       ) : (
         <ul className="flex-1 overflow-y-auto">
@@ -107,12 +107,12 @@ export function ConversationList() {
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime()
 
             const groups: { label: string; items: Conversation[] }[] = [
-              { label: "今天", items: [] },
-              { label: "昨天", items: [] },
-              { label: "本周", items: [] },
-              { label: "上周", items: [] },
-              { label: "本月", items: [] },
-              { label: "更早", items: [] },
+              { label: "Today", items: [] },
+              { label: "Yesterday", items: [] },
+              { label: "This week", items: [] },
+              { label: "Last week", items: [] },
+              { label: "This month", items: [] },
+              { label: "Earlier", items: [] },
             ]
 
             sorted.forEach((c: Conversation) => {
@@ -170,9 +170,9 @@ export function ConversationList() {
                     onDoubleClick={(e) => {
                       e.stopPropagation()
                       setEditingId(c.id)
-                      setEditValue(c.title || "新对话")
+                      setEditValue(c.title || "New conversation")
                     }}
-                  >{c.title || "新对话"}</p>
+                  >{c.title || "New conversation"}</p>
                 )}
                 <p className="text-xs text-muted-foreground truncate mt-0.5">{formatTime(c.updatedAt)}</p>
               </div>
@@ -211,15 +211,15 @@ export function ConversationList() {
       <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>删除对话</DialogTitle>
+            <DialogTitle>Deleteconversations</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">确定要删除这个对话吗？此操作不可撤销。</p>
+          <p className="text-sm text-muted-foreground">Are you sure you want to delete this conversation? This action cannot be undone.</p>
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              取消
+              Cancel
             </Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? "删除中..." : "删除"}
+              {deleteMutation.isPending ? "Delete..." : "Delete"}
             </Button>
           </div>
         </DialogContent>

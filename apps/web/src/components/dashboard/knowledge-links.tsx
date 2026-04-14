@@ -36,7 +36,7 @@ export function KnowledgeLinks() {
 
   return (
     <div className="mx-4 mb-4 rounded-xl border p-4">
-      <h3 className="font-semibold mb-3">🔗 AI 发现的知识关联</h3>
+      <h3 className="font-semibold mb-3">🔗 AI-discovered knowledge connections</h3>
       <div className="space-y-2">
         {links.map((link) => (
           <div
@@ -45,13 +45,13 @@ export function KnowledgeLinks() {
           >
             <span className="text-sm">
               {relationIcons[link.relationType] || "🔗"}{" "}
-              {link.fileAName} 和 {link.fileBName} — {link.description}
+              {link.fileAName} and {link.fileBName} — {link.description}
             </span>
             <Link
-              href={`/chat?q=对比「${link.fileAName}」和「${link.fileBName}」的核心观点异同&mode=compare&fileA=${link.fileAId}&fileB=${link.fileBId}`}
+              href={`/chat?q=Compare "${link.fileAName}" and "${link.fileBName}"&mode=compare&fileA=${link.fileAId}&fileB=${link.fileBId}`}
               className="shrink-0 ml-3 text-xs text-indigo-500 hover:underline"
             >
-              对比
+              Compare
             </Link>
           </div>
         ))}

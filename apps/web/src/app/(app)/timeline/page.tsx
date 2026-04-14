@@ -17,25 +17,25 @@ interface TimelineEvent {
 const EVENT_CONFIG = {
   file_uploaded: {
     icon: FileText,
-    label: "上传文件",
+    label: "Upload files",
     dotColor: "bg-blue-500",
     iconColor: "text-blue-500",
   },
   conversation: {
     icon: MessageCircle,
-    label: "AI 对话",
+    label: "AI conversations",
     dotColor: "bg-emerald-500",
     iconColor: "text-emerald-500",
   },
   insight: {
     icon: Lightbulb,
-    label: "AI 洞察",
+    label: "AI Insights",
     dotColor: "bg-purple-500",
     iconColor: "text-purple-500",
   },
   report: {
     icon: BarChart3,
-    label: "AI 报告",
+    label: "AI Report",
     dotColor: "bg-orange-500",
     iconColor: "text-orange-500",
   },
@@ -61,7 +61,7 @@ function getEventLink(event: TimelineEvent): string {
 }
 
 export default function TimelinePage() {
-  useEffect(() => { document.title = "时间线 - AI Drive" }, [])
+  useEffect(() => { document.title = "Timeline - AI Drive" }, [])
   const [events, setEvents] = useState<TimelineEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [hasMore, setHasMore] = useState(false)
@@ -103,24 +103,24 @@ export default function TimelinePage() {
   const yesterday = new Date(Date.now() - 86400000).toDateString()
   filteredEvents.forEach(e => {
     const d = new Date(e.createdAt).toDateString()
-    const label = d === today ? "今天" : d === yesterday ? "昨天" : new Date(e.createdAt).toLocaleDateString("zh-CN")
+    const label = d === today ? "Today" : d === yesterday ? "Yesterday" : new Date(e.createdAt).toLocaleDateString("zh-CN")
     if (!groups[label]) groups[label] = []
     groups[label].push(e)
   })
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
-      <h1 className="text-2xl font-bold mb-2">📅 知识时间线</h1>
-      <p className="text-sm text-muted-foreground mb-4">追踪文件上传、AI 分析和知识发现的完整历程</p>
+      <h1 className="text-2xl font-bold mb-2">📅 Knowledge Timeline</h1>
+      <p className="text-sm text-muted-foreground mb-4">Track the complete history of file uploads, AI analysis, and knowledge discovery</p>
 
       {/* Type filter */}
       <div className="flex flex-wrap gap-2 mb-6">
         {[
-          { type: null, label: "全部" },
-          { type: "file_uploaded", label: "📄 上传" },
-          { type: "conversation", label: "💬 对话" },
-          { type: "insight", label: "💡 洞察" },
-          { type: "report", label: "📊 报告" },
+          { type: null, label: "All" },
+          { type: "file_uploaded", label: "📄 Upload" },
+          { type: "conversation", label: "💬 conversations" },
+          { type: "insight", label: "💡 Insights" },
+          { type: "report", label: "📊 Report" },
         ].map(f => (
           <button
             key={f.type || "all"}
@@ -142,8 +142,8 @@ export default function TimelinePage() {
         </div>
       ) : events.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground mb-2">还没有知识活动</p>
-          <p className="text-sm text-muted-foreground">上传文件、与 AI 对话，活动会自动出现在这里</p>
+          <p className="text-muted-foreground mb-2">No knowledge activity yet</p>
+          <p className="text-sm text-muted-foreground">Upload files、Chat with AI and activities will automatically appear here</p>
         </div>
       ) : (
         <div className="space-y-8">
@@ -190,18 +190,18 @@ export default function TimelinePage() {
                 disabled={loadingMore}
                 className="text-sm text-[#4F5BD5] hover:underline disabled:opacity-50"
               >
-                {loadingMore ? "加载中..." : "加载更多"}
+                {loadingMore ? "Loading..." : "Load more"}
               </button>
             </div>
           ) : events.length > 0 && (
             <div className="text-center py-6">
               {events.length < 10 ? (
                 <>
-                  <p className="text-sm text-muted-foreground mb-1">🌱 这是你知识旅程的开始</p>
-                  <p className="text-xs text-muted-foreground">继续上传文件、与 AI 对话，时间线会越来越丰富</p>
+                  <p className="text-sm text-muted-foreground mb-1">🌱 This is the start of your knowledge journey</p>
+                  <p className="text-xs text-muted-foreground">ContinueUpload files、Chat with AI and your timeline will grow richer</p>
                 </>
               ) : (
-                <p className="text-xs text-muted-foreground">— 已到最早记录 —</p>
+                <p className="text-xs text-muted-foreground">— Reached earliest record —</p>
               )}
             </div>
           )}

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 export type NetworkErrorType = "offline" | "server" | "timeout" | "unknown"
 
 interface NetworkErrorProps {
-  /** inline: 嵌入内容区域; fullpage: 全页居中 */
+  /** inline: Embedded content area; fullpage: Full page center */
   mode?: "inline" | "fullpage"
   type?: NetworkErrorType
   message?: string
@@ -19,34 +19,34 @@ interface NetworkErrorProps {
 const ERROR_CONFIG: Record<NetworkErrorType, { icon: typeof WifiOff; title: string; description: string; color: string }> = {
   offline: {
     icon: WifiOff,
-    title: "网络连接失败",
-    description: "请检查你的网络连接后重试",
+    title: "Network connection failed",
+    description: "Please check your network connection and try again",
     color: "text-yellow-500",
   },
   server: {
     icon: ServerCrash,
-    title: "服务暂时不可用",
-    description: "服务器遇到问题，请稍后重试",
+    title: "Service temporarily unavailable",
+    description: "Server encountered a problem, please try again later",
     color: "text-red-500",
   },
   timeout: {
     icon: AlertTriangle,
-    title: "请求超时",
-    description: "服务器响应时间过长，请重试",
+    title: "Request timed out",
+    description: "Server response took too long, please try again",
     color: "text-orange-500",
   },
   unknown: {
     icon: AlertTriangle,
-    title: "出了点问题",
-    description: "请稍后重试",
+    title: "Something went wrong",
+    description: "Please try again later",
     color: "text-muted-foreground",
   },
 }
 
-/** 根据错误信息推断错误类型 */
+/** Infer error type from error info */
 export function classifyError(error: unknown): NetworkErrorType {
   if (typeof navigator !== "undefined" && !navigator.onLine) return "offline"
-  // 检查 ApiError.status
+  // Check ApiError.status
   if (error && typeof error === "object" && "status" in error) {
     const status = (error as { status: number }).status
     if (status === 0) return "timeout" // AbortError mapped to status 0
@@ -89,7 +89,7 @@ export function NetworkError({ mode = "inline", type = "unknown", message, onRet
         {onRetry && (
           <Button onClick={handleRetry} variant="outline" disabled={retrying} className="gap-2">
             <RefreshCw className={cn("h-4 w-4", retrying && "animate-spin")} />
-            {retrying ? "重试中..." : "重试"}
+            {retrying ? "Retrying..." : "Retry"}
           </Button>
         )}
       </div>
@@ -110,7 +110,7 @@ export function NetworkError({ mode = "inline", type = "unknown", message, onRet
       {onRetry && (
         <Button onClick={handleRetry} variant="ghost" size="sm" disabled={retrying} className="shrink-0 gap-1.5">
           <RefreshCw className={cn("h-3.5 w-3.5", retrying && "animate-spin")} />
-          {retrying ? "重试中" : "重试"}
+          {retrying ? "Retrying" : "Retry"}
         </Button>
       )}
     </div>

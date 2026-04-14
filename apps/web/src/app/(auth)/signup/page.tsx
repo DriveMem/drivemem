@@ -13,16 +13,16 @@ import { Label } from "@/components/ui/label"
 
 const signupSchema = z
   .object({
-    email: z.string().email("请输入有效的邮箱地址"),
+    email: z.string().email("Please enterValid email address"),
     password: z
       .string()
-      .min(8, "密码至少 8 位")
-      .regex(/[a-zA-Z]/, "密码必须包含字母")
-      .regex(/[0-9]/, "密码必须包含数字"),
+      .min(8, "PasswordAt least 8 characters")
+      .regex(/[a-zA-Z]/, "PasswordMust contain letters")
+      .regex(/[0-9]/, "PasswordMust contain numbers"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "两次密码不一致",
+    message: "Passwords do not match",
     path: ["confirmPassword"],
   })
 
@@ -59,9 +59,9 @@ export default function SignupPage() {
         const body = await res.json().catch(() => ({}))
         const code = body.error?.code || body.code
         if (res.status === 409 || code === "EMAIL_EXISTS" || code === "EMAIL_ALREADY_EXISTS" || code === "CONFLICT") {
-          setError("该邮箱已注册，请直接登录或使用其他邮箱")
+          setError("This email is already registered. Please sign in or use a different email")
         } else {
-          setError(body.error?.message || body.message || "注册失败，请稍后重试")
+          setError(body.error?.message || body.message || "Sign upFailed，Please try again later")
         }
         return
       }
@@ -79,7 +79,7 @@ export default function SignupPage() {
         router.refresh()
       }
     } catch {
-      setError("注册失败，请稍后重试")
+      setError("Sign upFailed，Please try again later")
     } finally {
       setLoading(false)
     }
@@ -90,13 +90,13 @@ export default function SignupPage() {
       {/* Mobile-only header */}
       <div className="lg:hidden text-center mb-8">
         <h1 className="text-3xl font-bold">AI Drive</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Agent 的记忆层</p>
+        <p className="mt-2 text-sm text-muted-foreground">Agent 's memory layer</p>
       </div>
 
-      <h2 className="mb-6 text-2xl font-semibold">注册</h2>
+      <h2 className="mb-6 text-2xl font-semibold">Sign up</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email">邮箱</Label>
+          <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
@@ -110,11 +110,11 @@ export default function SignupPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">密码</Label>
+          <Label htmlFor="password">Password</Label>
           <Input
             id="password"
             type="password"
-            placeholder="至少 8 位，含字母和数字"
+            placeholder="At least 8 characters with letters and numbers"
             className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-[#4F5BD5] focus:border-[#4F5BD5]"
             {...register("password")}
           />
@@ -124,11 +124,11 @@ export default function SignupPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">确认密码</Label>
+          <Label htmlFor="confirmPassword">Confirm password</Label>
           <Input
             id="confirmPassword"
             type="password"
-            placeholder="再次输入密码"
+            placeholder="Re-enter password"
             className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-[#4F5BD5] focus:border-[#4F5BD5]"
             {...register("confirmPassword")}
           />
@@ -146,24 +146,24 @@ export default function SignupPage() {
           className="bg-[#4F5BD5] hover:bg-[#3D49C4] rounded-xl h-12 w-full text-white font-medium"
           disabled={loading}
         >
-          {loading ? "注册中..." : "注册"}
+          {loading ? "Sign up..." : "Sign up"}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        已有账号？{" "}
+        Already have an account？{" "}
         <Link href="/login" className="text-primary hover:underline">
-          登录
+          Sign in
         </Link>
       </p>
 
       <p className="mt-3 text-center text-xs text-muted-foreground/60">
-        注册即同意《<Link href="/terms" className="underline hover:text-foreground">使用条款</Link>》和《<Link href="/privacy" className="underline hover:text-foreground">隐私政策</Link>》
+        Sign upyou agree to the <Link href="/terms" className="underline hover:text-foreground">Terms of Use</Link>and <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>
       </p>
 
       <div className="mt-4 text-center">
         <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition underline">
-          使用 Demo 账号登录 →
+          Sign in with Demo account →
         </Link>
       </div>
     </div>

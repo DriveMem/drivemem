@@ -21,7 +21,7 @@ function daysRemaining(deletedAt: string): number {
 }
 
 export default function TrashPage() {
-  useEffect(() => { document.title = "回收站 - AI Drive" }, [])
+  useEffect(() => { document.title = "Trash - AI Drive" }, [])
   const [files, setFiles] = useState<TrashedFile[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -74,7 +74,7 @@ export default function TrashPage() {
   return (
     <div className="mx-auto max-w-3xl p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">🗑️ 回收站</h1>
+        <h1 className="text-2xl font-bold">🗑️ Trash</h1>
         {files.length > 0 && (
           <Button
             variant="destructive"
@@ -83,7 +83,7 @@ export default function TrashPage() {
             disabled={actionLoading === "empty"}
           >
             {actionLoading === "empty" ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Trash2 className="h-4 w-4 mr-1" />}
-            清空回收站
+            Empty trash
           </Button>
         )}
       </div>
@@ -91,8 +91,8 @@ export default function TrashPage() {
       {files.length === 0 ? (
         <EmptyState
           icon={<Trash2 className="h-12 w-12" />}
-          title="回收站为空"
-          description="删除的文件会在此保留 30 天"
+          title="Trash is empty"
+          description="Delete's files will be kept here for 30 days"
         />
       ) : (
         <div className="space-y-2">
@@ -103,7 +103,7 @@ export default function TrashPage() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{file.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    删除于 {new Date(file.deletedAt).toLocaleDateString("zh-CN")} · 剩余 {remaining} 天
+                    Deleted on {new Date(file.deletedAt).toLocaleDateString("zh-CN")} · {remaining} days remaining
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0 ml-3">
@@ -114,7 +114,7 @@ export default function TrashPage() {
                     disabled={actionLoading === file.id + "-restore"}
                   >
                     {actionLoading === file.id + "-restore" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RotateCcw className="h-3 w-3 mr-1" />}
-                    恢复
+                    Restore
                   </Button>
                   <Button
                     variant="destructive"
@@ -123,7 +123,7 @@ export default function TrashPage() {
                     disabled={actionLoading === file.id + "-delete"}
                   >
                     {actionLoading === file.id + "-delete" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Trash2 className="h-3 w-3 mr-1" />}
-                    永久删除
+                    Permanently delete
                   </Button>
                 </div>
               </div>

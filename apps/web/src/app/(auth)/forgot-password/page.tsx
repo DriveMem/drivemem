@@ -8,14 +8,14 @@ export default function ForgotPasswordPage() {
   return (
     <div className="rounded-lg border bg-card p-6 shadow-sm text-center">
       <Mail className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-      <h2 className="mb-4 text-xl font-semibold">忘记密码</h2>
+      <h2 className="mb-4 text-xl font-semibold">Forgot password</h2>
       <p className="text-sm text-muted-foreground mb-6">
-        MVP 阶段暂不支持自助重置密码。
+        MVP phase does not support self-service password reset.
         <br />
-        请联系支持团队帮你重置。
+        Please contact the support team for help.
       </p>
       <Link href="/login">
-        <Button variant="outline" className="w-full">返回登录</Button>
+        <Button variant="outline" className="w-full">Back to sign in</Button>
       </Link>
     </div>
   )

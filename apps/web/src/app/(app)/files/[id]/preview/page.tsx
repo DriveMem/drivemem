@@ -32,11 +32,11 @@ function formatSize(bytes: number): string {
 
 function statusLabel(status: string): string {
   switch (status) {
-    case "indexed": return "✅ AI 已记住"
-    case "processing": return "🔄 AI 正在记住..."
-    case "failed": return "❌ 处理失败"
-    case "uploaded": return "⏳ 等待处理"
-    default: return status || "未知"
+    case "indexed": return "✅ AI Remembered"
+    case "processing": return "🔄 AI Remembering..."
+    case "failed": return "❌ Processing failed"
+    case "uploaded": return "⏳ Pending"
+    default: return status || "Unknown"
   }
 }
 
@@ -64,11 +64,11 @@ function useFileContent(fileId: string, fileType: string) {
           return
         }
         const textRes = await fetch(url)
-        if (!textRes.ok) throw new Error(`获取文件内容失败 (${textRes.status})`)
+        if (!textRes.ok) throw new Error(`Failed to load file content (${textRes.status})`)
         const text = await textRes.text()
         if (!cancelled) setContent(text)
       } catch (e: any) {
-        if (!cancelled) setError(e?.message || "无法加载文件内容")
+        if (!cancelled) setError(e?.message || "Failed to load file content")
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -118,8 +118,8 @@ function OfficePreview({ fileId, fileName }: { fileId: string; fileName: string 
       <div className="flex h-96 flex-col items-center justify-center gap-4 rounded-xl border bg-muted/50">
         <FileText className="h-16 w-16 text-muted-foreground/50" />
         <div className="text-center">
-          <p className="text-sm font-medium">Office 文件预览</p>
-          <p className="text-xs text-muted-foreground mt-1">暂时无法在线预览此文件，请下载后查看</p>
+          <p className="text-sm font-medium">Office FilesPreview</p>
+          <p className="text-xs text-muted-foreground mt-1">Cannot preview this file online, please download to view</p>
         </div>
         <Button
           variant="outline"
@@ -134,11 +134,11 @@ function OfficePreview({ fileId, fileName }: { fileId: string; fileName: string 
                 a.click()
               }
             } catch {
-              alert("获取下载链接失败")
+              alert("Failed to get download link")
             }
           }}
         >
-          <Download className="h-4 w-4 mr-2" />下载文件
+          <Download className="h-4 w-4 mr-2" />DownloadFiles
         </Button>
       </div>
     )
@@ -166,7 +166,7 @@ function ImagePreview({ fileId, fileName }: { fileId: string; fileName: string }
   }, [fileId])
 
   if (loading) return <div className="flex h-96 items-center justify-center rounded border bg-muted"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-  if (!url) return <div className="flex h-96 items-center justify-center rounded border bg-muted text-muted-foreground"><p>无法加载图片</p></div>
+  if (!url) return <div className="flex h-96 items-center justify-center rounded border bg-muted text-muted-foreground"><p>Failed to load image</p></div>
 
   return (
     <div className="flex items-center justify-center rounded border bg-muted/30 p-4">
@@ -185,7 +185,7 @@ export default function FilePreviewPage() {
   // Handle both { file: {...} } and direct object — computed before hooks to keep hook order stable
   const file = (!isLoading && !error) ? (data?.file || data) : null
   const fileType = file ? getFileType(file.name || file.originalName || "", file.mimeType) : "other"
-  const fileName = file ? (file.name || file.originalName || "未命名文件") : ""
+  const fileName = file ? (file.name || file.originalName || "Untitled file") : ""
 
   // All hooks must be called unconditionally (React rules of hooks)
   const { content, previewUrl, loading: contentLoading, error: contentError } = useFileContent(params.id, fileType)
@@ -201,9 +201,9 @@ export default function FilePreviewPage() {
   if (error || !file) {
     return (
       <div className="flex h-96 flex-col items-center justify-center gap-4 text-muted-foreground">
-        <p>文件不存在或加载失败</p>
+        <p>Filesdoes not exist or failed to load</p>
         <Button variant="outline" asChild>
-          <Link href="/dashboard">返回文件列表</Link>
+          <Link href="/dashboard">BackFilesList</Link>
         </Button>
       </div>
     )
@@ -222,7 +222,7 @@ export default function FilePreviewPage() {
       {/* AI Summary */}
       {file.summary && (
         <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-4">
-          <h2 className="font-semibold mb-2">🧠 AI 摘要</h2>
+          <h2 className="font-semibold mb-2">🧠 AI Summary</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">{file.summary}</p>
         </div>
       )}
@@ -230,7 +230,7 @@ export default function FilePreviewPage() {
       {/* AI Classification Suggestion */}
       {file.suggestedFolder && !file.folderId && (
         <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-4 flex items-center justify-between">
-          <span className="text-sm">💡 AI 建议将此文件归入：<strong>{file.suggestedFolder}</strong></span>
+          <span className="text-sm">💡 AI Suggested folder: <strong>{file.suggestedFolder}</strong></span>
           <Button
             size="sm"
             onClick={() => {
@@ -238,11 +238,11 @@ export default function FilePreviewPage() {
               if (matched) {
                 moveFile.mutate({ fileId: file.id, folderId: matched.id })
               } else {
-                alert("请先创建此文件夹")
+                alert("Please create this folder first")
               }
             }}
           >
-            移入
+            Move to
           </Button>
         </div>
       )}
@@ -252,7 +252,7 @@ export default function FilePreviewPage() {
         <div className="flex-1">
           {fileType === "pdf" && (
             previewUrl ? (
-              <iframe src={previewUrl} className="w-full h-[600px] rounded border" title="PDF 预览" />
+              <iframe src={previewUrl} className="w-full h-[600px] rounded border" title="PDF Preview" />
             ) : contentLoading ? (
               <div className="flex h-96 items-center justify-center rounded border bg-muted">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -260,8 +260,8 @@ export default function FilePreviewPage() {
             ) : (
               <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
                 <FileText className="h-12 w-12" />
-                <p>PDF 文件 — AI 已记住内容</p>
-                <p className="text-xs">可在 AI 对话中询问此文件相关问题</p>
+                <p>PDF Files — AI Remembered content</p>
+                <p className="text-xs">You can ask questions about this file in AI conversations</p>
               </div>
             )
           )}
@@ -275,7 +275,7 @@ export default function FilePreviewPage() {
               {contentError && (
                 <div className="flex h-96 flex-col items-center justify-center gap-3 rounded border bg-muted text-muted-foreground">
                   <AlertCircle className="h-8 w-8 text-destructive" />
-                  <p>无法预览文件内容</p>
+                  <p>Cannot preview file content</p>
                   <p className="text-xs text-destructive">{contentError}</p>
                 </div>
               )}
@@ -298,8 +298,8 @@ export default function FilePreviewPage() {
           {fileType === "other" && (
             <div className="flex h-96 flex-col items-center justify-center gap-4 rounded border bg-muted text-muted-foreground">
               <FileText className="h-12 w-12" />
-              <p>{(file.mimeType || "未知类型").toUpperCase()} 文件</p>
-              <p className="text-xs">AI 已记住此文件内容，可在对话中提问</p>
+              <p>{(file.mimeType || "UnknownType").toUpperCase()} Files</p>
+              <p className="text-xs">AI Remembered this file's content. You can ask about it in conversations</p>
               <Button
                 variant="outline"
                 onClick={async () => {
@@ -313,11 +313,11 @@ export default function FilePreviewPage() {
                       a.click()
                     }
                   } catch {
-                    alert("获取下载链接失败")
+                    alert("Failed to get download link")
                   }
                 }}
               >
-                <Download className="h-4 w-4 mr-2" />下载文件
+                <Download className="h-4 w-4 mr-2" />DownloadFiles
               </Button>
             </div>
           )}
@@ -329,47 +329,47 @@ export default function FilePreviewPage() {
         {/* File info sidebar */}
         <Card className="w-72 shrink-0">
           <CardContent className="space-y-4 p-4">
-            <h2 className="font-semibold">文件信息</h2>
+            <h2 className="font-semibold">FilesInfo</h2>
             <dl className="space-y-2 text-sm">
               <div>
-                <dt className="text-muted-foreground">文件名</dt>
+                <dt className="text-muted-foreground">Filename</dt>
                 <dd className="break-all">{fileName}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">类型</dt>
+                <dt className="text-muted-foreground">Type</dt>
                 <dd>{file.mimeType || fileType.toUpperCase()}</dd>
               </div>
               {file.size && (
                 <div>
-                  <dt className="text-muted-foreground">大小</dt>
+                  <dt className="text-muted-foreground">Size</dt>
                   <dd>{formatSize(file.size)}</dd>
                 </div>
               )}
               <div>
-                <dt className="text-muted-foreground">状态</dt>
+                <dt className="text-muted-foreground">Status</dt>
                 <dd>{statusLabel(file.status || file.parseStatus)}</dd>
               </div>
               {file.errorMessage && (
                 <div>
-                  <dt className="text-muted-foreground">错误</dt>
+                  <dt className="text-muted-foreground">Error</dt>
                   <dd className="text-destructive">{file.errorMessage}</dd>
                 </div>
               )}
               {file.createdAt && (
                 <div>
-                  <dt className="text-muted-foreground">上传时间</dt>
+                  <dt className="text-muted-foreground">UploadTime</dt>
                   <dd>{new Date(file.createdAt).toLocaleString("zh-CN")}</dd>
                 </div>
               )}
             </dl>
             <div className="flex gap-2">
               <Button className="flex-1" asChild>
-                <Link href={`/chat?fileIds=${file.id}`}>💬 问 AI 关于这个文件</Link>
+                <Link href={`/chat?fileIds=${file.id}`}>💬 Ask AI about this file</Link>
               </Button>
               <Button
                 variant="outline"
                 size="icon"
-                title="下载原文件"
+                title="DownloadOriginal file"
                 onClick={async () => {
                   try {
                     const res = await apiFetch(`/api/files/${params.id}/preview-url`) as { previewUrl: string }
@@ -379,7 +379,7 @@ export default function FilePreviewPage() {
                     a.target = "_blank"
                     a.click()
                   } catch {
-                    alert("获取下载链接失败")
+                    alert("Failed to get download link")
                   }
                 }}
               >

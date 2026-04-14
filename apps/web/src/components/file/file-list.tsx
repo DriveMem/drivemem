@@ -63,25 +63,25 @@ function formatFileType(mimeType?: string, name?: string): string {
   if (name) {
     const ext = name.split(".").pop()?.toLowerCase()
     const extMap: Record<string, string> = {
-      md: "Markdown", markdown: "Markdown", txt: "纯文本", pdf: "PDF",
+      md: "Markdown", markdown: "Markdown", txt: "Plain text", pdf: "PDF",
       doc: "Word", docx: "Word", xls: "Excel", xlsx: "Excel",
       ppt: "PowerPoint", pptx: "PowerPoint", csv: "CSV",
       json: "JSON", html: "HTML", xml: "XML",
-      png: "PNG 图片", jpg: "JPEG 图片", jpeg: "JPEG 图片", gif: "GIF 图片", webp: "WebP 图片", svg: "SVG 图片",
-      mp3: "MP3 音频", wav: "WAV 音频", mp4: "MP4 视频",
-      zip: "ZIP 压缩包", rar: "RAR 压缩包", gz: "GZ 压缩包",
+      png: "PNG Image", jpg: "JPEG Image", jpeg: "JPEG Image", gif: "GIF Image", webp: "WebP Image", svg: "SVG Image",
+      mp3: "MP3 Audio", wav: "WAV Audio", mp4: "MP4 Video",
+      zip: "ZIP archive", rar: "RAR archive", gz: "GZ archive",
     }
     if (ext && extMap[ext]) return extMap[ext]
   }
   if (mimeType) {
-    if (mimeType.startsWith("image/")) return "图片"
-    if (mimeType.startsWith("audio/")) return "音频"
-    if (mimeType.startsWith("video/")) return "视频"
+    if (mimeType.startsWith("image/")) return "Image"
+    if (mimeType.startsWith("audio/")) return "Audio"
+    if (mimeType.startsWith("video/")) return "Video"
     if (mimeType.includes("pdf")) return "PDF"
     if (mimeType.includes("markdown") || mimeType.includes("x-markdown")) return "Markdown"
     return mimeType.split("/").pop()?.toUpperCase() || mimeType
   }
-  return "文件"
+  return "Files"
 }
 function fmtDate(iso: string) { return new Date(iso).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) }
 
@@ -90,12 +90,12 @@ function formatRelativeTime(date: string): string {
   const now = new Date()
   const diff = now.getTime() - d.getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 1) return "刚刚"
-  if (mins < 60) return `${mins} 分钟前`
+  if (mins < 1) return "Just now"
+  if (mins < 60) return `${mins}  min ago`
   const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours} 小时前`
+  if (hours < 24) return `${hours}  hours ago`
   const days = Math.floor(hours / 24)
-  if (days < 7) return `${days} 天前`
+  if (days < 7) return `${days}  days ago`
   return d.toLocaleDateString("zh-CN")
 }
 
@@ -140,21 +140,21 @@ function DrawerTagSection({ fileId, drawerTags, setDrawerTags }: { fileId: strin
 
   return (
     <div className="rounded-lg border p-3">
-      <p className="text-xs font-medium text-muted-foreground mb-2">🏷️ 标签</p>
+      <p className="text-xs font-medium text-muted-foreground mb-2">🏷️ Tags</p>
       <div className="flex flex-wrap gap-1.5">
         {drawerTags.map((tag: any) => (
           <span key={tag.id} className="group inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>
             {tag.name}
-            <button onClick={() => handleRemove(tag.id)} className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 ml-0.5" title="移除标签">×</button>
+            <button onClick={() => handleRemove(tag.id)} className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 ml-0.5" title="RemoveTags">×</button>
           </span>
         ))}
         <Popover open={showPicker} onOpenChange={setShowPicker}>
           <PopoverTrigger asChild>
-            <button className="rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent transition">+ 添加</button>
+            <button className="rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent transition">+ Add</button>
           </PopoverTrigger>
           <PopoverContent className="w-48 p-2" align="start">
             {availableTags.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-2">没有更多标签</p>
+              <p className="text-xs text-muted-foreground text-center py-2">No moreTags</p>
             ) : (
               <div className="space-y-1 max-h-40 overflow-auto">
                 {availableTags.map((tag: any) => (
@@ -207,7 +207,7 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
           const textRes = await fetch(res.previewUrl)
           if (!textRes.ok) throw new Error("fetch failed")
           const text = await textRes.text()
-          if (!cancelled) setContent(text.length > 5000 ? text.slice(0, 5000) + "\n\n…（内容过长，请点击完整预览查看）" : text)
+          if (!cancelled) setContent(text.length > 5000 ? text.slice(0, 5000) + "\n\n…（Contentis too long. Please click full preview to view)" : text)
         }
       } catch {
         if (!cancelled) setError(true)
@@ -221,7 +221,7 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
   if (fileType === "other") {
     return (
       <div className="rounded-lg border p-4 text-center text-sm text-muted-foreground space-y-3">
-        <p>暂不支持预览，请下载查看</p>
+        <p>Preview not supported, please download to view</p>
         <Button
           variant="outline"
           size="sm"
@@ -236,11 +236,11 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
                 a.click()
               }
             } catch {
-              toast.error("获取下载链接失败")
+              toast.error("Failed to get download link")
             }
           }}
         >
-          <Download className="h-3.5 w-3.5 mr-1.5" />下载文件
+          <Download className="h-3.5 w-3.5 mr-1.5" />DownloadFiles
         </Button>
       </div>
     )
@@ -257,7 +257,7 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
   if (error) {
     return (
       <div className="flex h-24 items-center justify-center rounded-lg border text-sm text-muted-foreground">
-        预览加载失败
+        PreviewFailed to load
       </div>
     )
   }
@@ -291,11 +291,11 @@ function StatusIcon({ status, error, compact }: { status: string; error?: string
   if (status === "uploading") return <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
   if (status === "parsing") {
     if (compact) return <Loader2 className="h-3 w-3 animate-spin text-yellow-500" />
-    return <span className="flex items-center gap-1 text-xs text-yellow-500"><Loader2 className="h-3 w-3 animate-spin" />AI 正在记住...</span>
+    return <span className="flex items-center gap-1 text-xs text-yellow-500"><Loader2 className="h-3 w-3 animate-spin" />AI Remembering...</span>
   }
   if (status === "indexed") return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-  if (compact) return <span title={error || "索引失败，请重新上传"} className="cursor-help"><XCircle className="h-3.5 w-3.5 text-red-500" /></span>
-  return <span title={error || "解析失败"} className="flex items-center gap-1 text-xs text-red-500 cursor-help"><XCircle className="h-3.5 w-3.5" />索引失败</span>
+  if (compact) return <span title={error || "Indexing failed, please re-upload"} className="cursor-help"><XCircle className="h-3.5 w-3.5 text-red-500" /></span>
+  return <span title={error || "Parse failed"} className="flex items-center gap-1 text-xs text-red-500 cursor-help"><XCircle className="h-3.5 w-3.5" />Indexing failed</span>
 }
 
 export function FileList() {
@@ -350,7 +350,7 @@ export function FileList() {
       setShareUrl(data.url || "")
     } catch (err) {
       console.error("Share failed:", err)
-      toast.error("分享失败，请重试")
+      toast.error("Share failed, please try again")
       setShareDialogOpen(false)
     } finally {
       setShareLoading(false)
@@ -379,10 +379,10 @@ export function FileList() {
         method: "POST",
         body: JSON.stringify({ action: "archive", fileIds: Array.from(selected) }),
       })
-      toast.success(`已归档 ${selected.size} 个文件`)
+      toast.success(`Archived ${selected.size} files`)
       setSelected(new Set())
       queryClient.invalidateQueries({ queryKey: ["files"] })
-    } catch { toast.error("归档失败") }
+    } catch { toast.error("Archive failed") }
   }, [selected])
 
   const handleBatchDownload = useCallback(async () => {
@@ -410,14 +410,14 @@ export function FileList() {
   }, [rawFiles, sortKey, sortDir])
 
   const FILTERS = [
-    { key: "all", label: "全部" },
+    { key: "all", label: "All" },
     { key: "pdf", label: "PDF" },
     { key: "word", label: "Word" },
     { key: "ppt", label: "PPT" },
     { key: "excel", label: "Excel" },
     { key: "md", label: "Markdown" },
-    { key: "txt", label: "文本" },
-    { key: "image", label: "图片" },
+    { key: "txt", label: "Text" },
+    { key: "image", label: "Image" },
   ]
 
   const typeFiltered = typeFilter === "all" ? files : files.filter((f: any) => {
@@ -559,9 +559,9 @@ export function FileList() {
           <div className="rounded-2xl bg-gradient-to-br from-[#4F5BD5]/10 via-green-500/5 to-amber-500/10 p-1 mb-6">
             <div className="rounded-xl bg-background px-8 py-6">
               <Sparkles className="h-8 w-8 text-[#4F5BD5] mx-auto mb-3" />
-              <h3 className="text-xl font-semibold mb-2">开始构建你的知识库</h3>
+              <h3 className="text-xl font-semibold mb-2">StartBuild your knowledge library</h3>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                上传文件或创建笔记，AI 自动理解内容并建立关联。随时提问，AI 用你的知识回答。
+                Upload filesorCreatenotes. AI automatically understands content and builds connections. Ask anytime, AI answers using your knowledge.
               </p>
             </div>
           </div>
@@ -573,27 +573,27 @@ export function FileList() {
               <div className="rounded-lg bg-[#4F5BD5]/10 p-3 mx-auto w-fit mb-2 group-hover:scale-110 transition-transform">
                 <Upload className="h-5 w-5 text-[#4F5BD5]" />
               </div>
-              <p className="text-sm font-medium">上传文件</p>
-              <p className="text-xs text-muted-foreground mt-0.5">PDF、Word、PPT 等</p>
+              <p className="text-sm font-medium">Upload files</p>
+              <p className="text-xs text-muted-foreground mt-0.5">PDF、Word、PPT etc.</p>
             </button>
             <button
               onClick={async () => {
                 try {
                   await apiFetch("/api/v1/store", {
                     method: "POST",
-                    body: JSON.stringify({ content: "", title: "未命名笔记" }),
+                    body: JSON.stringify({ content: "", title: "Untitled note" }),
                   })
                   queryClient.invalidateQueries({ queryKey: ["files"] })
-                  toast.success("笔记已创建")
-                } catch { toast.error("创建笔记失败") }
+                  toast.success("Note created")
+                } catch { toast.error("CreateNote failed") }
               }}
               className="group rounded-xl border p-4 hover:border-purple-500/50 hover:shadow-md transition-all text-center"
             >
               <div className="rounded-lg bg-purple-500/10 p-3 mx-auto w-fit mb-2 group-hover:scale-110 transition-transform">
                 <FileText className="h-5 w-5 text-purple-500" />
               </div>
-              <p className="text-sm font-medium">创建笔记</p>
-              <p className="text-xs text-muted-foreground mt-0.5">快速记录想法</p>
+              <p className="text-sm font-medium">CreateNotes</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Quick note</p>
             </button>
             <Link
               href="/chat"
@@ -602,22 +602,22 @@ export function FileList() {
               <div className="rounded-lg bg-green-500/10 p-3 mx-auto w-fit mb-2 group-hover:scale-110 transition-transform">
                 <MessageSquare className="h-5 w-5 text-green-500" />
               </div>
-              <p className="text-sm font-medium">问 AI 问题</p>
-              <p className="text-xs text-muted-foreground mt-0.5">基于你的知识库</p>
+              <p className="text-sm font-medium">Ask AI</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Based on your knowledge library</p>
             </Link>
             <Link
-              href="/chat?q=帮我看看示例文件里有什么"
+              href="/chat?q=Help me see what's in the sample files"
               className="group rounded-xl border p-4 hover:border-amber-500/50 hover:shadow-md transition-all text-center"
             >
               <div className="rounded-lg bg-amber-500/10 p-3 mx-auto w-fit mb-2 group-hover:scale-110 transition-transform">
                 <Sparkles className="h-5 w-5 text-amber-500" />
               </div>
-              <p className="text-sm font-medium">体验示例</p>
-              <p className="text-xs text-muted-foreground mt-0.5">用 demo 文件试试</p>
+              <p className="text-sm font-medium">Try examples</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Try with demo files</p>
             </Link>
           </div>
           <p className="mt-6 text-xs text-muted-foreground">
-            支持拖拽上传 · PDF、Word、PPT、Excel、TXT、Markdown 等格式
+            Drag & drop supported · PDF, Word, PPT, Excel, TXT, Markdown
           </p>
         </div>
         {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
@@ -657,7 +657,7 @@ export function FileList() {
               <PopoverTrigger asChild>
                 <button className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent transition">
                   <Tag className="h-3 w-3" />
-                  {activeTagFilter || "标签"}
+                  {activeTagFilter || "Tags"}
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-2" align="start">
@@ -676,12 +676,12 @@ export function FileList() {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent transition">
                 <ArrowUpDown className="h-3 w-3" />
-                {{ name: "名称", createdAt: "时间", size: "大小", type: "类型" }[sortKey]}
+                {{ name: "Name", createdAt: "Time", size: "Size", type: "Type" }[sortKey]}
                 {sortDir === "asc" ? " ↑" : " ↓"}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-36">
-              {([["createdAt", "按时间"], ["name", "按名称"], ["size", "按大小"], ["type", "按类型"]] as [SortKey, string][]).map(([k, label]) => (
+              {([["createdAt", "By time"], ["name", "By name"], ["size", "By size"], ["type", "By type"]] as [SortKey, string][]).map(([k, label]) => (
                 <DropdownMenuItem key={k} onClick={() => toggleSort(k)} className={sortKey === k ? "font-medium" : ""}>
                   {label} {sortKey === k && (sortDir === "asc" ? "↑" : "↓")}
                 </DropdownMenuItem>
@@ -693,15 +693,15 @@ export function FileList() {
           <Button size="sm" onClick={async () => {
             try {
               const { toast } = await import("sonner")
-              toast.info("AI 正在整理文件...")
+              toast.info("AI Organizing files...")
               const data = await apiFetch("/api/files/auto-organize", { method: "POST" })
-              toast.success(data?.message || "整理完成")
+              toast.success(data?.message || "Organization complete")
               queryClient.invalidateQueries({ queryKey: ["files"] })
               queryClient.invalidateQueries({ queryKey: ["folders"] })
-            } catch (e: any) { const { toast } = await import("sonner"); toast.error(e.message || "整理失败") }
-          }} variant="outline" className="gap-1">✨ 一键整理</Button>
-          <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />新建文件夹</Button>
-          <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"><Upload className="h-3.5 w-3.5" />让 AI 记住</Button>
+            } catch (e: any) { const { toast } = await import("sonner"); toast.error(e.message || "Organization failed") }
+          }} variant="outline" className="gap-1">✨ One-click organize</Button>
+          <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />New folder</Button>
+          <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"><Upload className="h-3.5 w-3.5" />Let AI remember</Button>
           <div className="flex items-center rounded-md border border-border ml-2">
             <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-r-none", viewMode === "list" && "bg-accent")} onClick={() => setViewMode("list")}><List className="h-3.5 w-3.5" /></Button>
             <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-l-none", viewMode === "grid" && "bg-accent")} onClick={() => setViewMode("grid")}><LayoutGrid className="h-3.5 w-3.5" /></Button>
@@ -711,7 +711,7 @@ export function FileList() {
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 px-4 py-2 text-sm text-muted-foreground border-b border-border">
-        <span className={cn("cursor-pointer hover:text-foreground", !currentFolderId && "text-foreground font-medium")} onClick={() => setCurrentFolder(null)}>所有文件</span>
+        <span className={cn("cursor-pointer hover:text-foreground", !currentFolderId && "text-foreground font-medium")} onClick={() => setCurrentFolder(null)}>All files</span>
         {(() => {
           if (!currentFolderId) return null
           // Build full path from root to current folder
@@ -737,13 +737,13 @@ export function FileList() {
             <div key={folder.id} className={cn("rounded-xl border p-4 hover:bg-accent/50 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", dragOverFolderId === folder.id && "ring-2 ring-[#4F5BD5] bg-[#4F5BD5]/5")} onClick={() => setCurrentFolder(folder.id)}
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverFolderId(folder.id) }}
               onDragLeave={() => setDragOverFolderId(null)}
-              onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success("已移入 " + folder.name) } }}>
+              onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success("Moved to " + folder.name) } }}>
               <div className="flex h-28 items-center justify-center rounded-lg bg-muted/50">
                 <Folder className="h-14 w-14 text-amber-500" />
               </div>
               <p className="text-sm font-medium truncate">{folder.name}</p>
               {typeof folder.fileCount === "number" && (
-                <p className="text-xs text-muted-foreground">{folder.fileCount} 个文件</p>
+                <p className="text-xs text-muted-foreground">{folder.fileCount}  files</p>
               )}
             </div>
           ))}
@@ -755,7 +755,7 @@ export function FileList() {
             <div key={folder.id} className={cn("flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-accent/50 transition-colors", dragOverFolderId === folder.id && "ring-2 ring-[#4F5BD5] bg-[#4F5BD5]/5")} onClick={() => setCurrentFolder(folder.id)}
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverFolderId(folder.id) }}
               onDragLeave={() => setDragOverFolderId(null)}
-              onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success("已移入 " + folder.name) } }}>
+              onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success("Moved to " + folder.name) } }}>
               <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
               <span className="text-sm truncate">{folder.name}</span>
               {typeof folder.fileCount === "number" && (
@@ -791,8 +791,8 @@ export function FileList() {
                 />
                 <TypeIcon type={file.type} name={file.name} />
                 <span className="truncate text-sm flex-1 min-w-0" title={file.name}>{file.name}</span>
-                {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">已更新</span>}
-                {file.archivedAt && <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">已归档</span>}
+                {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">Updated</span>}
+                {file.archivedAt && <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">Archived</span>}
                 {file.tags?.slice(0, 2).map((tag: any) => (
                   <span key={tag.name} className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
                 ))}
@@ -803,12 +803,12 @@ export function FileList() {
                         <button className="shrink-0 text-[#4F5BD5] hover:text-[#3D49C4] transition-colors" onClick={(e) => {
                           e.stopPropagation()
                           const matched = allFolders.find((f: any) => f.name === file.suggestedFolder)
-                          if (matched) { moveFile.mutate({ fileId: file.id, folderId: matched.id }) } else { alert("请先创建此文件夹") }
+                          if (matched) { moveFile.mutate({ fileId: file.id, folderId: matched.id }) } else { alert("Please create this folder first") }
                         }}>
                           <Lightbulb className="h-3.5 w-3.5" />
                         </button>
                       </TooltipTrigger>
-                      <TooltipContent side="top"><p>AI 建议归入：{file.suggestedFolder}（点击移入）</p></TooltipContent>
+                      <TooltipContent side="top"><p>AI Suggested folder: {file.suggestedFolder} (click to move)</p></TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 )}
@@ -819,28 +819,28 @@ export function FileList() {
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDownload(file.id, e) }}
                     className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
-                    title="下载"
+                    title="Download"
                   >
                     <Download className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleShare(file.id) }}
                     className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
-                    title="分享"
+                    title="Share"
                   >
                     <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); openDrawer(file.id) }}
                     className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
-                    title="文件详情"
+                    title="FilesDetails"
                   >
                     <Info className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                     className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center"
-                    title="更多"
+                    title="More"
                   >
                     <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
@@ -915,27 +915,27 @@ export function FileList() {
               setRenameTarget({ fileId: contextMenu.fileId, currentName: file?.name || "" })
               setRenameValue(file?.name || "")
               setContextMenu(null)
-            }}>重命名</DropdownMenuItem>
+            }}>Rename</DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
               setDeleteTarget(contextMenu.fileId)
               setContextMenu(null)
-            }}>删除</DropdownMenuItem>
+            }}>Delete</DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
               setMoveTarget(contextMenu.fileId)
               setMoveFolderId("")
               setContextMenu(null)
-            }}>移动到文件夹</DropdownMenuItem>
+            }}>Moveto folder</DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
               setTagManagerFileId(contextMenu.fileId)
               setContextMenu(null)
             }}>
-              🏷️ 管理标签
+              🏷️ Manage tags
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
               handleShare(contextMenu.fileId)
               setContextMenu(null)
             }}>
-              <Share2 className="h-4 w-4 mr-2" />分享
+              <Share2 className="h-4 w-4 mr-2" />Share
             </DropdownMenuItem>
             <DropdownMenuItem onClick={async () => {
               const file = rawFiles?.find((f: any) => f.id === contextMenu?.fileId)
@@ -943,11 +943,11 @@ export function FileList() {
               try {
                 await apiFetch(`/api/files/${contextMenu?.fileId}/${isArchived ? 'unarchive' : 'archive'}`, { method: 'PATCH' })
                 queryClient.invalidateQueries({ queryKey: ['files'] })
-                toast.success(isArchived ? '已取消归档' : '已归档')
-              } catch { toast.error('操作失败') }
+                toast.success(isArchived ? 'Unarchived' : 'Archived')
+              } catch { toast.error('ActionFailed') }
               setContextMenu(null)
             }}>
-              📦 {rawFiles?.find((f: any) => f.id === contextMenu?.fileId)?.archivedAt ? '取消归档' : '归档'}
+              📦 {rawFiles?.find((f: any) => f.id === contextMenu?.fileId)?.archivedAt ? 'CancelArchive' : 'Archive'}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
               const file = rawFiles?.find((f: any) => f.id === contextMenu?.fileId)
@@ -962,50 +962,50 @@ export function FileList() {
               }
               setContextMenu(null)
             }}>
-              📋 版本历史
+              📋 Version history
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => {
               router.push(`/chat?fileIds=${contextMenu.fileId}`)
               setContextMenu(null)
             }}>
-              <BotMessageSquare className="h-4 w-4 mr-2" />💬 问 AI 关于这个文件
+              <BotMessageSquare className="h-4 w-4 mr-2" />💬 Ask AI about this file
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
               router.push(`/files/${contextMenu.fileId}/preview`)
               setContextMenu(null)
             }}>
-              <Link2 className="h-4 w-4 mr-2" />🔗 查看知识关联
+              <Link2 className="h-4 w-4 mr-2" />🔗 ViewKnowledge connections
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )}
       {selected.size > 0 && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-background border shadow-lg px-4 py-3 z-50">
-          <span className="text-sm font-medium">已选 {selected.size} 个文件</span>
-          <Button variant="destructive" size="sm" onClick={handleBatchDelete}>删除</Button>
-          <Button variant="outline" size="sm" onClick={handleBatchArchive}>归档</Button>
-          <Button variant="outline" size="sm" onClick={() => setBatchMoveOpen(true)}>移动</Button>
-          <Button variant="outline" size="sm" onClick={handleBatchDownload}>下载</Button>
+          <span className="text-sm font-medium">{selected.size} files selected</span>
+          <Button variant="destructive" size="sm" onClick={handleBatchDelete}>Delete</Button>
+          <Button variant="outline" size="sm" onClick={handleBatchArchive}>Archive</Button>
+          <Button variant="outline" size="sm" onClick={() => setBatchMoveOpen(true)}>Move</Button>
+          <Button variant="outline" size="sm" onClick={handleBatchDownload}>Download</Button>
           <Button variant="outline" size="sm" onClick={() => {
             if (selected.size > 0) {
               setTagManagerFileIds(Array.from(selected))
               setTagManagerFileId("__batch__")
             }
-          }}>标签</Button>
+          }}>Tags</Button>
           <Button variant="outline" size="sm" onClick={() => {
               const ids = Array.from(selected).join(",")
               router.push(`/chat?fileIds=${ids}`)
             }}>
-            💬 问 AI
+            💬 Ask AI
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>取消</Button>
+          <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>Cancel</Button>
         </div>
       )}
       <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
       {filteredFiles.length < 5 && filteredFiles.length > 0 && (
         <div className="border-t border-border/50 px-6 py-6">
-          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">快速上手</h4>
+          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Quick start</h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <button
               onClick={() => setShowUpload(true)}
@@ -1014,8 +1014,8 @@ export function FileList() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#4F5BD5]/10">
                 <Upload className="h-4.5 w-4.5 text-[#4F5BD5]" />
               </div>
-              <span className="text-xs font-medium">上传更多文件</span>
-              <span className="text-[11px] text-muted-foreground leading-tight">PDF、Word、笔记等</span>
+              <span className="text-xs font-medium">UploadMore files</span>
+              <span className="text-[11px] text-muted-foreground leading-tight">PDF、Word、notes, etc.</span>
             </button>
             <Link
               href="/chat?new=1"
@@ -1024,8 +1024,8 @@ export function FileList() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-500/10">
                 <MessageSquare className="h-4.5 w-4.5 text-green-500" />
               </div>
-              <span className="text-xs font-medium">试试 AI 对话</span>
-              <span className="text-[11px] text-muted-foreground leading-tight">基于你的知识库提问</span>
+              <span className="text-xs font-medium">Try AI chat</span>
+              <span className="text-[11px] text-muted-foreground leading-tight">Ask questions based on your knowledge library</span>
             </Link>
             <Link
               href="/chat"
@@ -1034,8 +1034,8 @@ export function FileList() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-500/10">
                 <Lightbulb className="h-4.5 w-4.5 text-green-500" />
               </div>
-              <span className="text-xs font-medium">知识洞察</span>
-              <span className="text-[11px] text-muted-foreground leading-tight">浏览 AI 发现</span>
+              <span className="text-xs font-medium">Knowledge insights</span>
+              <span className="text-[11px] text-muted-foreground leading-tight">Browse AI discoveries</span>
             </Link>
             <Link
               href="/developers"
@@ -1044,8 +1044,8 @@ export function FileList() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/10">
                 <FileText className="h-4.5 w-4.5 text-purple-500" />
               </div>
-              <span className="text-xs font-medium">查看开发者文档</span>
-              <span className="text-[11px] text-muted-foreground leading-tight">API 集成与自动化</span>
+              <span className="text-xs font-medium">ViewDeveloperDocument</span>
+              <span className="text-[11px] text-muted-foreground leading-tight">API Integrations & Automation</span>
             </Link>
           </div>
         </div>
@@ -1053,12 +1053,12 @@ export function FileList() {
       <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>新建文件夹</DialogTitle>
+            <DialogTitle>New folder</DialogTitle>
           </DialogHeader>
-          <Input placeholder="文件夹名称" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newFolderName.trim()) { createFolder.mutate({ name: newFolderName.trim(), parentId: currentFolderId }); setFolderDialogOpen(false) } }} autoFocus />
+          <Input placeholder="Files name" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newFolderName.trim()) { createFolder.mutate({ name: newFolderName.trim(), parentId: currentFolderId }); setFolderDialogOpen(false) } }} autoFocus />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>取消</Button>
-            <Button onClick={() => { if (newFolderName.trim()) { createFolder.mutate({ name: newFolderName.trim(), parentId: currentFolderId }); setFolderDialogOpen(false) } }} disabled={!newFolderName.trim()}>创建</Button>
+            <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => { if (newFolderName.trim()) { createFolder.mutate({ name: newFolderName.trim(), parentId: currentFolderId }); setFolderDialogOpen(false) } }} disabled={!newFolderName.trim()}>Create</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1066,11 +1066,11 @@ export function FileList() {
       {/* Rename Dialog */}
       <Dialog open={!!renameTarget} onOpenChange={(open) => { if (!open) setRenameTarget(null) }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>重命名文件</DialogTitle></DialogHeader>
-          <Input value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && renameValue.trim() && renameTarget) { renameFile.mutate({ fileId: renameTarget.fileId, name: renameValue.trim() }); setRenameTarget(null) } }} placeholder="输入新名称" autoFocus />
+          <DialogHeader><DialogTitle>RenameFiles</DialogTitle></DialogHeader>
+          <Input value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && renameValue.trim() && renameTarget) { renameFile.mutate({ fileId: renameTarget.fileId, name: renameValue.trim() }); setRenameTarget(null) } }} placeholder="Enter new name" autoFocus />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRenameTarget(null)}>取消</Button>
-            <Button disabled={!renameValue.trim() || renameValue.trim() === renameTarget?.currentName} onClick={() => { if (renameTarget) { renameFile.mutate({ fileId: renameTarget.fileId, name: renameValue.trim() }); setRenameTarget(null) } }}>确认</Button>
+            <Button variant="outline" onClick={() => setRenameTarget(null)}>Cancel</Button>
+            <Button disabled={!renameValue.trim() || renameValue.trim() === renameTarget?.currentName} onClick={() => { if (renameTarget) { renameFile.mutate({ fileId: renameTarget.fileId, name: renameValue.trim() }); setRenameTarget(null) } }}>Confirm</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1078,11 +1078,11 @@ export function FileList() {
       {/* Delete Confirm Dialog */}
       <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>确认删除</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">确定要删除此文件吗？此操作不可撤销。</p>
+          <DialogHeader><DialogTitle>ConfirmDelete</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">OKDelete this file? This action cannot be undone.</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>取消</Button>
-            <Button variant="destructive" onClick={() => { if (deleteTarget) { deleteFile.mutate(deleteTarget); setDeleteTarget(null) } }}>删除</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => { if (deleteTarget) { deleteFile.mutate(deleteTarget); setDeleteTarget(null) } }}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1090,10 +1090,10 @@ export function FileList() {
       {/* Batch Move Dialog */}
       <Dialog open={batchMoveOpen} onOpenChange={(open) => { if (!open) setBatchMoveOpen(false) }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>批量移动到文件夹</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Move to folder in bulk</DialogTitle></DialogHeader>
           <div className="space-y-2 max-h-60 overflow-y-auto">
             <button onClick={() => setMoveFolderId("")} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent", moveFolderId === "" && "bg-accent font-medium")}>
-              <FileText className="h-4 w-4" /> 根目录
+              <FileText className="h-4 w-4" /> Root
             </button>
             {allFolders.map((f: any) => (
               <button key={f.id} onClick={() => setMoveFolderId(f.id)} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent", moveFolderId === f.id && "bg-accent font-medium")}>
@@ -1102,8 +1102,8 @@ export function FileList() {
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBatchMoveOpen(false)}>取消</Button>
-            <Button onClick={() => handleBatchMove(moveFolderId || null)}>移动</Button>
+            <Button variant="outline" onClick={() => setBatchMoveOpen(false)}>Cancel</Button>
+            <Button onClick={() => handleBatchMove(moveFolderId || null)}>Move</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1111,15 +1111,15 @@ export function FileList() {
       {/* Share Dialog */}
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>分享链接</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>ShareLink</DialogTitle></DialogHeader>
           {shareLoading ? (
             <div className="flex items-center justify-center py-4"><Loader2 className="h-5 w-5 animate-spin" /></div>
           ) : (
             <div className="space-y-4">
               <Input value={shareUrl} readOnly onClick={(e) => (e.target as HTMLInputElement).select()} />
               <DialogFooter>
-                <Button variant="outline" onClick={() => setShareDialogOpen(false)}>关闭</Button>
-                <Button onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success("已复制") }}>复制</Button>
+                <Button variant="outline" onClick={() => setShareDialogOpen(false)}>Close</Button>
+                <Button onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success("Copied") }}>Copy</Button>
               </DialogFooter>
             </div>
           )}
@@ -1137,7 +1137,7 @@ export function FileList() {
         return (
           <div className="fixed inset-y-0 right-0 z-50 w-[400px] border-l bg-background shadow-xl">
             <div className="flex items-center justify-between border-b px-4 py-3">
-              <h3 className="text-sm font-semibold">文件详情</h3>
+              <h3 className="text-sm font-semibold">FilesDetails</h3>
               <button onClick={() => closeDrawer()} className="h-8 w-8 rounded-md hover:bg-accent flex items-center justify-center">
                 <X className="h-4 w-4" />
               </button>
@@ -1149,36 +1149,36 @@ export function FileList() {
               <h2 className="text-lg font-semibold text-center truncate" title={drawerFile.name}>{drawerFile.name}</h2>
               {drawerFile.summary && (
                 <div className="rounded-lg border p-3">
-                  <p className="text-xs font-medium text-muted-foreground mb-1">🧠 AI 摘要</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">🧠 AI Summary</p>
                   <p className="text-sm">{drawerFile.summary}</p>
                 </div>
               )}
               {/* Tags management */}
               <DrawerTagSection fileId={drawerFile.id} drawerTags={drawerTags} setDrawerTags={setDrawerTags} />
               <div className="rounded-lg border p-3 space-y-2">
-                <p className="text-xs font-medium text-muted-foreground mb-1">📋 文件信息</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">📋 FilesInfo</p>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">大小</span>
+                  <span className="text-muted-foreground">Size</span>
                   <span>{fmtSize(drawerFile.size)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">类型</span>
+                  <span className="text-muted-foreground">Type</span>
                   <span>{formatFileType(drawerFile.mimeType, drawerFile.name)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">上传时间</span>
+                  <span className="text-muted-foreground">UploadTime</span>
                   <span>{new Date(drawerFile.createdAt).toLocaleDateString("zh-CN")}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">状态</span>
-                  <span>{drawerFile.status === "indexed" ? "✅ 已索引" : drawerFile.status}</span>
+                  <span className="text-muted-foreground">Status</span>
+                  <span>{drawerFile.status === "indexed" ? "✅ Indexed" : drawerFile.status}</span>
                 </div>
               </div>
               <Link
                 href={`/chat?fileIds=${drawerFile.id}`}
                 className="flex items-center justify-center gap-2 w-full rounded-lg bg-[#4F5BD5] hover:bg-[#3D49C4] text-white py-2.5 text-sm transition"
               >
-                💬 问 AI 关于这个文件
+                💬 Ask AI about this file
               </Link>
               {/* Inline Preview */}
               <DrawerInlinePreview fileId={drawerFile.id} fileName={drawerFile.name} mimeType={drawerFile.mimeType} />
@@ -1186,7 +1186,7 @@ export function FileList() {
                 href={`/files/${drawerFile.id}/preview`}
                 className="flex items-center justify-center gap-2 w-full rounded-lg border hover:bg-accent py-2.5 text-sm transition"
               >
-                👁️ 查看完整预览
+                👁️ ViewFull preview
               </Link>
             </div>
           </div>
@@ -1196,10 +1196,10 @@ export function FileList() {
       {/* Move Dialog */}
       <Dialog open={!!moveTarget} onOpenChange={(open) => { if (!open) setMoveTarget(null) }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>移动到文件夹</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Moveto folder</DialogTitle></DialogHeader>
           <div className="space-y-2 max-h-60 overflow-y-auto">
             <button onClick={() => setMoveFolderId("")} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent", moveFolderId === "" && "bg-accent font-medium")}>
-              <FileText className="h-4 w-4" /> 根目录
+              <FileText className="h-4 w-4" /> Root
             </button>
             {allFolders.map((f: any) => (
               <button key={f.id} onClick={() => setMoveFolderId(f.id)} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent", moveFolderId === f.id && "bg-accent font-medium")}>
@@ -1208,8 +1208,8 @@ export function FileList() {
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setMoveTarget(null)}>取消</Button>
-            <Button onClick={() => { if (moveTarget) { moveFile.mutate({ fileId: moveTarget, folderId: moveFolderId || null }); setMoveTarget(null) } }}>移动</Button>
+            <Button variant="outline" onClick={() => setMoveTarget(null)}>Cancel</Button>
+            <Button onClick={() => { if (moveTarget) { moveFile.mutate({ fileId: moveTarget, folderId: moveFolderId || null }); setMoveTarget(null) } }}>Move</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1217,9 +1217,9 @@ export function FileList() {
       {/* Version History Dialog */}
       <Dialog open={!!versionFileId} onOpenChange={() => setVersionFileId(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>📋 版本历史</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>📋 Version history</DialogTitle></DialogHeader>
           {versions.length <= 1 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">没有其他版本</p>
+            <p className="text-sm text-muted-foreground text-center py-4">No other versions</p>
           ) : (
             <div className="space-y-2 max-h-60 overflow-auto">
               {versions.map((v: any) => (
@@ -1228,7 +1228,7 @@ export function FileList() {
                     <p className="text-sm font-medium truncate">{v.name}</p>
                     <p className="text-xs text-muted-foreground">{new Date(v.createdAt).toLocaleString("zh-CN")} · {fmtSize(v.size)}</p>
                   </div>
-                  <Link href={`/files/${v.id}/preview`} className="text-xs text-[#4F5BD5] hover:underline shrink-0 ml-2">预览</Link>
+                  <Link href={`/files/${v.id}/preview`} className="text-xs text-[#4F5BD5] hover:underline shrink-0 ml-2">Preview</Link>
                 </div>
               ))}
             </div>

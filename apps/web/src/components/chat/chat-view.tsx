@@ -36,16 +36,16 @@ const isDev = typeof window !== "undefined" && window.location.hostname === "loc
 const API_BASE = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : PRODUCTION_API
 
 const DEFAULT_SUGGESTIONS = [
-  "📄 总结我最近上传的文件",
-  "🔍 这些文件之间有什么关联？",
-  "💡 从我的文件中提取关键信息",
-  "📊 帮我分析文件内容",
+  "📄 Summarize my recently uploaded files",
+  "🔍 What are the connections between these files?",
+  "💡 Extract key information from my files",
+  "📊 Help me analyze the file content",
 ]
 
 const FEATURE_CARDS = [
-  { icon: "📄", title: "文件问答", desc: "基于你的文件内容回答问题" },
-  { icon: "🔗", title: "关联发现", desc: "自动发现文件之间的联系" },
-  { icon: "📝", title: "内容总结", desc: "快速提取文件的关键信息" },
+  { icon: "📄", title: "FilesQ&A", desc: "Answer questions based on your file content" },
+  { icon: "🔗", title: "Correlation found", desc: "Automatically discover connections between files" },
+  { icon: "📝", title: "ContentSummary", desc: "Quickly extract key information from files" },
 ]
 
 function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (msg: string) => void }) {
@@ -68,17 +68,17 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#4F5BD5]/20 to-[#4F5BD5]/5">
           <MessageSquare className="h-7 w-7 text-[#4F5BD5]" />
         </div>
-        <h2 className="text-xl font-semibold text-foreground">你的 AI Drive 助手</h2>
+        <h2 className="text-xl font-semibold text-foreground">Your AI Drive assistant</h2>
         <p className="text-sm text-muted-foreground text-center max-w-md">
           {indexedCount > 0
-            ? `已记住 ${indexedCount} 个文件，随时为你解答、发现关联`
-            : "上传文件到你的知识库，我来帮你记忆、分析和关联"}
+            ? `Remembered ${indexedCount} files. Ready to answer questions and discover connections`
+            : "Upload filesto your knowledge library. I'll help you memorize, analyze, and connect"}
         </p>
       </div>
 
       {/* Suggestion chips */}
       <div className="w-full max-w-lg mb-6">
-        <p className="text-xs font-medium text-muted-foreground mb-2 text-center">试试这样问：</p>
+        <p className="text-xs font-medium text-muted-foreground mb-2 text-center">Try asking: </p>
         <div className="flex flex-wrap justify-center gap-2">
           {chips.map((q, i) => (
             <button key={i} onClick={() => onSend(q)}
@@ -113,7 +113,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   // Compare mode: force scope to "all" and extract file names from query
   const compareFileNames = compareMode && presetQuestion
     ? (() => {
-        const match = presetQuestion.match(/对比「(.+?)」和「(.+?)」/)
+        const match = presetQuestion.match(/Compare "(.+?)" and "(.+?)"/)
         return match ? { a: match[1], b: match[2] } : null
       })()
     : null
@@ -210,7 +210,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       })
 
       if (res.status === 429) {
-        setError("今天的对话次数已用完，明天再来")
+        setError("Today's chat quota used up. Come back tomorrow")
         setStreaming(undefined)
         setSending(false)
         return
@@ -218,7 +218,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error?.message || "发送失败")
+        throw new Error(err.error?.message || "SendFailed")
       }
 
       // Parse SSE stream
@@ -258,7 +258,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
               } else if (data.messageId) {
                 assistantCitations = data.citations || []
               } else if (data.code) {
-                setError(data.message || "生成失败")
+                setError(data.message || "Generation failed")
               }
             } catch {}
             currentEvent = ""
@@ -279,7 +279,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       // Refresh conversation list (title may have been auto-generated)
       queryClient.invalidateQueries({ queryKey: ["conversations"] })
     } catch (err: any) {
-      setError(err.message || "网络错误")
+      setError(err.message || "Network error")
       setStreaming(undefined)
       setSending(false)
     }
@@ -300,8 +300,8 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#4F5BD5]/20 to-[#4F5BD5]/5">
           <MessageSquare className="h-8 w-8 text-[#4F5BD5]" />
         </div>
-        <p className="text-lg font-medium text-foreground">你还没有让 AI 记住任何文件</p>
-        <Button asChild className="bg-[#4F5BD5] hover:bg-[#4F5BD5]/90 text-white rounded-xl px-6"><Link href="/dashboard">去上传文件</Link></Button>
+        <p className="text-lg font-medium text-foreground">You haven't let AI remember any files yet</p>
+        <Button asChild className="bg-[#4F5BD5] hover:bg-[#4F5BD5]/90 text-white rounded-xl px-6"><Link href="/dashboard">Upload files</Link></Button>
       </div>
     )
   }
@@ -329,10 +329,10 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
               body: formData,
             })
           }
-          toast.success(`${files.length} 个文件上传成功，AI 正在理解...`)
+          toast.success(`${files.length} files uploaded successfully. AI is processing...`)
           queryClient.invalidateQueries({ queryKey: ["files"] })
         } catch {
-          toast.error("上传失败")
+          toast.error("UploadFailed")
         } finally {
           setUploading(false)
         }
@@ -342,33 +342,33 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#4F5BD5]/10 border-2 border-dashed border-[#4F5BD5] rounded-xl">
           <div className="text-center">
             <Upload className="h-10 w-10 text-[#4F5BD5] mx-auto mb-2" />
-            <p className="text-sm font-medium text-[#4F5BD5]">拖拽文件到这里上传</p>
-            <p className="text-xs text-muted-foreground mt-1">上传后 AI 将自动理解文件内容</p>
+            <p className="text-sm font-medium text-[#4F5BD5]">Drag files here to upload</p>
+            <p className="text-xs text-muted-foreground mt-1">Uploadand AI will automatically understand the file content</p>
           </div>
         </div>
       )}
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-        <span className="text-xs text-muted-foreground">AI 记忆范围：</span>
-        <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined); toast("记忆范围：全部文件", { duration: 1500 }) }} className="gap-1 text-xs">
-          <Files className="h-3 w-3" />全部文件{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}
+        <span className="text-xs text-muted-foreground">AI Memory scope: </span>
+        <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined); toast("Memory scope: All files", { duration: 1500 }) }} className="gap-1 text-xs">
+          <Files className="h-3 w-3" />AllFiles{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}
         </Button>
         {scope !== "all" && scopeLabel && (
           <span className="rounded-full bg-[#4F5BD5]/10 px-2 py-0.5 text-[10px] text-[#4F5BD5] font-medium">
-            当前：{scopeLabel}
+            Current: {scopeLabel}
           </span>
         )}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant={scope === "folder" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs">
-              <Folder className="h-3 w-3" />{scope === "folder" && scopeLabel ? scopeLabel : "指定文件夹"}{scope === "folder" && scopeId && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
+              <Folder className="h-3 w-3" />{scope === "folder" && scopeLabel ? scopeLabel : "Specified folder"}{scope === "folder" && scopeId && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
             {foldersList.length === 0 ? (
-              <DropdownMenuItem disabled>暂无文件夹</DropdownMenuItem>
+              <DropdownMenuItem disabled>NoneFiles</DropdownMenuItem>
             ) : foldersList.map((f: any) => (
-              <DropdownMenuItem key={f.id} onClick={() => { setScope("folder"); setScopeId(f.id); setScopeLabel(f.name); toast(`记忆范围：${f.name}`, { duration: 1500 }) }}>
+              <DropdownMenuItem key={f.id} onClick={() => { setScope("folder"); setScopeId(f.id); setScopeLabel(f.name); toast(`Memory scope: ${f.name}`, { duration: 1500 }) }}>
                 <Folder className="h-3 w-3 mr-2" />{f.name}
               </DropdownMenuItem>
             ))}
@@ -378,14 +378,14 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant={scope === "file" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs">
-              <FileText className="h-3 w-3" />{scope === "file" && scopeLabel ? scopeLabel : "指定文件"}{scope === "file" && scopeId && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
+              <FileText className="h-3 w-3" />{scope === "file" && scopeLabel ? scopeLabel : "Specified files"}{scope === "file" && scopeId && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
             {indexedFiles.length === 0 ? (
-              <DropdownMenuItem disabled>暂无已索引文件</DropdownMenuItem>
+              <DropdownMenuItem disabled>NoneIndexed files</DropdownMenuItem>
             ) : indexedFiles.map((f: any) => (
-              <DropdownMenuItem key={f.id} onClick={() => { setScope("file"); setScopeId(f.id); setScopeLabel(f.name); toast(`记忆范围：${f.name}`, { duration: 1500 }) }}>
+              <DropdownMenuItem key={f.id} onClick={() => { setScope("file"); setScopeId(f.id); setScopeLabel(f.name); toast(`Memory scope: ${f.name}`, { duration: 1500 }) }}>
                 <FileText className="h-3 w-3 mr-2" />{f.name}
               </DropdownMenuItem>
             ))}
@@ -399,19 +399,19 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
             className="ml-auto gap-1 text-xs"
             onClick={() => {
               const md = messages.map(m => {
-                const role = m.role === "user" ? "## 👤 用户" : "## 🤖 AI"
+                const role = m.role === "user" ? "## 👤 User" : "## 🤖 AI"
                 return `${role}\n\n${m.content}\n`
               }).join("\n---\n\n")
               const blob = new Blob([md], { type: "text/markdown" })
               const url = URL.createObjectURL(blob)
               const a = document.createElement("a")
               a.href = url
-              a.download = `对话-${new Date().toISOString().slice(0, 10)}.md`
+              a.download = `Conversation-${new Date().toISOString().slice(0, 10)}.md`
               a.click()
               URL.revokeObjectURL(url)
             }}
           >
-            <Download className="h-3 w-3" />导出
+            <Download className="h-3 w-3" />Export
           </Button>
         )}
       </div>
@@ -419,7 +419,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       {compareMode && compareFileNames && (
         <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 border-b border-purple-500/20 text-sm">
           <Link2 className="h-4 w-4 text-purple-400" />
-          <span className="font-medium">对比分析</span>
+          <span className="font-medium">Compare analysis</span>
           <span className="text-muted-foreground">· {compareFileNames.a} vs {compareFileNames.b}</span>
         </div>
       )}
@@ -451,7 +451,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       )}
       {uploading && (
         <div className="text-center text-xs text-muted-foreground py-1">
-          <Loader2 className="h-3 w-3 animate-spin inline mr-1" /> 正在上传...
+          <Loader2 className="h-3 w-3 animate-spin inline mr-1" /> Uploading...
         </div>
       )}
       <ChatInput onSend={handleSend} disabled={sending} fileCount={filesList.length} hasConversations={messages.length > 0} />

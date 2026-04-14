@@ -10,17 +10,17 @@ let lastQueryErrorToastAt = 0
 
 function handleGlobalError(error: unknown) {
   const type = classifyError(error)
-  // 只对网络类错误弹 toast（api.ts 已对 fetch 层弹过，这里为 react-query 兜底）
+  // Only show toast for network errors（api.ts fetch layer already handles it; this is react-query fallback）
   if (type === "unknown") return
   const now = Date.now()
   if (now - lastQueryErrorToastAt < 3000) return
   lastQueryErrorToastAt = now
   const messages: Record<string, string> = {
-    offline: "网络连接失败，请检查网络后重试",
-    server: "服务暂时不可用，请稍后重试",
-    timeout: "请求超时，请检查网络后重试",
+    offline: "Network connection failed. Please check your network and try again",
+    server: "Service temporarily unavailable, please try again later",
+    timeout: "Request timed out. Please check your network and try again",
   }
-  toast.error(messages[type] || "请求失败，请重试")
+  toast.error(messages[type] || "Request failed, please try again")
 }
 
 function makeQueryClient() {

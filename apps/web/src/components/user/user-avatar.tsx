@@ -14,7 +14,7 @@ export function UserAvatar({ name, avatarUrl, size = 32, className = "" }: UserA
     return (
       <img
         src={avatarUrl}
-        alt={name || "用户头像"}
+        alt={name || "User avatar"}
         width={size}
         height={size}
         className={`rounded-full object-cover ${className}`}

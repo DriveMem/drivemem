@@ -12,8 +12,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 const loginSchema = z.object({
-  email: z.string().email("请输入有效的邮箱地址"),
-  password: z.string().min(1, "请输入密码"),
+  email: z.string().email("Please enterValid email address"),
+  password: z.string().min(1, "Please enterPassword"),
 })
 
 type LoginForm = z.infer<typeof loginSchema>
@@ -50,13 +50,13 @@ function LoginForm() {
         redirect: false,
       })
       if (result?.error) {
-        setError("邮箱或密码错误")
+        setError("EmailorPasswordError")
       } else {
         router.push(returnUrl)
         router.refresh()
       }
     } catch {
-      setError("登录失败，请稍后重试")
+      setError("Sign inFailed，Please try again later")
     } finally {
       setLoading(false)
     }
@@ -67,13 +67,13 @@ function LoginForm() {
       {/* Mobile-only header */}
       <div className="lg:hidden text-center mb-8">
         <h1 className="text-3xl font-bold">AI Drive</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Agent 的记忆层</p>
+        <p className="mt-2 text-sm text-muted-foreground">Agent 's memory layer</p>
       </div>
 
-      <h2 className="mb-6 text-2xl font-semibold">登录</h2>
+      <h2 className="mb-6 text-2xl font-semibold">Sign in</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email">邮箱</Label>
+          <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
@@ -88,12 +88,12 @@ function LoginForm() {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">密码</Label>
+            <Label htmlFor="password">Password</Label>
             <Link
               href="/forgot-password"
               className="text-sm text-muted-foreground hover:text-primary"
             >
-              忘记密码？
+              Forgot password？
             </Link>
           </div>
           <Input
@@ -110,7 +110,7 @@ function LoginForm() {
 
         <div className="flex items-center gap-2">
           <input type="checkbox" id="rememberMe" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="rounded border-border/50" />
-          <label htmlFor="rememberMe" className="text-sm text-muted-foreground cursor-pointer">记住我（30 天免登录）</label>
+          <label htmlFor="rememberMe" className="text-sm text-muted-foreground cursor-pointer">Remember me (30 days)</label>
         </div>
 
         {error && (
@@ -122,14 +122,14 @@ function LoginForm() {
           className="bg-[#4F5BD5] hover:bg-[#3D49C4] rounded-xl h-12 w-full text-white font-medium"
           disabled={loading}
         >
-          {loading ? "登录中..." : "登录"}
+          {loading ? "Sign in..." : "Sign in"}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        没有账号？{" "}
+        Don't have an account？{" "}
         <Link href="/signup" className="text-primary hover:underline">
-          注册
+          Sign up
         </Link>
       </p>
 
@@ -143,7 +143,7 @@ function LoginForm() {
           }}
           className="text-sm text-muted-foreground hover:text-foreground transition underline"
         >
-          使用 Demo 账号登录 →
+          Sign in with Demo account →
         </button>
       </div>
     </div>

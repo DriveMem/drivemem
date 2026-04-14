@@ -29,15 +29,15 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 p-8 text-center">
-          <h2 className="text-lg font-semibold">出了点问题</h2>
+          <h2 className="text-lg font-semibold">Something went wrong</h2>
           <p className="text-sm text-muted-foreground">
-            {this.state.error?.message || "未知错误"}
+            {this.state.error?.message || "UnknownError"}
           </p>
           <Button
             variant="outline"
             onClick={() => this.setState({ hasError: false, error: undefined })}
           >
-            重试
+            Retry
           </Button>
         </div>
       )

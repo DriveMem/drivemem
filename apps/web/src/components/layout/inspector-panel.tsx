@@ -10,7 +10,7 @@ export function InspectorPanel() {
   return (
     <div className="flex h-full w-[360px] flex-col">
       <div className="flex h-14 items-center justify-between border-b border-border px-4">
-        <span className="text-sm font-medium">文件详情</span>
+        <span className="text-sm font-medium">FilesDetails</span>
         <Button variant="ghost" size="icon" onClick={closeInspector} className="h-8 w-8">
           <X className="h-4 w-4" />
         </Button>
@@ -19,7 +19,7 @@ export function InspectorPanel() {
         {selectedFileId ? (
           <FileInspector fileId={selectedFileId} />
         ) : (
-          <div className="flex items-center justify-center h-full text-sm text-muted-foreground">选择一个文件查看详情</div>
+          <div className="flex items-center justify-center h-full text-sm text-muted-foreground">Select a file to view details</div>
         )}
       </div>
     </div>

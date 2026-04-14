@@ -1,9 +1,9 @@
 import Link from "next/link"
 
 export const metadata = {
-  title: "使用条款 - AI Drive",
-  description: "AI Drive 使用条款和服务协议",
-  openGraph: { title: "使用条款 - AI Drive", description: "AI Drive 使用条款和服务协议" },
+  title: "Terms of Use - AI Drive",
+  description: "AI Drive Terms of use and service agreement",
+  openGraph: { title: "Terms of Use - AI Drive", description: "AI Drive Terms of use and service agreement" },
 }
 
 export default function TermsPage() {
@@ -11,41 +11,41 @@ export default function TermsPage() {
     <div className="min-h-screen">
       <nav className="flex items-center justify-between border-b px-6 py-4">
         <Link href="/" className="text-lg font-bold">AI Drive</Link>
-        <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← 返回首页</Link>
+        <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← Back to home</Link>
       </nav>
       <div className="mx-auto max-w-3xl px-6 py-16">
-      <h1 className="text-3xl font-bold">使用条款</h1>
-      <p className="mt-4 text-muted-foreground">最后更新：2026 年 4 月 · AI Drive</p>
+      <h1 className="text-3xl font-bold">Terms of Use</h1>
+      <p className="mt-4 text-muted-foreground">Last updated: April 2026 · AI Drive</p>
 
       <div className="mt-8 space-y-8 text-sm leading-relaxed text-muted-foreground">
         <section>
-          <h2 className="text-lg font-semibold text-foreground">服务范围</h2>
-          <p>AI Drive 是一个基于人工智能的个人知识管理平台。你可以上传文档，AI 自动解析、理解并建立知识索引，随时通过对话获取文件内容的分析和回答。</p>
+          <h2 className="text-lg font-semibold text-foreground">Service scope</h2>
+          <p>AI Drive is an AI-powered personal knowledge management platform. You can upload documents, and AI automatically parses, understands, and builds a knowledge index, allowing you to get analysis and answers about your file content through conversations at any time.</p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-foreground">免费计划限制</h2>
+          <h2 className="text-lg font-semibold text-foreground">Free plan limits</h2>
           <ul className="list-disc pl-5 space-y-1">
-            <li>存储空间：5 GB</li>
-            <li>每日 AI 对话：50 次</li>
-            <li>支持文件格式：PDF、Word、PPT、Excel、Markdown、TXT</li>
-            <li>单文件大小限制：50 MB</li>
+            <li>Storage: 5 GB</li>
+            <li>Daily AI chats: 50</li>
+            <li>Supported formats: PDF, Word, PPT, Excel, Markdown, TXT</li>
+            <li>Single file size limit: 50 MB</li>
           </ul>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-foreground">用户责任</h2>
-          <p>你对上传的文件内容负责。请勿上传违法、侵权或不当内容。AI Drive 有权在发现违规内容时暂停或终止你的账号。</p>
+          <h2 className="text-lg font-semibold text-foreground">User responsibility</h2>
+          <p>You are responsible for the content you upload. Do not upload illegal, infringing, or inappropriate content. AI Drive reserves the right to suspend or terminate your account upon discovering violations.</p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-foreground">AI 回答免责</h2>
-          <p>AI 的回答基于你上传的文档内容生成，可能存在不准确或遗漏。AI Drive 不对 AI 回答的准确性做任何保证。重要决策请以原始文档为准。</p>
+          <h2 className="text-lg font-semibold text-foreground">AI Answer disclaimer</h2>
+          <p>AI 's answers are generated based on the content of your uploaded documents and may contain inaccuracies or omissions. AI Drive makes no guarantees about the accuracy of AI responses. Please refer to original documents for important decisions.</p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-foreground">服务变更</h2>
-          <p>AI Drive 保留随时修改服务功能、定价和使用条款的权利。重大变更会提前通知注册用户。</p>
+          <h2 className="text-lg font-semibold text-foreground">Service changes</h2>
+          <p>AI Drive reserves the right to modify service features, pricing, and terms of use at any time. Significant changes will be communicated to registered users in advance.</p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-foreground">联系方式</h2>
-          <p>如有任何问题，请联系 support@ai-drive.net。</p>
+          <h2 className="text-lg font-semibold text-foreground">Contact</h2>
+          <p>If you have any questions, please contact support@ai-drive.net.</p>
         </section>
       </div>
       </div>

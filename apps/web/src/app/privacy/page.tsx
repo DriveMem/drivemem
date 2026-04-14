@@ -1,9 +1,9 @@
 import Link from "next/link"
 
 export const metadata = {
-  title: "隐私政策 - AI Drive",
-  description: "AI Drive 隐私政策和数据保护说明",
-  openGraph: { title: "隐私政策 - AI Drive", description: "AI Drive 隐私政策和数据保护说明" },
+  title: "Privacy Policy - AI Drive",
+  description: "AI Drive Privacy policy and data protection",
+  openGraph: { title: "Privacy Policy - AI Drive", description: "AI Drive Privacy policy and data protection" },
 }
 
 export default function PrivacyPage() {
@@ -11,40 +11,40 @@ export default function PrivacyPage() {
     <div className="min-h-screen">
       <nav className="flex items-center justify-between border-b px-6 py-4">
         <Link href="/" className="text-lg font-bold">AI Drive</Link>
-        <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← 返回首页</Link>
+        <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← Back to home</Link>
       </nav>
       <div className="mx-auto max-w-3xl px-6 py-16">
-      <h1 className="text-3xl font-bold">数据隐私政策</h1>
-      <p className="mt-4 text-muted-foreground">最后更新：2026 年 4 月 · AI Drive</p>
+      <h1 className="text-3xl font-bold">Data Privacy Policy</h1>
+      <p className="mt-4 text-muted-foreground">Last updated: April 2026 · AI Drive</p>
 
       <div className="mt-8 space-y-8 text-sm leading-relaxed text-muted-foreground">
         <section>
-          <h2 className="text-lg font-semibold text-foreground">数据存储</h2>
-          <p>你上传的文件存储在MinIO 对象存储服务器上，位于中国境内。文件元数据和对话记录存储在 PostgreSQL 数据库中。向量索引存储在 Qdrant 向量数据库中。</p>
+          <h2 className="text-lg font-semibold text-foreground">Data storage</h2>
+          <p>Your uploaded files are stored on a MinIO object storage server located in China. File metadata and conversation records are stored in PostgreSQL. Vector indexes are stored in Qdrant.</p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-foreground">数据隔离</h2>
-          <p>每个用户的文件、对话和 AI 分析数据完全隔离。你的数据只有你能访问，其他用户无法看到或搜索你的文件内容。</p>
+          <h2 className="text-lg font-semibold text-foreground">Data isolation</h2>
+          <p>Each user's files, conversations, and AI analysis data are completely isolated. Only you can access your data; other users cannot see or search your file content.</p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-foreground">AI 如何使用你的数据</h2>
-          <p>当你上传文件时，AI 会自动解析文件内容、生成摘要、建立向量索引用于语义搜索和对话。这些 AI 处理仅限于你的账户范围内，不会将你的文件内容用于训练 AI 模型或共享给第三方。</p>
+          <h2 className="text-lg font-semibold text-foreground">How AI uses your data</h2>
+          <p>When you upload files, AI automatically parses file content, generates summaries, and builds vector indexes for semantic search and conversations. This AI processing is limited to your account scope and your file content will not be used for training AI models or shared with third parties.</p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-foreground">第三方服务</h2>
-          <p>AI Drive 使用百炼 API（阿里云）进行文本嵌入和 LLM 对话。你的文件内容片段会发送到百炼 API 进行处理，但不会被百炼存储或用于模型训练。</p>
+          <h2 className="text-lg font-semibold text-foreground">Third-party services</h2>
+          <p>AI Drive Uses Bailian API (Alibaba Cloud) for text embeddings and LLM conversations.Your file content fragments are sent to Bailian API for processing but are not stored or used for model training.</p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-foreground">数据导出</h2>
-          <p>你可以随时在设置页面导出所有数据（文件 + 对话历史），格式为 ZIP 压缩包。</p>
+          <h2 className="text-lg font-semibold text-foreground">Data export</h2>
+          <p>You can export all data (files + conversation history) as a ZIP archive at any time in Settings.</p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-foreground">账号删除</h2>
-          <p>你可以随时在设置页面删除账号。删除后，所有文件、对话、AI 分析数据将被永久移除，不可恢复。</p>
+          <h2 className="text-lg font-semibold text-foreground">Delete account</h2>
+          <p>You can delete your account at any time in Settings. After deletion, all files, conversations, and AI analysis data will be permanently removed and cannot be recovered.</p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-foreground">联系我们</h2>
-          <p>如有隐私相关问题，请联系 privacy@ai-drive.net。</p>
+          <h2 className="text-lg font-semibold text-foreground">Contact us</h2>
+          <p>For privacy-related questions, please contact privacy@ai-drive.net.</p>
         </section>
       </div>
       </div>

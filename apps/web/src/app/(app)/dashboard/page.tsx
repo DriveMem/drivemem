@@ -291,12 +291,12 @@ export default function DashboardPage() {
                       <p className="text-xs text-[#4F5BD5] mb-2">🎯 {folder.goal}</p>
                     )}
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>📄 {folder.fileCount ?? 0} 个files</span>
+                      <span>📄 {folder.fileCount ?? 0}  files</span>
                     </div>
                   </div>
                 ))}
 
-                {/* New project卡片 */}
+                {/* New projectCard */}
                 <div
                   onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }}
                   className="rounded-xl border-2 border-dashed p-4 hover:border-[#4F5BD5]/30 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-[#4F5BD5]"
@@ -306,7 +306,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Unfiled区 */}
+              {/* UnfiledSection */}
               {unfiledCount > 0 && (
                 <div className="mt-6">
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">📄 Unfiled ({unfiledCount})</h3>
@@ -322,12 +322,12 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* New project对话框 */}
+          {/* New project chat box */}
           <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
             <DialogContent>
               <DialogHeader><DialogTitle>New project</DialogTitle></DialogHeader>
               <Input
-                placeholder="项目名称"
+                placeholder="Project name"
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 onKeyDown={(e) => {
@@ -339,7 +339,7 @@ export default function DashboardPage() {
                 autoFocus
               />
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>取消</Button>
+                <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>Cancel</Button>
                 <Button
                   onClick={() => {
                     if (newFolderName.trim()) {
@@ -348,7 +348,7 @@ export default function DashboardPage() {
                     }
                   }}
                   disabled={!newFolderName.trim()}
-                >创建</Button>
+                >Create</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -472,7 +472,7 @@ export default function DashboardPage() {
               <QuickActions onGenerate={handleQuickGenerate} onOrganize={handleAutoOrganize} />
               <MemoryOverview />
 
-              {/* AI 报告区 */}
+              {/* AI ReportSection */}
               <div className="mx-4 mb-4 rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-blue-500/5 p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/10">
@@ -483,12 +483,12 @@ export default function DashboardPage() {
                 <ReportSection ref={reportRef} />
               </div>
 
-              {/* 分隔线 */}
+              {/* Divider */}
               <div className="mx-4 mb-4">
                 <div className="border-t border-border/60" />
               </div>
 
-              {/* AI 洞察区 */}
+              {/* AI InsightsSection */}
               <div className="mx-4 mb-4 rounded-xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 to-emerald-500/5 p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-500/10">
@@ -497,7 +497,7 @@ export default function DashboardPage() {
                   <h3 className="text-sm font-semibold">💡 AI Insights</h3>
                   {insights.filter(i => !i.read).length > 0 && (
                     <span className="rounded-full bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white">
-                      {insights.filter(i => !i.read).length} 条新
+                      {insights.filter(i => !i.read).length}  new
                     </span>
                   )}
                 </div>

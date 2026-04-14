@@ -34,7 +34,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
   if (error || !file) {
     return (
       <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
-        <AlertCircle className="h-4 w-4" /><span>文件未找到</span>
+        <AlertCircle className="h-4 w-4" /><span>FilesNot found</span>
       </div>
     )
   }
@@ -56,7 +56,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
       {/* Tags section */}
       <div className="space-y-1.5">
         <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-          <Tag className="h-3 w-3" /> 标签
+          <Tag className="h-3 w-3" /> Tags
         </p>
         {tags.length > 0 ? (
           <div className="flex flex-wrap gap-1">
@@ -66,7 +66,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
                 onClick={() => setActiveTagFilter(tag.name)}
                 className="rounded-full px-2 py-0.5 text-[10px] font-medium hover:opacity-80 transition cursor-pointer"
                 style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}
-                title={`按「${tag.name}」筛选`}
+                title={`Filter by "${tag.name}"`}
               >
                 {tag.name}
               </button>
@@ -77,7 +77,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
             onClick={() => openDrawer(fileId)}
             className="text-[11px] text-muted-foreground hover:text-foreground transition flex items-center gap-1"
           >
-            + 添加标签
+            + AddTags
           </button>
         )}
       </div>
@@ -88,7 +88,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
         onClick={() => openDrawer(fileId)}
       >
         <Info className="h-3.5 w-3.5" />
-        查看完整详情
+        ViewFull details
       </Button>
     </div>
   )

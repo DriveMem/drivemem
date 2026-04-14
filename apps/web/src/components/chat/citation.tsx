@@ -7,7 +7,7 @@ interface CitationData { index?: number; filename?: string; snippet?: string; fi
 
 export function Citation({ citation, idx }: { citation: CitationData; idx?: number }) {
   const displayIndex = citation.index ?? citation.chunkIndex ?? idx ?? 0
-  const displayName = citation.filename || citation.fileName || "未知文件"
+  const displayName = citation.filename || citation.fileName || "UnknownFiles"
   const displaySnippet = citation.snippet || citation.text || ""
   const fileId = citation.fileId
 

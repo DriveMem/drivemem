@@ -17,13 +17,13 @@ export function FirstUploadGuide({ hasIndexedFile }: { hasIndexedFile: boolean }
 
     localStorage.setItem(STORAGE_KEY, "1")
 
-    toast("AI 已记住你的文件！", {
-      description: "试试问它点什么——比如总结内容、提取要点。",
+    toast("AI Remembered your files!", {
+      description: "Try asking something — like summarizing content or extracting key points.",
       duration: 8000,
       action: {
-        label: "去对话",
+        label: "Go to chat",
         onClick: () => {
-          router.push("/chat?q=" + encodeURIComponent("总结一下这个文件的内容"))
+          router.push("/chat?q=" + encodeURIComponent("Summarize the content of this file"))
         },
       },
     })

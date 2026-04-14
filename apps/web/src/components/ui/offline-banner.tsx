@@ -24,7 +24,7 @@ export function OfflineBanner() {
 
   return (
     <div className="fixed top-0 w-full bg-yellow-500 text-black text-center text-sm py-1 z-[9999]">
-      🔴 网络已断开，部分功能不可用
+      🔴 Network disconnected, some features unavailable
     </div>
   )
 }

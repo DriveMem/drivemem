@@ -11,18 +11,18 @@ interface ErrorStateProps {
 const ERROR_CONFIG = {
   network: {
     icon: "🌐",
-    title: "网络连接失败",
-    description: "请检查网络连接后重试",
+    title: "Network connection failed",
+    description: "Please check your network connection and try again",
   },
   server: {
     icon: "⚠️",
-    title: "服务暂时不可用",
-    description: "请稍后重试",
+    title: "Service temporarily unavailable",
+    description: "Please try again later",
   },
   permission: {
     icon: "🔒",
-    title: "无权限访问",
-    description: "你没有权限访问此内容",
+    title: "No access",
+    description: "You don't have permission to access this content",
   },
 } as const
 
@@ -37,10 +37,10 @@ export function ErrorState({ type, onRetry }: ErrorStateProps) {
       <div className="mt-1">
         {type === "permission" ? (
           <Button asChild variant="outline">
-            <Link href="/">返回首页</Link>
+            <Link href="/">Back to home</Link>
           </Button>
         ) : onRetry ? (
-          <Button onClick={onRetry} variant="outline">重试</Button>
+          <Button onClick={onRetry} variant="outline">Retry</Button>
         ) : null}
       </div>
     </div>

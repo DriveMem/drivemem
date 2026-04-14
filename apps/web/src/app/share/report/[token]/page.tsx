@@ -46,9 +46,9 @@ export default function SharedReportPage() {
   if (error || !data) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
-        <p className="text-lg text-muted-foreground">报告不存在或链接已失效</p>
+        <p className="text-lg text-muted-foreground">Report not found or link has expired</p>
         <Button asChild>
-          <Link href="/">返回首页</Link>
+          <Link href="/">Back to home</Link>
         </Button>
       </div>
     )
@@ -67,13 +67,13 @@ export default function SharedReportPage() {
           AI Drive
         </Link>
         <Button asChild>
-          <Link href="/signup">免费注册</Link>
+          <Link href="/signup">Sign up free</Link>
         </Button>
       </nav>
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <h1 className="text-2xl font-bold">📊 AI 分析报告</h1>
+        <h1 className="text-2xl font-bold">📊 AI Analysis Report</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          基于 {data.fileCount} 个文件 · {formattedDate}
+          Based on {data.fileCount} files · {formattedDate}
         </p>
         <div className="mt-6 rounded-xl border p-6">
           <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -81,10 +81,10 @@ export default function SharedReportPage() {
           </div>
         </div>
         <div className="mt-8 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-600/10 to-pink-600/10 border border-indigo-500/20 p-8 text-center">
-          <h2 className="text-xl font-bold">🚀 免费创建你的 AI 知识库</h2>
-          <p className="mt-2 text-sm text-muted-foreground">上传文件即可开始 — AI 自动生成分析报告</p>
+          <h2 className="text-xl font-bold">🚀 Create your AI knowledge library for free</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Upload filesto get started — AI automatically generates analysis reports</p>
           <Button asChild className="mt-4 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white px-8">
-            <Link href="/signup">免费注册</Link>
+            <Link href="/signup">Sign up free</Link>
           </Button>
         </div>
       </div>

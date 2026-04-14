@@ -24,10 +24,10 @@ function extractTopics(files: any[]): string[] {
   }
 
   const nameMap: Record<string, string> = {
-    "competitive": "竞品分析", "analysis": "", "test": "测试",
-    "report": "报告", "design": "设计", "product": "产品",
-    "tech": "技术", "guide": "指南", "spec": "规格",
-    "resume": "简历", "cv": "简历", "deepseek": "DeepSeek",
+    "competitive": "Competitive analysis", "analysis": "", "test": "Test",
+    "report": "Report", "design": "Design", "product": "Product",
+    "tech": "Technical", "guide": "Guide", "spec": "Specs",
+    "resume": "Resume", "cv": "Resume", "deepseek": "DeepSeek",
     "drive": "", "ai": "", "web": "", "app": "", "doc": "", "docs": "",
   }
 
@@ -78,11 +78,11 @@ export function MemoryOverview() {
   if (!profile && fallbackTopics.length === 0) {
     files.forEach((f: any) => {
       const ext = (f.name || f.originalName || "").split(".").pop()?.toLowerCase()
-      if (ext === "pdf") types.add("PDF 文档")
-      else if (ext === "md" || ext === "markdown") types.add("Markdown 笔记")
-      else if (ext === "txt") types.add("文本文件")
-      else if (ext === "docx" || ext === "doc") types.add("Word 文档")
-      else if (ext) types.add(ext.toUpperCase() + " 文件")
+      if (ext === "pdf") types.add("PDF Document")
+      else if (ext === "md" || ext === "markdown") types.add("Markdown Notes")
+      else if (ext === "txt") types.add("Text files")
+      else if (ext === "docx" || ext === "doc") types.add("Word Document")
+      else if (ext) types.add(ext.toUpperCase() + " Files")
     })
   }
 
@@ -95,10 +95,10 @@ export function MemoryOverview() {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold">你的 AI 记忆</h3>
+            <h3 className="font-semibold">Your AI memory</h3>
             {indexedFiles.length > 0 && (
               <span className="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-xs text-green-500">
-                <Sparkles className="h-3 w-3" /> 活跃
+                <Sparkles className="h-3 w-3" /> Active
               </span>
             )}
           </div>
@@ -106,7 +106,7 @@ export function MemoryOverview() {
           {profile && profile.topics.length > 0 ? (
             <>
               <p className="mt-1 text-sm text-muted-foreground">
-                AI 整理了 <strong className="text-foreground">{profile.topics.length}</strong> 个知识分类
+                AI organized <strong className="text-foreground">{profile.topics.length}</strong>  knowledge categories
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {profile.topics.map((t) => (
@@ -117,36 +117,36 @@ export function MemoryOverview() {
               </div>
               {profile.unclassifiedCount > 0 && (
                 <p className="mt-1.5 text-xs text-muted-foreground">
-                  另有 {profile.unclassifiedCount} 个文件待分类
+                  plus {profile.unclassifiedCount}  files to classify
                 </p>
               )}
             </>
           ) : (
             <p className="mt-1 text-sm text-muted-foreground">
-              AI 已记住 <strong className="text-foreground">{indexedFiles.length}</strong> 个文件
+              AI Remembered <strong className="text-foreground">{indexedFiles.length}</strong>  files
               {fallbackTopics.length > 0
-                ? <span>，涵盖 {fallbackTopics.join("、")}</span>
-                : types.size > 0 && <span>，涵盖 {[...types].slice(0, 3).join("、")}</span>}
+                ? <span>，covering {fallbackTopics.join("、")}</span>
+                : types.size > 0 && <span>，covering {[...types].slice(0, 3).join("、")}</span>}
               {totalFiles > indexedFiles.length && (
-                <span className="text-yellow-500">（{totalFiles - indexedFiles.length} 个处理中）</span>
+                <span className="text-yellow-500">（{totalFiles - indexedFiles.length}  processing)</span>
               )}
             </p>
           )}
 
           <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <FileText className="h-3.5 w-3.5" /> {profile?.totalFiles ?? totalFiles} 个文件
+              <FileText className="h-3.5 w-3.5" /> {profile?.totalFiles ?? totalFiles}  files
             </span>
             <span className="flex items-center gap-1">
-              <MessageSquare className="h-3.5 w-3.5" /> {totalConvs} 次对话
+              <MessageSquare className="h-3.5 w-3.5" /> {totalConvs}  conversations
             </span>
             {weeklyStats && (
               <span className="flex items-center gap-1 text-blue-400">
-                📊 本周 {weeklyStats.filesThisWeek} 文件 · {weeklyStats.conversationsThisWeek} 对话
+                📊 This week {weeklyStats.filesThisWeek} Files · {weeklyStats.conversationsThisWeek} conversations
               </span>
             )}
             <Link href="/chat" className="ml-auto text-xs text-indigo-500 hover:underline">
-              问你的 AI →
+              Ask your AI →
             </Link>
           </div>
         </div>
@@ -154,7 +154,7 @@ export function MemoryOverview() {
     </div>
     <Link href="/chat" className="mx-4 mt-3 mb-4 flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground hover:bg-muted/50 transition">
       <MessageSquare className="h-4 w-4 text-indigo-500" />
-      <span>问你的 AI 任何问题...</span>
+      <span>Ask your AI anything...</span>
       <ArrowRight className="ml-auto h-4 w-4" />
     </Link>
     </>

@@ -18,7 +18,7 @@ function CodeBlock({ children, ...props }: any) {
     const code = ref.current?.textContent || ""
     navigator.clipboard.writeText(code)
     setCopied(true)
-    toast.success("已复制")
+    toast.success("Copied")
     setTimeout(() => setCopied(false), 2000)
   }
   return (
@@ -37,7 +37,7 @@ function CodeBlock({ children, ...props }: any) {
 // Transform inline citations to superscript numbers
 function transformCitations(content: string): string {
   let counter = 0
-  return content.replace(/\[来源[:：]\s*[^\]]+\]/g, () => {
+  return content.replace(/\[Source:\s*[^\]]+\]/g, () => {
     counter++
     return `<sup class="citation-ref">${counter}</sup>`
   })
@@ -93,7 +93,7 @@ function MessageRating({ conversationId, messageId }: { conversationId?: string;
       })
       setRating(value)
     } catch {
-      toast.error("评分失败")
+      toast.error("Rating failed")
     } finally {
       setLoading(false)
     }
@@ -104,14 +104,14 @@ function MessageRating({ conversationId, messageId }: { conversationId?: string;
       <button
         onClick={() => handleRate("thumbs_up")}
         className={cn("p-1 rounded hover:bg-accent", rating === "thumbs_up" && "text-green-500 opacity-100")}
-        title="有帮助"
+        title="Helpful"
       >
         <ThumbsUp className={cn("h-3.5 w-3.5", rating === "thumbs_up" ? "fill-current" : "")} />
       </button>
       <button
         onClick={() => handleRate("thumbs_down")}
         className={cn("p-1 rounded hover:bg-accent", rating === "thumbs_down" && "text-red-500 opacity-100")}
-        title="没帮助"
+        title="Not helpful"
       >
         <ThumbsDown className={cn("h-3.5 w-3.5", rating === "thumbs_down" ? "fill-current" : "")} />
       </button>
@@ -126,7 +126,7 @@ function MessageActions({ content }: { content: string }) {
   const handleCopy = () => {
     navigator.clipboard.writeText(content)
     setCopied(true)
-    toast.success("已复制")
+    toast.success("Copied")
     setTimeout(() => setCopied(false), 2000)
   }
 
@@ -138,43 +138,43 @@ function MessageActions({ content }: { content: string }) {
         method: "POST",
         body: JSON.stringify({
           content,
-          title: `AI笔记-${timestamp}`,
+          title: `AINote-${timestamp}`,
         }),
       })
-      toast.success("已保存为笔记")
+      toast.success("Saved as note")
     } catch {
-      toast.error("保存失败")
+      toast.error("SaveFailed")
     } finally {
       setSaving(false)
     }
   }
 
   const handleShare = async () => {
-    const shareData = { title: "AI 回答", text: content }
+    const shareData = { title: "AI Answer", text: content }
     if (navigator.share && navigator.canShare?.(shareData)) {
       try {
         await navigator.share(shareData)
       } catch (err: any) {
         if (err?.name !== "AbortError") {
           navigator.clipboard.writeText(content)
-          toast.success("已复制到剪贴板")
+          toast.success("Copied to clipboard")
         }
       }
     } else {
       navigator.clipboard.writeText(content)
-      toast.success("已复制到剪贴板")
+      toast.success("Copied to clipboard")
     }
   }
 
   return (
     <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition">
-      <button onClick={handleCopy} className="p-1 rounded hover:bg-accent" title="复制回答">
+      <button onClick={handleCopy} className="p-1 rounded hover:bg-accent" title="CopyAnswer">
         {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
       </button>
-      <button onClick={handleSaveAsNote} disabled={saving} className="p-1 rounded hover:bg-accent" title="保存为笔记">
+      <button onClick={handleSaveAsNote} disabled={saving} className="p-1 rounded hover:bg-accent" title="Save as note">
         <Bookmark className={cn("h-3.5 w-3.5", saving ? "animate-pulse text-[#4F5BD5]" : "text-muted-foreground")} />
       </button>
-      <button onClick={handleShare} className="p-1 rounded hover:bg-accent" title="分享">
+      <button onClick={handleShare} className="p-1 rounded hover:bg-accent" title="Share">
         <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
       </button>
     </div>
@@ -195,7 +195,7 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight, rehypeRaw]} components={markdownComponents}>{transformCitations(msg.content)}</ReactMarkdown>
                 {msg.citations && msg.citations.length > 0 && /[¹²³⁴⁵⁶⁷⁸⁹⁰]/.test(msg.content) && (
                   <details className="mt-3 pt-3 border-t border-border">
-                    <summary className="text-xs text-muted-foreground font-medium cursor-pointer select-none hover:text-foreground">📎 {msg.citations.length} 个来源引用</summary>
+                    <summary className="text-xs text-muted-foreground font-medium cursor-pointer select-none hover:text-foreground">📎 {msg.citations.length} source citations</summary>
                     <div className="mt-2 space-y-1">
                       {msg.citations.map((c, i) => <Citation key={i} citation={c} idx={i} />)}
                     </div>
@@ -231,7 +231,7 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
                   <span className="animate-bounce [animation-delay:150ms] h-2 w-2 rounded-full bg-blue-500" />
                   <span className="animate-bounce [animation-delay:300ms] h-2 w-2 rounded-full bg-blue-500" />
                 </div>
-                <span>AI 正在思考...</span>
+                <span>AI Thinking...</span>
               </div>
             )}
           </div>

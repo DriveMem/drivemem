@@ -66,12 +66,12 @@ export function Sidebar() {
         </nav>
         {!sidebarCollapsed && !pathname?.startsWith("/chat") && !pathname?.startsWith("/settings") && !pathname?.startsWith("/timeline") && (
           <div className="flex-1 overflow-auto border-t border-border p-2">
-            <p className="px-2 py-1 text-xs font-medium text-muted-foreground">项目</p>
+            <p className="px-2 py-1 text-xs font-medium text-muted-foreground">Project</p>
             <FolderTree />
             {tags.length > 0 ? (
               <div className="mt-3 border-t border-border pt-2">
                 <p className="px-2 py-1 text-xs font-medium text-muted-foreground flex items-center gap-1">
-                  <Tag className="h-3 w-3" /> 标签
+                  <Tag className="h-3 w-3" /> Tags
                 </p>
                 <div className="flex flex-wrap gap-1 px-2 py-1">
                   {activeTagFilter && (
@@ -79,7 +79,7 @@ export function Sidebar() {
                       onClick={() => setActiveTagFilter(null)}
                       className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition"
                     >
-                      全部 ×
+                      All ×
                     </button>
                   )}
                   {tags.map((tag: any) => (

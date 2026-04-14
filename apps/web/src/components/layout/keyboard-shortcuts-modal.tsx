@@ -5,28 +5,28 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 const SHORTCUT_GROUPS = [
   {
-    title: "文件管理",
+    title: "File management",
     shortcuts: [
-      { keys: ["Ctrl", "Shift", "N"], description: "新建文件夹" },
-      { keys: ["F2"], description: "重命名" },
-      { keys: ["Ctrl", "Click"], description: "多选文件" },
-      { keys: ["Shift", "Click"], description: "范围选择" },
+      { keys: ["Ctrl", "Shift", "N"], description: "New folder" },
+      { keys: ["F2"], description: "Rename" },
+      { keys: ["Ctrl", "Click"], description: "Multi-select files" },
+      { keys: ["Shift", "Click"], description: "Select scope" },
     ],
   },
   {
-    title: "对话",
+    title: "conversations",
     shortcuts: [
-      { keys: ["Enter"], description: "发送消息" },
-      { keys: ["Shift", "Enter"], description: "换行" },
+      { keys: ["Enter"], description: "Send message" },
+      { keys: ["Shift", "Enter"], description: "New line" },
     ],
   },
   {
-    title: "通用",
+    title: "General",
     shortcuts: [
-      { keys: ["Ctrl", "K"], description: "搜索" },
-      { keys: ["?"], description: "快捷键帮助" },
-      { keys: ["Ctrl", "/"], description: "快捷键帮助" },
-      { keys: ["Esc"], description: "关闭弹窗" },
+      { keys: ["Ctrl", "K"], description: "Search" },
+      { keys: ["?"], description: "Keyboard shortcuts" },
+      { keys: ["Ctrl", "/"], description: "Keyboard shortcuts" },
+      { keys: ["Esc"], description: "CloseDialog" },
     ],
   },
 ]
@@ -58,7 +58,7 @@ export function KeyboardShortcutsModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>⌨️ 快捷键</DialogTitle>
+          <DialogTitle>⌨️ Shortcuts</DialogTitle>
         </DialogHeader>
         <div className="space-y-5 mt-2">
           {SHORTCUT_GROUPS.map((group) => (
@@ -86,7 +86,7 @@ export function KeyboardShortcutsModal() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground text-center mt-2">按 Esc 关闭</p>
+        <p className="text-xs text-muted-foreground text-center mt-2">Press Esc to close</p>
       </DialogContent>
     </Dialog>
   )
