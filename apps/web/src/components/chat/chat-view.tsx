@@ -68,11 +68,11 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#4F5BD5]/20 to-[#4F5BD5]/5">
           <MessageSquare className="h-7 w-7 text-[#4F5BD5]" />
         </div>
-        <h2 className="text-xl font-semibold text-foreground">你的 AI 知识助手</h2>
+        <h2 className="text-xl font-semibold text-foreground">你的 AI Drive 助手</h2>
         <p className="text-sm text-muted-foreground text-center max-w-md">
           {indexedCount > 0
-            ? `已理解 ${indexedCount} 个文件，随时为你解答`
-            : "基于你上传的文件，智能回答问题、发现关联、总结要点"}
+            ? `已记住 ${indexedCount} 个文件，随时为你解答、发现关联`
+            : "上传文件到你的知识库，我来帮你记忆、分析和关联"}
         </p>
       </div>
 

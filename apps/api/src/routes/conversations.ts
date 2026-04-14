@@ -297,7 +297,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
     const citationSources = finalChunks.map(
       (c, i) => `来源 ${i + 1} (${c.fileName} 第${c.chunkIndex + 1}段): ${c.text}`,
     );
-    const systemPrompt = `你是 DriveMem AI，用户的个人知识助手。用户当前知识库中有 ${userFileCount} 个文件。你的职责是**严格基于用户上传的文档内容**回答问题。
+    const systemPrompt = `你是 AI Drive 助手，用户的个人记忆层助手。用户当前知识库中有 ${userFileCount} 个文件。你的职责是**严格基于用户上传的文档内容**回答问题。
 
 重要规则：
 1. **只使用下方提供的文档片段**来回答问题，不要使用你自己的知识补充
