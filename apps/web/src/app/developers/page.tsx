@@ -104,8 +104,15 @@ curl -X POST https://drivemem.cloud/api/webhooks \\
 ]
 
 const MCP_TOOLS = [
-  "search", "ask", "list_files", "file_detail",
-  "insights", "suggest", "timeline", "upload", "store",
+  { name: "search", desc: "Semantic search across your knowledge base" },
+  { name: "ask", desc: "RAG Q&A — AI answers grounded in your files" },
+  { name: "list_files", desc: "List all files with AI-generated summaries" },
+  { name: "file_detail", desc: "Get detailed info and summary for a file" },
+  { name: "insights", desc: "Retrieve AI-discovered connections and trends" },
+  { name: "suggest", desc: "Get suggested actions based on your knowledge" },
+  { name: "timeline", desc: "View activity timeline of your knowledge base" },
+  { name: "upload", desc: "Upload a file to your knowledge base" },
+  { name: "store", desc: "Quickly save a note or knowledge snippet" },
 ]
 
 /* ---------- Webhook Delivery Log ---------- */
@@ -632,12 +639,66 @@ plugins:
                 <p className="mt-2 text-sm text-[#6B6966]">
                   AI Drive MCP Server provides {MCP_TOOLS.length} tools:
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {MCP_TOOLS.map((t) => (
-                    <code key={t} className="rounded bg-white px-2 py-1 text-xs font-mono text-[#4F5BD5] border border-[#E5E4E1]">
-                      {t}
-                    </code>
-                  ))}
+                <div className="mt-3 overflow-x-auto rounded-lg border border-[#E5E4E1]">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#E5E4E1] bg-white">
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Tool</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Description</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E5E4E1]">
+                      {MCP_TOOLS.map((t) => (
+                        <tr key={t.name} className="hover:bg-white/60 transition">
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono text-[#4F5BD5] border border-[#E5E4E1]">{t.name}</code>
+                          </td>
+                          <td className="px-4 py-2 text-[#6B6966]">{t.desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Error Codes */}
+              <div>
+                <h3 className="font-semibold text-[#1C1B18]">Error Codes</h3>
+                <p className="mt-2 text-sm text-[#6B6966]">
+                  All API and MCP errors return a JSON body with <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">error</code> and <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">message</code> fields.
+                </p>
+                <div className="mt-3 overflow-x-auto rounded-lg border border-[#E5E4E1]">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#E5E4E1] bg-white">
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Status</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Error</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Description</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E5E4E1]">
+                      {[
+                        ["401", "Unauthorized", "Missing or invalid API key"],
+                        ["403", "Forbidden", "API key lacks required scope for this action"],
+                        ["404", "Not Found", "Resource does not exist or has been deleted"],
+                        ["429", "Rate Limited", "Too many requests — back off and retry after the Retry-After header"],
+                        ["500", "Internal Server Error", "Unexpected server error — please retry or contact support"],
+                      ].map(([code, error, desc]) => (
+                        <tr key={code} className="hover:bg-white/60 transition">
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-mono font-semibold ${
+                              code === "401" || code === "403" ? "bg-amber-50 text-amber-700" :
+                              code === "404" ? "bg-gray-100 text-gray-700" :
+                              code === "429" ? "bg-orange-50 text-orange-700" :
+                              "bg-red-50 text-red-700"
+                            }`}>{code}</span>
+                          </td>
+                          <td className="px-4 py-2 font-medium text-[#1C1B18]">{error}</td>
+                          <td className="px-4 py-2 text-[#6B6966]">{desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
