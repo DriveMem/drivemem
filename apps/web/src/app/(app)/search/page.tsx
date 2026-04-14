@@ -12,7 +12,7 @@ function SearchContent() {
   const [input, setInput] = useState(query)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => { document.title = query ? `搜索: ${query} - DriveMem` : "搜索 - DriveMem" }, [query])
+  useEffect(() => { document.title = query ? `搜索: ${query} - AI Drive` : "搜索 - AI Drive" }, [query])
   useEffect(() => { setInput(query) }, [query])
   useEffect(() => { inputRef.current?.focus() }, [])
 

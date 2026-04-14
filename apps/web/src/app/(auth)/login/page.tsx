@@ -66,8 +66,8 @@ function LoginForm() {
     <div className="p-8">
       {/* Mobile-only header */}
       <div className="lg:hidden text-center mb-8">
-        <h1 className="text-3xl font-bold">DriveMem</h1>
-        <p className="mt-2 text-sm text-muted-foreground">让 AI 记住你的一切</p>
+        <h1 className="text-3xl font-bold">AI Drive</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Agent 的记忆层</p>
       </div>
 
       <h2 className="mb-6 text-2xl font-semibold">登录</h2>

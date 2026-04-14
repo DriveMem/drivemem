@@ -472,7 +472,7 @@ switch (command) {
   case undefined:
   default:
     console.log(`
-🧠 DriveMem CLI — Agent 的共享记忆运行时
+🧠 AI Drive CLI — Agent 的共享记忆运行时
 
 记忆操作:
   aidrive init <project>        创建项目

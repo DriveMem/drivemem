@@ -335,7 +335,7 @@ export default function DevelopersPage() {
             Give your agents memory
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-[#6B6966]">
-            DriveMem is the knowledge infrastructure for agents — connect via API and MCP
+            AI Drive is the knowledge infrastructure for agents — connect via API and MCP
           </p>
           <div className="mt-10">
             <Button asChild size="lg" className="h-12 px-10 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
@@ -630,7 +630,7 @@ plugins:
               <div id="mcp">
                 <h3 className="font-semibold text-[#1C1B18]">MCP Tools</h3>
                 <p className="mt-2 text-sm text-[#6B6966]">
-                  DriveMem MCP Server provides {MCP_TOOLS.length} tools:
+                  AI Drive MCP Server provides {MCP_TOOLS.length} tools:
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {MCP_TOOLS.map((t) => (

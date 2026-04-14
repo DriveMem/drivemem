@@ -103,7 +103,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
         {step === 0 && (
           <div className="space-y-4">
             <p className="text-center text-sm text-muted-foreground">
-              Choose your role and DriveMem will customize your experience
+              Choose your role and AI Drive will customize your experience
             </p>
             <div className="grid grid-cols-2 gap-3">
               {personas.map((p) => (
@@ -234,7 +234,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
                 📎 用示例文件体验
               </Button>
               <Button onClick={handleFinish} className="bg-[#4F5BD5] hover:bg-[#3D49C4]">
-                开始使用 DriveMem 🚀
+                开始使用 AI Drive 🚀
               </Button>
               <Button variant="ghost" onClick={() => setStep(1)} className="text-muted-foreground">
                 <ChevronLeft className="mr-1 h-4 w-4" />

@@ -10,20 +10,20 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: "DriveMem - One memory. Every agent.",
+  title: "AI Drive - One memory. Every agent.",
   description: "The shared memory layer for all your AI agents. Store knowledge once, use it everywhere.",
-  keywords: ["agent memory", "AI context", "knowledge base", "MCP", "agent memory layer", "DriveMem", "Agent Context OS", "RAG"],
+  keywords: ["agent memory", "AI context", "knowledge base", "MCP", "agent memory layer", "AI Drive", "Agent Context OS", "RAG"],
   openGraph: {
-    title: "DriveMem - One memory. Every agent.",
+    title: "AI Drive - One memory. Every agent.",
     description: "The shared memory layer for all your AI agents. Store knowledge once, use it everywhere.",
     type: "website",
     url: "https://drivemem.cloud",
-    siteName: "DriveMem",
-    images: [{ url: "https://drivemem.cloud/og-image.png", width: 1200, height: 630, alt: "DriveMem - One memory. Every agent." }],
+    siteName: "AI Drive",
+    images: [{ url: "https://drivemem.cloud/og-image.png", width: 1200, height: 630, alt: "AI Drive - One memory. Every agent." }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DriveMem - One memory. Every agent.",
+    title: "AI Drive - One memory. Every agent.",
     description: "The shared memory layer for all your AI agents. Store knowledge once, use it everywhere.",
     images: ["https://drivemem.cloud/og-image.png"],
   },
