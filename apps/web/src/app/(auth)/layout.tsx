@@ -9,7 +9,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
 
         <div className="relative z-10 flex flex-col items-center justify-center w-full px-12">
-          <h1 className="text-5xl font-bold text-white mb-3">AI Drive</h1>
+          <h1 className="text-5xl font-bold text-white mb-3">DriveMem</h1>
           <p className="text-lg text-white/70 mb-12">Agent 's memory layer</p>
 
           <div className="space-y-6 max-w-sm">

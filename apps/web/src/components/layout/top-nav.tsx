@@ -91,7 +91,7 @@ export function TopNav() {
         <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileSidebarOpen(true)}>
           <Menu className="h-5 w-5" />
         </Button>
-        <span className="text-lg font-bold">AI Drive</span>
+        <span className="text-lg font-bold">DriveMem</span>
       </div>
 
       {/* Search trigger */}

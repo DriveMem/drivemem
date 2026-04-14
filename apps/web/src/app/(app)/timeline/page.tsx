@@ -61,7 +61,7 @@ function getEventLink(event: TimelineEvent): string {
 }
 
 export default function TimelinePage() {
-  useEffect(() => { document.title = "Timeline - AI Drive" }, [])
+  useEffect(() => { document.title = "Timeline - DriveMem" }, [])
   const [events, setEvents] = useState<TimelineEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [hasMore, setHasMore] = useState(false)

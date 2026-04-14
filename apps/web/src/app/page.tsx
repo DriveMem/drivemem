@@ -62,7 +62,7 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-[#4F5BD5]/30">
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-[#E5E4E1] bg-white/80 px-6 py-4 backdrop-blur">
-        <Link href="/" className="text-lg font-bold text-[#1C1B18]">AI Drive</Link>
+        <Link href="/" className="text-lg font-bold text-[#1C1B18]">DriveMem</Link>
         <div className="flex items-center gap-4">
           <a href="#features" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Features</a>
           <Link href="/login" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Sign in</Link>
@@ -105,7 +105,7 @@ export default function LandingPage() {
               <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
               <span className="ml-2 text-xs text-[#6B6966]">drivemem.cloud</span>
             </div>
-                        <img src="/screenshots/dashboard.png" alt="AI Drive Dashboard" className="w-full rounded-b-lg" />
+                        <img src="/screenshots/dashboard.png" alt="DriveMem Dashboard" className="w-full rounded-b-lg" />
           </div>
         </div>
       </section>
@@ -116,7 +116,7 @@ export default function LandingPage() {
       <section id="features" className="relative z-10 mx-auto max-w-6xl px-6 py-24">
         <FadeIn>
           <h2 className="text-center text-3xl font-bold sm:text-4xl">Every agent you use, sharing one memory</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">Whether you use ChatGPT, Claude, Cursor, or your own agents — AI Drive gives them shared memory.</p>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">Whether you use ChatGPT, Claude, Cursor, or your own agents — DriveMem gives them shared memory.</p>
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               { emoji: "📄", title: "Students", desc: "Upload references, AI finds key arguments and compares perspectives" },
@@ -139,7 +139,7 @@ export default function LandingPage() {
       {/* ===== How It Works ===== */}
       <section className="relative z-10 mx-auto max-w-5xl px-6 py-20">
         <FadeIn>
-          <h2 className="text-center text-3xl font-bold sm:text-4xl">How AI Drive works</h2>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">How DriveMem works</h2>
           <div className="mt-16 grid gap-8 sm:grid-cols-3">
             {STEPS.map((s, i) => (
               <div key={s.title} className="relative flex flex-col items-center text-center">
@@ -163,7 +163,7 @@ export default function LandingPage() {
       <section className="relative z-10 mx-auto max-w-6xl px-6 py-24">
         <FadeIn>
           <h2 className="text-3xl font-bold text-center text-[#1C1B18] mb-4">Core features</h2>
-          <p className="text-center text-[#6B6966] mb-12 max-w-2xl mx-auto">AI Drive doesn&apos;t just store — it understands your knowledge</p>
+          <p className="text-center text-[#6B6966] mb-12 max-w-2xl mx-auto">DriveMem doesn&apos;t just store — it understands your knowledge</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map((f, i) => (
               <div key={i} className="rounded-xl border border-[#E5E4E1] bg-white p-6 hover:shadow-lg transition-all duration-200">
@@ -197,7 +197,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Brand */}
             <div>
-              <h3 className="text-lg font-bold text-[#1C1B18]">AI Drive</h3>
+              <h3 className="text-lg font-bold text-[#1C1B18]">DriveMem</h3>
               <p className="mt-2 text-sm text-[#6B6966]">Every agent, one memory</p>
             </div>
 
@@ -237,7 +237,7 @@ export default function LandingPage() {
               <Link href="/login">免费开始</Link>
             </Button>
             <p className="text-xs text-[#6B6966]">
-              © {new Date().getFullYear()} AI Drive. All rights reserved.
+              © {new Date().getFullYear()} DriveMem. All rights reserved.
             </p>
           </div>
         </div>

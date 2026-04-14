@@ -1,21 +1,21 @@
 import Link from "next/link"
 
 export const metadata = {
-  title: "Privacy Policy - AI Drive",
-  description: "AI Drive Privacy policy and data protection",
-  openGraph: { title: "Privacy Policy - AI Drive", description: "AI Drive Privacy policy and data protection" },
+  title: "Privacy Policy - DriveMem",
+  description: "DriveMem Privacy policy and data protection",
+  openGraph: { title: "Privacy Policy - DriveMem", description: "DriveMem Privacy policy and data protection" },
 }
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen">
       <nav className="flex items-center justify-between border-b px-6 py-4">
-        <Link href="/" className="text-lg font-bold">AI Drive</Link>
+        <Link href="/" className="text-lg font-bold">DriveMem</Link>
         <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← Back to home</Link>
       </nav>
       <div className="mx-auto max-w-3xl px-6 py-16">
       <h1 className="text-3xl font-bold">Data Privacy Policy</h1>
-      <p className="mt-4 text-muted-foreground">Last updated: April 2026 · AI Drive</p>
+      <p className="mt-4 text-muted-foreground">Last updated: April 2026 · DriveMem</p>
 
       <div className="mt-8 space-y-8 text-sm leading-relaxed text-muted-foreground">
         <section>
@@ -32,7 +32,7 @@ export default function PrivacyPage() {
         </section>
         <section>
           <h2 className="text-lg font-semibold text-foreground">Third-party services</h2>
-          <p>AI Drive Uses Bailian API (Alibaba Cloud) for text embeddings and LLM conversations.Your file content fragments are sent to Bailian API for processing but are not stored or used for model training.</p>
+          <p>DriveMem Uses Bailian API (Alibaba Cloud) for text embeddings and LLM conversations.Your file content fragments are sent to Bailian API for processing but are not stored or used for model training.</p>
         </section>
         <section>
           <h2 className="text-lg font-semibold text-foreground">Data export</h2>

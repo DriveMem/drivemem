@@ -68,7 +68,7 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#4F5BD5]/20 to-[#4F5BD5]/5">
           <MessageSquare className="h-7 w-7 text-[#4F5BD5]" />
         </div>
-        <h2 className="text-xl font-semibold text-foreground">Your AI Drive assistant</h2>
+        <h2 className="text-xl font-semibold text-foreground">Your DriveMem assistant</h2>
         <p className="text-sm text-muted-foreground text-center max-w-md">
           {indexedCount > 0
             ? `Remembered ${indexedCount} files. Ready to answer questions and discover connections`
