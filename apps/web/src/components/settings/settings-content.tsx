@@ -725,7 +725,7 @@ export default function SettingsContent() {
             <Input id="prefs" placeholder="e.g., Prefer structured output" value={profilePrefs} onChange={(e) => setProfilePrefs(e.target.value)} />
           </div>
           <Button size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white" onClick={saveProfile} disabled={profileSaving}>
-            {profileSaving ? "Save..." : "SaveProfile"}
+            {profileSaving ? "Saving..." : "Save Profile"}
           </Button>
         </CardContent>
       </Card>
@@ -810,7 +810,7 @@ export default function SettingsContent() {
       {/* Password */}
       <Card>
         <CardHeader>
-          <CardTitle>ModifyPassword</CardTitle>
+          <CardTitle>Change Password</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -829,22 +829,22 @@ export default function SettingsContent() {
               try {
                 const { apiFetch } = await import("@/lib/api")
                 await apiFetch("/api/users/me/password", { method: "PATCH", body: JSON.stringify({ currentPassword, newPassword }) })
-                toast.success("PasswordModified")
+                toast.success("Password changed successfully")
                 setCurrentPassword("")
                 setNewPassword("")
-              } catch (e: any) { toast.error(e.message || "ModifyFailed") }
+              } catch (e: any) { toast.error(e.message || "Failed to change password") }
             }}
           >
-            ModifyPassword
+            Change Password
           </Button>
           {(!currentPassword || !newPassword || newPassword.length < 6) && (
             <p className="text-xs text-muted-foreground">
               {!currentPassword && !newPassword
-                ? "Please enterCurrent and new password"
+                ? "Please enter current and new password"
                 : !currentPassword
-                ? "Please enterCurrent password"
+                ? "Please enter current password"
                 : !newPassword
-                ? "Please enterNew password"
+                ? "Please enter new password"
                 : "New password must be at least 6 characters"}
             </p>
           )}
@@ -867,14 +867,14 @@ export default function SettingsContent() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>ExportAll files and conversation history as a ZIP archive</p>
+                  <p>Export all files and conversation history as a ZIP archive</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
           <div className="rounded-lg border border-red-200 bg-red-50/50 p-4 space-y-3">
             <p className="text-sm text-red-600">
-              ⚠️ DeleteThis will permanently delete all files, conversations, and AI memory. This action cannot be undone.
+              ⚠️ This will permanently delete all files, conversations, and AI memory. This action cannot be undone.
             </p>
             <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
               <DialogTrigger asChild>
@@ -882,19 +882,19 @@ export default function SettingsContent() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle className="text-red-600">⚠️ ConfirmDelete account</DialogTitle>
+                  <DialogTitle className="text-red-600">⚠️ Confirm account deletion</DialogTitle>
                 </DialogHeader>
                 <p className="text-sm text-muted-foreground">
-                  DeleteThis will permanently delete all files, conversations, and AI memory. This action cannot be undone. Please enter <strong>ConfirmDelete</strong> to continue.
+                  This will permanently delete all files, conversations, and AI memory. This action cannot be undone. Please enter <strong>DELETE</strong> to continue.
                 </p>
                 <Input
                   value={deleteConfirm}
                   onChange={(e) => setDeleteConfirm(e.target.value)}
-                  placeholder='Type "Confirm delete"'
+                  placeholder='Type "DELETE"'
                 />
                 <Button
                   variant="destructive"
-                  disabled={deleteConfirm !== "ConfirmDelete"}
+                  disabled={deleteConfirm !== "DELETE"}
                   onClick={handleDelete}
                 >
                   Permanently delete
