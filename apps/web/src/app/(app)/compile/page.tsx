@@ -35,12 +35,55 @@ interface CompileResult {
   metadata: CompileMetadata
 }
 
+const HISTORY_KEY = 'drivemem-briefing-history'
+const MAX_HISTORY = 5
+
+interface HistoryEntry {
+  task: string
+  timestamp: string
+  fragmentCount: number
+}
+
+function saveToHistory(task: string, fragmentCount: number) {
+  try {
+    const history: HistoryEntry[] = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
+    history.unshift({ task, timestamp: new Date().toISOString(), fragmentCount })
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)))
+  } catch {}
+}
+
+function getHistory(): HistoryEntry[] {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
+  } catch {
+    return []
+  }
+}
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  return `${days}d ago`
+}
+
+const examples = [
+  { icon: "📋", title: "Project handoff", desc: "Prepare context for a new team member or AI" },
+  { icon: "📝", title: "Continue writing", desc: "Get background for a writing task" },
+  { icon: "🔍", title: "Research review", desc: "Compile relevant knowledge for analysis" },
+]
+
 function CompileContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const prefilledProject = searchParams.get("project") || ""
 
   const [task, setTask] = useState("")
+  const [history, setHistory] = useState<HistoryEntry[]>([])
   const [selectedProject, setSelectedProject] = useState(prefilledProject)
   const [selectedTags, setSelectedTags] = useState("")
   const [result, setResult] = useState<CompileResult | null>(null)
@@ -63,6 +106,10 @@ function CompileContent() {
   useEffect(() => {
     setSelectedProject(prefilledProject)
   }, [prefilledProject])
+
+  useEffect(() => {
+    setHistory(getHistory())
+  }, [])
 
   const handleCompile = useCallback(async () => {
     if (!task.trim()) return
@@ -88,6 +135,8 @@ function CompileContent() {
         }),
       })
       setResult(data)
+      saveToHistory(task.trim(), data.metadata?.fragmentCount ?? 0)
+      setHistory(getHistory())
     } catch (err: any) {
       if (err?.status === 503 || err?.message?.toLowerCase().includes("unavailable")) {
         setError("AI service temporarily unavailable. Please try again later.")
@@ -139,7 +188,7 @@ function CompileContent() {
           <h1 className="text-2xl font-bold">Prepare a briefing for your AI</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          Tell DriveMem what you need — it prepares the right background for any AI
+          Describe your task — DriveMem finds the right knowledge for any AI
         </p>
       </div>
 
@@ -192,12 +241,46 @@ function CompileContent() {
             ) : (
               <>
                 <Sparkles className="h-4 w-4 mr-2" />
-                Prepare a briefing for your AI
+                Generate Briefing
               </>
             )}
           </Button>
         </div>
       </div>
+
+      {/* Example scenario cards */}
+      {!result && !loading && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          {examples.map((ex) => (
+            <button
+              key={ex.title}
+              onClick={() => setTask(ex.title)}
+              className="rounded-xl border border-border bg-card p-4 text-left hover:border-[#4F5BD5]/50 hover:shadow-sm transition"
+            >
+              <span className="text-2xl mb-2 block">{ex.icon}</span>
+              <span className="text-sm font-medium block">{ex.title}</span>
+              <span className="text-xs text-muted-foreground">{ex.desc}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Recent history */}
+      {!result && !loading && history.length > 0 && (
+        <div className="mb-6 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground mb-1.5">Recent</p>
+          {history.map((h, i) => (
+            <button
+              key={i}
+              onClick={() => setTask(h.task)}
+              className="block w-full text-left rounded-lg px-3 py-1.5 text-sm hover:bg-muted/50 transition truncate"
+            >
+              <span className="text-foreground">{h.task}</span>
+              <span className="text-xs text-muted-foreground ml-2">— {relativeTime(h.timestamp)}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Loading state */}
       {loading && (
