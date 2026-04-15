@@ -71,7 +71,7 @@ function LoginForm() {
       </div>
 
       <h2 className="mb-6 text-2xl font-semibold">Sign in</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 animate-fade-in-up">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
