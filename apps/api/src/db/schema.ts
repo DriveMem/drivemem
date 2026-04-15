@@ -220,6 +220,18 @@ export const webhookDeliveries = pgTable('webhook_deliveries', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// --- API Activity Logs ---
+export const apiActivityLogs = pgTable('api_activity_logs', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  apiKeyId: uuid('api_key_id').references(() => apiKeys.id, { onDelete: 'set null' }),
+  agentName: varchar('agent_name', { length: 255 }),
+  action: varchar('action', { length: 50 }).notNull(),
+  detail: text('detail'),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 // --- Insights ---
 export const insights = pgTable('insights', {
   id: uuid('id').defaultRandom().primaryKey(),

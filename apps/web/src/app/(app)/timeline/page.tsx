@@ -1,12 +1,12 @@
 "use client"
 import { useEffect, useState } from "react"
 import { apiFetch } from "@/lib/api"
-import { FileText, Clock, Loader2, MessageCircle, Lightbulb, BarChart3 } from "lucide-react"
+import { FileText, Clock, Loader2, MessageCircle, Lightbulb, BarChart3, Bot } from "lucide-react"
 import Link from "next/link"
 
 interface TimelineEvent {
   id: string
-  type: "file_uploaded" | "conversation" | "insight" | "report"
+  type: "file_uploaded" | "conversation" | "insight" | "report" | "agent_activity"
   title: string
   description?: string
   subtitle?: string
@@ -39,6 +39,12 @@ const EVENT_CONFIG = {
     dotColor: "bg-orange-500",
     iconColor: "text-orange-500",
   },
+  agent_activity: {
+    icon: Bot,
+    label: "Agent Activity",
+    dotColor: "bg-cyan-500",
+    iconColor: "text-cyan-500",
+  },
 }
 
 function getEventLink(event: TimelineEvent): string {
@@ -55,6 +61,8 @@ function getEventLink(event: TimelineEvent): string {
       return `/dashboard#insights`
     case "report":
       return `/dashboard#reports`
+    case "agent_activity":
+      return `/timeline`
     default:
       return `/dashboard`
   }
@@ -121,6 +129,7 @@ export default function TimelinePage() {
           { type: "conversation", label: "💬 Conversations" },
           { type: "insight", label: "💡 Insights" },
           { type: "report", label: "📊 Report" },
+          { type: "agent_activity", label: "🤖 Agent" },
         ].map(f => (
           <button
             key={f.type || "all"}

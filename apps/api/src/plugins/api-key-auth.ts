@@ -37,6 +37,7 @@ export async function requireApiKey(request: FastifyRequest, reply: FastifyReply
 
   request.user = { id: user.id, email: user.email, name: user.name || '' };
   (request as any).apiKeyScopes = apiKey.scopes || ['read', 'write'];
+  (request as any).apiKeyId = apiKey.id;
   (request as any).apiKeyName = apiKey.name || '';
 }
 

@@ -11,6 +11,7 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { config } from '../lib/config.js';
 import crypto from 'crypto';
 import { Queue } from 'bullmq';
+import { logActivity } from '../services/activity-logger.js';
 
 export default async function v1Routes(fastify: FastifyInstance) {
   fastify.addHook('preHandler', requireApiKey);
@@ -291,6 +292,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
       });
     }
 
+    logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'search', detail: query.q, metadata: { resultCount: searchResults.length, format } });
     return reply.send({
       results: searchResults.map(c => ({
         fileId: c.fileId,
@@ -442,6 +444,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
       { role: 'user', content: body.question },
     ]);
 
+    logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'ask', detail: body.question, metadata: { sourceCount: finalChunks.length } });
     return reply.send({
       answer,
       sources: finalChunks.map(c => ({
@@ -484,6 +487,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
     await queue.add('parse', { fileId, userId, s3Key, mimeType: 'text/markdown' });
     await queue.close();
     
+    logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'store', detail: title });
     return reply.status(201).send({ fileId, title, message: `已存入「${title}」` });
   });
 
@@ -628,6 +632,7 @@ ${insightsSection}
       hints: body.hints,
       format: body.format,
     });
+    logActivity({ userId: request.user!.id, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'compile', detail: body.task });
     return reply.send(result);
   });
 }

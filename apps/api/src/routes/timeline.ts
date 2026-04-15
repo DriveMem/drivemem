@@ -6,7 +6,7 @@ import { requireAuth } from '../plugins/auth.js';
 
 export interface TimelineEvent {
   id: string;
-  type: 'file_uploaded' | 'conversation' | 'insight' | 'report';
+  type: 'file_uploaded' | 'conversation' | 'insight' | 'report' | 'agent_activity';
   title: string;
   description?: string;
   icon: string;
@@ -82,6 +82,23 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
     filesQuery, conversationsQuery, insightsQuery, reportsQuery,
   ]);
 
+  // Fetch agent activity logs
+  const activitiesQuery = db.select({
+    id: schema.apiActivityLogs.id,
+    agentName: schema.apiActivityLogs.agentName,
+    action: schema.apiActivityLogs.action,
+    detail: schema.apiActivityLogs.detail,
+    metadata: schema.apiActivityLogs.metadata,
+    createdAt: schema.apiActivityLogs.createdAt,
+  }).from(schema.apiActivityLogs)
+    .where(cursorDate
+      ? and(eq(schema.apiActivityLogs.userId, userId), sql`${schema.apiActivityLogs.createdAt} < ${cursorDate.toISOString()}`)
+      : eq(schema.apiActivityLogs.userId, userId))
+    .orderBy(desc(schema.apiActivityLogs.createdAt))
+    .limit(fetchLimit);
+
+  const activities = await activitiesQuery;
+
   // Batch-fetch file names for insights
   const insightFileIds = [...new Set(insights.flatMap(i => [i.sourceFileId, i.relatedFileId]).filter(Boolean))];
   const fileNames: Record<string, string> = {};
@@ -134,6 +151,22 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
       createdAt: r.createdAt,
       metadata: {},
     })),
+    ...activities.map(a => {
+      const verbMap: Record<string, string> = { search: 'searched for', store: 'saved', ask: 'asked', compile: 'compiled briefing for' };
+      const iconMap: Record<string, string> = { search: '🔍', store: '📥', ask: '💬', compile: '📋' };
+      const verb = verbMap[a.action] || a.action;
+      const icon = iconMap[a.action] || '🤖';
+      const agent = a.agentName || 'API';
+      return {
+        id: a.id,
+        type: 'agent_activity' as const,
+        title: `${agent} ${verb}`,
+        description: a.detail?.slice(0, 100) || undefined,
+        icon,
+        createdAt: a.createdAt,
+        metadata: { action: a.action, agentName: a.agentName, ...(a.metadata as Record<string, unknown> || {}) },
+      };
+    }),
   ];
 
   events.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
