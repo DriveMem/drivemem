@@ -19,14 +19,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         initial={false}
         animate={{ width: sidebarCollapsed ? 64 : 240 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
-        className="hidden md:block flex-shrink-0 border-r border-border overflow-hidden bg-[#F8F7F5] dark:bg-[#252525]"
+        className="hidden md:block flex-shrink-0 border-r border-border overflow-hidden bg-zinc-50 dark:bg-zinc-900"
       >
         <Sidebar />
       </motion.aside>
 
       {/* Mobile sidebar overlay */}
       <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetContent side="left" className="w-[280px] p-0 bg-[#F8F7F5] dark:bg-[#252525]">
+        <SheetContent side="left" className="w-[280px] p-0 bg-zinc-50 dark:bg-zinc-900">
           <Sidebar />
         </SheetContent>
       </Sheet>
