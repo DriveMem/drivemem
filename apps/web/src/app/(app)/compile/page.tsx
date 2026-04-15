@@ -123,7 +123,7 @@ function CompileContent() {
         .map((t) => t.trim())
         .filter(Boolean)
 
-      const data = await apiFetch("/api/v1/context/compile", {
+      const data = await apiFetch("/api/timeline/compile", {
         method: "POST",
         body: JSON.stringify({
           task: task.trim(),
