@@ -118,7 +118,60 @@
 * { @apply transition-colors duration-150; }
 
 /* Card hover */
-.card-hover { @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5; }
+.card-hover {
+  @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
+}
+.card-hover:hover {
+  box-shadow: 0 4px 12px rgba(79, 91, 213, 0.08);
+  border-color: rgba(79, 91, 213, 0.2);
+}
+
+/* Fade in animation */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Stagger children */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.6s; }
+
+/* Brand gradient border on hover */
+.border-gradient-hover {
+  position: relative;
+  transition: all 0.2s ease;
+}
+.border-gradient-hover:hover {
+  border-color: rgba(79, 91, 213, 0.3);
+  box-shadow: 0 4px 16px rgba(79, 91, 213, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Subtle glow */
+.brand-glow {
+  box-shadow: 0 0 60px rgba(79, 91, 213, 0.12), 0 8px 32px rgba(79, 91, 213, 0.08);
+}
+
+/* Step connector */
+.step-connector::after {
+  content: '';
+  position: absolute;
+  top: 2rem;
+  right: -1.5rem;
+  width: 3rem;
+  border-top: 2px dashed rgba(79, 91, 213, 0.25);
+}
 
 /* Citation superscript */
 .citation-ref {
