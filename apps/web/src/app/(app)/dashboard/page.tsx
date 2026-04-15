@@ -366,9 +366,18 @@ export default function DashboardPage() {
                     {folder.goal && (
                       <p className="text-xs text-brand-500 mb-2">{folder.goal}</p>
                     )}
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                      <FileText className="h-3.5 w-3.5" />
-                      <span>{folder.fileCount ?? 0} {(folder.fileCount ?? 0) === 1 ? 'file' : 'files'}</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                        <FileText className="h-3.5 w-3.5" />
+                        <span>{folder.fileCount ?? 0} {(folder.fileCount ?? 0) === 1 ? 'file' : 'files'}</span>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); router.push(`/compile?project=${folder.id}`) }}
+                        className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-zinc-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        Compile
+                      </button>
                     </div>
                   </div>
                 ))}
