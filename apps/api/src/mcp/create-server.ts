@@ -211,8 +211,39 @@ You are not just a chat assistant — you are part of the user's knowledge syste
   }));
 
   // Handle tool calls
+  // Track if we've already injected context for this session
+  let contextInjected = false;
+
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
+
+    // Auto-inject: on first tool call, prepend user context to the response
+    let contextPrefix = '';
+    if (!contextInjected && name !== 'aidrive_compile_context') {
+      contextInjected = true;
+      try {
+        // Build a brief context header from Identity + recent activity
+        const [user] = await db.select({ name: schema.users.name, profile: schema.users.profile })
+          .from(schema.users).where(eq(schema.users.id, userId));
+        const profile = (user?.profile as Record<string, any>) || {};
+        const parts: string[] = [];
+        if (user?.name) parts.push(`User: ${user.name}`);
+        if (profile.role) parts.push(`Role: ${profile.role}`);
+        if (profile.currentGoal) parts.push(`Goal: ${profile.currentGoal}`);
+
+        // Get recent activity (last 3 items)
+        const recentFiles = await db.select({ name: schema.files.name, summary: schema.files.summary })
+          .from(schema.files).where(eq(schema.files.userId, userId))
+          .orderBy(desc(schema.files.createdAt)).limit(3);
+        if (recentFiles.length > 0) {
+          parts.push(`Recent files: ${recentFiles.map(f => f.name).join(', ')}`);
+        }
+
+        if (parts.length > 0) {
+          contextPrefix = `[DriveMem Context] ${parts.join(' | ')}\n\n`;
+        }
+      } catch { /* don't break tool calls if context injection fails */ }
+    }
 
     try {
       switch (name) {
@@ -242,7 +273,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           const text = results.map((r, i) =>
             `${i + 1}. [${r.fileName}] (score: ${r.score.toFixed(2)}, ${fileDates[r.fileId] || '?'})\n${r.text.slice(0, charsPerResult)}`
           ).join('\n\n');
-          return { content: [{ type: 'text' as const, text: text || '未找到相关内容。' }] };
+          return { content: [{ type: 'text' as const, text: contextPrefix + (text || 'No results found.') }] };
         }
 
         case 'aidrive_ask': {
@@ -615,11 +646,11 @@ ${insightsSection}
           return { content: [{ type: 'text' as const, text: packet }] };
         }
 
-        default:
-          return { content: [{ type: 'text' as const, text: `未知工具: ${name}` }], isError: true };
+                default:
+          return { content: [{ type: 'text' as const, text: `Unknown tool: ${name}` }], isError: true };
       }
     } catch (err) {
-      return { content: [{ type: 'text' as const, text: `错误: ${(err as Error).message}` }], isError: true };
+      return { content: [{ type: 'text' as const, text: `Error: ${(err as Error).message}` }], isError: true };
     }
   });
 
