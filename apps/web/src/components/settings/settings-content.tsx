@@ -22,6 +22,7 @@ function ApiKeysCard() {
   const [keyName, setKeyName] = useState("")
   const [newKey, setNewKey] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
+  const [showConfigFor, setShowConfigFor] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchKeys = async () => {
@@ -94,7 +95,8 @@ function ApiKeysCard() {
         ) : (
           <div className="space-y-2">
             {keys.map(k => (
-              <div key={k.id} className="flex items-center justify-between rounded-lg border p-3">
+              <div key={k.id}>
+                <div className="flex items-center justify-between rounded-lg border p-3">
                 <div>
                   <p className="text-sm font-medium">{k.name}</p>
                   <p className="text-xs text-muted-foreground font-mono">{k.keyPrefix}••••••••</p>
@@ -103,16 +105,43 @@ function ApiKeysCard() {
                     {k.lastUsedAt && ` · Last used ${new Date(k.lastUsedAt).toLocaleDateString("zh-CN")}`}
                   </p>
                 </div>
-                <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteKey(k.id)}>
-                  Delete
-                </Button>
+                <div className="flex gap-1">
+                  <Button size="sm" variant="ghost" onClick={() => setShowConfigFor(showConfigFor === k.id ? null : k.id)}>
+                    {showConfigFor === k.id ? 'Hide' : 'Config'}
+                  </Button>
+                  <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteKey(k.id)}>
+                    Delete
+                  </Button>
+                </div>
+                </div>
+                {showConfigFor === k.id && (
+                  <div className="mt-2 rounded-lg bg-zinc-50 dark:bg-zinc-900 p-3 text-xs font-mono space-y-3">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1 font-sans">Cursor / Claude Desktop (MCP)</p>
+                      <pre className="bg-zinc-100 dark:bg-zinc-800 rounded p-2 overflow-x-auto">{JSON.stringify({
+                        "mcpServers": {
+                          "drivemem": {
+                            "url": "https://drivemem.cloud/mcp",
+                            "headers": { "Authorization": `Bearer ${k.keyPrefix}••••••••` }
+                          }
+                        }
+                      }, null, 2)}</pre>
+                      <button onClick={() => { navigator.clipboard.writeText(JSON.stringify({ mcpServers: { drivemem: { url: "https://drivemem.cloud/mcp", headers: { Authorization: "Bearer YOUR_API_KEY" } } } }, null, 2)); toast.success('Copied!') }} className="text-xs text-brand-500 hover:underline mt-1 font-sans">Copy</button>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1 font-sans">REST API / SDK</p>
+                      <pre className="bg-zinc-100 dark:bg-zinc-800 rounded p-2 overflow-x-auto">{`DRIVEMEM_API_KEY=${k.keyPrefix}••••••••\nDRIVEMEM_ENDPOINT=https://drivemem.cloud`}</pre>
+                      <button onClick={() => { navigator.clipboard.writeText(`DRIVEMEM_API_KEY=YOUR_API_KEY\nDRIVEMEM_ENDPOINT=https://drivemem.cloud`); toast.success('Copied!') }} className="text-xs text-brand-500 hover:underline mt-1 font-sans">Copy</button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
 
         <p className="mt-4 text-xs text-muted-foreground">
-          📖 API Documentation: Upload files, search knowledge, AI Q&A. See <a href="/developers" className="text-[#4F5BD5] hover:underline">Developer Docs</a>
+          📖 API Documentation: Upload files, search knowledge, AI Q&A. See <a href="/developers" className="text-brand-500 hover:underline">Developer Docs</a>
         </p>
       </CardContent>
     </Card>
@@ -210,7 +239,7 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
         </div>
 
         {/* Doc link */}
-        <a href="/developers" className="inline-flex items-center gap-1 text-sm text-[#4F5BD5] hover:underline">
+        <a href="/developers" className="inline-flex items-center gap-1 text-sm text-brand-500 hover:underline">
           ViewFull developer docs ↗
         </a>
       </CardContent>
@@ -270,7 +299,7 @@ function ConnectedAgentsCard() {
                       {k.scopes?.map((s: string) => (
                         <span key={s} className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
                           s === 'admin' ? 'bg-red-500/10 text-red-600' :
-                          s === 'write' ? 'bg-blue-500/10 text-blue-600' :
+                          s === 'write' ? 'bg-brand-50 text-brand-600' :
                           'bg-green-500/10 text-green-600'
                         }`}>{s}</span>
                       ))}
@@ -396,7 +425,7 @@ function WebhookCard() {
                 onClick={() => toggleEvent(evt.id)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                   events.includes(evt.id)
-                    ? "bg-[#4F5BD5] text-white"
+                    ? "bg-brand-500 text-white"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
                 title={evt.desc}
@@ -451,7 +480,7 @@ function WebhookCard() {
                         }
                       } catch { toast.error("SendFailed") }
                     }}
-                    className="rounded-full px-2 py-0.5 text-xs bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition"
+                    className="rounded-full px-2 py-0.5 text-xs bg-brand-50 text-brand-600 hover:bg-brand-100 transition"
                   >
                     Test
                   </button>
@@ -472,7 +501,7 @@ function WebhookCard() {
 
         <p className="text-xs text-muted-foreground">
           Each event sends a JSON POST containing <code className="font-mono">X-AIDrive-Signature</code> Signature。
-          <a href="/developers" className="text-[#4F5BD5] hover:underline ml-1">ViewDocs ↗</a>
+          <a href="/developers" className="text-brand-500 hover:underline ml-1">ViewDocs ↗</a>
         </p>
 
         {/* Delivery Log */}
@@ -697,7 +726,7 @@ export default function SettingsContent() {
               <Input id="email" value={session.user.email} readOnly className="bg-muted" />
             </div>
           )}
-          <Button size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white" onClick={() => toast.success("Saved")}>Save</Button>
+          <Button size="sm" className="bg-brand-500 hover:bg-brand-600 text-white" onClick={() => toast.success("Saved")}>Save</Button>
         </CardContent>
       </Card>
 
@@ -724,7 +753,7 @@ export default function SettingsContent() {
             <Label htmlFor="prefs">AI Preferences</Label>
             <Input id="prefs" placeholder="e.g., Prefer structured output" value={profilePrefs} onChange={(e) => setProfilePrefs(e.target.value)} />
           </div>
-          <Button size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white" onClick={saveProfile} disabled={profileSaving}>
+          <Button size="sm" className="bg-brand-500 hover:bg-brand-600 text-white" onClick={saveProfile} disabled={profileSaving}>
             {profileSaving ? "Saving..." : "Save Profile"}
           </Button>
         </CardContent>
@@ -823,7 +852,7 @@ export default function SettingsContent() {
           </div>
           <Button
             size="sm"
-            className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"
+            className="bg-brand-500 hover:bg-brand-600 text-white"
             disabled={!currentPassword || !newPassword || newPassword.length < 6}
             onClick={async () => {
               try {
