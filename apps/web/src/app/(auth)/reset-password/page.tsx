@@ -12,9 +12,9 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 const resetSchema = z.object({
-  password: z.string().min(8, 'PasswordAt least 8 characters')
-    .regex(/[a-zA-Z]/, 'PasswordMust contain letters')
-    .regex(/[0-9]/, 'PasswordMust contain numbers'),
+  password: z.string().min(8, 'Password must be at least 8 characters')
+    .regex(/[a-zA-Z]/, 'Must contain letters')
+    .regex(/[0-9]/, 'Must contain numbers'),
   confirmPassword: z.string(),
 }).refine(data => data.password === data.confirmPassword, {
   message: 'Passwords do not match',

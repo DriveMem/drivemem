@@ -131,14 +131,14 @@ export default async function authRoutes(fastify: FastifyInstance) {
 
       const resetLink = `${config.FRONTEND_URL}/reset-password?token=${token}`;
       await resend.emails.send({
-        from: 'AI Drive <noreply@drivemem.cloud>',
+        from: 'DriveMem <noreply@drivemem.cloud>',
         to: body.email,
-        subject: 'Reset your password - AI Drive',
+        subject: 'Reset your password - DriveMem',
         html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link expires in 1 hour.</p>`,
       });
     }
 
-    return reply.send({ message: '如果邮箱已注册，重置链接已发送' });
+    return reply.send({ message: 'If the email is registered, a reset link has been sent' });
   });
 
   // POST /reset-password
