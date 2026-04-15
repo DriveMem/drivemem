@@ -23,7 +23,7 @@ const EVENT_CONFIG = {
   },
   conversation: {
     icon: MessageCircle,
-    label: "AI conversations",
+    label: "AI Conversations",
     dotColor: "bg-emerald-500",
     iconColor: "text-emerald-500",
   },
