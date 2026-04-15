@@ -71,13 +71,13 @@ export default function LandingPage() {
       <nav className="fixed top-0 z-50 w-full border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
           <Link href="/" className="text-base font-semibold tracking-tight text-white">
-            AI Drive
+            DriveMem
           </Link>
           <div className="flex items-center gap-6">
-            <Link href="/docs" className="text-sm text-zinc-400 transition-colors hover:text-white">
+            <Link href="/developers" className="text-sm text-zinc-400 transition-colors hover:text-white">
               Docs
             </Link>
-            <Link href="/pricing" className="text-sm text-zinc-400 transition-colors hover:text-white">
+            <Link href="/signup" className="text-sm text-zinc-400 transition-colors hover:text-white">
               Pricing
             </Link>
             <Link
@@ -122,7 +122,7 @@ export default function LandingPage() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href="/docs"
+                href="/developers"
                 className="inline-flex items-center gap-2 rounded-lg border border-zinc-700 px-6 py-3 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
               >
                 Documentation
@@ -207,10 +207,10 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-zinc-800 bg-zinc-950 py-12">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-6 px-6 sm:flex-row">
-          <span className="text-sm text-zinc-500">&copy; {new Date().getFullYear()} AI Drive</span>
+          <span className="text-sm text-zinc-500">&copy; {new Date().getFullYear()} DriveMem</span>
           <div className="flex gap-6">
-            <Link href="/docs" className="text-sm text-zinc-500 transition-colors hover:text-zinc-300">Docs</Link>
-            <Link href="/pricing" className="text-sm text-zinc-500 transition-colors hover:text-zinc-300">Pricing</Link>
+            <Link href="/developers" className="text-sm text-zinc-500 transition-colors hover:text-zinc-300">Developers</Link>
+            <Link href="/signup" className="text-sm text-zinc-500 transition-colors hover:text-zinc-300">Get Started</Link>
             <Link href="/privacy" className="text-sm text-zinc-500 transition-colors hover:text-zinc-300">Privacy</Link>
             <Link href="/terms" className="text-sm text-zinc-500 transition-colors hover:text-zinc-300">Terms</Link>
           </div>
