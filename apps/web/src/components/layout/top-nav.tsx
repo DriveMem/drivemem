@@ -77,7 +77,7 @@ export function TopNav() {
     } catch {}
   }
 
-  const markMark all read = async () => {
+  const markAllRead = async () => {
     try {
       await apiFetch("/api/notifications/read-all", { method: "POST" })
       await Promise.all([fetchNotifications(), fetchUnreadCount()])
@@ -125,8 +125,8 @@ export function TopNav() {
             <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-4 py-3">
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Notifications</h3>
               {unreadCount > 0 && (
-                <button onClick={markMark all read} className="text-xs text-brand-500 hover:underline">
-                  Mark all read
+                <button onClick={markAllRead} className="text-xs text-brand-500 hover:underline">
+                  Mark all as read
                 </button>
               )}
             </div>
