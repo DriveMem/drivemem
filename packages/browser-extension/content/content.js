@@ -10,6 +10,7 @@
   let isLoading = false;
   let captureCount = 0;
   let connectionStatus = 'unknown'; // 'connected' | 'disconnected' | 'unknown'
+  let lastCaptureMessageCount = 0;
 
   // Styles
   const style = document.createElement('style');
@@ -66,6 +67,26 @@
       align-items: center;
       justify-content: center;
       padding: 0 4px;
+    }
+    .drivemem-fab-auto {
+      position: absolute;
+      top: -6px;
+      left: -8px;
+      background: #4F5BD5;
+      color: white;
+      font-size: 8px;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .drivemem-fab-main.flash-green {
+      animation: drivemem-flash-green 0.8s ease;
+    }
+    @keyframes drivemem-flash-green {
+      0% { background: #4F5BD5; }
+      30% { background: #22c55e; }
+      100% { background: #4F5BD5; }
     }
     .drivemem-fab-status {
       position: absolute;
@@ -261,11 +282,41 @@
     return false;
   }
 
-  // --- Auto-capture foundation (v2 prep) ---
+  // --- Auto-capture (v2) ---
 
   let lastActivityTime = Date.now();
   let autoCapturePending = false;
   const IDLE_THRESHOLD = 10000;
+
+  function autoCapture() {
+    const conversation = extractConversation();
+    if (!conversation) return;
+    if (conversation.messageCount <= lastCaptureMessageCount) return;
+    if (conversation.messageCount < 2) return;
+
+    lastCaptureMessageCount = conversation.messageCount;
+
+    chrome.storage.local.get(['endpoint', 'apiKey', 'autoCapture'], (config) => {
+      if (!config.endpoint || !config.apiKey) return;
+      if (config.autoCapture === false) return;
+
+      chrome.runtime.sendMessage({
+        type: 'CAPTURE_CONVERSATION',
+        endpoint: config.endpoint,
+        apiKey: config.apiKey,
+        content: conversation.markdown,
+        title: conversation.title,
+      }, (response) => {
+        if (response?.success) {
+          captureCount++;
+          updateBadge();
+          showToast('✓ Auto-saved to DriveMem');
+          mainBtn.classList.add('flash-green');
+          setTimeout(() => mainBtn.classList.remove('flash-green'), 800);
+        }
+      });
+    });
+  }
 
   function setupAutoDetection() {
     const mainArea = document.querySelector('main') || document.body;
@@ -282,13 +333,101 @@
     setInterval(() => {
       if (autoCapturePending && (Date.now() - lastActivityTime) > IDLE_THRESHOLD) {
         autoCapturePending = false;
-        // v1: log only; v2 will trigger actual capture
-        console.log('[DriveMem] Conversation idle detected — auto-capture ready');
+        autoCapture();
       }
     }, 5000);
   }
 
   setupAutoDetection();
+
+  // --- Auto-inject (v2) ---
+
+  function setupAutoInject() {
+    document.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        const target = e.target;
+        const isInputArea = target?.closest('#prompt-textarea') ||
+                            target?.closest('[contenteditable="true"]') ||
+                            target?.tagName === 'TEXTAREA';
+
+        if (!isInputArea) return;
+
+        const config = await new Promise(resolve =>
+          chrome.storage.local.get(['endpoint', 'apiKey', 'autoInject'], resolve)
+        );
+
+        if (!config.endpoint || !config.apiKey || config.autoInject === false) return;
+
+        const currentText = target.textContent || target.value || '';
+        if (!currentText.trim()) return;
+        if (currentText.includes('[DriveMem Context]')) return;
+
+        const messageCount = document.querySelectorAll('[data-message-author-role]').length;
+        if (messageCount > 0) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        try {
+          const response = await new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage({
+              type: 'GET_BRIEFING',
+              endpoint: config.endpoint,
+              apiKey: config.apiKey,
+              task: currentText,
+            }, (res) => res?.error ? reject(new Error(res.error)) : resolve(res));
+          });
+
+          if (response?.briefing || response?.compiledContext) {
+            const briefingText = response.briefing || response.compiledContext;
+            const contextBlock = `[DriveMem Context]\n${briefingText}\n[/DriveMem Context]\n\n`;
+
+            if (target.contentEditable === 'true') {
+              target.textContent = contextBlock + currentText;
+            } else {
+              const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
+              if (setter) setter.call(target, contextBlock + currentText);
+            }
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+
+            showToast('✓ Context injected from DriveMem');
+
+            setTimeout(() => {
+              target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+            }, 100);
+          }
+        } catch (err) {
+          console.warn('[DriveMem] Auto-inject failed:', err);
+        }
+      }
+    }, true);
+  }
+
+  setupAutoInject();
+
+  // --- Auto-mode badge ---
+
+  function updateAutoBadge() {
+    chrome.storage.local.get(['autoCapture', 'autoInject'], (config) => {
+      let autoBadge = mainBtn.querySelector('.drivemem-fab-auto');
+      const autoEnabled = config.autoCapture !== false && config.autoInject !== false;
+      if (autoEnabled) {
+        if (!autoBadge) {
+          autoBadge = document.createElement('span');
+          autoBadge.className = 'drivemem-fab-auto';
+          autoBadge.textContent = 'AUTO';
+          mainBtn.appendChild(autoBadge);
+        }
+      } else if (autoBadge) {
+        autoBadge.remove();
+      }
+    });
+  }
+
+  updateAutoBadge();
+  chrome.storage.onChanged.addListener((changes) => {
+    if (changes.autoCapture || changes.autoInject) updateAutoBadge();
+  });
 
   // --- Loading state management ---
 

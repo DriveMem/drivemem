@@ -12,11 +12,18 @@ Chrome Extension (Manifest V3) for saving ChatGPT conversations to DriveMem and 
 
 ## Features
 
+### v1 — Manual
 - **📥 Save Conversation** — Captures the current ChatGPT conversation and saves it to DriveMem
 - **📤 Get Briefing** — Fetches a knowledge briefing for a task and injects it into the ChatGPT input box
 - **🔄 Connection Health Check** — Periodic background checks with badge indicator
 - **📊 Knowledge Base Stats** — Shows file count in popup after connecting
 - **🕐 Last Synced** — Tracks when the last save happened
+
+### v2 — Automatic
+- **🔁 Auto-Capture** — Automatically saves conversations when idle for 10 seconds after activity. Detects new messages since last capture and skips if nothing changed.
+- **💉 Auto-Inject** — Automatically prepends DriveMem knowledge context to the first message of a new conversation when you press Enter. If injection fails, the message sends normally without blocking.
+- **⚙️ Toggle Controls** — Both auto features can be enabled/disabled in the popup settings (enabled by default).
+- **🏷️ AUTO Badge** — FAB shows an "AUTO" badge when both auto features are enabled. FAB flashes green on each auto-capture.
 
 ## Architecture
 
@@ -77,13 +84,13 @@ The extension uses three fallback strategies to extract ChatGPT conversations:
 
 - Only works on `chatgpt.com` and `chat.openai.com` (v1 scope)
 - ChatGPT DOM structure may change without notice — multi-strategy mitigates this
-- Auto-capture is detection-only in v1 (logs to console, no automatic saving)
+- Auto-capture is fully functional in v2 (saves automatically on idle)
+- Auto-inject prepends context on first message only; re-triggers Enter after injection
 - No conversation diff detection (saves full conversation each time)
 - Briefing injection may not trigger ChatGPT's send button styling update
 
-## v2 Roadmap
+## v3 Roadmap
 
-- Auto-capture: automatically save when conversation goes idle
 - Multi-platform: Claude, Gemini, Perplexity support
 - Conversation diff: only save new messages since last capture
 - Side panel UI for browsing knowledge base

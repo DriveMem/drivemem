@@ -5,12 +5,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusEl = document.getElementById('status');
   const statsEl = document.getElementById('stats');
   const lastSyncEl = document.getElementById('lastSync');
+  const autoCaptureEl = document.getElementById('autoCapture');
+  const autoInjectEl = document.getElementById('autoInject');
 
   // Load saved config
-  chrome.storage.local.get(['endpoint', 'apiKey', 'lastSyncTime'], (data) => {
+  chrome.storage.local.get(['endpoint', 'apiKey', 'lastSyncTime', 'autoCapture', 'autoInject'], (data) => {
     if (data.endpoint) endpointInput.value = data.endpoint;
     if (data.apiKey) apiKeyInput.value = data.apiKey;
     updateLastSync(data.lastSyncTime);
+    autoCaptureEl.checked = data.autoCapture !== false;
+    autoInjectEl.checked = data.autoInject !== false;
 
     // If already configured, auto-check connection and load stats
     if (data.endpoint && data.apiKey) {
@@ -83,6 +87,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
       verifyBtn.disabled = false;
     }
+  });
+
+  // Auto-toggle handlers
+  autoCaptureEl.addEventListener('change', () => {
+    chrome.storage.local.set({ autoCapture: autoCaptureEl.checked });
+  });
+  autoInjectEl.addEventListener('change', () => {
+    chrome.storage.local.set({ autoInject: autoInjectEl.checked });
   });
 
   // Refresh last sync every 30s while popup is open

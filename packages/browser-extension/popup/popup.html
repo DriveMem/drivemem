@@ -17,6 +17,21 @@
     <div id="status"></div>
     <div id="stats" class="stats"></div>
     <div id="lastSync" class="last-sync"></div>
+    <hr style="margin: 16px 0 12px; border: none; border-top: 1px solid #eee;">
+    <div class="setting-row">
+      <label class="toggle-label">
+        <input type="checkbox" id="autoCapture" checked>
+        Auto-save conversations
+      </label>
+      <p class="setting-desc">Automatically save when conversation goes idle</p>
+    </div>
+    <div class="setting-row">
+      <label class="toggle-label">
+        <input type="checkbox" id="autoInject" checked>
+        Auto-inject context
+      </label>
+      <p class="setting-desc">Automatically add knowledge context to first message</p>
+    </div>
   </div>
   <script src="popup.js"></script>
 </body>
