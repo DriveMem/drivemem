@@ -134,7 +134,7 @@ function MessageActions({ content }: { content: string }) {
     setSaving(true)
     try {
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)
-      await apiFetch("/api/v1/store", {
+      await apiFetch("/api/files/store", {
         method: "POST",
         body: JSON.stringify({
           content,

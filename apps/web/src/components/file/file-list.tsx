@@ -375,7 +375,7 @@ export function FileList() {
 
   const handleBatchArchive = useCallback(async () => {
     try {
-      await apiFetch("/api/v1/files/batch", {
+      await apiFetch("/api/files/batch", {
         method: "POST",
         body: JSON.stringify({ action: "archive", fileIds: Array.from(selected) }),
       })
@@ -579,7 +579,7 @@ export function FileList() {
             <button
               onClick={async () => {
                 try {
-                  await apiFetch("/api/v1/store", {
+                  await apiFetch("/api/files/store", {
                     method: "POST",
                     body: JSON.stringify({ content: "", title: "Untitled note" }),
                   })

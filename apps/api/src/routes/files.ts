@@ -567,4 +567,54 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     await db.update(schema.files).set({ archivedAt: null }).where(eq(schema.files.id, id));
     return reply.send({ message: '文件已取消归档' });
   });
+
+  // POST /batch — session-auth batch operations (delete/archive/unarchive)
+  fastify.post('/batch', async (request, reply) => {
+    const userId = request.user!.id;
+    const body = request.body as { action: string; fileIds: string[] };
+    if (!body?.action || !body?.fileIds?.length) return reply.status(400).send({ error: 'action and fileIds required' });
+
+    const { eq, and, inArray } = await import('drizzle-orm');
+    if (body.action === 'delete') {
+      await db.delete(schema.files).where(and(eq(schema.files.userId, userId), inArray(schema.files.id, body.fileIds)));
+    } else if (body.action === 'archive') {
+      await db.update(schema.files).set({ archivedAt: new Date() }).where(and(eq(schema.files.userId, userId), inArray(schema.files.id, body.fileIds)));
+    } else if (body.action === 'unarchive') {
+      await db.update(schema.files).set({ archivedAt: null }).where(and(eq(schema.files.userId, userId), inArray(schema.files.id, body.fileIds)));
+    }
+    return reply.send({ success: true });
+  });
+
+  // POST /store — session-auth knowledge store
+  fastify.post('/store', async (request, reply) => {
+    const userId = request.user!.id;
+    const body = request.body as { content: string; title?: string; tags?: string };
+    if (!body?.content) return reply.status(400).send({ error: 'content is required' });
+
+    const title = body.title || body.content.slice(0, 30).replace(/\n/g, ' ');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `note-${timestamp}.md`;
+    const mdContent = `# ${title}\n\n${body.content}`;
+
+    const { randomUUID } = await import('crypto');
+    const fileId = randomUUID();
+    const s3Key = `users/${userId}/files/${fileId}/${filename}`;
+    const buffer = Buffer.from(mdContent, 'utf-8');
+
+    const { uploadObject } = await import('../services/s3.service.js');
+    await uploadObject(s3Key, buffer, 'text/markdown');
+
+    await db.insert(schema.files).values({
+      id: fileId, name: filename, originalName: filename,
+      mimeType: 'text/markdown', size: buffer.length,
+      status: 'parsing', userId, s3Key,
+    });
+
+    const { Queue } = await import('bullmq');
+    const queue = new Queue('file-parse', { connection: { host: 'localhost', port: 6379 } });
+    await queue.add('parse', { fileId, userId, s3Key, mimeType: 'text/markdown' });
+    await queue.close();
+
+    return reply.status(201).send({ fileId, title });
+  });
 }
