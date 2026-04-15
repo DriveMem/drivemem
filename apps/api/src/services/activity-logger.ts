@@ -8,6 +8,7 @@ export async function logActivity(params: {
   action: string;
   detail?: string;
   metadata?: Record<string, unknown>;
+  relatedFileIds?: string[];
 }) {
   try {
     await db.insert(schema.apiActivityLogs).values({
@@ -17,6 +18,7 @@ export async function logActivity(params: {
       action: params.action,
       detail: params.detail || null,
       metadata: params.metadata || null,
+      relatedFileIds: params.relatedFileIds || null,
     });
   } catch (e) {
     console.error('[activity-logger] Failed to log:', e);

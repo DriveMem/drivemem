@@ -232,6 +232,7 @@ export const apiActivityLogs = pgTable('api_activity_logs', {
   action: varchar('action', { length: 50 }).notNull(),
   detail: text('detail'),
   metadata: jsonb('metadata'),
+  relatedFileIds: jsonb('related_file_ids'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 

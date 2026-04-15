@@ -292,7 +292,8 @@ export default async function v1Routes(fastify: FastifyInstance) {
       });
     }
 
-    logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'search', detail: query.q, metadata: { resultCount: searchResults.length, format } });
+    const searchFileIdSet = [...new Set(searchResults.map(c => c.fileId))];
+    logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'search', detail: query.q, metadata: { resultCount: searchResults.length, format }, relatedFileIds: searchFileIdSet });
     return reply.send({
       results: searchResults.map(c => ({
         fileId: c.fileId,
@@ -653,7 +654,69 @@ ${insightsSection}
       hints: body.hints,
       format: body.format,
     });
-    logActivity({ userId: request.user!.id, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'compile', detail: body.task });
+    const compileFileIds = (result as any).sources?.map((s: any) => s.fileId).filter(Boolean) || [];
+    logActivity({ userId: request.user!.id, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'compile', detail: body.task, relatedFileIds: [...new Set(compileFileIds)] as string[] });
     return reply.send(result);
+  });
+
+  // GET /activity-flow — activities grouped by agent with flow detection
+  fastify.get('/activity-flow', { preHandler: [requireApiKey] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const query = request.query as { limit?: string };
+    const limit = Math.min(parseInt(query.limit || '50'), 200);
+
+    const activities = await db.select()
+      .from(schema.apiActivityLogs)
+      .where(eq(schema.apiActivityLogs.userId, userId))
+      .orderBy(desc(schema.apiActivityLogs.createdAt))
+      .limit(limit);
+
+    // Group by agent
+    const agentGroups: Record<string, any[]> = {};
+    for (const a of activities) {
+      const agent = a.agentName || 'You';
+      if (!agentGroups[agent]) agentGroups[agent] = [];
+      agentGroups[agent].push({
+        id: a.id,
+        action: a.action,
+        detail: a.detail,
+        createdAt: a.createdAt,
+        relatedFileIds: a.relatedFileIds,
+        metadata: a.metadata,
+      });
+    }
+
+    // Build flow connections
+    const fileAgentMap: Record<string, string> = {};
+    for (const a of activities) {
+      if (a.action === 'store' && a.metadata) {
+        const fileId = (a.metadata as any).fileId;
+        if (fileId) fileAgentMap[fileId] = a.agentName || 'You';
+      }
+    }
+
+    const flowSet = new Set<string>();
+    const flows: Array<{ from: string; to: string; fileCount: number; timestamp: string }> = [];
+    for (const a of activities) {
+      if ((a.action === 'search' || a.action === 'compile') && a.relatedFileIds) {
+        const relatedIds = a.relatedFileIds as string[];
+        for (const fid of relatedIds) {
+          const sourceAgent = fileAgentMap[fid];
+          const targetAgent = a.agentName || 'You';
+          if (sourceAgent && sourceAgent !== targetAgent) {
+            const key = `${sourceAgent}->${targetAgent}`;
+            if (!flowSet.has(key)) {
+              flowSet.add(key);
+              flows.push({ from: sourceAgent, to: targetAgent, fileCount: 1, timestamp: a.createdAt?.toISOString() || '' });
+            } else {
+              const existing = flows.find(f => `${f.from}->${f.to}` === key);
+              if (existing) existing.fileCount++;
+            }
+          }
+        }
+      }
+    }
+
+    return reply.send({ agents: agentGroups, flows, totalActivities: activities.length });
   });
 }
