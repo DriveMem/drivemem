@@ -101,7 +101,7 @@ export default function SignupPage() {
             id="email"
             type="email"
             placeholder="your@email.com"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-[#4F5BD5] focus:border-[#4F5BD5]"
+            className="rounded-xl h-12 text-base border-zinc-200 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             {...register("email")}
           />
           {errors.email && (
@@ -115,7 +115,7 @@ export default function SignupPage() {
             id="password"
             type="password"
             placeholder="At least 8 characters with letters and numbers"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-[#4F5BD5] focus:border-[#4F5BD5]"
+            className="rounded-xl h-12 text-base border-zinc-200 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             {...register("password")}
           />
           {errors.password && (
@@ -129,7 +129,7 @@ export default function SignupPage() {
             id="confirmPassword"
             type="password"
             placeholder="Re-enter password"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-[#4F5BD5] focus:border-[#4F5BD5]"
+            className="rounded-xl h-12 text-base border-zinc-200 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             {...register("confirmPassword")}
           />
           {errors.confirmPassword && (
@@ -143,7 +143,7 @@ export default function SignupPage() {
 
         <Button
           type="submit"
-          className="bg-[#4F5BD5] hover:bg-[#3D49C4] rounded-xl h-12 w-full text-white font-medium"
+          className="bg-brand-500 hover:bg-brand-600 rounded-xl h-12 w-full text-white font-medium"
           disabled={loading}
         >
           {loading ? "Sign up..." : "Sign up"}
