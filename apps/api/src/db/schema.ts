@@ -33,6 +33,9 @@ export const folders = pgTable('folders', {
   brief: text('brief'),
   status: text('status'),
   goal: text('goal'),
+  currentStep: text('current_step'),
+  lastAgent: text('last_agent'),
+  taskStatus: text('task_status'), // active | blocked | completed
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
