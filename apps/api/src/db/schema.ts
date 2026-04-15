@@ -19,6 +19,7 @@ export const users = pgTable('users', {
   notificationPreferences: jsonb('notification_preferences'),
   profile: jsonb('profile').default({}),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
 });
 
 // --- File status enum ---

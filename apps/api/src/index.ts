@@ -138,6 +138,9 @@ await app.register(mcpHttpRoutes, { prefix: '/mcp' });
 import timelineRoutes from './routes/timeline.js';
 await app.register(timelineRoutes, { prefix: '/api/timeline' });
 
+import resumeBriefRoutes from './routes/resume-brief.js';
+await app.register(resumeBriefRoutes, { prefix: '/api/resume-brief' });
+
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {
   return reply.send({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });

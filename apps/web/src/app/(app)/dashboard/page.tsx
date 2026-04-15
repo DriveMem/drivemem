@@ -185,9 +185,16 @@ export default function DashboardPage() {
   const [newFolderName, setNewFolderName] = useState("")
   const [activities, setActivities] = useState<any[]>([])
   const [insights, setInsights] = useState<any[]>([])
+  const [resumeBrief, setResumeBrief] = useState<any>(null)
   const reportRef = useRef<ReportSectionHandle>(null)
 
   useEffect(() => { document.title = "Dashboard - DriveMem" }, [])
+
+  useEffect(() => {
+    apiFetch("/api/resume-brief")
+      .then((data: any) => { if (data?.show) setResumeBrief(data) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     apiFetch("/api/insights?limit=5").then((data: any) => {
@@ -260,6 +267,37 @@ export default function DashboardPage() {
       {/* Tab content */}
       {activeTab === "files" ? (
         <div className="flex-1 min-h-0 flex flex-col">
+          {resumeBrief && (
+            <div className="mx-6 mb-4 rounded-xl border border-[#4F5BD5]/20 bg-[#4F5BD5]/5 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold">👋 Welcome back!</h3>
+                <button onClick={() => setResumeBrief(null)} className="text-xs text-muted-foreground hover:text-foreground">✕</button>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                You were away for {resumeBrief.hoursSinceActive}h. Here&apos;s what happened:
+              </p>
+              <div className="flex gap-4 text-xs">
+                {resumeBrief.newFilesCount > 0 && (
+                  <span>📄 {resumeBrief.newFilesCount} new files</span>
+                )}
+                {resumeBrief.newInsightsCount > 0 && (
+                  <span>💡 {resumeBrief.newInsightsCount} new insights</span>
+                )}
+                {resumeBrief.recentActivity.length > 0 && (
+                  <span>🤖 {resumeBrief.recentActivity.length} agent actions</span>
+                )}
+              </div>
+              {resumeBrief.recentActivity.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {resumeBrief.recentActivity.slice(0, 3).map((a: any, i: number) => (
+                    <p key={i} className="text-xs text-muted-foreground">
+                      {a.agentName} {a.action === 'store' ? 'saved' : a.action === 'search' ? 'searched for' : a.action === 'compile' ? 'compiled' : a.action} &quot;{a.detail}&quot;
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           <InsightsSummaryCard insights={insights} onSwitchToAi={() => handleTabSwitch("ai")} />
           {!currentFolderId ? (
             <div className="flex-1 min-h-0 overflow-auto p-6">
