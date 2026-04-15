@@ -50,8 +50,8 @@ const STEPS = [
 ] as const
 
 const FEATURES = [
-  { icon: MessageSquare, title: "Context Compiler", desc: "Describe a task, get a compiled context packet with exactly the knowledge your agent needs.", reverse: false },
-  { icon: Lightbulb, title: "AI Knowledge Graph", desc: "AI discovers connections, contradictions, and trends across all your files.", reverse: true },
+  { icon: MessageSquare, title: "Context Compiler", desc: "Describe a task, get a compiled context packet with exactly the knowledge your agent needs. Budget-aware, model-optimized.", reverse: false },
+  { icon: Lightbulb, title: "AI Knowledge Graph", desc: "AI discovers connections, contradictions, and trends across all your files. Proactive insights, delivered.", reverse: true },
   { icon: Quote, title: "Semantic Search & RAG", desc: "Search by meaning, not keywords. Ask questions, get answers with cited sources from your knowledge base.", reverse: false },
   { icon: FileSearch, title: "Agent Continuity", desc: "Switch agents mid-task. Context follows automatically.", reverse: true },
   { icon: Command, title: "MCP / API / CLI", desc: "Standard MCP protocol, REST API, CLI tools. Any AI agent connects with a single config line.", reverse: false },
@@ -120,11 +120,11 @@ export default function LandingPage() {
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               { emoji: "🤖", title: "AI Developers", desc: "Give every agent the right context. Context Compiler + MCP — one API call, zero prompt engineering." },
-              { emoji: "📊", title: "Founders", desc: "Brief your AI on the full picture. Competitive intel, decisions, strategy — compiled into context, not scattered in files." },
-              { emoji: "🔬", title: "Researchers", desc: "Switch tools mid-research without losing context. AI connects your papers and carries insights to the next agent." },
+              { emoji: "📊", title: "Founders", desc: "Brief your AI on the full picture. Competitive intel, decisions, strategy — compiled into context." },
+              { emoji: "🔬", title: "Researchers", desc: "Switch tools mid-research without losing context. AI connects your papers and carries insights forward." },
               { emoji: "💼", title: "Professionals", desc: "Project context that follows you. AI compiles what matters — no re-explaining to every new tool." },
               { emoji: "📄", title: "Students", desc: "Study with any AI, keep one knowledge base. Context Compiler pulls the right references for every assignment." },
-              { emoji: "📚", title: "Lifelong Learners", desc: "Your knowledge grows with you. AI connects everything you learn — and any agent you use can tap into it." },
+              { emoji: "📚", title: "Lifelong Learners", desc: "Your knowledge grows with you. AI connects everything you learn — any agent can tap into it." },
             ].map((s) => (
               <div key={s.title} className="rounded-xl border border-[#E5E4E1] bg-white p-6 transition hover:shadow-lg hover:shadow-black/5">
                 <span className="text-3xl">{s.emoji}</span>
