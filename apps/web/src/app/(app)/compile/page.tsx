@@ -184,7 +184,7 @@ function CompileContent() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="h-5 w-5 text-[#4F5BD5]" />
+          <Sparkles className="h-5 w-5 text-brand-500" />
           <h1 className="text-2xl font-bold">Prepare a briefing for your AI</h1>
         </div>
         <p className="text-sm text-muted-foreground">
@@ -200,7 +200,7 @@ function CompileContent() {
             value={task}
             onChange={(e) => setTask(e.target.value)}
             placeholder="Describe your task... e.g. 'Write a competitive analysis report for Q2'"
-            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none transition min-h-[100px] resize-y focus:border-[#4F5BD5] focus:ring-2 focus:ring-[#4F5BD5]/20"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none transition min-h-[100px] resize-y focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           />
         </div>
 
@@ -210,7 +210,7 @@ function CompileContent() {
             <select
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#4F5BD5]"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand-500"
             >
               <option value="">All projects</option>
               {folders.map((f: any) => (
@@ -225,13 +225,13 @@ function CompileContent() {
               value={selectedTags}
               onChange={(e) => setSelectedTags(e.target.value)}
               placeholder="e.g. decision, engineering"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[#4F5BD5]"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand-500"
             />
           </div>
           <Button
             onClick={handleCompile}
             disabled={!task.trim() || loading}
-            className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"
+            className="bg-brand-500 hover:bg-brand-600 text-white"
           >
             {loading ? (
               <>
@@ -255,7 +255,7 @@ function CompileContent() {
             <button
               key={ex.title}
               onClick={() => setTask(ex.title)}
-              className="rounded-xl border border-border bg-card p-4 text-left hover:border-[#4F5BD5]/50 hover:shadow-sm transition"
+              className="rounded-xl border border-border bg-card p-4 text-left hover:border-brand-500/50 hover:shadow-sm transition"
             >
               <span className="text-2xl mb-2 block">{ex.icon}</span>
               <span className="text-sm font-medium block">{ex.title}</span>
@@ -286,8 +286,8 @@ function CompileContent() {
       {loading && (
         <div className="rounded-xl border border-border p-6 space-y-4 animate-pulse">
           <div className="flex items-center gap-2 mb-2">
-            <Loader2 className="h-4 w-4 animate-spin text-[#4F5BD5]" />
-            <span className="text-sm font-medium text-[#4F5BD5]">Compiling context from your knowledge base...</span>
+            <Loader2 className="h-4 w-4 animate-spin text-brand-500" />
+            <span className="text-sm font-medium text-brand-500">Compiling context from your knowledge base...</span>
           </div>
           <Skeleton className="h-4 w-3/4" />
           <Skeleton className="h-4 w-1/2" />

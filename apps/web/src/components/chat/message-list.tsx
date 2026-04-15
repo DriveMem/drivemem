@@ -172,7 +172,7 @@ function MessageActions({ content }: { content: string }) {
         {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
       </button>
       <button onClick={handleSaveAsNote} disabled={saving} className="p-1 rounded hover:bg-accent" title="Save as note">
-        <Bookmark className={cn("h-3.5 w-3.5", saving ? "animate-pulse text-[#4F5BD5]" : "text-muted-foreground")} />
+        <Bookmark className={cn("h-3.5 w-3.5", saving ? "animate-pulse text-brand-500" : "text-muted-foreground")} />
       </button>
       <button onClick={handleShare} className="p-1 rounded hover:bg-accent" title="Share">
         <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
@@ -189,7 +189,7 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
       {messages.map((msg) => (
         <div key={msg.id} className={cn("flex gap-3 group", msg.role === "user" ? "justify-end" : "")}>
           {msg.role === "assistant" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>}
-          <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-[#4F5BD5] text-white rounded-2xl rounded-br-sm px-4 py-3" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>
+          <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-brand-500 text-white rounded-2xl rounded-br-sm px-4 py-3" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>
             {msg.role === "assistant" ? (
               <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight, rehypeRaw]} components={markdownComponents}>{transformCitations(msg.content)}</ReactMarkdown>
@@ -215,7 +215,7 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
                   </p>
                 )}</>)}
           </div>
-          {msg.role === "user" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#4F5BD5] flex items-center justify-center text-white text-xs font-bold">U</div>}
+          {msg.role === "user" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold">U</div>}
         </div>
       ))}
       {streaming !== undefined && (

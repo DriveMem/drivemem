@@ -68,7 +68,7 @@ export function ConversationList() {
         <h2 className="text-sm font-semibold">Conversation history</h2>
       </div>
       <div className="px-3 pt-3">
-        <Button className="w-full bg-[#4F5BD5] hover:bg-[#3D49C4] text-white rounded-lg py-2.5 text-sm font-medium" onClick={() => router.push("/chat?new=" + Date.now())}>
+        <Button className="w-full bg-brand-500 hover:bg-brand-600 text-white rounded-lg py-2.5 text-sm font-medium" onClick={() => router.push("/chat?new=" + Date.now())}>
           + New conversation
         </Button>
       </div>
@@ -90,8 +90,8 @@ export function ConversationList() {
         </div>
       ) : sorted.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-          <div className="rounded-full bg-[#4F5BD5]/10 p-3">
-            <MessageCircle className="h-5 w-5 text-[#4F5BD5]" />
+          <div className="rounded-full bg-brand-500/10 p-3">
+            <MessageCircle className="h-5 w-5 text-brand-500" />
           </div>
           <p className="text-sm text-muted-foreground">No conversations yet</p>
           <p className="text-xs text-muted-foreground/60">Clickbutton above to start your first AI conversation</p>

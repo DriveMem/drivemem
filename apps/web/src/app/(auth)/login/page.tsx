@@ -78,7 +78,7 @@ function LoginForm() {
             id="email"
             type="email"
             placeholder="your@email.com"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-[#4F5BD5] focus:border-[#4F5BD5]"
+            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             {...register("email")}
           />
           {errors.email && (
@@ -100,7 +100,7 @@ function LoginForm() {
             id="password"
             type="password"
             placeholder="••••••••"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-[#4F5BD5] focus:border-[#4F5BD5]"
+            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             {...register("password")}
           />
           {errors.password && (
@@ -119,7 +119,7 @@ function LoginForm() {
 
         <Button
           type="submit"
-          className="bg-[#4F5BD5] hover:bg-[#3D49C4] rounded-xl h-12 w-full text-white font-medium"
+          className="bg-brand-500 hover:bg-brand-600 rounded-xl h-12 w-full text-white font-medium"
           disabled={loading}
         >
           {loading ? "Sign in..." : "Sign in"}

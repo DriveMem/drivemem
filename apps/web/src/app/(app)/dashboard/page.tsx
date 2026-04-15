@@ -317,9 +317,9 @@ export default function DashboardPage() {
                   <Plug className="h-5 w-5 text-brand-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-semibold">Connect your AI agents</h3>
+                  <h3 className="text-sm font-semibold">Connect Your AI Agent</h3>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Give any AI tool access to your knowledge. Create an API key, then paste the config into your agent.
+                    Let your agents access your knowledge base
                   </p>
                   <div className="flex gap-2 mt-3">
                     <Button size="sm" onClick={() => router.push('/settings?tab=developer')} className="bg-brand-500 hover:bg-brand-600 text-white">

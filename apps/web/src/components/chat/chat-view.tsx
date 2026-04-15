@@ -65,8 +65,8 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
     <div className="flex flex-1 flex-col items-center px-4 pt-8 pb-4 overflow-y-auto">
       {/* Hero section */}
       <div className="flex flex-col items-center gap-2 mb-6">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#4F5BD5]/20 to-[#4F5BD5]/5">
-          <MessageSquare className="h-7 w-7 text-[#4F5BD5]" />
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-500/20 to-brand-500/5">
+          <MessageSquare className="h-7 w-7 text-brand-500" />
         </div>
         <h2 className="text-xl font-semibold text-foreground">Your DriveMem assistant</h2>
         <p className="text-sm text-muted-foreground text-center max-w-md">
@@ -297,11 +297,11 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   if (!hasFiles) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#4F5BD5]/20 to-[#4F5BD5]/5">
-          <MessageSquare className="h-8 w-8 text-[#4F5BD5]" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-500/20 to-brand-500/5">
+          <MessageSquare className="h-8 w-8 text-brand-500" />
         </div>
         <p className="text-lg font-medium text-foreground">You haven't let AI remember any files yet</p>
-        <Button asChild className="bg-[#4F5BD5] hover:bg-[#4F5BD5]/90 text-white rounded-xl px-6"><Link href="/dashboard">Upload files</Link></Button>
+        <Button asChild className="bg-brand-500 hover:bg-brand-500/90 text-white rounded-xl px-6"><Link href="/dashboard">Upload files</Link></Button>
       </div>
     )
   }
@@ -339,10 +339,10 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       }}
     >
       {isDragging && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#4F5BD5]/10 border-2 border-dashed border-[#4F5BD5] rounded-xl">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-brand-500/10 border-2 border-dashed border-brand-500 rounded-xl">
           <div className="text-center">
-            <Upload className="h-10 w-10 text-[#4F5BD5] mx-auto mb-2" />
-            <p className="text-sm font-medium text-[#4F5BD5]">Drag files here to upload</p>
+            <Upload className="h-10 w-10 text-brand-500 mx-auto mb-2" />
+            <p className="text-sm font-medium text-brand-500">Drag files here to upload</p>
             <p className="text-xs text-muted-foreground mt-1">Uploadand AI will automatically understand the file content</p>
           </div>
         </div>
@@ -350,10 +350,10 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <span className="text-xs text-muted-foreground">AI Memory scope: </span>
         <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined); toast("Memory scope: All files", { duration: 1500 }) }} className="gap-1 text-xs">
-          <Files className="h-3 w-3" />All Files{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}
+          <Files className="h-3 w-3" />All Files{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}
         </Button>
         {scope !== "all" && scopeLabel && (
-          <span className="rounded-full bg-[#4F5BD5]/10 px-2 py-0.5 text-[10px] text-[#4F5BD5] font-medium">
+          <span className="rounded-full bg-brand-500/10 px-2 py-0.5 text-[10px] text-brand-500 font-medium">
             Current: {scopeLabel}
           </span>
         )}
@@ -361,7 +361,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant={scope === "folder" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs">
-              <Folder className="h-3 w-3" />{scope === "folder" && scopeLabel ? scopeLabel : "Specified folder"}{scope === "folder" && scopeId && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
+              <Folder className="h-3 w-3" />{scope === "folder" && scopeLabel ? scopeLabel : "Specified folder"}{scope === "folder" && scopeId && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
@@ -378,7 +378,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant={scope === "file" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs">
-              <FileText className="h-3 w-3" />{scope === "file" && scopeLabel ? scopeLabel : "Specified files"}{scope === "file" && scopeId && <span className="ml-1 rounded-full bg-[#4F5BD5] text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
+              <FileText className="h-3 w-3" />{scope === "file" && scopeLabel ? scopeLabel : "Specified files"}{scope === "file" && scopeId && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">

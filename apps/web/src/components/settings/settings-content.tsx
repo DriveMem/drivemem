@@ -22,6 +22,7 @@ function ApiKeysCard() {
   const [keyName, setKeyName] = useState("")
   const [newKey, setNewKey] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
+  const [showConfigFor, setShowConfigFor] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchKeys = async () => {
@@ -103,19 +104,37 @@ function ApiKeysCard() {
                     {k.lastUsedAt && ` · Last used ${new Date(k.lastUsedAt).toLocaleDateString("zh-CN")}`}
                   </p>
                 </div>
-                <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteKey(k.id)}>
-                  Delete
-                </Button>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setShowConfigFor(k.id)}>
+                    Show Config
+                  </Button>
+                  <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteKey(k.id)}>
+                    Delete
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         )}
 
         <p className="mt-4 text-xs text-muted-foreground">
-          📖 API Documentation: Upload files, search knowledge, AI Q&A. See <a href="/developers" className="text-[#4F5BD5] hover:underline">Developer Docs</a>
+          📖 API Documentation: Upload files, search knowledge, AI Q&A. See <a href="/developers" className="text-brand-500 hover:underline">Developer Docs</a>
         </p>
       </CardContent>
     </Card>
+
+    {/* Show Config Dialog */}
+    <Dialog open={!!showConfigFor} onOpenChange={(open) => { if (!open) setShowConfigFor(null) }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Agent Configuration</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground mb-3">
+          Copy this config into your AI tool. Replace <code className="font-mono text-xs">YOUR_API_KEY</code> with your full API key.
+        </p>
+        <AgentConfigTabs apiKey="YOUR_API_KEY" />
+      </DialogContent>
+    </Dialog>
 
     {/* MCP Quick Connect Card */}
     <McpQuickConnectCard apiKeyPrefix={keys.length > 0 ? keys[0].keyPrefix : null} newKey={newKey} />
@@ -123,95 +142,119 @@ function ApiKeysCard() {
   )
 }
 
-function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | null; newKey: string | null }) {
-  const [urlCopied, setUrlCopied] = useState(false)
-  const [configCopied, setConfigCopied] = useState(false)
+function AgentConfigTabs({ apiKey }: { apiKey: string }) {
+  const [activeTab, setActiveTab] = useState<"cursor" | "claude" | "openclaw">("cursor")
+  const [copied, setCopied] = useState(false)
 
-  const mcpUrl = "https://drivemem.cloud/mcp"
-  const keyDisplay = newKey || (apiKeyPrefix ? `${apiKeyPrefix}••••••••` : "YOUR_API_KEY")
-  const keyForConfig = newKey || "YOUR_API_KEY"
-
-  const configJson = JSON.stringify({
-    mcpServers: {
-      "ai-drive": {
-        url: mcpUrl,
-        headers: {
-          Authorization: `Bearer ${keyForConfig}`
+  const configs: Record<string, { label: string; lang: string; content: string }> = {
+    cursor: {
+      label: "Cursor / Windsurf",
+      lang: "json",
+      content: JSON.stringify({
+        mcpServers: {
+          "ai-drive": {
+            url: "https://app.drivemem.com/api/v1/mcp",
+            headers: {
+              Authorization: `Bearer ${apiKey}`
+            }
+          }
         }
-      }
-    }
-  }, null, 2)
-
-  const copyWithFeedback = (text: string, setter: (v: boolean) => void) => {
-    navigator.clipboard.writeText(text)
-    setter(true)
-    setTimeout(() => setter(false), 2000)
+      }, null, 2),
+    },
+    claude: {
+      label: "Claude Desktop",
+      lang: "json",
+      content: JSON.stringify({
+        mcpServers: {
+          "ai-drive": {
+            command: "npx",
+            args: ["-y", "@anthropic/mcp-remote", "https://app.drivemem.com/api/v1/mcp"],
+            env: {
+              AI_DRIVE_API_KEY: apiKey
+            }
+          }
+        }
+      }, null, 2),
+    },
+    openclaw: {
+      label: "OpenClaw",
+      lang: "yaml",
+      content: `plugins:\n  entries:\n    ai-drive:\n      enabled: true\n      config:\n        apiKey: "${apiKey}"\n        baseUrl: "https://app.drivemem.com/api/v1"`,
+    },
   }
+
+  const current = configs[activeTab]
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(current.content)
+    setCopied(true)
+    toast.success("Copied to clipboard")
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-1 rounded-lg bg-muted p-1">
+        {(Object.keys(configs) as Array<keyof typeof configs>).map(key => (
+          <button
+            key={key}
+            onClick={() => { setActiveTab(key as any); setCopied(false) }}
+            className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition ${activeTab === key ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            {configs[key].label}
+          </button>
+        ))}
+      </div>
+      <div className="relative">
+        <pre className="rounded-lg border bg-[#1C1B18] p-3 text-sm font-mono text-[#E5E4E1] overflow-x-auto">
+          <code>{current.content}</code>
+        </pre>
+        <Button
+          size="sm"
+          variant="outline"
+          className="absolute top-2 right-2 h-7 text-xs bg-white/10 border-white/20 text-white hover:bg-white/20"
+          onClick={handleCopy}
+        >
+          {copied ? "✓ Copied" : "Copy"}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | null; newKey: string | null }) {
+  const keyForConfig = newKey || "YOUR_API_KEY"
 
   return (
     <Card className="mt-4">
       <CardHeader>
-        <CardTitle>🔌 MCP Quick integration</CardTitle>
-        <CardDescription>Connect DriveMem to MCP-compatible AI tools</CardDescription>
+        <CardTitle>🔌 Connect Your AI Agent</CardTitle>
+        <CardDescription>Copy the config below into your AI tool to connect it to your knowledge base</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* MCP Server URL */}
-        <div>
-          <label className="text-sm font-medium">MCP Server URL</label>
-          <div className="mt-1 flex items-center gap-2">
-            <code className="flex-1 rounded-lg border bg-muted px-3 py-2 text-sm font-mono select-all">{mcpUrl}</code>
-            <Button size="sm" variant="outline" onClick={() => copyWithFeedback(mcpUrl, setUrlCopied)}>
-              {urlCopied ? "✓ Copied" : "Copy"}
-            </Button>
-          </div>
-        </div>
+        <AgentConfigTabs apiKey={keyForConfig} />
 
-        {/* Config JSON */}
-        <div>
-          <label className="text-sm font-medium">Configuration example</label>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Add the following JSON to your MCP client configuration file:
+        {!newKey && apiKeyPrefix && (
+          <p className="text-xs text-amber-600">
+            💡 Replace <code className="font-mono">YOUR_API_KEY</code> with your full API Key
           </p>
-          <ul className="mt-1 text-xs text-muted-foreground space-y-0.5 ml-3">
-            <li>• <strong>Claude Desktop</strong>: <code className="rounded bg-muted px-1 text-[11px]">~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
-            <li>• <strong>Cursor</strong>: <code className="rounded bg-muted px-1 text-[11px]">~/.cursor/mcp.json</code></li>
-          </ul>
-          <div className="mt-2 relative">
-            <pre className="rounded-lg border bg-[#1C1B18] p-3 text-sm font-mono text-[#E5E4E1] overflow-x-auto">
-              <code>{configJson}</code>
-            </pre>
-            <Button
-              size="sm"
-              variant="outline"
-              className="absolute top-2 right-2 h-7 text-xs bg-white/10 border-white/20 text-white hover:bg-white/20"
-              onClick={() => copyWithFeedback(configJson, setConfigCopied)}
-            >
-              {configCopied ? "✓ Copied" : "Copy"}
-            </Button>
-          </div>
-          {!newKey && apiKeyPrefix && (
-            <p className="mt-2 text-xs text-amber-600">
-              💡 The configuration shows a placeholder. Replace with your full API Key <code className="font-mono">YOUR_API_KEY</code>
-            </p>
-          )}
-          {newKey && (
-            <p className="mt-2 text-xs text-emerald-600">
-              ✅ Your newly created API Key has been auto-filled and is ready to copy
-            </p>
-          )}
-        </div>
+        )}
+        {newKey && (
+          <p className="text-xs text-emerald-600">
+            ✅ Your API Key has been auto-filled — ready to copy and paste
+          </p>
+        )}
 
         {/* Security tip */}
         <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3">
           <p className="text-xs text-amber-700">
-            🔒 <strong>Security notice</strong>：MCP Connections are encrypted via HTTPS. Do not expose your API Key on insecure networks.
+            🔒 <strong>Security notice</strong>: MCP connections are encrypted via HTTPS. Do not expose your API Key on insecure networks.
             We recommend creating separate keys for different agents and rotating them regularly.
           </p>
         </div>
 
-        {/* Doc link */}
-        <a href="/developers" className="inline-flex items-center gap-1 text-sm text-[#4F5BD5] hover:underline">
-          ViewFull developer docs ↗
+        <a href="/developers" className="inline-flex items-center gap-1 text-sm text-brand-500 hover:underline">
+          View full developer docs ↗
         </a>
       </CardContent>
     </Card>
@@ -396,7 +439,7 @@ function WebhookCard() {
                 onClick={() => toggleEvent(evt.id)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                   events.includes(evt.id)
-                    ? "bg-[#4F5BD5] text-white"
+                    ? "bg-brand-500 text-white"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
                 title={evt.desc}
@@ -472,7 +515,7 @@ function WebhookCard() {
 
         <p className="text-xs text-muted-foreground">
           Each event sends a JSON POST containing <code className="font-mono">X-AIDrive-Signature</code> Signature。
-          <a href="/developers" className="text-[#4F5BD5] hover:underline ml-1">ViewDocs ↗</a>
+          <a href="/developers" className="text-brand-500 hover:underline ml-1">ViewDocs ↗</a>
         </p>
 
         {/* Delivery Log */}
@@ -673,7 +716,7 @@ export default function SettingsContent() {
 
       {settingsTab === "developer" ? (
         <>
-          <p className="text-sm text-muted-foreground">These features are for advanced users who need access via API or AI Agent</p>
+          <p className="text-sm text-muted-foreground">Connect your AI agents (Cursor, Claude Desktop, OpenClaw, etc.) to your knowledge base. Create an API key, copy the config, and paste it into your tool.</p>
           <ApiKeysCard />
           <ConnectedAgentsCard />
           <WebhookCard />
@@ -697,7 +740,7 @@ export default function SettingsContent() {
               <Input id="email" value={session.user.email} readOnly className="bg-muted" />
             </div>
           )}
-          <Button size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white" onClick={() => toast.success("Saved")}>Save</Button>
+          <Button size="sm" className="bg-brand-500 hover:bg-brand-600 text-white" onClick={() => toast.success("Saved")}>Save</Button>
         </CardContent>
       </Card>
 
@@ -724,7 +767,7 @@ export default function SettingsContent() {
             <Label htmlFor="prefs">AI Preferences</Label>
             <Input id="prefs" placeholder="e.g., Prefer structured output" value={profilePrefs} onChange={(e) => setProfilePrefs(e.target.value)} />
           </div>
-          <Button size="sm" className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white" onClick={saveProfile} disabled={profileSaving}>
+          <Button size="sm" className="bg-brand-500 hover:bg-brand-600 text-white" onClick={saveProfile} disabled={profileSaving}>
             {profileSaving ? "Saving..." : "Save Profile"}
           </Button>
         </CardContent>
@@ -823,7 +866,7 @@ export default function SettingsContent() {
           </div>
           <Button
             size="sm"
-            className="bg-[#4F5BD5] hover:bg-[#3D49C4] text-white"
+            className="bg-brand-500 hover:bg-brand-600 text-white"
             disabled={!currentPassword || !newPassword || newPassword.length < 6}
             onClick={async () => {
               try {
