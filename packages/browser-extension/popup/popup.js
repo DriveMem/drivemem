@@ -3,12 +3,48 @@ document.addEventListener('DOMContentLoaded', () => {
   const apiKeyInput = document.getElementById('apiKey');
   const verifyBtn = document.getElementById('verify');
   const statusEl = document.getElementById('status');
+  const statsEl = document.getElementById('stats');
+  const lastSyncEl = document.getElementById('lastSync');
 
   // Load saved config
-  chrome.storage.local.get(['endpoint', 'apiKey'], (data) => {
+  chrome.storage.local.get(['endpoint', 'apiKey', 'lastSyncTime'], (data) => {
     if (data.endpoint) endpointInput.value = data.endpoint;
     if (data.apiKey) apiKeyInput.value = data.apiKey;
+    updateLastSync(data.lastSyncTime);
+
+    // If already configured, auto-check connection and load stats
+    if (data.endpoint && data.apiKey) {
+      loadStats(data.endpoint, data.apiKey);
+    }
   });
+
+  // Update last sync display
+  function updateLastSync(timestamp) {
+    if (!timestamp) {
+      lastSyncEl.textContent = '';
+      return;
+    }
+    const mins = Math.round((Date.now() - timestamp) / 60000);
+    if (mins < 1) lastSyncEl.textContent = 'Last synced: just now';
+    else if (mins === 1) lastSyncEl.textContent = 'Last synced: 1 minute ago';
+    else if (mins < 60) lastSyncEl.textContent = `Last synced: ${mins} minutes ago`;
+    else lastSyncEl.textContent = `Last synced: ${Math.round(mins / 60)}h ago`;
+  }
+
+  // Load knowledge base stats
+  function loadStats(endpoint, apiKey) {
+    chrome.runtime.sendMessage({
+      type: 'GET_STATS',
+      endpoint,
+      apiKey
+    }, (response) => {
+      if (response && response.success) {
+        statsEl.textContent = `📚 ${response.fileCount} files in knowledge base`;
+      } else {
+        statsEl.textContent = '';
+      }
+    });
+  }
 
   verifyBtn.addEventListener('click', async () => {
     const endpoint = endpointInput.value.trim() || 'https://drivemem.cloud';
@@ -16,10 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!apiKey) {
       statusEl.textContent = '❌ Please enter an API key';
+      statusEl.className = 'status-error';
       return;
     }
 
     statusEl.textContent = '⏳ Checking...';
+    statusEl.className = '';
     verifyBtn.disabled = true;
 
     try {
@@ -30,15 +68,27 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (response.success) {
+        // Auto-save on successful verification
         chrome.storage.local.set({ endpoint, apiKey });
-        statusEl.textContent = '✅ Connected';
+        statusEl.textContent = '✅ Connected & saved';
+        statusEl.className = 'status-ok';
+        loadStats(endpoint, apiKey);
       } else {
-        statusEl.textContent = '❌ Failed: ' + (response.error || 'Unknown error');
+        statusEl.textContent = '❌ ' + (response.error || 'Connection failed');
+        statusEl.className = 'status-error';
       }
     } catch (err) {
-      statusEl.textContent = '❌ Failed: ' + err.message;
+      statusEl.textContent = '❌ ' + err.message;
+      statusEl.className = 'status-error';
     } finally {
       verifyBtn.disabled = false;
     }
   });
+
+  // Refresh last sync every 30s while popup is open
+  setInterval(() => {
+    chrome.storage.local.get(['lastSyncTime'], (data) => {
+      updateLastSync(data.lastSyncTime);
+    });
+  }, 30000);
 });

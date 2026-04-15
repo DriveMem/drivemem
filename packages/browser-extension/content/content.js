@@ -5,6 +5,12 @@
   document.body.appendChild(container);
   const shadow = container.attachShadow({ mode: 'closed' });
 
+  // State
+  let isOpen = false;
+  let isLoading = false;
+  let captureCount = 0;
+  let connectionStatus = 'unknown'; // 'connected' | 'disconnected' | 'unknown'
+
   // Styles
   const style = document.createElement('style');
   style.textContent = `
@@ -17,8 +23,10 @@
       flex-direction: column;
       align-items: flex-end;
       gap: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     .drivemem-fab-main {
+      position: relative;
       width: 48px;
       height: 48px;
       border-radius: 50%;
@@ -33,18 +41,51 @@
       justify-content: center;
       transition: transform 0.2s;
     }
-    .drivemem-fab-main:hover {
-      transform: scale(1.1);
+    .drivemem-fab-main:hover { transform: scale(1.1); }
+    .drivemem-fab-main.loading {
+      opacity: 0.7;
+      pointer-events: none;
+      animation: drivemem-pulse 1.2s ease-in-out infinite;
     }
+    @keyframes drivemem-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .drivemem-fab-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #22c55e;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+    }
+    .drivemem-fab-status {
+      position: absolute;
+      bottom: -2px;
+      left: -2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid white;
+      background: #9ca3af;
+    }
+    .drivemem-fab-status.connected { background: #22c55e; }
+    .drivemem-fab-status.disconnected { background: #ef4444; }
     .drivemem-fab-actions {
       display: none;
       flex-direction: column;
       align-items: flex-end;
       gap: 6px;
     }
-    .drivemem-fab-actions.open {
-      display: flex;
-    }
+    .drivemem-fab-actions.open { display: flex; }
     .drivemem-fab-action {
       display: flex;
       align-items: center;
@@ -57,27 +98,32 @@
       font-size: 13px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       white-space: nowrap;
-      transition: background 0.15s;
+      transition: background 0.15s, opacity 0.15s;
     }
-    .drivemem-fab-action:hover {
-      background: #f5f5ff;
+    .drivemem-fab-action:hover { background: #f5f5ff; }
+    .drivemem-fab-action:disabled {
+      opacity: 0.5;
+      pointer-events: none;
     }
     .drivemem-toast {
       position: fixed;
-      bottom: 140px;
-      right: 24px;
+      top: 20px;
+      right: 20px;
       background: #1a1a1a;
       color: white;
-      padding: 10px 18px;
-      border-radius: 8px;
+      padding: 12px 20px;
+      border-radius: 10px;
       font-size: 13px;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
       opacity: 0;
-      transition: opacity 0.3s;
       z-index: 100000;
+      max-width: 320px;
     }
     .drivemem-toast.visible {
+      transform: translateX(0);
       opacity: 1;
     }
   `;
@@ -91,15 +137,23 @@
       <button class="drivemem-fab-action" data-action="save">📥 Save Conversation</button>
       <button class="drivemem-fab-action" data-action="brief">📤 Get Briefing</button>
     </div>
-    <button class="drivemem-fab-main">🧠</button>
+    <button class="drivemem-fab-main">
+      🧠
+      <span class="drivemem-fab-status"></span>
+    </button>
   `;
   shadow.appendChild(fab);
 
   const mainBtn = fab.querySelector('.drivemem-fab-main');
   const actions = fab.querySelector('.drivemem-fab-actions');
-  let isOpen = false;
+  const actionButtons = fab.querySelectorAll('.drivemem-fab-action');
+  const statusDot = fab.querySelector('.drivemem-fab-status');
+
+  // Check connection status on load
+  checkConnectionStatus();
 
   mainBtn.addEventListener('click', () => {
+    if (isLoading) return;
     chrome.storage.local.get(['endpoint', 'apiKey'], (data) => {
       if (!data.endpoint || !data.apiKey) {
         showToast('⚙️ Please configure DriveMem in the extension popup first');
@@ -121,7 +175,7 @@
   // Action handlers
   fab.addEventListener('click', (e) => {
     const actionBtn = e.target.closest('[data-action]');
-    if (!actionBtn) return;
+    if (!actionBtn || actionBtn.disabled) return;
 
     const action = actionBtn.dataset.action;
     isOpen = false;
@@ -131,28 +185,174 @@
     if (action === 'brief') getBriefing();
   });
 
+  // --- Conversation Extraction (multi-strategy) ---
+
+  function extractConversation() {
+    const messages = [];
+
+    // Strategy 1: data-message-author-role attribute (most reliable)
+    const roleElements = document.querySelectorAll('[data-message-author-role]');
+    if (roleElements.length > 0) {
+      roleElements.forEach(el => {
+        const role = el.getAttribute('data-message-author-role');
+        const textEl = el.querySelector('.markdown, .whitespace-pre-wrap') || el;
+        const text = textEl.innerText?.trim();
+        if (text) messages.push({ role, text });
+      });
+    }
+
+    // Strategy 2: fallback — article elements
+    if (messages.length === 0) {
+      const articles = document.querySelectorAll('main article, [data-testid*="conversation"] article');
+      articles.forEach((article, i) => {
+        const role = i % 2 === 0 ? 'user' : 'assistant';
+        const text = article.innerText?.trim();
+        if (text) messages.push({ role, text });
+      });
+    }
+
+    // Strategy 3: ultimate fallback — turn containers
+    if (messages.length === 0) {
+      const turns = document.querySelectorAll('[class*="agent-turn"], [class*="user-turn"]');
+      turns.forEach(turn => {
+        const role = turn.className.includes('user') ? 'user' : 'assistant';
+        const text = turn.innerText?.trim();
+        if (text) messages.push({ role, text });
+      });
+    }
+
+    if (messages.length === 0) return null;
+
+    // Format as markdown
+    const title = document.title
+      .replace(' | ChatGPT', '')
+      .replace(' - ChatGPT', '')
+      .trim() || 'ChatGPT Conversation';
+
+    let markdown = `# ${title}\n\n`;
+    messages.forEach(m => {
+      markdown += `## ${m.role === 'user' ? '👤 User' : '🤖 Assistant'}\n\n${m.text}\n\n---\n\n`;
+    });
+
+    return { title, markdown, messageCount: messages.length };
+  }
+
+  // --- Input Injection (multi-strategy) ---
+
+  function injectToInput(text) {
+    // Strategy 1: contenteditable div (ChatGPT's current approach)
+    const contentEditable = document.querySelector('#prompt-textarea, [contenteditable="true"]');
+    if (contentEditable) {
+      contentEditable.focus();
+      contentEditable.textContent = text;
+      contentEditable.dispatchEvent(new Event('input', { bubbles: true }));
+      return true;
+    }
+
+    // Strategy 2: textarea fallback
+    const textarea = document.querySelector('textarea[data-id="root"], textarea');
+    if (textarea) {
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+      nativeInputValueSetter.call(textarea, text);
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      return true;
+    }
+
+    return false;
+  }
+
+  // --- Auto-capture foundation (v2 prep) ---
+
+  let lastActivityTime = Date.now();
+  let autoCapturePending = false;
+  const IDLE_THRESHOLD = 10000;
+
+  function setupAutoDetection() {
+    const mainArea = document.querySelector('main') || document.body;
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          lastActivityTime = Date.now();
+          autoCapturePending = true;
+        }
+      }
+    });
+    observer.observe(mainArea, { childList: true, subtree: true });
+
+    setInterval(() => {
+      if (autoCapturePending && (Date.now() - lastActivityTime) > IDLE_THRESHOLD) {
+        autoCapturePending = false;
+        // v1: log only; v2 will trigger actual capture
+        console.log('[DriveMem] Conversation idle detected — auto-capture ready');
+      }
+    }, 5000);
+  }
+
+  setupAutoDetection();
+
+  // --- Loading state management ---
+
+  function setLoading(loading) {
+    isLoading = loading;
+    mainBtn.classList.toggle('loading', loading);
+    actionButtons.forEach(btn => btn.disabled = loading);
+  }
+
+  function updateBadge() {
+    let badge = mainBtn.querySelector('.drivemem-fab-badge');
+    if (captureCount > 0) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'drivemem-fab-badge';
+        mainBtn.appendChild(badge);
+      }
+      badge.textContent = captureCount;
+    } else if (badge) {
+      badge.remove();
+    }
+  }
+
+  function checkConnectionStatus() {
+    chrome.storage.local.get(['endpoint', 'apiKey'], (data) => {
+      if (!data.endpoint || !data.apiKey) {
+        connectionStatus = 'unknown';
+      } else {
+        chrome.runtime.sendMessage({ type: 'VERIFY_CONNECTION', endpoint: data.endpoint, apiKey: data.apiKey }, (resp) => {
+          connectionStatus = (resp && resp.success) ? 'connected' : 'disconnected';
+          statusDot.className = 'drivemem-fab-status ' + connectionStatus;
+        });
+      }
+      statusDot.className = 'drivemem-fab-status ' + connectionStatus;
+    });
+  }
+
+  // --- Actions ---
+
   function captureConversation() {
     chrome.storage.local.get(['endpoint', 'apiKey'], (data) => {
-      const messages = extractMessages();
-      if (!messages) {
+      const result = extractConversation();
+      if (!result) {
         showToast('❌ No conversation found on this page');
         return;
       }
 
-      const title = document.title.replace(' | ChatGPT', '').trim() || 'ChatGPT Conversation';
-      showToast('⏳ Saving conversation...');
+      setLoading(true);
+      showToast(`⏳ Saving ${result.messageCount} messages...`);
 
       chrome.runtime.sendMessage({
         type: 'CAPTURE_CONVERSATION',
         endpoint: data.endpoint,
         apiKey: data.apiKey,
-        content: messages,
-        title
+        content: result.markdown,
+        title: result.title
       }, (response) => {
+        setLoading(false);
         if (response && response.success) {
-          showToast('✅ Conversation saved!');
+          captureCount++;
+          updateBadge();
+          showToast(`✅ Saved ${result.messageCount} messages!`);
         } else {
-          showToast('❌ Save failed: ' + (response?.error || 'Unknown error'));
+          showToast('❌ ' + (response?.error || 'Save failed'));
         }
       });
     });
@@ -163,6 +363,7 @@
     if (!task) return;
 
     chrome.storage.local.get(['endpoint', 'apiKey'], (data) => {
+      setLoading(true);
       showToast('⏳ Getting briefing...');
 
       chrome.runtime.sendMessage({
@@ -171,66 +372,18 @@
         apiKey: data.apiKey,
         task
       }, (response) => {
+        setLoading(false);
         if (response && response.success) {
-          injectBriefing(response.compiledContext);
-          showToast('✅ Briefing injected into input!');
+          const injected = injectToInput(response.compiledContext);
+          showToast(injected ? '✅ Briefing injected!' : '⚠️ Briefing ready but could not inject — check input field');
         } else {
-          showToast('❌ Briefing failed: ' + (response?.error || 'Unknown error'));
+          showToast('❌ ' + (response?.error || 'Briefing failed'));
         }
       });
     });
   }
 
-  function extractMessages() {
-    // Try data-message-author-role attributes first
-    let els = document.querySelectorAll('[data-message-author-role]');
-    if (els.length > 0) {
-      let md = '';
-      els.forEach((el) => {
-        const role = el.getAttribute('data-message-author-role');
-        const label = role === 'user' ? 'User' : 'Assistant';
-        const text = el.innerText.trim();
-        if (text) md += `## ${label}\n${text}\n\n`;
-      });
-      return md || null;
-    }
-
-    // Fallback: article elements in main conversation
-    els = document.querySelectorAll('main article');
-    if (els.length > 0) {
-      let md = '';
-      els.forEach((el, i) => {
-        const label = i % 2 === 0 ? 'User' : 'Assistant';
-        const text = el.innerText.trim();
-        if (text) md += `## ${label}\n${text}\n\n`;
-      });
-      return md || null;
-    }
-
-    return null;
-  }
-
-  function injectBriefing(text) {
-    // Try #prompt-textarea first
-    let input = document.querySelector('#prompt-textarea');
-    if (input) {
-      if (input.tagName === 'TEXTAREA') {
-        input.value = text;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      } else {
-        // contenteditable div
-        input.innerText = text;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-      return;
-    }
-    // Fallback
-    input = document.querySelector('textarea');
-    if (input) {
-      input.value = text;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-  }
+  // --- Toast ---
 
   function showToast(message) {
     let toast = shadow.querySelector('.drivemem-toast');
@@ -240,8 +393,11 @@
       shadow.appendChild(toast);
     }
     toast.textContent = message;
+    // Force reflow for re-animation
+    toast.classList.remove('visible');
+    void toast.offsetWidth;
     toast.classList.add('visible');
     clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => toast.classList.remove('visible'), 3000);
+    toast._timer = setTimeout(() => toast.classList.remove('visible'), 3500);
   }
 })();

@@ -3,7 +3,7 @@
   "name": "DriveMem",
   "description": "Save ChatGPT conversations to DriveMem. Inject knowledge briefings.",
   "version": "0.1.0",
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "alarms"],
   "host_permissions": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
   "action": {
     "default_popup": "popup/popup.html",
