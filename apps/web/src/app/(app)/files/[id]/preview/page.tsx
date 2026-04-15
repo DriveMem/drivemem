@@ -298,7 +298,7 @@ export default function FilePreviewPage() {
           {fileType === "other" && (
             <div className="flex h-96 flex-col items-center justify-center gap-4 rounded border bg-muted text-muted-foreground">
               <FileText className="h-12 w-12" />
-              <p>{(file.mimeType || "UnknownType").toUpperCase()} Files</p>
+              <p>{(file.mimeType || "Unknown type").toUpperCase()} Files</p>
               <p className="text-xs">AI Remembered this file's content. You can ask about it in conversations</p>
               <Button
                 variant="outline"
@@ -369,7 +369,7 @@ export default function FilePreviewPage() {
               <Button
                 variant="outline"
                 size="icon"
-                title="DownloadOriginal file"
+                title="Download original file"
                 onClick={async () => {
                   try {
                     const res = await apiFetch(`/api/files/${params.id}/preview-url`) as { previewUrl: string }
