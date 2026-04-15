@@ -1,0 +1,77 @@
+# drivemem
+
+Python SDK for DriveMem — connect any AI agent to shared knowledge.
+
+## Install
+
+```bash
+pip install drivemem
+```
+
+## Quick Start
+
+```python
+from drivemem import DriveMem
+
+mem = DriveMem(api_key="ak_your_key")
+
+# Search knowledge
+results = mem.search("product strategy")
+
+# Ask a question (RAG)
+answer = mem.ask("What decisions were made about pricing?")
+
+# Store knowledge
+mem.store("Decision: Free tier for first 100 users", title="Pricing decision")
+
+# Compile briefing for a task
+briefing = mem.compile("Write a go-to-market plan")
+print(briefing["compiledContext"])
+
+# Check connection
+assert mem.ping()
+```
+
+## Use with LangChain
+
+```python
+from drivemem import DriveMem
+from langchain.agents import AgentExecutor
+
+mem = DriveMem(api_key=os.environ["DRIVEMEM_KEY"])
+
+# On agent start — get context
+context = mem.compile("current task description")
+system_prompt = f"{base_prompt}\n\n{context['compiledContext']}"
+
+# During work — search relevant knowledge
+relevant = mem.search("current topic")
+
+# On completion — store conclusions
+mem.store(agent_output, title="Task result", tags="decision")
+```
+
+## Use with CrewAI
+
+```python
+from drivemem import DriveMem
+
+mem = DriveMem(api_key=os.environ["DRIVEMEM_KEY"])
+
+# Before crew runs
+briefing = mem.compile(crew_task_description)
+
+# After crew completes
+mem.store(crew_output, title=f"CrewAI: {task_name}")
+```
+
+## API
+
+| Method | Description |
+|--------|-------------|
+| `search(query)` | Semantic search |
+| `ask(question)` | RAG Q&A with citations |
+| `store(content, title?, tags?)` | Save knowledge |
+| `compile(task, token_budget?, project?, tags?, recency?)` | Generate briefing |
+| `files(detail?)` | List files |
+| `ping()` | Verify connection |

@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drivemem"
+version = "0.1.0"
+description = "DriveMem SDK — connect any AI agent to shared knowledge"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+dependencies = ["requests>=2.28.0"]
+keywords = ["drivemem", "ai", "agent", "memory", "knowledge", "mcp"]
+
+[project.urls]
+Homepage = "https://drivemem.cloud"
+Repository = "https://github.com/yufuche1/ai-drive"
