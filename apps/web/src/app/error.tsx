@@ -1,8 +1,18 @@
 "use client"
+import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle } from "lucide-react"
 
 export default function Error({ error, reset }: { error: Error; reset: () => void }) {
+  useEffect(() => {
+    // Auto-reload on ChunkLoadError (stale deployment cache)
+    if (error?.message?.includes('ChunkLoadError') || 
+        error?.message?.includes('Loading chunk') ||
+        error?.message?.includes('Failed to fetch dynamically imported module')) {
+      window.location.reload()
+    }
+  }, [error])
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background text-foreground">
       <AlertTriangle className="h-12 w-12 text-destructive" />
