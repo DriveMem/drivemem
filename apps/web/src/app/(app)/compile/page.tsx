@@ -100,7 +100,7 @@ function CompileContent() {
   const hasFiles = files.length > 0
 
   useEffect(() => {
-    document.title = "Briefing — DriveMem"
+    document.title = "Briefing — AI Drive"
   }, [])
 
   useEffect(() => {
@@ -188,7 +188,7 @@ function CompileContent() {
           <h1 className="text-2xl font-bold">Prepare a briefing for your AI</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          Describe your task — DriveMem finds the right knowledge for any AI
+          Describe your task — AI Drive finds the right knowledge for any AI
         </p>
       </div>
 

@@ -10,21 +10,21 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: "DriveMem — Memory for your AI agents",
-  description: "DriveMem gives every AI agent the context it needs. One knowledge base, seamless continuity.",
-  keywords: ["agent context", "AI context OS", "knowledge base", "MCP", "context compiler", "DriveMem", "DriveMem", "RAG"],
+  title: "AI Drive — Memory for your AI agents",
+  description: "AI Drive gives every AI agent the context it needs. One knowledge base, seamless continuity.",
+  keywords: ["agent context", "AI context OS", "knowledge base", "MCP", "context compiler", "AI Drive", "AI Drive", "RAG"],
   openGraph: {
-    title: "DriveMem — Memory for your AI agents",
-    description: "DriveMem gives every AI agent the context it needs. One knowledge base, seamless continuity.",
+    title: "AI Drive — Memory for your AI agents",
+    description: "AI Drive gives every AI agent the context it needs. One knowledge base, seamless continuity.",
     type: "website",
     url: "https://drivemem.cloud",
-    siteName: "DriveMem",
-    images: [{ url: "https://drivemem.cloud/og-image.png", width: 1200, height: 630, alt: "DriveMem — Memory for your AI agents" }],
+    siteName: "AI Drive",
+    images: [{ url: "https://drivemem.cloud/og-image.png", width: 1200, height: 630, alt: "AI Drive — Memory for your AI agents" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DriveMem — Memory for your AI agents",
-    description: "DriveMem gives every AI agent the context it needs. One knowledge base, seamless continuity.",
+    title: "AI Drive — Memory for your AI agents",
+    description: "AI Drive gives every AI agent the context it needs. One knowledge base, seamless continuity.",
     images: ["https://drivemem.cloud/og-image.png"],
   },
   icons: { icon: "/favicon.svg" },

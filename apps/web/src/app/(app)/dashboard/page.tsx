@@ -193,7 +193,7 @@ export default function DashboardPage() {
   const [hasApiKeys, setHasApiKeys] = useState<boolean | null>(null)
   const reportRef = useRef<ReportSectionHandle>(null)
 
-  useEffect(() => { document.title = "Dashboard — DriveMem" }, [])
+  useEffect(() => { document.title = "Dashboard — AI Drive" }, [])
 
   useEffect(() => {
     apiFetch("/api/resume-brief")

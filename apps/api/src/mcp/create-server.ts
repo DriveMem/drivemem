@@ -17,7 +17,7 @@ export function createMcpServer(userId: string, agentName: string = ''): Server 
         resources: {},
         prompts: {},
       },
-      instructions: `You are connected to the user's DriveMem knowledge base — a shared persistent memory layer across all AI tools.
+      instructions: `You are connected to the user's AI Drive knowledge base — a shared persistent memory layer across all AI tools.
 
 ## Automatic Behaviors (ALWAYS do these):
 
@@ -240,7 +240,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
         }
 
         if (parts.length > 0) {
-          contextPrefix = `[DriveMem Context] ${parts.join(' | ')}\n\n`;
+          contextPrefix = `[AI Drive Context] ${parts.join(' | ')}\n\n`;
         }
       } catch { /* don't break tool calls if context injection fails */ }
     }

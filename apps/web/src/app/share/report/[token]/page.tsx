@@ -64,7 +64,7 @@ export default function SharedReportPage() {
     <div className="min-h-screen bg-background">
       <nav className="flex items-center justify-between border-b px-6 py-4">
         <Link href="/" className="text-lg font-bold">
-          DriveMem
+          AI Drive
         </Link>
         <Button asChild>
           <Link href="/signup">Sign up free</Link>

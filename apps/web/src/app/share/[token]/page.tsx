@@ -48,7 +48,7 @@ export default function SharePage() {
   return (
     <div className="min-h-screen bg-background">
       <nav className="flex items-center justify-between border-b px-6 py-4">
-        <Link href="/" className="text-lg font-bold">DriveMem</Link>
+        <Link href="/" className="text-lg font-bold">AI Drive</Link>
         <Button asChild><Link href="/signup">Sign up free</Link></Button>
       </nav>
 

@@ -6,6 +6,6 @@ import dynamic from "next/dynamic"
 const SettingsContent = dynamic(() => import("@/components/settings/settings-content"), { ssr: false })
 
 export default function SettingsPage() {
-  useEffect(() => { document.title = "Settings — DriveMem" }, [])
+  useEffect(() => { document.title = "Settings — AI Drive" }, [])
   return <SettingsContent />
 }
