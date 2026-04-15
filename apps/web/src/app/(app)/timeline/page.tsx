@@ -202,7 +202,7 @@ export default function TimelinePage() {
 
   useEffect(() => {
     document.title = "Information Flow - DriveMem"
-    apiFetch('/api/v1/activity-flow?limit=100')
+    apiFetch('/api/timeline/activity-flow?limit=100')
       .then((data) => setFlowData(data as ActivityFlowData))
       .catch(() => setFlowError(true))
       .finally(() => setFlowLoading(false))

@@ -191,4 +191,48 @@ export default async function timelineRoutes(fastify: FastifyInstance) {
     const result = await fetchTimeline(userId, limit, cursor);
     return reply.send(result);
   });
+
+  // GET /activity-flow — activities grouped by agent with flow detection
+  fastify.get('/activity-flow', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const query = request.query as { limit?: string };
+    const limit = Math.min(parseInt(query.limit || '50'), 200);
+    
+    const activities = await db.select()
+      .from(schema.apiActivityLogs)
+      .where(eq(schema.apiActivityLogs.userId, userId))
+      .orderBy(desc(schema.apiActivityLogs.createdAt))
+      .limit(limit);
+
+    const agentGroups: Record<string, any[]> = {};
+    for (const a of activities) {
+      const agent = a.agentName || 'You';
+      if (!agentGroups[agent]) agentGroups[agent] = [];
+      agentGroups[agent].push({
+        id: a.id, action: a.action, detail: a.detail,
+        createdAt: a.createdAt, relatedFileIds: a.relatedFileIds, metadata: a.metadata,
+      });
+    }
+
+    const flows: Array<{ from: string; to: string; fileNames: string[]; timestamp: string }> = [];
+    const fileAgentMap: Record<string, string> = {};
+    for (const a of activities) {
+      if (a.action === 'store' && a.metadata) {
+        const fileId = (a.metadata as any).fileId;
+        if (fileId) fileAgentMap[fileId] = a.agentName || 'You';
+      }
+    }
+    for (const a of activities) {
+      if ((a.action === 'search' || a.action === 'compile') && a.relatedFileIds) {
+        for (const fid of (a.relatedFileIds as string[])) {
+          const sourceAgent = fileAgentMap[fid];
+          if (sourceAgent && sourceAgent !== (a.agentName || 'You')) {
+            flows.push({ from: sourceAgent, to: a.agentName || 'You', fileNames: [], timestamp: a.createdAt?.toISOString() || '' });
+          }
+        }
+      }
+    }
+
+    return reply.send({ agents: agentGroups, flows, totalActivities: activities.length });
+  });
 }
