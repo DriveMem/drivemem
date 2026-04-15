@@ -66,7 +66,7 @@ function LoginForm() {
     <div className="p-8">
       {/* Mobile-only header */}
       <div className="lg:hidden text-center mb-8">
-        <h1 className="text-3xl font-bold">AI Drive</h1>
+        <h1 className="text-3xl font-bold">DriveMem</h1>
         <p className="mt-2 text-sm text-muted-foreground">Agent's memory layer</p>
       </div>
 

@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "ResetPassword - AI Drive",
+  title: "Reset Password — DriveMem",
 }
 
-export default function ResetPasswordLayout({ children }: { children: React.ReactNode }) {
+export default function Reset PasswordLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
