@@ -77,8 +77,8 @@ export default function LandingPage() {
             <Link href="/developers" className="text-sm text-zinc-400 transition-colors hover:text-white">
               Docs
             </Link>
-            <Link href="/signup" className="text-sm text-zinc-400 transition-colors hover:text-white">
-              Pricing
+            <Link href="/developers" className="text-sm text-zinc-400 transition-colors hover:text-white">
+              Developers
             </Link>
             <Link
               href="/login"

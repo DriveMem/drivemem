@@ -10,7 +10,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative z-10 flex flex-col items-center justify-center w-full px-12">
           <h1 className="text-5xl font-bold text-white mb-3">DriveMem</h1>
-          <p className="text-lg text-white/70 mb-12">Agent 's memory layer</p>
+          <p className="text-lg text-white/70 mb-12">Agent's memory layer</p>
 
           <div className="space-y-6 max-w-sm">
             <div className="flex items-start gap-4">
