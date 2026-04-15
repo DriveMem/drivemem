@@ -138,7 +138,7 @@ function OfficePreview({ fileId, fileName }: { fileId: string; fileName: string 
             }
           }}
         >
-          <Download className="h-4 w-4 mr-2" />DownloadFiles
+          <Download className="h-4 w-4 mr-2" />Download file
         </Button>
       </div>
     )
@@ -317,7 +317,7 @@ export default function FilePreviewPage() {
                   }
                 }}
               >
-                <Download className="h-4 w-4 mr-2" />DownloadFiles
+                <Download className="h-4 w-4 mr-2" />Download file
               </Button>
             </div>
           )}
