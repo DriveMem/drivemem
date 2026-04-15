@@ -190,6 +190,7 @@ export default function DashboardPage() {
   const [activities, setActivities] = useState<any[]>([])
   const [insights, setInsights] = useState<any[]>([])
   const [resumeBrief, setResumeBrief] = useState<any>(null)
+  const [hasApiKeys, setHasApiKeys] = useState<boolean | null>(null)
   const reportRef = useRef<ReportSectionHandle>(null)
 
   useEffect(() => { document.title = "Dashboard - DriveMem" }, [])
@@ -198,6 +199,10 @@ export default function DashboardPage() {
     apiFetch("/api/resume-brief")
       .then((data: any) => { if (data?.show) setResumeBrief(data) })
       .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    apiFetch('/api/api-keys').then((data: any) => setHasApiKeys(data?.keys?.length > 0)).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -305,6 +310,29 @@ export default function DashboardPage() {
             </div>
           )}
           <InsightsSummaryCard insights={insights} onSwitchToAi={() => handleTabSwitch("ai")} />
+          {hasApiKeys === false && (
+            <div className="mx-6 mb-4 rounded-xl border border-brand-200 bg-gradient-to-r from-brand-50/50 to-transparent p-5">
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100">
+                  <Plug className="h-5 w-5 text-brand-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold">Connect your AI agents</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Give any AI tool access to your knowledge. Create an API key, then paste the config into your agent.
+                  </p>
+                  <div className="flex gap-2 mt-3">
+                    <Button size="sm" onClick={() => router.push('/settings?tab=developer')} className="bg-brand-500 hover:bg-brand-600 text-white">
+                      Create API Key
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => router.push('/developers')}>
+                      View docs
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           {!currentFolderId ? (
             <div className="flex-1 min-h-0 overflow-auto p-6">
               <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Projects</h2>
