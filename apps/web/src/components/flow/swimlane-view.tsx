@@ -1,5 +1,8 @@
 "use client"
 import { useEffect, useRef, useState, useMemo } from "react"
+import Link from "next/link"
+import { Bot, ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 // ── Types ──
 interface FlowActivity {
@@ -163,10 +166,17 @@ export function SwimlaneView({ data }: { data: ActivityFlowData }) {
 
   if (agentNames.length === 0) {
     return (
-      <div className="text-center py-12 animate-fade-in-up">
-        <div className="text-4xl mb-3">🔀</div>
-        <p className="text-muted-foreground mb-2">No agent activity yet</p>
-        <p className="text-sm text-muted-foreground">When agents interact with your knowledge base, their activity flows will appear here as swimlanes</p>
+      <div className="text-center py-16 animate-fade-in-up">
+        <div className="text-4xl mb-4">🔀</div>
+        <p className="text-zinc-400 font-medium mb-2">No agent activity yet</p>
+        <p className="text-sm text-zinc-500 mb-6">Connect an agent to see information flow between your AI tools.</p>
+        <Link href="/developers">
+          <Button variant="default" size="sm" className="gap-1.5">
+            <Bot className="w-4 h-4" />
+            Connect an agent
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Button>
+        </Link>
       </div>
     )
   }

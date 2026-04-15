@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import { apiFetch } from "@/lib/api"
-import { FileText, Clock, Loader2, MessageCircle, Lightbulb, BarChart3, Bot } from "lucide-react"
+import { FileText, Clock, Loader2, MessageCircle, Lightbulb, BarChart3, Bot, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { SwimlaneView } from "@/components/flow/swimlane-view"
@@ -127,9 +127,26 @@ function ListView() {
       </div>
 
       {events.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground mb-2">No knowledge activity yet</p>
-          <p className="text-sm text-muted-foreground">Upload files, Chat with AI and activities will automatically appear here</p>
+        <div className="text-center py-16">
+          <div className="text-4xl mb-4">📡</div>
+          <p className="text-zinc-400 font-medium mb-2">No activity yet</p>
+          <p className="text-sm text-zinc-500 mb-6">When agents interact with your knowledge base, their activity will appear here.</p>
+          <div className="flex items-center justify-center gap-3">
+            <Link href="/developers">
+              <Button variant="default" size="sm" className="gap-1.5">
+                <Bot className="w-4 h-4" />
+                Connect an agent
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <FileText className="w-4 h-4" />
+                Upload files
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="space-y-8">
