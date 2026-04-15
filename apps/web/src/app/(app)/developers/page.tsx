@@ -306,7 +306,7 @@ export default function DevelopersPage() {
   const { data: session, status } = useSession()
   const isLoggedIn = status === "authenticated"
 
-  useEffect(() => { document.title = "Developers — AI Drive" }, [])
+  useEffect(() => { document.title = "Developers — DriveMem" }, [])
 
   return (
     <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-brand-500/30">

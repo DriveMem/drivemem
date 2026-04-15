@@ -218,7 +218,7 @@ export default function TimelinePage() {
   const [flowError, setFlowError] = useState(false)
 
   useEffect(() => {
-    document.title = "Timeline — AI Drive"
+    document.title = "Timeline — DriveMem"
     apiFetch('/api/timeline/activity-flow?limit=100')
       .then((data) => setFlowData(data as ActivityFlowData))
       .catch(() => setFlowError(true))
