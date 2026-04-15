@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 const navItems = [
   { href: "/files", icon: FileText, label: "My Files" },
   { href: "/chat", icon: MessageSquare, label: "AI Chat" },
-  { href: "/compile", icon: Sparkles, label: "Brief" },
+  { href: "/compile", icon: Sparkles, label: "Briefing" },
   { href: "/timeline", icon: CalendarDays, label: "Timeline" },
   { href: "/developers", icon: Code, label: "Developers" },
   { href: "/settings", icon: Settings, label: "Settings" },
