@@ -26,30 +26,30 @@ export function Sidebar() {
   return (
     <TooltipProvider delayDuration={0}>
       <div className="flex h-full flex-col">
-        <div className="flex h-14 items-center justify-between px-3 border-b border-border">
-          {!sidebarCollapsed && <span className="text-lg font-bold">DriveMem</span>}
-          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8">
+        <div className="flex h-14 items-center justify-between px-3 border-b border-zinc-200 dark:border-zinc-800">
+          {!sidebarCollapsed && <span className="text-lg font-bold text-brand-500">DriveMem</span>}
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
             {sidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
           </Button>
         </div>
-        <nav className="flex flex-col gap-1 p-2">
+        <nav className="flex flex-col gap-0.5 p-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href || pathname?.startsWith(item.href + "/") || (item.href === "/files" && pathname === "/dashboard")
             const btn = (
               <Button
-                variant={isActive ? "secondary" : "ghost"}
+                variant="ghost"
                 className={cn(
-                  "w-full justify-start gap-2 relative",
+                  "w-full justify-start gap-2 relative rounded-lg",
                   sidebarCollapsed && "justify-center px-2",
                   isActive
-                    ? "bg-primary/10 dark:bg-primary/15 text-primary font-semibold border-l-[3px] border-primary rounded-l-none shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border-l-[3px] border-transparent"
+                    ? "bg-brand-50 dark:bg-brand-500/10 text-zinc-900 dark:text-zinc-100 font-medium border-l-2 border-brand-500 rounded-l-none"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 border-transparent"
                 )}
                 size={sidebarCollapsed ? "icon" : "default"}
                 asChild
               >
                 <Link href={item.href} onClick={() => setMobileSidebarOpen(false)}>
-                  <item.icon className="h-4 w-4 flex-shrink-0" />
+                  <item.icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-brand-500" : "")} />
                   {!sidebarCollapsed && <span>{item.label}</span>}
                 </Link>
               </Button>
@@ -66,19 +66,19 @@ export function Sidebar() {
           })}
         </nav>
         {!sidebarCollapsed && !pathname?.startsWith("/chat") && !pathname?.startsWith("/settings") && !pathname?.startsWith("/timeline") && (
-          <div className="flex-1 overflow-auto border-t border-border p-2">
-            <p className="px-2 py-1 text-xs font-medium text-muted-foreground">Projects</p>
+          <div className="flex-1 overflow-auto border-t border-zinc-200 dark:border-zinc-800 p-2">
+            <p className="px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider text-zinc-400">Projects</p>
             <FolderTree />
             {tags.length > 0 ? (
-              <div className="mt-3 border-t border-border pt-2">
-                <p className="px-2 py-1 text-xs font-medium text-muted-foreground flex items-center gap-1">
+              <div className="mt-3 border-t border-zinc-200 dark:border-zinc-800 pt-2">
+                <p className="px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider text-zinc-400 flex items-center gap-1">
                   <Tag className="h-3 w-3" /> Tags
                 </p>
                 <div className="flex flex-wrap gap-1 px-2 py-1">
                   {activeTagFilter && (
                     <button
                       onClick={() => setActiveTagFilter(null)}
-                      className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition"
+                      className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
                     >
                       All ×
                     </button>
@@ -104,8 +104,8 @@ export function Sidebar() {
                 </div>
               </div>
             ) : (
-              <div className="mt-3 border-t border-border pt-2 px-2">
-                <p className="py-2 text-xs text-muted-foreground text-center">
+              <div className="mt-3 border-t border-zinc-200 dark:border-zinc-800 pt-2 px-2">
+                <p className="py-2 text-xs text-zinc-400 text-center">
                   Right-click to add tags
                 </p>
               </div>
