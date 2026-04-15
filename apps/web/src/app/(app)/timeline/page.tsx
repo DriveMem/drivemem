@@ -232,7 +232,7 @@ export default function TimelinePage() {
     <div className="mx-auto max-w-3xl px-6 py-8">
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-2xl font-bold">
-          {effectiveView === 'flow' ? '🔀 Information Flow' : '📅 Knowledge Timeline'}
+          {effectiveView === 'flow' ? '🔀 Agent Activity Flow' : '📅 Timeline'}
         </h1>
         {!flowError && (
           <div className="flex gap-1">
