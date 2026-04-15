@@ -12,8 +12,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 const loginSchema = z.object({
-  email: z.string().email("Please enterValid email address"),
-  password: z.string().min(1, "Please enterPassword"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Please enter your password"),
 })
 
 type LoginForm = z.infer<typeof loginSchema>
@@ -50,13 +50,13 @@ function LoginForm() {
         redirect: false,
       })
       if (result?.error) {
-        setError("EmailorPasswordError")
+        setError("Incorrect email or password")
       } else {
         router.push(returnUrl)
         router.refresh()
       }
     } catch {
-      setError("Sign inFailed，Please try again later")
+      setError("Sign in failed. Please try again later.")
     } finally {
       setLoading(false)
     }
@@ -127,7 +127,7 @@ function LoginForm() {
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        Don't have an account？{" "}
+        Don't have an account?{" "}
         <Link href="/signup" className="text-primary hover:underline">
           Sign up
         </Link>

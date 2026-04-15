@@ -13,12 +13,12 @@ import { Label } from "@/components/ui/label"
 
 const signupSchema = z
   .object({
-    email: z.string().email("Please enterValid email address"),
+    email: z.string().email("Please enter a valid email address"),
     password: z
       .string()
-      .min(8, "PasswordAt least 8 characters")
-      .regex(/[a-zA-Z]/, "PasswordMust contain letters")
-      .regex(/[0-9]/, "PasswordMust contain numbers"),
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[a-zA-Z]/, "Password must contain letters")
+      .regex(/[0-9]/, "Password must contain numbers"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -61,7 +61,7 @@ export default function SignupPage() {
         if (res.status === 409 || code === "EMAIL_EXISTS" || code === "EMAIL_ALREADY_EXISTS" || code === "CONFLICT") {
           setError("This email is already registered. Please sign in or use a different email")
         } else {
-          setError(body.error?.message || body.message || "Sign upFailed，Please try again later")
+          setError(body.error?.message || body.message || "Sign up failed. Please try again later.")
         }
         return
       }
@@ -79,7 +79,7 @@ export default function SignupPage() {
         router.refresh()
       }
     } catch {
-      setError("Sign upFailed，Please try again later")
+      setError("Sign up failed. Please try again later.")
     } finally {
       setLoading(false)
     }
@@ -151,14 +151,14 @@ export default function SignupPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        Already have an account？{" "}
+        Already have an account?{" "}
         <Link href="/login" className="text-primary hover:underline">
           Sign in
         </Link>
       </p>
 
       <p className="mt-3 text-center text-xs text-muted-foreground/60">
-        Sign upyou agree to the <Link href="/terms" className="underline hover:text-foreground">Terms of Use</Link>and <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>
+        By signing up, you agree to the <Link href="/terms" className="underline hover:text-foreground">Terms of Use</Link> and <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>
       </p>
 
       <div className="mt-4 text-center">

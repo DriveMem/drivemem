@@ -515,7 +515,7 @@ function WebhookCard() {
 
         <p className="text-xs text-muted-foreground">
           Each event sends a JSON POST containing <code className="font-mono">X-AIDrive-Signature</code> Signature。
-          <a href="/developers" className="text-brand-500 hover:underline ml-1">ViewDocs ↗</a>
+          <a href="/developers" className="text-brand-500 hover:underline ml-1">View Docs ↗</a>
         </p>
 
         {/* Delivery Log */}
