@@ -10,21 +10,21 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: "DriveMem - One memory. Every agent.",
-  description: "The shared memory layer for all your AI agents. Store knowledge once, use it everywhere.",
-  keywords: ["agent memory", "AI context", "knowledge base", "MCP", "agent memory layer", "DriveMem", "Agent Context OS", "RAG"],
+  title: "AI Drive — Agent Context OS",
+  description: "AI Drive compiles the right context for every agent and every task. One knowledge base, seamless continuity.",
+  keywords: ["agent context", "AI context OS", "knowledge base", "MCP", "context compiler", "AI Drive", "Agent Context OS", "RAG"],
   openGraph: {
-    title: "DriveMem - One memory. Every agent.",
-    description: "The shared memory layer for all your AI agents. Store knowledge once, use it everywhere.",
+    title: "AI Drive — Agent Context OS",
+    description: "AI Drive compiles the right context for every agent and every task. One knowledge base, seamless continuity.",
     type: "website",
     url: "https://drivemem.cloud",
-    siteName: "DriveMem",
-    images: [{ url: "https://drivemem.cloud/og-image.png", width: 1200, height: 630, alt: "DriveMem - One memory. Every agent." }],
+    siteName: "AI Drive",
+    images: [{ url: "https://drivemem.cloud/og-image.png", width: 1200, height: 630, alt: "AI Drive — Agent Context OS" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DriveMem - One memory. Every agent.",
-    description: "The shared memory layer for all your AI agents. Store knowledge once, use it everywhere.",
+    title: "AI Drive — Agent Context OS",
+    description: "AI Drive compiles the right context for every agent and every task. One knowledge base, seamless continuity.",
     images: ["https://drivemem.cloud/og-image.png"],
   },
   icons: { icon: "/favicon.svg" },

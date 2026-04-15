@@ -44,25 +44,25 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
 /* ---------- page ---------- */
 
 const STEPS = [
-  { icon: Upload, title: "Store knowledge", desc: "Upload files, save conversations, AI auto-indexes everything" },
-  { icon: Search, title: "AI auto-linking", desc: "Semantic search, cross-file insights, auto-discovered connections" },
-  { icon: MessageSquare, title: "Seamless agent handoff", desc: "Any AI tool connects to your knowledge base — tasks never lose context" },
+  { icon: Upload, title: "Bring your knowledge", desc: "Upload docs, notes, decisions. AI indexes and connects them automatically." },
+  { icon: Search, title: "AI compiles context", desc: "Describe your task. Context Compiler assembles the exact knowledge your agent needs." },
+  { icon: MessageSquare, title: "Any agent, full context", desc: "Connect via MCP, API, or CLI. Your agents never start from zero." },
 ] as const
 
 const FEATURES = [
-  { icon: MessageSquare, title: "Cross-agent task handoff", desc: "Research with one AI, write with another. Context Packet bundles your context — the next agent picks up where you left off.", reverse: false },
-  { icon: Lightbulb, title: "AI discovers connections", desc: "AI automatically analyzes links, contradictions, and trends across your files. Proactive insights, delivered.", reverse: true },
-  { icon: Quote, title: "Auto-synced profile", desc: "Set your role, goals, and preferences once. Every connected agent knows you. No more re-introductions.", reverse: false },
-  { icon: FileSearch, title: "Project memory", desc: "Organize knowledge by project. Each project has a brief, goal, and status — agents understand the full picture instantly.", reverse: true },
-  { icon: Command, title: "MCP / API / CLI access", desc: "Standard MCP protocol, REST API, CLI tools. Any AI agent connects with a single config line.", reverse: false },
-  { icon: History, title: "Knowledge timeline", desc: "Track all knowledge activity — uploads, AI analysis, conversations, insights. Full audit trail.", reverse: true },
+  { icon: MessageSquare, title: "Context Compiler", desc: "Describe a task, get a compiled context packet with exactly the knowledge your agent needs.", reverse: false },
+  { icon: Lightbulb, title: "AI Knowledge Graph", desc: "AI discovers connections, contradictions, and trends across all your files.", reverse: true },
+  { icon: Quote, title: "Semantic Search & RAG", desc: "Search by meaning, not keywords. Ask questions, get answers with cited sources from your knowledge base.", reverse: false },
+  { icon: FileSearch, title: "Agent Continuity", desc: "Switch agents mid-task. Context follows automatically.", reverse: true },
+  { icon: Command, title: "MCP / API / CLI", desc: "Standard MCP protocol, REST API, CLI tools. Any AI agent connects with a single config line.", reverse: false },
+  { icon: History, title: "Privacy & Security", desc: "Your knowledge stays yours. End-to-end encryption, no training on your data, full audit trail.", reverse: true },
 ] as const
 
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-[#4F5BD5]/30">
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-[#E5E4E1] bg-white/80 px-6 py-4 backdrop-blur">
-        <Link href="/" className="text-lg font-bold text-[#1C1B18]">DriveMem</Link>
+        <Link href="/" className="text-lg font-bold text-[#1C1B18]">AI Drive</Link>
         <div className="flex items-center gap-4">
           <a href="#features" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Features</a>
           <Link href="/login" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Sign in</Link>
@@ -78,10 +78,10 @@ export default function LandingPage() {
       <section className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center bg-gradient-to-b from-[#F4F5FD] to-white px-6 text-center">
         <FadeIn>
           <h1 className="mx-auto max-w-4xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-7xl">
-            Every agent, one memory
+            AI Drive — Your Agent Context OS
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-[#6B6966] sm:text-xl">
-            Your background, preferences, and projects — shared with every agent you connect.
+            One knowledge base. AI-compiled context. Every agent stays in sync.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" className="h-14 px-10 text-lg font-semibold bg-[#4F5BD5] hover:bg-[#3D49C4] text-white shadow-lg shadow-[#4F5BD5]/25">
@@ -103,9 +103,9 @@ export default function LandingPage() {
               <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
               <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
               <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
-              <span className="ml-2 text-xs text-[#6B6966]">drivemem.cloud</span>
+              <span className="ml-2 text-xs text-[#6B6966]">aidrive.cloud</span>
             </div>
-                        <img src="/screenshots/dashboard.png" alt="DriveMem Dashboard" className="w-full rounded-b-lg" />
+                        <img src="/screenshots/dashboard.png" alt="AI Drive Dashboard" className="w-full rounded-b-lg" />
           </div>
         </div>
       </section>
@@ -115,16 +115,16 @@ export default function LandingPage() {
       {/* ===== Scenario Cards ===== */}
       <section id="features" className="relative z-10 mx-auto max-w-6xl px-6 py-24">
         <FadeIn>
-          <h2 className="text-center text-3xl font-bold sm:text-4xl">Every agent you use, sharing one memory</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">Whether you use ChatGPT, Claude, Cursor, or your own agents — DriveMem gives them shared memory.</p>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">Built for every AI workflow</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">Whether you use ChatGPT, Claude, Cursor, or your own agents — AI Drive compiles the right context for each.</p>
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { emoji: "📄", title: "Students", desc: "Upload references, AI finds key arguments and compares perspectives" },
-              { emoji: "💼", title: "Professionals", desc: "Upload project docs, generate reports with cited sources" },
-              { emoji: "🔬", title: "Researchers", desc: "Upload papers, AI discovers connections and contradictions" },
-              { emoji: "📊", title: "Founders", desc: "Upload competitive intel, get structured comparison reports" },
-              { emoji: "🤖", title: "AI developers", desc: "Connect your AI agents to personal knowledge via API and MCP" },
-              { emoji: "📚", title: "Lifelong learners", desc: "Unified notes and resources, AI builds your knowledge graph" },
+              { emoji: "🤖", title: "AI Developers", desc: "Give every agent the right context. Context Compiler + MCP — one API call, zero prompt engineering." },
+              { emoji: "📊", title: "Founders", desc: "Brief your AI on the full picture. Competitive intel, decisions, strategy — compiled into context, not scattered in files." },
+              { emoji: "🔬", title: "Researchers", desc: "Switch tools mid-research without losing context. AI connects your papers and carries insights to the next agent." },
+              { emoji: "💼", title: "Professionals", desc: "Project context that follows you. AI compiles what matters — no re-explaining to every new tool." },
+              { emoji: "📄", title: "Students", desc: "Study with any AI, keep one knowledge base. Context Compiler pulls the right references for every assignment." },
+              { emoji: "📚", title: "Lifelong Learners", desc: "Your knowledge grows with you. AI connects everything you learn — and any agent you use can tap into it." },
             ].map((s) => (
               <div key={s.title} className="rounded-xl border border-[#E5E4E1] bg-white p-6 transition hover:shadow-lg hover:shadow-black/5">
                 <span className="text-3xl">{s.emoji}</span>
@@ -139,7 +139,7 @@ export default function LandingPage() {
       {/* ===== How It Works ===== */}
       <section className="relative z-10 mx-auto max-w-5xl px-6 py-20">
         <FadeIn>
-          <h2 className="text-center text-3xl font-bold sm:text-4xl">How DriveMem works</h2>
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">How AI Drive works</h2>
           <div className="mt-16 grid gap-8 sm:grid-cols-3">
             {STEPS.map((s, i) => (
               <div key={s.title} className="relative flex flex-col items-center text-center">
@@ -163,7 +163,7 @@ export default function LandingPage() {
       <section className="relative z-10 mx-auto max-w-6xl px-6 py-24">
         <FadeIn>
           <h2 className="text-3xl font-bold text-center text-[#1C1B18] mb-4">Core features</h2>
-          <p className="text-center text-[#6B6966] mb-12 max-w-2xl mx-auto">DriveMem doesn&apos;t just store — it understands your knowledge</p>
+          <p className="text-center text-[#6B6966] mb-12 max-w-2xl mx-auto">AI Drive doesn&apos;t just store — it compiles the right context for every task</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map((f, i) => (
               <div key={i} className="rounded-xl border border-[#E5E4E1] bg-white p-6 hover:shadow-lg transition-all duration-200">
@@ -181,7 +181,7 @@ export default function LandingPage() {
       {/* ===== Final CTA ===== */}
       <section className="relative z-10 px-6 py-32 text-center">
         <FadeIn>
-          <h2 className="text-3xl font-bold sm:text-4xl">One memory. Every agent knows you.</h2>
+          <h2 className="text-3xl font-bold sm:text-4xl">One knowledge base. Every agent, full context.</h2>
           <div className="mt-8">
             <Button asChild size="lg" className="h-12 px-10 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
               <Link href="/signup">Get started free <ArrowRight className="ml-1 h-4 w-4" /></Link>
@@ -197,8 +197,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Brand */}
             <div>
-              <h3 className="text-lg font-bold text-[#1C1B18]">DriveMem</h3>
-              <p className="mt-2 text-sm text-[#6B6966]">Every agent, one memory</p>
+              <h3 className="text-lg font-bold text-[#1C1B18]">AI Drive</h3>
+              <p className="mt-2 text-sm text-[#6B6966]">Your Agent Context OS</p>
             </div>
 
             {/* Product */}
@@ -237,7 +237,7 @@ export default function LandingPage() {
               <Link href="/login">免费开始</Link>
             </Button>
             <p className="text-xs text-[#6B6966]">
-              © {new Date().getFullYear()} DriveMem. All rights reserved.
+              © {new Date().getFullYear()} AI Drive. All rights reserved.
             </p>
           </div>
         </div>
