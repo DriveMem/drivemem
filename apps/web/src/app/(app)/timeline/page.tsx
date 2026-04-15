@@ -1,10 +1,10 @@
 "use client"
 import { useEffect, useState } from "react"
 import { apiFetch } from "@/lib/api"
-import { FileText, Clock, Loader2, MessageCircle, Lightbulb, BarChart3, Bot, ArrowRight } from "lucide-react"
+import { FileText, Clock, Loader2, MessageCircle, Lightbulb, BarChart3, Bot } from "lucide-react"
 import Link from "next/link"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { SwimlaneView } from "@/components/flow/swimlane-view"
 
 // ── Flow View Types ──
 interface ActivityFlowData {
@@ -51,118 +51,8 @@ function getEventLink(event: TimelineEvent): string {
   }
 }
 
-// Action icons & verbs for flow view
-const actionIcons: Record<string, string> = { search: '🔍', store: '📥', ask: '💬', compile: '📋' }
-const actionVerbs: Record<string, string> = { search: 'searched for', store: 'saved', ask: 'asked', compile: 'compiled briefing for' }
 
-// Agent colors
-const agentColors = ['bg-blue-500', 'bg-emerald-500', 'bg-purple-500', 'bg-orange-500', 'bg-cyan-500', 'bg-pink-500', 'bg-yellow-500', 'bg-red-500']
 
-function relativeTime(dateStr: string): string {
-  const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
-}
-
-// ── Flow View Component ──
-function FlowView({ data }: { data: ActivityFlowData }) {
-  const agentNames = Object.keys(data.agents)
-
-  if (agentNames.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground mb-2">No agent activity yet</p>
-        <p className="text-sm text-muted-foreground">When agents interact with your knowledge base, their activity will appear here</p>
-      </div>
-    )
-  }
-
-  // Build a map of which fileIds belong to which agent (for flow indicators)
-  const fileAgentMap: Record<string, string> = {}
-  for (const [agent, activities] of Object.entries(data.agents)) {
-    for (const a of activities) {
-      if (a.action === 'store' && a.metadata?.fileId) {
-        fileAgentMap[a.metadata.fileId as string] = agent
-      }
-    }
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Flow Summary */}
-      {data.flows.length > 0 && (
-        <Card className="p-4">
-          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <ArrowRight className="h-4 w-4 text-[#4F5BD5]" />
-            Information Flow
-          </h3>
-          <div className="space-y-2">
-            {data.flows.map((flow, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{flow.from}</span>
-                <ArrowRight className="h-3 w-3" />
-                <span className="font-medium text-foreground">{flow.to}</span>
-                <span className="text-xs">({flow.fileCount} file{flow.fileCount !== 1 ? 's' : ''} shared)</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Agent Cards */}
-      {agentNames.map((agent, idx) => {
-        const activities = data.agents[agent]
-        const dotColor = agentColors[idx % agentColors.length]
-
-        return (
-          <Card key={agent} className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <div className={`h-3 w-3 rounded-full ${dotColor}`} />
-              <span className="font-semibold text-sm">🤖 {agent}</span>
-              <span className="text-xs text-muted-foreground">{activities.length} action{activities.length !== 1 ? 's' : ''}</span>
-            </div>
-            <div className="space-y-2">
-              {activities.map((a) => {
-                const icon = actionIcons[a.action] || '📌'
-                const verb = actionVerbs[a.action] || a.action
-
-                // Check if this action used files from another agent
-                let flowFrom: string | null = null
-                if ((a.action === 'search' || a.action === 'compile') && a.relatedFileIds) {
-                  for (const fid of a.relatedFileIds) {
-                    const src = fileAgentMap[fid]
-                    if (src && src !== agent) { flowFrom = src; break }
-                  }
-                }
-
-                return (
-                  <div key={a.id} className="flex items-start gap-2 text-sm">
-                    <span className="flex-shrink-0">{icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-muted-foreground">{verb}</span>{' '}
-                      <span className="font-medium truncate">&quot;{a.detail || '...'}&quot;</span>
-                      {flowFrom && (
-                        <span className="ml-2 text-xs text-[#4F5BD5] bg-[#4F5BD5]/10 px-1.5 py-0.5 rounded">
-                          ↑ from {flowFrom}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs text-muted-foreground flex-shrink-0 whitespace-nowrap">
-                      {relativeTime(a.createdAt)}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </Card>
-        )
-      })}
-    </div>
-  )
-}
 
 // ── List View Component (existing timeline) ──
 function ListView() {
@@ -358,7 +248,7 @@ export default function TimelinePage() {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : flowData ? (
-          <FlowView data={flowData} />
+          <SwimlaneView data={flowData} />
         ) : (
           <div className="text-center py-12 text-muted-foreground">Failed to load flow data</div>
         )
