@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { FolderOpen, Sparkles, Upload, X, Lightbulb, AlertTriangle, TrendingUp, MessageSquare } from "lucide-react"
+import { FolderOpen, Sparkles, Upload, X, Lightbulb, AlertTriangle, TrendingUp, MessageSquare, Folder, FileText, Search, Plug, PenLine, BarChart3 } from "lucide-react"
 import { FileList } from "@/components/file/file-list"
 import { MemoryOverview } from "@/components/dashboard/memory-overview"
 import { KnowledgeLinks } from "@/components/dashboard/knowledge-links"
@@ -34,11 +34,10 @@ function relativeTime(dateStr: string): string {
   return `${days}d ago`
 }
 
-function activityEmoji(type: string) {
-  if (type === "file_indexed") return "📄"
-  if (type === "insight_generated") return "✨"
-  if (type === "knowledge_link_found") return "🔗"
-  return "🔔"
+const activityIcons: Record<string, typeof FileText> = {
+  file_indexed: FileText,
+  insight_generated: Sparkles,
+  knowledge_link_found: Lightbulb,
 }
 
 // --- Quick Action Chips ---
@@ -47,11 +46,11 @@ function QuickActions({ onGenerate, onOrganize }: {
   onOrganize: () => void
 }) {
   const router = useRouter()
-  const chips: { icon: string; label: string; action: () => void }[] = [
-    { icon: "💬", label: "New AI Chat", action: () => router.push("/chat?new=1") },
-    { icon: "📊", label: "Generate report", action: () => onGenerate("analysis") },
-    { icon: "📝", label: "Study notes", action: () => onGenerate("study") },
-    { icon: "🔍", label: "AI organize", action: onOrganize },
+  const chips: { icon: typeof MessageSquare; label: string; action: () => void }[] = [
+    { icon: MessageSquare, label: "New AI Chat", action: () => router.push("/chat?new=1") },
+    { icon: BarChart3, label: "Generate report", action: () => onGenerate("analysis") },
+    { icon: PenLine, label: "Study notes", action: () => onGenerate("study") },
+    { icon: Search, label: "AI organize", action: onOrganize },
   ]
   return (
     <div className="mx-3 mb-3 flex flex-wrap gap-2">
@@ -59,9 +58,10 @@ function QuickActions({ onGenerate, onOrganize }: {
         <button
           key={c.label}
           onClick={c.action}
-          className="inline-flex items-center gap-1.5 rounded-full border border-[#4F5BD5]/20 bg-[#4F5BD5]/5 px-3 py-1.5 text-sm hover:bg-[#4F5BD5]/10 transition"
+          className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition"
         >
-          <span>{c.icon}</span>{c.label}
+          <c.icon className="h-3.5 w-3.5 text-zinc-400" />
+          {c.label}
         </button>
       ))}
     </div>
@@ -77,7 +77,7 @@ function ActivitySummary({ activities }: { activities: any[] }) {
 
   if (activities.length === 0) {
     return (
-      <div className="mx-3 mb-3 rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
+      <div className="mx-3 mb-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 p-4 text-center text-sm text-zinc-400">
         AI will notify you when it discovers knowledge links
       </div>
     )
@@ -85,21 +85,24 @@ function ActivitySummary({ activities }: { activities: any[] }) {
 
   return (
     <div className="mx-3 mb-3">
-      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Recent activity</h4>
-      <div className="text-xs text-muted-foreground mb-2">
-        Indexed {fileCount} files · {insightCount}  insights · {linkCount}  links
+      <h4 className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-2">Recent activity</h4>
+      <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+        Indexed {fileCount} files · {insightCount} insights · {linkCount} links
       </div>
       <div className="space-y-1">
-        {shown.map((a: any) => (
-          <div key={a.id} className="flex items-center gap-2 text-sm truncate">
-            <span className="shrink-0 text-xs">{activityEmoji(a.type)}</span>
-            <span className="truncate flex-1">{a.title}</span>
-            <span className="shrink-0 text-xs text-muted-foreground" title={a.createdAt ? new Date(a.createdAt).toLocaleString() : ""}>{a.createdAt ? relativeTime(a.createdAt) : ""}</span>
-          </div>
-        ))}
+        {shown.map((a: any) => {
+          const Icon = activityIcons[a.type] || Lightbulb
+          return (
+            <div key={a.id} className="flex items-center gap-2 text-sm truncate">
+              <Icon className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+              <span className="truncate flex-1 text-zinc-600 dark:text-zinc-300">{a.title}</span>
+              <span className="shrink-0 text-xs text-zinc-400" title={a.createdAt ? new Date(a.createdAt).toLocaleString() : ""}>{a.createdAt ? relativeTime(a.createdAt) : ""}</span>
+            </div>
+          )
+        })}
       </div>
       {activities.length > 5 && (
-        <button className="mt-2 text-xs text-[#4F5BD5] hover:underline">View all</button>
+        <button className="mt-2 text-xs text-brand-500 hover:underline">View all</button>
       )}
     </div>
   )
@@ -130,7 +133,7 @@ function InsightsSummaryCard({ insights, onSwitchToAi }: { insights: any[]; onSw
 
   const unread = insights.filter(i => !i.read).length
   const count = unread > 0 ? unread : insights.length
-  const label = unread > 0 ? `${count}  new knowledge links` : `${count}  knowledge links`
+  const label = unread > 0 ? `${count} new knowledge links` : `${count} knowledge links`
   const previews = insights.slice(0, 3)
 
   const handleDismiss = () => {
@@ -139,13 +142,14 @@ function InsightsSummaryCard({ insights, onSwitchToAi }: { insights: any[]; onSw
   }
 
   return (
-    <div className="mx-6 mb-3 rounded-xl border border-[#4F5BD5]/20 bg-[#4F5BD5]/5 p-3">
+    <div className="mx-6 mb-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-3">
       <div className="flex items-center justify-between mb-1.5">
-        <button onClick={onSwitchToAi} className="text-sm font-medium hover:underline">
-          💡 AI discovered {label}
-          <span className="ml-1.5 text-xs text-[#4F5BD5]">View →</span>
+        <button onClick={onSwitchToAi} className="flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:underline">
+          <Lightbulb className="h-4 w-4 text-brand-500" />
+          AI discovered {label}
+          <span className="text-xs text-brand-500">View →</span>
         </button>
-        <button onClick={handleDismiss} className="text-muted-foreground hover:text-foreground p-0.5">
+        <button onClick={handleDismiss} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-0.5">
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
@@ -154,7 +158,7 @@ function InsightsSummaryCard({ insights, onSwitchToAi }: { insights: any[]; onSw
           const Icon = insightTypeIcon[i.type] || Lightbulb
           const color = insightTypeColor[i.type] || "text-amber-500"
           return (
-            <div key={i.id} className="flex items-center gap-2 text-xs text-muted-foreground truncate">
+            <div key={i.id} className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 truncate">
               <Icon className={cn("h-3 w-3 shrink-0", color)} />
               <span className="truncate">{i.title}</span>
               <span className="shrink-0">·</span>
@@ -231,16 +235,16 @@ export default function DashboardPage() {
       <WelcomeModal onUpload={() => setShowUpload(true)} />
       <MobileUploadFab />
 
-      {/* Tab switcher */}
+      {/* Tab switcher — pill/segment style */}
       <div className="px-6 pt-6 pb-2">
-        <div className="flex gap-1 border-b">
+        <div className="inline-flex rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1">
           <button
             onClick={() => handleTabSwitch("files")}
             className={cn(
-              "flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition",
+              "flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition",
               activeTab === "files"
-                ? "border-blue-600 text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
             )}
           >
             <FolderOpen className="h-4 w-4" />
@@ -249,16 +253,16 @@ export default function DashboardPage() {
           <button
             onClick={() => handleTabSwitch("ai")}
             className={cn(
-              "relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition",
+              "relative flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition",
               activeTab === "ai"
-                ? "border-blue-600 text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
             )}
           >
             <Sparkles className="h-4 w-4" />
             AI Chat
             {fileCount > 3 && activeTab !== "ai" && (
-              <span className="absolute top-1.5 right-1 h-2 w-2 rounded-full bg-blue-500" />
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-500" />
             )}
           </button>
         </div>
@@ -268,29 +272,31 @@ export default function DashboardPage() {
       {activeTab === "files" ? (
         <div className="flex-1 min-h-0 flex flex-col">
           {resumeBrief && (
-            <div className="mx-6 mb-4 rounded-xl border border-[#4F5BD5]/20 bg-[#4F5BD5]/5 p-4">
+            <div className="mx-6 mb-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold">👋 Welcome back!</h3>
-                <button onClick={() => setResumeBrief(null)} className="text-xs text-muted-foreground hover:text-foreground">✕</button>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Welcome back</h3>
+                <button onClick={() => setResumeBrief(null)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </div>
-              <p className="text-xs text-muted-foreground mb-3">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
                 You were away for {resumeBrief.hoursSinceActive}h. Here&apos;s what happened:
               </p>
-              <div className="flex gap-4 text-xs">
+              <div className="flex gap-4 text-xs text-zinc-600 dark:text-zinc-300">
                 {resumeBrief.newFilesCount > 0 && (
-                  <span>📄 {resumeBrief.newFilesCount} new files</span>
+                  <span className="flex items-center gap-1"><FileText className="h-3.5 w-3.5 text-zinc-400" /> {resumeBrief.newFilesCount} new files</span>
                 )}
                 {resumeBrief.newInsightsCount > 0 && (
-                  <span>💡 {resumeBrief.newInsightsCount} new insights</span>
+                  <span className="flex items-center gap-1"><Lightbulb className="h-3.5 w-3.5 text-zinc-400" /> {resumeBrief.newInsightsCount} new insights</span>
                 )}
                 {resumeBrief.recentActivity.length > 0 && (
-                  <span>🤖 {resumeBrief.recentActivity.length} agent actions</span>
+                  <span className="flex items-center gap-1"><Sparkles className="h-3.5 w-3.5 text-zinc-400" /> {resumeBrief.recentActivity.length} agent actions</span>
                 )}
               </div>
               {resumeBrief.recentActivity.length > 0 && (
                 <div className="mt-2 space-y-1">
                   {resumeBrief.recentActivity.slice(0, 3).map((a: any, i: number) => (
-                    <p key={i} className="text-xs text-muted-foreground">
+                    <p key={i} className="text-xs text-zinc-500 dark:text-zinc-400">
                       {a.agentName} {a.action === 'store' ? 'saved' : a.action === 'search' ? 'searched for' : a.action === 'compile' ? 'compiled' : a.action} &quot;{a.detail}&quot;
                     </p>
                   ))}
@@ -301,102 +307,106 @@ export default function DashboardPage() {
           <InsightsSummaryCard insights={insights} onSwitchToAi={() => handleTabSwitch("ai")} />
           {!currentFolderId ? (
             <div className="flex-1 min-h-0 overflow-auto p-6">
-              <h2 className="text-lg font-semibold mb-4">📁 Projects</h2>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Projects</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {folders.map((folder: any) => (
                   <div
                     key={folder.id}
                     onClick={() => setCurrentFolder(folder.id)}
-                    className="rounded-xl border p-4 hover:shadow-md hover:border-[#4F5BD5]/30 transition-all cursor-pointer"
+                    className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 transition-all cursor-pointer"
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xl">📁</span>
-                      <h3 className="font-medium truncate">{folder.name}</h3>
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <Folder className="h-5 w-5 text-zinc-400" />
+                      <h3 className="font-medium text-zinc-900 dark:text-zinc-100 truncate">{folder.name}</h3>
                       {folder.status && (
-                        <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          folder.status === 'active' ? 'bg-green-500/10 text-green-600' :
-                          folder.status === 'completed' ? 'bg-blue-500/10 text-blue-600' :
-                          'bg-muted text-muted-foreground'
-                        }`}>
+                        <span className={cn(
+                          "ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium",
+                          folder.status === 'active' ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
+                          folder.status === 'completed' ? 'bg-brand-500/10 text-brand-500' :
+                          'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                        )}>
                           {folder.status === 'active' ? 'Active' : folder.status === 'completed' ? 'Completed' : folder.status}
                         </span>
                       )}
                     </div>
                     {folder.brief && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{folder.brief}</p>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-2">{folder.brief}</p>
                     )}
                     {folder.goal && (
-                      <p className="text-xs text-[#4F5BD5] mb-2">🎯 {folder.goal}</p>
+                      <p className="text-xs text-brand-500 mb-2">{folder.goal}</p>
                     )}
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>📄 {folder.fileCount ?? 0} {(folder.fileCount ?? 0) === 1 ? 'file' : 'files'}</span>
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                      <FileText className="h-3.5 w-3.5" />
+                      <span>{folder.fileCount ?? 0} {(folder.fileCount ?? 0) === 1 ? 'file' : 'files'}</span>
                     </div>
                   </div>
                 ))}
 
-                {/* New projectCard */}
+                {/* New project card */}
                 <div
                   onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }}
-                  className="rounded-xl border-2 border-dashed p-4 hover:border-[#4F5BD5]/30 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-[#4F5BD5]"
+                  className="rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-600 p-5 hover:border-brand-400 dark:hover:border-brand-500 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 text-zinc-400 hover:text-brand-500"
                 >
-                  <span className="text-2xl">+</span>
-                  <span className="text-sm">New project</span>
+                  <span className="text-2xl font-light">+</span>
+                  <span className="text-sm font-medium">New project</span>
                 </div>
               </div>
 
-              {/* UnfiledSection */}
+              {/* Unfiled section */}
               {unfiledCount > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">📄 Unfiled ({unfiledCount})</h3>
-                  <button onClick={() => router.push("/files")} className="text-sm text-[#4F5BD5] hover:underline">
+                  <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2 flex items-center gap-1.5">
+                    <FileText className="h-4 w-4 text-zinc-400" /> Unfiled ({unfiledCount})
+                  </h3>
+                  <button onClick={() => router.push("/files")} className="text-sm text-brand-500 hover:underline">
                     View all files →
                   </button>
                 </div>
               )}
 
-              {/* Empty state guide — hidden when user has ≥1 project AND ≥1 file */}
+              {/* Empty state guide */}
               {(folders.length === 0 || fileCount === 0) && (
                 <div className="mt-8">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-3">🚀 开始使用</h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Get started</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }}
-                      className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-left hover:border-[#4F5BD5]/30 hover:bg-[#4F5BD5]/5 transition-all"
+                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-4 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-500/5 transition-all"
                     >
-                      <span className="text-2xl shrink-0">📁</span>
+                      <Folder className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium">创建你的第一个项目</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">按项目组织你的知识库</p>
+                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Create your first project</p>
+                        <p className="text-xs text-zinc-400 mt-0.5">Organize your knowledge by project</p>
                       </div>
                     </button>
                     <button
                       onClick={() => { handleTabSwitch("files"); setShowUpload(true) }}
-                      className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-left hover:border-[#4F5BD5]/30 hover:bg-[#4F5BD5]/5 transition-all"
+                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-4 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-500/5 transition-all"
                     >
-                      <span className="text-2xl shrink-0">📄</span>
+                      <Upload className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium">上传第一份文件</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">PDF, 文档, 笔记——AI 自动索引一切</p>
+                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Upload your first file</p>
+                        <p className="text-xs text-zinc-400 mt-0.5">PDF, docs, notes — AI indexes everything</p>
                       </div>
                     </button>
                     <button
                       onClick={() => router.push("/chat?new=1")}
-                      className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-left hover:border-[#4F5BD5]/30 hover:bg-[#4F5BD5]/5 transition-all"
+                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-4 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-500/5 transition-all"
                     >
-                      <span className="text-2xl shrink-0">💬</span>
+                      <MessageSquare className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium">试试 AI 对话</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">提问即可获得带引用的精准回答</p>
+                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Try AI Chat</p>
+                        <p className="text-xs text-zinc-400 mt-0.5">Ask questions, get cited answers</p>
                       </div>
                     </button>
                     <button
                       onClick={() => router.push("/developers")}
-                      className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-left hover:border-[#4F5BD5]/30 hover:bg-[#4F5BD5]/5 transition-all"
+                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-4 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-500/5 transition-all"
                     >
-                      <span className="text-2xl shrink-0">🔌</span>
+                      <Plug className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium">用 CLI / MCP 连接</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">让你的 AI 助手访问知识库</p>
+                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Connect via CLI / MCP</p>
+                        <p className="text-xs text-zinc-400 mt-0.5">Let your AI assistant access your knowledge</p>
                       </div>
                     </button>
                   </div>
@@ -409,7 +419,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* New project chat box */}
+          {/* New project dialog */}
           <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
             <DialogContent>
               <DialogHeader><DialogTitle>New project</DialogTitle></DialogHeader>
@@ -443,27 +453,27 @@ export default function DashboardPage() {
       ) : (
         <div className="flex-1 min-h-0 overflow-auto px-1 animate-in fade-in duration-200">
           {fileCount === 0 ? (
-            <div className="px-4 py-5 space-y-4">
+            <div className="px-4 py-5 space-y-5">
               {/* Hero section */}
-              <div className="rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 p-5 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500/10">
-                  <Sparkles className="h-6 w-6 text-blue-500" />
+              <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-6 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/10">
+                  <Sparkles className="h-6 w-6 text-brand-500" />
                 </div>
-                <h3 className="text-lg font-semibold mb-1.5">Upload files to start your AI knowledge base</h3>
-                <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5">Upload files to start your AI knowledge base</h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mb-5">
                   After uploading, AI will understand your content, build knowledge memory, and provide insights and cross-file analysis.
                 </p>
                 <div className="flex items-center justify-center gap-3">
                   <button
                     onClick={() => { handleTabSwitch("files"); setShowUpload(true) }}
-                    className="rounded-lg bg-[#4F5BD5] px-5 py-2.5 text-sm text-white hover:bg-[#3D49C4] transition inline-flex items-center gap-2"
+                    className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition inline-flex items-center gap-2"
                   >
                     <Upload className="h-4 w-4" />
                     Upload your first file
                   </button>
                   <button
                     onClick={() => router.push("/chat?new=1")}
-                    className="rounded-lg border border-[#4F5BD5]/30 px-5 py-2.5 text-sm text-[#4F5BD5] hover:bg-[#4F5BD5]/5 transition inline-flex items-center gap-2"
+                    className="rounded-lg border border-zinc-300 dark:border-zinc-600 px-5 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition inline-flex items-center gap-2"
                   >
                     <MessageSquare className="h-4 w-4" />
                     Start a conversation
@@ -471,25 +481,25 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* AI capabilities grid */}
+              {/* AI capabilities */}
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { icon: "🔍", title: "Semantic search", desc: "Search with natural language, AI understands intent not just keywords", color: "border-blue-500/20" },
-                  { icon: "💬", title: "AI Q&A", desc: "Ask questions, get cited answers from your files", color: "border-green-500/20" },
-                  { icon: "💡", title: "Smart insights", desc: "Auto-discover connections, contradictions, and trends", color: "border-amber-500/20" },
-                  { icon: "📊", title: "Analysis reports", desc: "Generate cross-file analysis, study notes, and comparisons", color: "border-purple-500/20" },
+                  { icon: Search, title: "Semantic search", desc: "Search with natural language, AI understands intent not just keywords" },
+                  { icon: MessageSquare, title: "AI Q&A", desc: "Ask questions, get cited answers from your files" },
+                  { icon: Lightbulb, title: "Smart insights", desc: "Auto-discover connections, contradictions, and trends" },
+                  { icon: BarChart3, title: "Analysis reports", desc: "Generate cross-file analysis, study notes, and comparisons" },
                 ].map((item) => (
-                  <div key={item.title} className={cn("rounded-lg border p-3", item.color)}>
-                    <div className="text-lg mb-1">{item.icon}</div>
-                    <h4 className="text-sm font-medium mb-0.5">{item.title}</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                  <div key={item.title} className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-4">
+                    <item.icon className="h-5 w-5 text-zinc-400 mb-2" />
+                    <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-0.5">{item.title}</h4>
+                    <p className="text-xs text-zinc-400 leading-relaxed">{item.desc}</p>
                   </div>
                 ))}
               </div>
 
               {/* Example questions */}
-              <div className="rounded-xl border border-border/60 p-4">
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">💬 Try these questions</h4>
+              <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-4">
+                <h4 className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-3">Try these questions</h4>
                 <div className="space-y-2">
                   {[
                     "Summarize the key points of this document",
@@ -500,10 +510,10 @@ export default function DashboardPage() {
                     <button
                       key={q}
                       onClick={() => router.push(`/chat?q=${encodeURIComponent(q)}`)}
-                      className="flex w-full items-center gap-2 rounded-lg border border-border/50 bg-muted/30 px-3 py-2 text-left text-sm hover:bg-muted/60 transition"
+                      className="flex w-full items-center gap-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
                     >
-                      <MessageSquare className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <span className="text-muted-foreground">{q}</span>
+                      <MessageSquare className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                      <span className="text-zinc-500 dark:text-zinc-400">{q}</span>
                     </button>
                   ))}
                 </div>
@@ -513,42 +523,42 @@ export default function DashboardPage() {
               <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={() => { handleTabSwitch("files"); setShowUpload(true) }}
-                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-3 hover:border-brand-400 hover:bg-brand-500/5 transition"
                 >
-                  <Upload className="h-5 w-5 text-[#4F5BD5]" />
-                  <span className="text-xs font-medium">Upload files</span>
+                  <Upload className="h-5 w-5 text-brand-500" />
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Upload files</span>
                 </button>
                 <Link
                   href="/chat"
-                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-3 hover:border-brand-400 hover:bg-brand-500/5 transition"
                 >
-                  <MessageSquare className="h-5 w-5 text-green-500" />
-                  <span className="text-xs font-medium">AI Chat</span>
+                  <MessageSquare className="h-5 w-5 text-zinc-400" />
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">AI Chat</span>
                 </Link>
                 <Link
                   href="/developers"
-                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed p-3 hover:bg-muted/50 transition"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-3 hover:border-brand-400 hover:bg-brand-500/5 transition"
                 >
-                  <FolderOpen className="h-5 w-5 text-purple-500" />
-                  <span className="text-xs font-medium">API Docs</span>
+                  <FolderOpen className="h-5 w-5 text-zinc-400" />
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">API Docs</span>
                 </Link>
               </div>
 
               {/* How it works */}
-              <div className="rounded-xl border border-dashed border-border/60 p-4">
-                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">How it works</h4>
+              <div className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-4">
+                <h4 className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-3">How it works</h4>
                 <div className="flex items-start gap-4">
                   {[
                     { step: "1", label: "Upload files", sub: "PDF, docs, notes, etc." },
                     { step: "2", label: "AI auto-indexes", sub: "Understands content and builds memory" },
                     { step: "3", label: "Get insights", sub: "Analysis, reports, Q&A" },
-                  ].map((s, i) => (
+                  ].map((s) => (
                     <div key={s.step} className="flex-1 flex flex-col items-center text-center">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#4F5BD5]/10 text-xs font-semibold text-[#4F5BD5] mb-1.5">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500/10 text-xs font-semibold text-brand-500 mb-1.5">
                         {s.step}
                       </div>
-                      <span className="text-xs font-medium">{s.label}</span>
-                      <span className="text-[11px] text-muted-foreground mt-0.5">{s.sub}</span>
+                      <span className="text-xs font-medium text-zinc-700 dark:text-zinc-200">{s.label}</span>
+                      <span className="text-[11px] text-zinc-400 mt-0.5">{s.sub}</span>
                     </div>
                   ))}
                 </div>
@@ -559,32 +569,32 @@ export default function DashboardPage() {
               <QuickActions onGenerate={handleQuickGenerate} onOrganize={handleAutoOrganize} />
               <MemoryOverview />
 
-              {/* AI ReportSection */}
-              <div className="mx-4 mb-4 rounded-xl border border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-blue-500/5 p-4">
+              {/* AI Reports section */}
+              <div className="mx-4 mb-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/10">
-                    <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500/10">
+                    <BarChart3 className="h-3.5 w-3.5 text-brand-500" />
                   </div>
-                  <h3 className="text-sm font-semibold">📊 AI Reports</h3>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">AI Reports</h3>
                 </div>
                 <ReportSection ref={reportRef} />
               </div>
 
               {/* Divider */}
               <div className="mx-4 mb-4">
-                <div className="border-t border-border/60" />
+                <div className="border-t border-zinc-200 dark:border-zinc-800" />
               </div>
 
-              {/* AI InsightsSection */}
-              <div className="mx-4 mb-4 rounded-xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 to-emerald-500/5 p-4">
+              {/* AI Insights section */}
+              <div className="mx-4 mb-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-500/10">
-                    <Lightbulb className="h-3.5 w-3.5 text-indigo-400" />
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500/10">
+                    <Lightbulb className="h-3.5 w-3.5 text-brand-500" />
                   </div>
-                  <h3 className="text-sm font-semibold">💡 AI Insights</h3>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">AI Insights</h3>
                   {insights.filter(i => !i.read).length > 0 && (
-                    <span className="rounded-full bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white">
-                      {insights.filter(i => !i.read).length}  new
+                    <span className="rounded-full bg-brand-500 px-1.5 py-0.5 text-[10px] text-white">
+                      {insights.filter(i => !i.read).length} new
                     </span>
                   )}
                 </div>
@@ -597,7 +607,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground">AI will show insights when it discovers connections between files</p>
+                  <p className="text-xs text-zinc-400">AI will show insights when it discovers connections between files</p>
                 )}
                 {fileCount > 3 && (
                   <>
