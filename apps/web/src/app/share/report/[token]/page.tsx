@@ -83,7 +83,7 @@ export default function SharedReportPage() {
         <div className="mt-8 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-600/10 to-pink-600/10 border border-indigo-500/20 p-8 text-center">
           <h2 className="text-xl font-bold">🚀 Create your AI knowledge library for free</h2>
           <p className="mt-2 text-sm text-muted-foreground">Upload filesto get started — AI automatically generates analysis reports</p>
-          <Button asChild className="mt-4 bg-[#4F5BD5] hover:bg-[#3D49C4] text-white px-8">
+          <Button asChild className="mt-4 bg-brand-500 hover:bg-brand-600 text-white px-8">
             <Link href="/signup">Sign up free</Link>
           </Button>
         </div>

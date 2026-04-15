@@ -17,7 +17,7 @@ export function MobileUploadFab() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-20 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#4F5BD5] text-white shadow-lg shadow-[#4F5BD5]/30 hover:bg-[#3D49C4] active:scale-95 transition-all md:hidden"
+        className="fixed bottom-20 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-brand-500 text-white shadow-lg shadow-brand-500/30 hover:bg-brand-600 active:scale-95 transition-all md:hidden"
         aria-label="Upload files"
       >
         <Upload className="h-6 w-6" />

@@ -307,7 +307,7 @@ export default function DevelopersPage() {
   const isLoggedIn = status === "authenticated"
 
   return (
-    <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-[#4F5BD5]/30">
+    <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-brand-500/30">
       {/* Nav */}
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-[#E5E4E1] bg-white/80 px-6 py-4 backdrop-blur">
         <Link href={isLoggedIn ? "/dashboard" : "/"} className="text-lg font-bold text-[#1C1B18]">DriveMem</Link>
@@ -318,14 +318,14 @@ export default function DevelopersPage() {
               <Link href="/dashboard" className="rounded-lg border border-[#E5E4E1] px-4 py-2 text-sm font-medium text-[#1C1B18] hover:bg-[#F8F7F5] transition">
                 Back to Dashboard
               </Link>
-              <Link href="/settings" className="flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-medium text-white">
+              <Link href="/settings" className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-sm font-medium text-white">
                 {(session?.user?.name || "U").charAt(0).toUpperCase()}
               </Link>
             </>
           ) : (
             <>
               <Link href="/login" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Sign in</Link>
-              <Link href="/signup" className="rounded-lg bg-[#4F5BD5] px-4 py-2 text-sm font-medium text-white hover:bg-[#3D49C4] transition">Get started free</Link>
+              <Link href="/signup" className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 transition">Get started free</Link>
             </>
           )}
         </div>
@@ -345,7 +345,7 @@ export default function DevelopersPage() {
             DriveMem is the knowledge infrastructure for agents — connect via API and MCP
           </p>
           <div className="mt-10">
-            <Button asChild size="lg" className="h-12 px-10 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
+            <Button asChild size="lg" className="h-12 px-10 text-base bg-brand-500 hover:bg-brand-600 text-white">
               <a href="#quickstart">Get started <ArrowRight className="ml-1 h-4 w-4" /></a>
             </Button>
           </div>
@@ -383,17 +383,17 @@ export default function DevelopersPage() {
             {/* Step guide */}
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-bold text-white">1</span>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">1</span>
                 <p className="mt-2 text-sm font-medium">Get API Key</p>
-                <p className="mt-1 text-xs text-[#6B6966]">Create your key in <a href="/settings?tab=developer" className="text-[#4F5BD5] hover:underline">Settings</a></p>
+                <p className="mt-1 text-xs text-[#6B6966]">Create your key in <a href="/settings?tab=developer" className="text-brand-500 hover:underline">Settings</a></p>
               </div>
               <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-bold text-white">2</span>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">2</span>
                 <p className="mt-2 text-sm font-medium">Copy config</p>
                 <p className="mt-1 text-xs text-[#6B6966]">Choose REST API or MCP</p>
               </div>
               <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#4F5BD5] text-sm font-bold text-white">3</span>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">3</span>
                 <p className="mt-2 text-sm font-medium">Paste and go</p>
                 <p className="mt-1 text-xs text-[#6B6966]">Paste into Claude / Cursor / your app</p>
               </div>
@@ -409,7 +409,7 @@ export default function DevelopersPage() {
                   onClick={() => setActiveTab(i)}
                   className={`pb-3 text-sm font-medium transition ${
                     activeTab === i
-                      ? "border-b-2 border-[#4F5BD5] text-[#1C1B18]"
+                      ? "border-b-2 border-brand-500 text-[#1C1B18]"
                       : "text-[#6B6966] hover:text-[#1C1B18]"
                   }`}
                 >
@@ -493,8 +493,8 @@ plugins:
                 <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 space-y-3">
                   <p className="text-sm font-medium text-[#1C1B18]">🌐 MCP Server</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-lg border border-[#4F5BD5]/30 bg-[#4F5BD5]/5 p-3">
-                      <p className="text-xs font-medium text-[#4F5BD5] mb-1">☁️ Public URL (recommended)</p>
+                    <div className="rounded-lg border border-brand-500/30 bg-brand-500/5 p-3">
+                      <p className="text-xs font-medium text-brand-500 mb-1">☁️ Public URL (recommended)</p>
                       <code className="text-xs font-mono text-[#1C1B18] break-all">https://api.drivemem.cloud/mcp</code>
                       <p className="text-[10px] text-[#6B6966] mt-1">Ready to use, no self-hosting</p>
                     </div>
@@ -506,7 +506,7 @@ plugins:
                   </div>
                   <p className="text-xs text-[#6B6966]">
                     💡 Replace <code className="font-mono">YOUR_API_KEY</code> with your API key.
-                    Create one in <a href="/settings?tab=developer" className="text-[#4F5BD5] hover:underline">Settings → Developer</a>.
+                    Create one in <a href="/settings?tab=developer" className="text-brand-500 hover:underline">Settings → Developer</a>.
                   </p>
                 </div>
 
@@ -563,7 +563,7 @@ plugins:
             Create your API key in Settings to start integrating.
           </p>
           <div className="mt-8">
-            <Button asChild size="lg" className="h-12 px-8 text-base bg-[#4F5BD5] hover:bg-[#3D49C4] text-white">
+            <Button asChild size="lg" className="h-12 px-8 text-base bg-brand-500 hover:bg-brand-600 text-white">
               <Link href="/settings?tab=developer">Create API Key <ChevronRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>
@@ -651,7 +651,7 @@ plugins:
                       {MCP_TOOLS.map((t) => (
                         <tr key={t.name} className="hover:bg-white/60 transition">
                           <td className="px-4 py-2 whitespace-nowrap">
-                            <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono text-[#4F5BD5] border border-[#E5E4E1]">{t.name}</code>
+                            <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono text-brand-500 border border-[#E5E4E1]">{t.name}</code>
                           </td>
                           <td className="px-4 py-2 text-[#6B6966]">{t.desc}</td>
                         </tr>
@@ -740,24 +740,24 @@ aidrive insights           # AI insights
             <div>
               <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Product</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><a href="#features" className="hover:text-[#4F5BD5] transition">Features</a></li>
-                <li><Link href="/login" className="hover:text-[#4F5BD5] transition">Sign in</Link></li>
-                <li><Link href="/signup" className="hover:text-[#4F5BD5] transition">Sign up free</Link></li>
+                <li><a href="#features" className="hover:text-brand-500 transition">Features</a></li>
+                <li><Link href="/login" className="hover:text-brand-500 transition">Sign in</Link></li>
+                <li><Link href="/signup" className="hover:text-brand-500 transition">Sign up free</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Developers</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><Link href="/developers#api" className="hover:text-[#4F5BD5] transition">API Docs</Link></li>
-                <li><Link href="/developers#mcp" className="hover:text-[#4F5BD5] transition">MCP Protocol</Link></li>
-                <li><Link href="/developers#cli" className="hover:text-[#4F5BD5] transition">CLI Tools</Link></li>
+                <li><Link href="/developers#api" className="hover:text-brand-500 transition">API Docs</Link></li>
+                <li><Link href="/developers#mcp" className="hover:text-brand-500 transition">MCP Protocol</Link></li>
+                <li><Link href="/developers#cli" className="hover:text-brand-500 transition">CLI Tools</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Legal</h4>
               <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><Link href="/terms" className="hover:text-[#4F5BD5] transition">Terms of Service</Link></li>
-                <li><Link href="/privacy" className="hover:text-[#4F5BD5] transition">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-brand-500 transition">Terms of Service</Link></li>
+                <li><Link href="/privacy" className="hover:text-brand-500 transition">Privacy Policy</Link></li>
               </ul>
             </div>
           </div>

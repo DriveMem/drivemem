@@ -146,7 +146,7 @@ export function SearchResults({ query }: { query: string }) {
           <ul className="text-xs space-y-1">
             <li>• Try rephrasing or using different keywords</li>
             <li>• Try a shorter query (e.g., search for core concepts only)</li>
-            <li>• <a href="/dashboard" className="text-[#4F5BD5] hover:underline">UploadMore files</a> Enrich your knowledge library</li>
+            <li>• <a href="/dashboard" className="text-brand-500 hover:underline">UploadMore files</a> Enrich your knowledge library</li>
           </ul>
         </div>
       </div>

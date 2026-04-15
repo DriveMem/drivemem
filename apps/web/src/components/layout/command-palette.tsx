@@ -115,7 +115,7 @@ export function CommandPalette() {
           onClick={toggleAiMode}
           className={`flex items-center gap-1 shrink-0 rounded-md px-2 py-1.5 mx-1 text-xs font-medium transition ${
             effectiveAiMode
-              ? "bg-[#4F5BD5]/10 text-[#4F5BD5] border border-[#4F5BD5]/30"
+              ? "bg-brand-500/10 text-brand-500 border border-brand-500/30"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
           }`}
           title={effectiveAiMode ? "Switch to regular search" : "Switch to AI semantic search (or type ? prefix)"}
@@ -170,7 +170,7 @@ export function CommandPalette() {
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate(`/chat?q=Questions about ${encodeURIComponent(r.fileName)}`) }}
-                    className="rounded bg-[#4F5BD5] px-1.5 py-0.5 text-[10px] text-white hover:bg-[#3D49C4] transition"
+                    className="rounded bg-brand-500 px-1.5 py-0.5 text-[10px] text-white hover:bg-brand-600 transition"
                   >
                     💬 Ask AI
                   </button>

@@ -111,9 +111,9 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
                   key={p.id}
                   onClick={() => setPersona(p.id)}
                   className={cn(
-                    "rounded-xl border p-4 text-left transition hover:border-[#4F5BD5]/50",
+                    "rounded-xl border p-4 text-left transition hover:border-brand-500/50",
                     persona === p.id &&
-                      "border-[#4F5BD5] bg-[#4F5BD5]/5 ring-1 ring-[#4F5BD5]"
+                      "border-brand-500 bg-brand-500/5 ring-1 ring-brand-500"
                   )}
                 >
                   <span className="text-2xl">{p.emoji}</span>
@@ -126,7 +126,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
               <Button
                 onClick={() => setStep(1)}
                 disabled={!persona}
-                className="bg-[#4F5BD5] hover:bg-[#3D49C4] disabled:opacity-50"
+                className="bg-brand-500 hover:bg-brand-600 disabled:opacity-50"
               >
                 Continue
                 <ChevronRight className="ml-1 h-4 w-4" />
@@ -154,7 +154,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                   placeholder="e.g., Product Manager, Developer, Researcher"
-                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[#4F5BD5]"
+                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-brand-500"
                 />
               </div>
               <div className="space-y-1.5">
@@ -166,7 +166,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
                   value={currentGoal}
                   onChange={(e) => setCurrentGoal(e.target.value)}
                   placeholder="e.g., build an AI product, write a thesis"
-                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[#4F5BD5]"
+                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-brand-500"
                 />
               </div>
             </div>
@@ -174,7 +174,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
               <Button
                 onClick={handleSaveProfile}
                 disabled={saving}
-                className="bg-[#4F5BD5] hover:bg-[#3D49C4] disabled:opacity-50"
+                className="bg-brand-500 hover:bg-brand-600 disabled:opacity-50"
               >
                 {saving ? "Save..." : "Continue"}
                 {!saving && <ChevronRight className="ml-1 h-4 w-4" />}
@@ -209,7 +209,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   placeholder="e.g., AI product research, thesis"
-                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[#4F5BD5]"
+                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-brand-500"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !saving && projectName.trim()) handleCreateProject()
                   }}
@@ -220,7 +220,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
               <Button
                 onClick={handleCreateProject}
                 disabled={saving || !projectName.trim()}
-                className="bg-[#4F5BD5] hover:bg-[#3D49C4] disabled:opacity-50"
+                className="bg-brand-500 hover:bg-brand-600 disabled:opacity-50"
               >
                 {saving ? "Create..." : "CreateProject"}
               </Button>
@@ -233,7 +233,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
               }}>
                 📎 Try with sample files
               </Button>
-              <Button onClick={handleFinish} className="bg-[#4F5BD5] hover:bg-[#3D49C4]">
+              <Button onClick={handleFinish} className="bg-brand-500 hover:bg-brand-600">
                 Start using DriveMem 🚀
               </Button>
               <Button variant="ghost" onClick={() => setStep(1)} className="text-muted-foreground">

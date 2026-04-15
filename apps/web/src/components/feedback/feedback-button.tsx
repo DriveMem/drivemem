@@ -30,7 +30,7 @@ export function FeedbackButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-[#4F5BD5] px-4 py-2.5 text-sm text-white shadow-lg hover:bg-[#3D49C4] transition"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-brand-500 px-4 py-2.5 text-sm text-white shadow-lg hover:bg-brand-600 transition"
       >
         <MessageCircle className="h-4 w-4" /> Feedback
       </button>
@@ -43,9 +43,9 @@ export function FeedbackButton() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Tell us your thoughts, suggestions, or issues..."
-            className="w-full rounded-lg border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-[#4F5BD5] resize-none h-32"
+            className="w-full rounded-lg border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-brand-500 resize-none h-32"
           />
-          <Button onClick={handleSubmit} disabled={!text.trim() || sending} className="w-full bg-[#4F5BD5] hover:bg-[#3D49C4]">
+          <Button onClick={handleSubmit} disabled={!text.trim() || sending} className="w-full bg-brand-500 hover:bg-brand-600">
             {sending ? "Sending..." : <><Send className="h-4 w-4 mr-2" /> Send feedback</>}
           </Button>
         </DialogContent>

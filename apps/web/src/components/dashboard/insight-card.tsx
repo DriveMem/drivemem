@@ -43,7 +43,7 @@ export function InsightCard({ insight, onRead }: { insight: Insight; onRead?: ()
       onClick={handleClick}
       className={cn(
         "block rounded-xl border p-4 hover:shadow-md transition-all duration-150",
-        !insight.read && "border-[#4F5BD5]/20 bg-[#4F5BD5]/5"
+        !insight.read && "border-brand-500/20 bg-brand-500/5"
       )}
     >
       <div className="flex items-start gap-3">
@@ -53,7 +53,7 @@ export function InsightCard({ insight, onRead }: { insight: Insight; onRead?: ()
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className={cn("text-xs font-medium", config.color)}>{config.label}</span>
-            {!insight.read && <span className="h-2 w-2 rounded-full bg-[#4F5BD5]" />}
+            {!insight.read && <span className="h-2 w-2 rounded-full bg-brand-500" />}
           </div>
           <p className="mt-1 text-sm font-medium text-foreground line-clamp-1">{insight.title}</p>
           <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{insight.description}</p>

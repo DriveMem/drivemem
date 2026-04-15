@@ -532,7 +532,7 @@ export default function ApiPlayground() {
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
             placeholder="ak_..."
-            className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm font-mono focus:border-[#4F5BD5] focus:outline-none focus:ring-1 focus:ring-[#4F5BD5]/30"
+            className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
           />
         </div>
       )}
@@ -555,7 +555,7 @@ export default function ApiPlayground() {
                       onClick={() => { setSelectedId(ep.id); setParamValues({}); setResponse(null); setLastCurl(null) }}
                       className={`w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-sm transition ${
                         selectedId === ep.id
-                          ? "bg-[#4F5BD5]/10 text-[#4F5BD5] font-medium"
+                          ? "bg-brand-500/10 text-brand-500 font-medium"
                           : "text-[#6B6966] hover:bg-[#F8F7F5]"
                       }`}
                     >
@@ -607,13 +607,13 @@ export default function ApiPlayground() {
                       onChange={e => setParam(p.name, e.target.value)}
                       placeholder={p.placeholder}
                       rows={3}
-                      className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm focus:border-[#4F5BD5] focus:outline-none focus:ring-1 focus:ring-[#4F5BD5]/30"
+                      className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
                     />
                   ) : p.type === "select" ? (
                     <select
                       value={paramValues[p.name] || p.defaultValue || ""}
                       onChange={e => setParam(p.name, e.target.value)}
-                      className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm focus:border-[#4F5BD5] focus:outline-none focus:ring-1 focus:ring-[#4F5BD5]/30"
+                      className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
                     >
                       <option value="">— 选择 —</option>
                       {p.options?.map(o => <option key={o} value={o}>{o}</option>)}
@@ -624,7 +624,7 @@ export default function ApiPlayground() {
                       value={paramValues[p.name] || ""}
                       onChange={e => setParam(p.name, e.target.value)}
                       placeholder={p.placeholder}
-                      className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm font-mono focus:border-[#4F5BD5] focus:outline-none focus:ring-1 focus:ring-[#4F5BD5]/30"
+                      className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
                     />
                   )}
                 </div>
@@ -638,7 +638,7 @@ export default function ApiPlayground() {
           <button
             onClick={handleSend}
             disabled={loading || missingRequired || (!isLoggedIn && !apiKey)}
-            className="mt-4 flex items-center gap-2 rounded-lg bg-[#4F5BD5] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3D49C4] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-4 flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             {loading ? "请求中…" : "Send"}

@@ -118,7 +118,7 @@ function ListView() {
             key={f.type || "all"}
             onClick={() => setTypeFilter(f.type)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-              typeFilter === f.type ? "bg-[#4F5BD5] text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
+              typeFilter === f.type ? "bg-brand-500 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
             }`}
           >
             {f.label}
@@ -171,7 +171,7 @@ function ListView() {
 
           {hasMore ? (
             <div className="text-center py-4">
-              <button onClick={loadMore} disabled={loadingMore} className="text-sm text-[#4F5BD5] hover:underline disabled:opacity-50">
+              <button onClick={loadMore} disabled={loadingMore} className="text-sm text-brand-500 hover:underline disabled:opacity-50">
                 {loadingMore ? "Loading..." : "Load more"}
               </button>
             </div>
