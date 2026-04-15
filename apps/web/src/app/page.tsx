@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useRef, useEffect, useState, useCallback } from "react"
 
 /* ============================================================
-   AI Drive Landing v3 — Cinematic Dark, Constellation Hero
+   DriveMem Landing v3 — Cinematic Dark, Constellation Hero
    ============================================================ */
 
 /* ---------- Constellation Canvas ---------- */
@@ -206,7 +206,7 @@ function Nav() {
             <span className="text-white font-mono text-xs font-bold">D</span>
           </div>
           <span className="text-[#EDEDEF] font-medium text-[15px] tracking-tight">
-            AI Drive
+            DriveMem
           </span>
         </Link>
         <div className="hidden md:flex items-center gap-8">
@@ -270,7 +270,7 @@ const FEATURES = [
 
 const STEPS = [
   { num: "01", title: "Upload or capture", desc: "Drop files, save conversations, or let your agent write notes automatically." },
-  { num: "02", title: "AI indexes & connects", desc: "AI Drive parses, summarizes, and discovers relationships across all your knowledge." },
+  { num: "02", title: "AI indexes & connects", desc: "DriveMem parses, summarizes, and discovers relationships across all your knowledge." },
   { num: "03", title: "Agents remember", desc: "Any agent, any model — instant access to the right context at the right time." },
 ]
 
@@ -443,7 +443,7 @@ export default function LandingPage() {
           
           <FadeIn>
             <h2 className="font-serif text-3xl md:text-5xl tracking-tight mb-5 relative z-10">
-              Start building with AI Drive
+              Start building with DriveMem
             </h2>
             <p className="text-[#8A8F98] text-base md:text-lg font-light mb-8 max-w-md mx-auto relative z-10">
               Free to start. No credit card required.
@@ -462,7 +462,7 @@ export default function LandingPage() {
       {/* ===== Footer ===== */}
       <footer className="border-t border-white/[0.06] py-8">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-xs text-[#8A8F98]">
-          <span>© {new Date().getFullYear()} AI Drive</span>
+          <span>© {new Date().getFullYear()} DriveMem</span>
           <div className="flex gap-6">
             <a href="mailto:support@drivemem.cloud" className="hover:text-[#EDEDEF] transition-colors">Contact</a>
             <a href="https://github.com/yufuche1/ai-drive" className="hover:text-[#EDEDEF] transition-colors">GitHub</a>

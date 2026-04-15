@@ -1,9 +1,9 @@
 import Link from "next/link"
 
 export const metadata = {
-  title: "Privacy Policy - DriveMem",
+  title: "Privacy Policy — DriveMem",
   description: "DriveMem Privacy policy and data protection",
-  openGraph: { title: "Privacy Policy - DriveMem", description: "DriveMem Privacy policy and data protection" },
+  openGraph: { title: "Privacy Policy — DriveMem", description: "DriveMem Privacy policy and data protection" },
 }
 
 export default function PrivacyPage() {
