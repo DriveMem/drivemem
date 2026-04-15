@@ -329,6 +329,9 @@ export default function DashboardPage() {
                       View docs
                     </Button>
                   </div>
+                  <a href="/developers" className="inline-block mt-2 text-xs text-muted-foreground hover:text-brand-500 hover:underline">
+                    Learn more about agent integration →
+                  </a>
                 </div>
               </div>
             </div>

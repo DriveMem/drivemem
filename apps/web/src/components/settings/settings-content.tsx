@@ -23,6 +23,7 @@ function ApiKeysCard() {
   const [newKey, setNewKey] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
   const [showConfigFor, setShowConfigFor] = useState<string | null>(null)
+  const [showNewKeyConfig, setShowNewKeyConfig] = useState(false)
 
   useEffect(() => {
     const fetchKeys = async () => {
@@ -42,6 +43,7 @@ function ApiKeysCard() {
       const data = await apiFetch("/api/api-keys", { method: "POST", body: JSON.stringify({ name: keyName.trim() }) })
       setNewKey(data.key)
       setKeyName("")
+      setShowNewKeyConfig(true)
       const list = await apiFetch("/api/api-keys")
       setKeys(list?.keys || [])
       toast.success("API Key Created")
@@ -133,6 +135,30 @@ function ApiKeysCard() {
           Copy this config into your AI tool. Replace <code className="font-mono text-xs">YOUR_API_KEY</code> with your full API key.
         </p>
         <AgentConfigTabs apiKey="YOUR_API_KEY" />
+      </DialogContent>
+    </Dialog>
+
+    {/* New Key Config Dialog — shown after creating a key */}
+    <Dialog open={showNewKeyConfig} onOpenChange={setShowNewKeyConfig}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>🎉 API Key Created — Configure Your Agent</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground mb-1">
+          Your API key has been auto-filled in the config below. Copy and paste into your AI tool.
+        </p>
+        {newKey && (
+          <div className="mb-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+            <p className="text-xs font-medium text-amber-600 mb-1">⚠️ Save your API Key — shown only once</p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 rounded bg-muted px-2 py-1.5 text-xs font-mono select-all truncate">{newKey}</code>
+              <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newKey); toast.success("Copied") }}>
+                Copy
+              </Button>
+            </div>
+          </div>
+        )}
+        <AgentConfigTabs apiKey={newKey || "YOUR_API_KEY"} />
       </DialogContent>
     </Dialog>
 
@@ -716,7 +742,7 @@ export default function SettingsContent() {
 
       {settingsTab === "developer" ? (
         <>
-          <p className="text-sm text-muted-foreground">Connect your AI agents (Cursor, Claude Desktop, OpenClaw, etc.) to your knowledge base. Create an API key, copy the config, and paste it into your tool.</p>
+          <p className="text-sm text-muted-foreground">API Keys let your AI agents access your knowledge base securely. Connect Cursor, Claude Desktop, OpenClaw, or any MCP-compatible tool — create an API key, copy the config, and paste it into your tool.</p>
           <ApiKeysCard />
           <ConnectedAgentsCard />
           <WebhookCard />
