@@ -118,7 +118,7 @@ export default function TimelinePage() {
         {[
           { type: null, label: "All" },
           { type: "file_uploaded", label: "📄 Upload" },
-          { type: "conversation", label: "💬 conversations" },
+          { type: "conversation", label: "💬 Conversations" },
           { type: "insight", label: "💡 Insights" },
           { type: "report", label: "📊 Report" },
         ].map(f => (
@@ -198,7 +198,7 @@ export default function TimelinePage() {
               {events.length < 10 ? (
                 <>
                   <p className="text-sm text-muted-foreground mb-1">🌱 This is the start of your knowledge journey</p>
-                  <p className="text-xs text-muted-foreground">ContinueUpload files、Chat with AI and your timeline will grow richer</p>
+                  <p className="text-xs text-muted-foreground">Continue uploading files, chat with AI, and your timeline will grow richer</p>
                 </>
               ) : (
                 <p className="text-xs text-muted-foreground">— Reached earliest record —</p>
