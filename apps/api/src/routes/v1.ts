@@ -488,7 +488,28 @@ export default async function v1Routes(fastify: FastifyInstance) {
     await queue.close();
     
     logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'store', detail: title });
-    return reply.status(201).send({ fileId, title, message: `已存入「${title}」` });
+
+    // Auto-handoff: dispatch webhook with compiled context
+    try {
+      const { dispatchWebhook } = await import('../services/webhook.service.js');
+      const { compileContext } = await import('../services/context-compiler/index.js');
+
+      // Compile brief context around what was just stored
+      const compiled = await compileContext(userId, { task: title, tokenBudget: 2000 });
+
+      await dispatchWebhook(userId, 'knowledge.stored', {
+        fileId,
+        title,
+        storedBy: (request as any).apiKeyName || 'user',
+        compiledContext: compiled.compiledContext,
+        metadata: {
+          fragmentCount: compiled.metadata.fragmentCount,
+          coverage: compiled.metadata.coverage,
+        },
+      });
+    } catch { /* don't block store on webhook failure */ }
+
+    return reply.status(201).send({ fileId, title, message: `Stored "${title}"` });
   });
 
   // GET /timeline
