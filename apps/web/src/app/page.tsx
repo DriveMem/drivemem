@@ -45,12 +45,12 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
 
 const STEPS = [
   { icon: Upload, title: "Bring your knowledge", desc: "Upload docs, notes, decisions. AI indexes and connects them automatically." },
-  { icon: Search, title: "AI compiles context", desc: "Describe your task. Context Compiler assembles the exact knowledge your agent needs." },
+  { icon: Search, title: "AI prepares your brief", desc: "Describe your task. Smart Briefing assembles the exact knowledge your agent needs." },
   { icon: MessageSquare, title: "Any agent, full context", desc: "Connect via MCP, API, or CLI. Your agents never start from zero." },
 ] as const
 
 const FEATURES = [
-  { icon: MessageSquare, title: "Context Compiler", desc: "Describe a task, get a compiled context packet with exactly the knowledge your agent needs. Budget-aware, model-optimized.", reverse: false },
+  { icon: MessageSquare, title: "Smart Briefing", desc: "Tell DriveMem what you need. It automatically prepares the right knowledge for any AI you use.", reverse: false },
   { icon: Lightbulb, title: "AI Knowledge Graph", desc: "AI discovers connections, contradictions, and trends across all your files. Proactive insights, delivered.", reverse: true },
   { icon: Quote, title: "Semantic Search & RAG", desc: "Search by meaning, not keywords. Ask questions, get answers with cited sources from your knowledge base.", reverse: false },
   { icon: FileSearch, title: "Agent Continuity", desc: "Switch agents mid-task. Context follows automatically.", reverse: true },
@@ -119,11 +119,11 @@ export default function LandingPage() {
           <p className="mx-auto mt-4 max-w-2xl text-center text-[#6B6966]">Whether you use ChatGPT, Claude, Cursor, or your own agents — AI Drive compiles the right context for each.</p>
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { emoji: "🤖", title: "AI Developers", desc: "Give every agent the right context. Context Compiler + MCP — one API call, zero prompt engineering." },
+              { emoji: "🤖", title: "AI Developers", desc: "Give every agent the right context. Smart Briefing + MCP — one API call, zero prompt engineering." },
               { emoji: "📊", title: "Founders", desc: "Brief your AI on the full picture. Competitive intel, decisions, strategy — compiled into context." },
               { emoji: "🔬", title: "Researchers", desc: "Switch tools mid-research without losing context. AI connects your papers and carries insights forward." },
               { emoji: "💼", title: "Professionals", desc: "Project context that follows you. AI compiles what matters — no re-explaining to every new tool." },
-              { emoji: "📄", title: "Students", desc: "Study with any AI, keep one knowledge base. Context Compiler pulls the right references for every assignment." },
+              { emoji: "📄", title: "Students", desc: "Study with any AI, keep one knowledge base. Smart Briefing pulls the right references for every assignment." },
               { emoji: "📚", title: "Lifelong Learners", desc: "Your knowledge grows with you. AI connects everything you learn — any agent can tap into it." },
             ].map((s) => (
               <div key={s.title} className="rounded-xl border border-[#E5E4E1] bg-white p-6 transition hover:shadow-lg hover:shadow-black/5">

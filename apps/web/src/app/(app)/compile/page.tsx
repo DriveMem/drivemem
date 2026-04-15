@@ -57,7 +57,7 @@ function CompileContent() {
   const hasFiles = files.length > 0
 
   useEffect(() => {
-    document.title = "Compile Context - DriveMem"
+    document.title = "Brief for AI - DriveMem"
   }, [])
 
   useEffect(() => {
@@ -136,10 +136,10 @@ function CompileContent() {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Sparkles className="h-5 w-5 text-[#4F5BD5]" />
-          <h1 className="text-2xl font-bold">Compile Context</h1>
+          <h1 className="text-2xl font-bold">Brief for AI</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          Generate task-relevant context from your knowledge base
+          Tell DriveMem what you need — it prepares the right background for any AI
         </p>
       </div>
 
@@ -192,7 +192,7 @@ function CompileContent() {
             ) : (
               <>
                 <Sparkles className="h-4 w-4 mr-2" />
-                Compile Context
+                Brief for AI
               </>
             )}
           </Button>
