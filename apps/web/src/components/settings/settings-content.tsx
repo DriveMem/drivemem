@@ -179,7 +179,7 @@ function AgentConfigTabs({ apiKey }: { apiKey: string }) {
       content: JSON.stringify({
         mcpServers: {
           "ai-drive": {
-            url: "https://app.drivemem.com/api/v1/mcp",
+            url: "https://api.drivemem.cloud/mcp",
             headers: {
               Authorization: `Bearer ${apiKey}`
             }
@@ -194,7 +194,7 @@ function AgentConfigTabs({ apiKey }: { apiKey: string }) {
         mcpServers: {
           "ai-drive": {
             command: "npx",
-            args: ["-y", "@anthropic/mcp-remote", "https://app.drivemem.com/api/v1/mcp"],
+            args: ["-y", "@anthropic/mcp-remote", "https://api.drivemem.cloud/mcp"],
             env: {
               AI_DRIVE_API_KEY: apiKey
             }
@@ -205,7 +205,7 @@ function AgentConfigTabs({ apiKey }: { apiKey: string }) {
     openclaw: {
       label: "OpenClaw",
       lang: "yaml",
-      content: `plugins:\n  entries:\n    ai-drive:\n      enabled: true\n      config:\n        apiKey: "${apiKey}"\n        baseUrl: "https://app.drivemem.com/api/v1"`,
+      content: `plugins:\n  entries:\n    ai-drive:\n      enabled: true\n      config:\n        apiKey: "${apiKey}"\n        baseUrl: "https://api.drivemem.cloud"`,
     },
   }
 
