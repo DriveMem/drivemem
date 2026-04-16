@@ -39,7 +39,9 @@ const activityIcons: Record<string, typeof FileText> = {
 // --- Activity Item ---
 function ActivityItem({ activity }: { activity: any }) {
   const Icon = activityIcons[activity.type] || Lightbulb
-  const agentName = activity.agentName || "You"
+  const agentName = activity.agentName && activity.agentName !== "You"
+    ? activity.agentName.replace(/^agent[-_]?[a-z][-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'AI Agent'
+    : "You"
   const action = activity.title || activity.action || activity.type?.replace(/_/g, " ") || "activity"
   const detail = activity.message || activity.detail || ""
 

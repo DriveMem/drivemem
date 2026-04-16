@@ -14,6 +14,27 @@ export interface TimelineEvent {
   metadata?: Record<string, unknown>;
 }
 
+function formatAgentName(raw: string | null | undefined): string {
+  if (!raw) return 'You';
+  const cleaned = raw
+    .replace(/^agent[-_]?[a-z][-_]?/i, '')
+    .replace(/[-_]/g, ' ')
+    .trim();
+  if (!cleaned) return 'AI Agent';
+  return cleaned.replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function getFullDetail(detail: string | null | undefined, metadata: Record<string, unknown> | null | undefined): string | undefined {
+  if (!detail) return undefined;
+  if (detail.endsWith('...') && metadata) {
+    const fuller = (metadata as any).query || (metadata as any).detail || (metadata as any).content || (metadata as any).question;
+    if (fuller && typeof fuller === 'string' && fuller.length > detail.length) {
+      return fuller.slice(0, 200);
+    }
+  }
+  return detail.slice(0, 200);
+}
+
 export async function fetchTimeline(userId: string, limit: number, cursor?: string) {
   // cursor is an ISO timestamp string; fetch items older than cursor
   const cursorDate = cursor ? new Date(cursor) : undefined;
@@ -110,15 +131,21 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
   }
 
   const events: TimelineEvent[] = [
-    ...files.map(f => ({
+    ...files.map(f => {
+      const isAutoCapture = f.name.startsWith('auto-capture-');
+      // For auto-capture notes, use summary as title if available, otherwise clean the filename
+      const displayTitle = isAutoCapture
+        ? (f.summary?.slice(0, 80) || f.name.replace(/^auto-capture-/, '').replace(/\.\w+$/, '').replace(/[-_]/g, ' '))
+        : f.name;
+      return {
       id: f.id,
-      type: (f.name.startsWith('auto-capture-') ? 'auto_capture' : 'file_uploaded') as 'auto_capture' | 'file_uploaded',
-      title: f.name,
-      description: f.summary?.slice(0, 100) || undefined,
-      icon: f.name.startsWith('auto-capture-') ? '🧲' : '📄',
+      type: (isAutoCapture ? 'auto_capture' : 'file_uploaded') as 'auto_capture' | 'file_uploaded',
+      title: displayTitle,
+      description: isAutoCapture ? undefined : (f.summary?.slice(0, 100) || undefined),
+      icon: isAutoCapture ? '🧲' : '📄',
       createdAt: f.createdAt,
       metadata: { mimeType: f.mimeType, size: Number(f.size), status: f.status },
-    })),
+    };}),
     ...conversations.map(c => ({
       id: c.id,
       type: 'conversation' as const,
@@ -156,12 +183,12 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
       const iconMap: Record<string, string> = { search: '🔍', store: '📥', ask: '💬', compile: '📋' };
       const verb = verbMap[a.action] || a.action;
       const icon = iconMap[a.action] || '🤖';
-      const agent = a.agentName || 'API';
+      const agent = formatAgentName(a.agentName) || 'API';
       return {
         id: a.id,
         type: 'agent_activity' as const,
         title: `${agent} ${verb}`,
-        description: a.detail?.slice(0, 100) || undefined,
+        description: getFullDetail(a.detail, a.metadata as Record<string, unknown>) || undefined,
         icon,
         createdAt: a.createdAt,
         metadata: { action: a.action, agentName: a.agentName, ...(a.metadata as Record<string, unknown> || {}) },
@@ -206,10 +233,10 @@ export default async function timelineRoutes(fastify: FastifyInstance) {
 
     const agentGroups: Record<string, any[]> = {};
     for (const a of activities) {
-      const agent = a.agentName || 'You';
+      const agent = formatAgentName(a.agentName);
       if (!agentGroups[agent]) agentGroups[agent] = [];
       agentGroups[agent].push({
-        id: a.id, action: a.action, detail: a.detail,
+        id: a.id, action: a.action, detail: getFullDetail(a.detail, a.metadata as Record<string, unknown>),
         createdAt: a.createdAt, relatedFileIds: a.relatedFileIds, metadata: a.metadata,
       });
     }
@@ -219,7 +246,7 @@ export default async function timelineRoutes(fastify: FastifyInstance) {
     for (const a of activities) {
       if (a.action === 'store' && a.metadata) {
         const fileId = (a.metadata as any).fileId;
-        if (fileId) fileAgentMap[fileId] = a.agentName || 'You';
+        if (fileId) fileAgentMap[fileId] = formatAgentName(a.agentName);
       }
     }
     for (const a of activities) {
@@ -227,7 +254,7 @@ export default async function timelineRoutes(fastify: FastifyInstance) {
         for (const fid of (a.relatedFileIds as string[])) {
           const sourceAgent = fileAgentMap[fid];
           if (sourceAgent && sourceAgent !== (a.agentName || 'You')) {
-            flows.push({ from: sourceAgent, to: a.agentName || 'You', fileNames: [], timestamp: a.createdAt?.toISOString() || '' });
+            flows.push({ from: sourceAgent, to: formatAgentName(a.agentName), fileNames: [], timestamp: a.createdAt?.toISOString() || '' });
           }
         }
       }
