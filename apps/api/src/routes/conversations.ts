@@ -10,6 +10,7 @@ import { searchSimilar } from '../services/vector.service.js';
 import { streamChat, chat } from '../services/llm.service.js';
 import { embedTexts } from '../services/embedding.service.js';
 import { config } from '../lib/config.js';
+import { autoCapture } from '../services/auto-capture.js';
 
 const createSchema = z.object({
   scopeType: z.enum(['all', 'folder', 'file']),
@@ -441,6 +442,19 @@ AI答：${fullContent.substring(0, 300)}`;
               }
             }
           }
+        }
+      } catch {
+        // Non-blocking
+      }
+
+      // Auto-capture knowledge every 10 messages (non-blocking)
+      try {
+        const totalMsgCount = existingMsgs.length;
+        if (totalMsgCount >= 10 && totalMsgCount % 10 === 0) {
+          const conversationText = existingMsgs
+            .map(m => `${m.role}: ${m.content}`)
+            .join('\n\n');
+          autoCapture(user.id, conversationText, { sessionId: id }).catch(() => {});
         }
       } catch {
         // Non-blocking

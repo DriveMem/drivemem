@@ -207,6 +207,18 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           required: ['folderId'],
         },
       },
+      {
+        name: 'aidrive_auto_capture',
+        description: 'Automatically extract and save valuable knowledge from a conversation or text. Extracts decisions, conclusions, preferences, action items.',
+        inputSchema: {
+          type: 'object' as const,
+          properties: {
+            content: { type: 'string', description: 'Conversation or text to extract knowledge from' },
+            sessionId: { type: 'string', description: 'Optional session ID for source tracking' },
+          },
+          required: ['content'],
+        },
+      },
     ],
   }));
 
@@ -644,6 +656,17 @@ ${insightsSection}
           }
 
           return { content: [{ type: 'text' as const, text: packet }] };
+        }
+
+        case 'aidrive_auto_capture': {
+          const content = (args as any).content as string;
+          if (!content) return { content: [{ type: 'text' as const, text: 'content parameter required.' }], isError: true };
+          const { autoCapture } = await import('../services/auto-capture.js');
+          const result = await autoCapture(userId, content, { sessionId: (args as any).sessionId });
+          const text = result.captured > 0
+            ? `Auto-captured ${result.captured} knowledge items:\n${result.items.map(i => `- ${i.title}`).join('\n')}`
+            : 'No valuable knowledge found to capture.';
+          return { content: [{ type: 'text' as const, text }] };
         }
 
                 default:

@@ -719,4 +719,19 @@ ${insightsSection}
 
     return reply.send({ agents: agentGroups, flows, totalActivities: activities.length });
   });
+
+  // POST /auto-capture — manually trigger auto-capture on a text
+  fastify.post('/auto-capture', async (request, reply) => {
+    const userId = request.user!.id;
+    const body = request.body as { content: string; sessionId?: string; projectId?: string };
+    if (!body?.content) return reply.status(400).send({ error: 'content is required' });
+
+    const { autoCapture } = await import('../services/auto-capture.js');
+    const result = await autoCapture(userId, body.content, {
+      sessionId: body.sessionId,
+      projectId: body.projectId,
+    });
+
+    return reply.send(result);
+  });
 }
