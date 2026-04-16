@@ -273,3 +273,18 @@ export const knowledgeEdges = pgTable('knowledge_edges', {
   discoveredBy: text('discovered_by').notNull().default('auto'), // auto | user
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+// --- Agent Profiles ---
+export const agentProfiles = pgTable('agent_profiles', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 255 }).notNull(),
+  modelHint: varchar('model_hint', { length: 100 }),
+  contextBudget: integer('context_budget').default(8000),
+  priorityRules: jsonb('priority_rules'),
+  includeTypes: jsonb('include_types'),
+  excludeTypes: jsonb('exclude_types'),
+  projectId: uuid('project_id'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});

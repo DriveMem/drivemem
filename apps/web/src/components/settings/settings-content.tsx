@@ -293,6 +293,92 @@ const WEBHOOK_EVENTS = [
   { id: 'file.deleted', label: 'FilesDelete', desc: 'Fileswas deleted' },
 ]
 
+function AgentProfilesSection() {
+  const [profiles, setProfiles] = useState<any[]>([])
+  const [showCreate, setShowCreate] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [newModelHint, setNewModelHint] = useState('')
+  const [newBudget, setNewBudget] = useState(8000)
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/files/agent-profiles")
+        setProfiles(data?.profiles || [])
+      } catch {}
+    })()
+  }, [])
+
+  const handleCreate = async () => {
+    if (!newName.trim()) return
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const res = await apiFetch("/api/files/agent-profiles", {
+        method: "POST",
+        body: JSON.stringify({ name: newName, modelHint: newModelHint || undefined, contextBudget: newBudget }),
+      })
+      setProfiles(prev => [res.profile, ...prev])
+      setNewName('')
+      setNewModelHint('')
+      setShowCreate(false)
+      toast.success("Profile created")
+    } catch { toast.error("Failed to create profile") }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/files/agent-profiles/${id}`, { method: "DELETE" })
+      setProfiles(prev => prev.filter(p => p.id !== id))
+      toast.success("Profile deleted")
+    } catch { toast.error("Failed to delete") }
+  }
+
+  return (
+    <Card className="mt-4">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>🤖 Agent Profiles</CardTitle>
+            <CardDescription>Customize what context each agent receives</CardDescription>
+          </div>
+          <Button size="sm" variant="outline" onClick={() => setShowCreate(!showCreate)}>
+            {showCreate ? "Cancel" : "+ New Profile"}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {showCreate && (
+          <div className="rounded-lg border p-3 space-y-2">
+            <Input placeholder="Profile name (e.g. My Cursor, Writing Agent)" value={newName} onChange={e => setNewName(e.target.value)} />
+            <Input placeholder="Model hint (e.g. claude-opus, gpt-4o)" value={newModelHint} onChange={e => setNewModelHint(e.target.value)} />
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-zinc-500">Token budget:</span>
+              <Input type="number" className="w-24" value={newBudget} onChange={e => setNewBudget(Number(e.target.value))} />
+            </div>
+            <Button size="sm" onClick={handleCreate} disabled={!newName.trim()}>Create</Button>
+          </div>
+        )}
+        {profiles.length === 0 && !showCreate && (
+          <p className="text-sm text-zinc-500">No custom profiles. Using default profiles (claude-opus, gpt-4o, etc.)</p>
+        )}
+        {profiles.map(p => (
+          <div key={p.id} className="flex items-center justify-between rounded-lg border p-3">
+            <div>
+              <p className="text-sm font-medium">{p.name}</p>
+              <p className="text-xs text-zinc-500">
+                {p.modelHint || "Any model"} · {p.contextBudget || 8000} tokens
+              </p>
+            </div>
+            <Button size="sm" variant="ghost" onClick={() => handleDelete(p.id)}>Delete</Button>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
+
 function ConnectedAgentsCard() {
   const [keys, setKeys] = useState<any[]>([])
 
@@ -797,6 +883,7 @@ export default function SettingsContent() {
           <ApiKeysCard />
           <ConnectedAgentsCard />
           <WebhookCard />
+          <AgentProfilesSection />
         </>
       ) : (
       <>
