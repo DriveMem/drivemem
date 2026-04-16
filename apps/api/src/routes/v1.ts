@@ -255,6 +255,41 @@ export default async function v1Routes(fastify: FastifyInstance) {
     return reply.send({ message: 'unarchived' });
   });
 
+  // POST /files/:id/feedback — rate a knowledge item (API Key auth)
+  fastify.post('/files/:id/feedback', async (request, reply) => {
+    const userId = request.user!.id;
+    const fileId = (request.params as any).id;
+    const body = request.body as { rating: string; context?: string };
+
+    if (!body?.rating || !['useful', 'not_useful'].includes(body.rating)) {
+      return reply.status(400).send({ error: 'rating must be "useful" or "not_useful"' });
+    }
+
+    await db.delete(schema.knowledgeFeedback)
+      .where(and(eq(schema.knowledgeFeedback.fileId, fileId), eq(schema.knowledgeFeedback.userId, userId)));
+
+    await db.insert(schema.knowledgeFeedback).values({
+      fileId,
+      userId,
+      rating: body.rating,
+      context: body.context || null,
+    });
+
+    return reply.send({ success: true, rating: body.rating });
+  });
+
+  // GET /files/:id/feedback (API Key auth)
+  fastify.get('/files/:id/feedback', async (request, reply) => {
+    const userId = request.user!.id;
+    const fileId = (request.params as any).id;
+
+    const [feedback] = await db.select()
+      .from(schema.knowledgeFeedback)
+      .where(and(eq(schema.knowledgeFeedback.fileId, fileId), eq(schema.knowledgeFeedback.userId, userId)));
+
+    return reply.send({ rating: feedback?.rating || null });
+  });
+
   // GET /search — max_tokens limits snippet length
   fastify.get('/search', async (request, reply) => {
     const query = request.query as { q: string; max_tokens?: string; format?: string; contextBudget?: string };
@@ -272,7 +307,11 @@ export default async function v1Routes(fastify: FastifyInstance) {
     const searchFiles = await db.select({ id: schema.files.id, archivedAt: schema.files.archivedAt })
       .from(schema.files).where(eq(schema.files.userId, userId));
     const searchArchivedIds = new Set(searchFiles.filter(f => f.archivedAt).map(f => f.id));
-    const searchResults = chunks.filter(c => !searchArchivedIds.has(c.fileId));
+    let searchResults = chunks.filter(c => !searchArchivedIds.has(c.fileId));
+
+    // Apply feedback weights
+    const { applyFeedbackWeights } = await import('../services/feedback-weights.js');
+    searchResults = await applyFeedbackWeights(userId, searchResults);
 
     // Get file dates
     const searchFileIds = [...new Set(searchResults.map(c => c.fileId))];

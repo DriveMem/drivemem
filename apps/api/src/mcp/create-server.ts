@@ -303,6 +303,10 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             results.sort((a, b) => b.score - a.score);
           }
 
+          // Apply feedback weights
+          const { applyFeedbackWeights } = await import('../services/feedback-weights.js');
+          results = await applyFeedbackWeights(userId, results);
+
           const fileIds = [...new Set(results.map(r => r.fileId))];
           const fileDates: Record<string, string> = {};
           for (const fid of fileIds) {
@@ -360,6 +364,13 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             }));
             chunks.sort((a, b) => b.score - a.score);
           }
+
+          // Apply feedback weights
+          {
+            const { applyFeedbackWeights } = await import('../services/feedback-weights.js');
+            chunks = await applyFeedbackWeights(userId, chunks);
+          }
+
           const chunkChars = budget ? Math.min(Math.floor((budget * 2) / Math.max(chunks.length, 1)), 1000) : 500;
           const citations = chunks.map((c, i) => `来源 ${i + 1} (${c.fileName}): ${c.text.slice(0, chunkChars)}`).join('\n\n');
           const lengthHint = budget && budget < 1000 ? `\n请简洁回答，控制在 ${budget} 字以内。` : '';

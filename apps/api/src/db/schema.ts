@@ -252,3 +252,13 @@ export const insights = pgTable('insights', {
   read: boolean('read').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// --- Knowledge Feedback ---
+export const knowledgeFeedback = pgTable('knowledge_feedback', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  fileId: uuid('file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  rating: text('rating').notNull(), // 'useful' | 'not_useful'
+  context: text('context'), // 'search' | 'compile' | 'detail' | 'auto_capture'
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});

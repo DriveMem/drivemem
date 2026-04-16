@@ -215,7 +215,13 @@ export async function compileContext(
   const queries = expandQueries(request.task);
 
   // Step 2: Retrieval
-  const fragments = await retrieveFragments(userId, queries, request.hints);
+  const rawFragments = await retrieveFragments(userId, queries, request.hints);
+
+  // Step 2.5: Apply feedback weights
+  const { applyFeedbackWeights } = await import('../feedback-weights.js');
+  const weightedAsScore = rawFragments.map(f => ({ ...f, fileId: f.fileId, score: f.relevanceScore }));
+  const reweighted = await applyFeedbackWeights(userId, weightedAsScore);
+  const fragments = reweighted.map(f => ({ ...f, relevanceScore: f.score }));
 
   // Step 3: Score and rank
   const scored = scoreFragments(fragments, request.task);

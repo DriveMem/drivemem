@@ -585,6 +585,42 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     return reply.send({ success: true });
   });
 
+  // POST /files/:id/feedback — rate a knowledge item
+  fastify.post('/:id/feedback', async (request, reply) => {
+    const userId = request.user!.id;
+    const fileId = (request.params as any).id;
+    const body = request.body as { rating: string; context?: string };
+
+    if (!body?.rating || !['useful', 'not_useful'].includes(body.rating)) {
+      return reply.status(400).send({ error: 'rating must be "useful" or "not_useful"' });
+    }
+
+    // Upsert — one rating per user per file
+    await db.delete(schema.knowledgeFeedback)
+      .where(and(eq(schema.knowledgeFeedback.fileId, fileId), eq(schema.knowledgeFeedback.userId, userId)));
+
+    await db.insert(schema.knowledgeFeedback).values({
+      fileId,
+      userId,
+      rating: body.rating,
+      context: body.context || null,
+    });
+
+    return reply.send({ success: true, rating: body.rating });
+  });
+
+  // GET /files/:id/feedback — get current rating
+  fastify.get('/:id/feedback', async (request, reply) => {
+    const userId = request.user!.id;
+    const fileId = (request.params as any).id;
+
+    const [feedback] = await db.select()
+      .from(schema.knowledgeFeedback)
+      .where(and(eq(schema.knowledgeFeedback.fileId, fileId), eq(schema.knowledgeFeedback.userId, userId)));
+
+    return reply.send({ rating: feedback?.rating || null });
+  });
+
   // POST /store — session-auth knowledge store
   fastify.post('/store', async (request, reply) => {
     const userId = request.user!.id;
