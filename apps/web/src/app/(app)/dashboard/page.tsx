@@ -8,6 +8,7 @@ import {
 } from "lucide-react"
 import { MobileUploadFab } from "@/components/file/mobile-upload-fab"
 import { WelcomeModal } from "@/components/onboarding/welcome-modal"
+import { OnboardingFlow } from "@/components/onboarding/onboarding-flow"
 import { useFiles } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
 import { Button } from "@/components/ui/button"
@@ -200,6 +201,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col h-full overflow-auto">
+      <OnboardingFlow />
       <WelcomeModal onUpload={() => setShowUpload(true)} />
       <MobileUploadFab />
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} />}
@@ -284,10 +286,26 @@ export default function HomePage() {
             Recent Activity
           </h2>
           {activities.length === 0 ? (
-            <div className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">
-              <p>No recent activity yet.</p>
-              <p className="mt-1">Upload files or start a conversation to get started.</p>
-            </div>
+            fileCount === 0 ? (
+              <div className="text-center py-16">
+                <Upload className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Your knowledge base is empty</h3>
+                <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
+                  Upload your first file to start building your AI memory
+                </p>
+                <Button
+                  onClick={() => setShowUpload(true)}
+                  className="rounded-xl shadow-soft active:scale-[0.98] transition-transform"
+                >
+                  Upload your first file
+                </Button>
+              </div>
+            ) : (
+              <div className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">
+                <p>No recent activity yet.</p>
+                <p className="mt-1">Upload files or start a conversation to get started.</p>
+              </div>
+            )
           ) : (
             <div>
               {activities.map((a: any, i: number) => (
