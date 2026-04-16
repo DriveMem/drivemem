@@ -216,6 +216,9 @@ function Nav() {
           <a href="#how-it-works" className="text-[#8A8F98] hover:text-[#EDEDEF] text-sm transition-colors">
             How it works
           </a>
+          <Link href="/developers" className="text-[#8A8F98] hover:text-[#EDEDEF] text-sm transition-colors">
+            Developers
+          </Link>
           <Link
             href="/login"
             className="text-sm text-[#050506] bg-[#EDEDEF] hover:bg-white px-4 py-1.5 rounded-md font-medium transition-colors"
@@ -464,6 +467,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-xs text-[#8A8F98]">
           <span>© {new Date().getFullYear()} DriveMem</span>
           <div className="flex gap-6">
+            <Link href="/developers" className="hover:text-[#EDEDEF] transition-colors">Developers</Link>
+            <Link href="/privacy" className="hover:text-[#EDEDEF] transition-colors">Privacy</Link>
             <a href="mailto:support@drivemem.cloud" className="hover:text-[#EDEDEF] transition-colors">Contact</a>
             <a href="https://github.com/yufuche1/ai-drive" className="hover:text-[#EDEDEF] transition-colors">GitHub</a>
           </div>

@@ -12,7 +12,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 export const metadata: Metadata = {
   title: "DriveMem — Memory for your AI agents",
   description: "DriveMem gives every AI agent the context it needs. One knowledge base, seamless continuity.",
-  keywords: ["agent context", "AI context OS", "knowledge base", "MCP", "context compiler", "DriveMem", "DriveMem", "RAG"],
+  keywords: ["agent context", "AI context OS", "knowledge base", "MCP", "context compiler", "DriveMem", "RAG"],
   openGraph: {
     title: "DriveMem — Memory for your AI agents",
     description: "DriveMem gives every AI agent the context it needs. One knowledge base, seamless continuity.",
