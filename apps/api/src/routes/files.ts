@@ -617,4 +617,63 @@ export default async function fileRoutes(fastify: FastifyInstance) {
 
     return reply.status(201).send({ fileId, title });
   });
+
+  // --- Agent Profiles CRUD ---
+
+  fastify.get('/agent-profiles', async (request, reply) => {
+    const userId = request.user!.id;
+    const profiles = await db.select().from(schema.agentProfiles)
+      .where(eq(schema.agentProfiles.userId, userId))
+      .orderBy(desc(schema.agentProfiles.createdAt));
+    return reply.send({ profiles });
+  });
+
+  fastify.post('/agent-profiles', async (request, reply) => {
+    const userId = request.user!.id;
+    const body = request.body as any;
+    if (!body?.name) return reply.status(400).send({ error: 'name is required' });
+
+    const [profile] = await db.insert(schema.agentProfiles).values({
+      userId,
+      name: body.name,
+      modelHint: body.modelHint || null,
+      contextBudget: body.contextBudget || 8000,
+      priorityRules: body.priorityRules || null,
+      includeTypes: body.includeTypes || null,
+      excludeTypes: body.excludeTypes || null,
+      projectId: body.projectId || null,
+      notes: body.notes || null,
+    }).returning();
+
+    return reply.status(201).send({ profile });
+  });
+
+  fastify.patch('/agent-profiles/:id', async (request, reply) => {
+    const userId = request.user!.id;
+    const id = (request.params as any).id;
+    const body = request.body as any;
+
+    await db.update(schema.agentProfiles)
+      .set({
+        ...(body.name && { name: body.name }),
+        ...(body.modelHint !== undefined && { modelHint: body.modelHint }),
+        ...(body.contextBudget !== undefined && { contextBudget: body.contextBudget }),
+        ...(body.priorityRules !== undefined && { priorityRules: body.priorityRules }),
+        ...(body.includeTypes !== undefined && { includeTypes: body.includeTypes }),
+        ...(body.excludeTypes !== undefined && { excludeTypes: body.excludeTypes }),
+        ...(body.projectId !== undefined && { projectId: body.projectId }),
+        ...(body.notes !== undefined && { notes: body.notes }),
+      })
+      .where(and(eq(schema.agentProfiles.id, id), eq(schema.agentProfiles.userId, userId)));
+
+    return reply.send({ success: true });
+  });
+
+  fastify.delete('/agent-profiles/:id', async (request, reply) => {
+    const userId = request.user!.id;
+    const id = (request.params as any).id;
+    await db.delete(schema.agentProfiles)
+      .where(and(eq(schema.agentProfiles.id, id), eq(schema.agentProfiles.userId, userId)));
+    return reply.send({ success: true });
+  });
 }

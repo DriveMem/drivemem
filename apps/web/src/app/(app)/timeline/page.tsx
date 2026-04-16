@@ -101,7 +101,7 @@ function ListView() {
   })
 
   if (loading) {
-    return <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+    return <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-zinc-500 dark:text-zinc-400" /></div>
   }
 
   return (
@@ -120,7 +120,7 @@ function ListView() {
             key={f.type || "all"}
             onClick={() => setTypeFilter(f.type)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-              typeFilter === f.type ? "bg-brand-500 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
+              typeFilter === f.type ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >
             {f.label}
@@ -154,29 +154,29 @@ function ListView() {
         <div className="space-y-8">
           {Object.entries(groups).map(([date, items]) => (
             <div key={date}>
-              <h2 className="text-sm font-semibold text-muted-foreground mb-4">{date}</h2>
-              <div className="border-l-2 border-border pl-6 space-y-4">
+              <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-4">{date}</h2>
+              <div className="border-l-2 border-zinc-200 dark:border-zinc-700 pl-6 space-y-4">
                 {items.map((event) => {
                   const config = EVENT_CONFIG[event.type] || EVENT_CONFIG.file_uploaded
                   const Icon = config.icon
                   return (
                     <div key={`${event.type}-${event.id}`} className="relative">
                       <div className={`absolute -left-[1.625rem] top-1 h-3 w-3 rounded-full ${config.dotColor} ring-4 ring-background`} />
-                      <Link href={getEventLink(event)} className="block cursor-pointer rounded-lg border p-4 hover:bg-accent/50 hover:shadow-md hover:border-border/80 transition-all duration-200">
+                      <Link href={getEventLink(event)} className="block cursor-pointer rounded-lg border border-zinc-200 dark:border-zinc-700 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:shadow-sm hover:border-zinc-200 dark:border-zinc-700/80 transition-all duration-200">
                         <div className="flex items-center gap-2">
                           <Icon className={`h-4 w-4 ${config.iconColor}`} />
-                          <span className="text-xs font-medium text-muted-foreground">{config.label}</span>
+                          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{config.label}</span>
                         </div>
                         <p className="mt-1 font-medium text-sm">{event.title}</p>
                         {(event.description || event.subtitle) && (
-                          <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{event.description || event.subtitle}</p>
+                          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2">{event.description || event.subtitle}</p>
                         )}
                         {event.type === "insight" && event.metadata?.sourceFileName && (
-                          <p className="mt-1 text-xs text-muted-foreground">
+                          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                             {event.metadata.sourceFileName} ↔ {event.metadata.relatedFileName}
                           </p>
                         )}
-                        <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                        <div className="mt-2 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
                           <Clock className="h-3 w-3" />
                           <span>{new Date(event.createdAt).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}</span>
                         </div>
@@ -190,7 +190,7 @@ function ListView() {
 
           {hasMore ? (
             <div className="text-center py-4">
-              <button onClick={loadMore} disabled={loadingMore} className="text-sm text-brand-500 hover:underline disabled:opacity-50">
+              <button onClick={loadMore} disabled={loadingMore} className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 disabled:opacity-50">
                 {loadingMore ? "Loading..." : "Load more"}
               </button>
             </div>
@@ -198,11 +198,11 @@ function ListView() {
             <div className="text-center py-6">
               {events.length < 10 ? (
                 <>
-                  <p className="text-sm text-muted-foreground mb-1">🌱 This is the start of your knowledge journey</p>
-                  <p className="text-xs text-muted-foreground">Continue uploading files, chat with AI, and your timeline will grow richer</p>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">🌱 This is the start of your knowledge journey</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Continue uploading files, chat with AI, and your timeline will grow richer</p>
                 </>
               ) : (
-                <p className="text-xs text-muted-foreground">— Reached earliest record —</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">— Reached earliest record —</p>
               )}
             </div>
           )}
@@ -239,14 +239,14 @@ export default function TimelinePage() {
         {!flowError && (
           <div className="flex gap-1">
             <Button
-              variant={effectiveView === 'flow' ? 'default' : 'outline'}
+              variant="ghost" className={effectiveView === 'flow' ? 'bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-500 hover:bg-zinc-100'}
               size="sm"
               onClick={() => setView('flow')}
             >
               Flow
             </Button>
             <Button
-              variant={effectiveView === 'list' ? 'default' : 'outline'}
+              variant="ghost" className={effectiveView === 'list' ? 'bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900' : 'text-zinc-500 hover:bg-zinc-100'}
               size="sm"
               onClick={() => setView('list')}
             >
@@ -255,7 +255,7 @@ export default function TimelinePage() {
           </div>
         )}
       </div>
-      <p className="text-sm text-muted-foreground mb-6">
+      <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
         {effectiveView === 'flow'
           ? 'See how information flows between agents through your knowledge base'
           : 'Track the complete history of file uploads, AI analysis, and knowledge discovery'}
@@ -264,12 +264,12 @@ export default function TimelinePage() {
       {effectiveView === 'flow' ? (
         flowLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <Loader2 className="h-6 w-6 animate-spin text-zinc-500 dark:text-zinc-400" />
           </div>
         ) : flowData ? (
           <SwimlaneView data={flowData} />
         ) : (
-          <div className="text-center py-12 text-muted-foreground">Failed to load flow data</div>
+          <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">Failed to load flow data</div>
         )
       ) : (
         <ListView />
