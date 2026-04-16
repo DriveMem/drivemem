@@ -15,10 +15,10 @@ const personas = [
 ]
 
 const personaConfig: Record<string, { uploadHint: string; question: string }> = {
-  student: { uploadHint: "UploadYour references or class notes", question: "Summarize the key points of this paper" },
-  worker: { uploadHint: "UploadYour project documents or meeting notes", question: "Help me write a report summary using this material" },
-  researcher: { uploadHint: "UploadYour research papers or data reports", question: "Compare the key findings of these two documents" },
-  creator: { uploadHint: "UploadYour material files or references", question: "Help me extract writing inspiration from these materials" },
+  student: { uploadHint: "Upload your references or class notes", question: "Summarize the key points of this paper" },
+  worker: { uploadHint: "Upload your project documents or meeting notes", question: "Help me write a report summary using this material" },
+  researcher: { uploadHint: "Upload your research papers or data reports", question: "Compare the key findings of these two documents" },
+  creator: { uploadHint: "Upload your material files or references", question: "Help me extract writing inspiration from these materials" },
 }
 
 export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
@@ -86,7 +86,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
     }
   }
 
-  const uploadHint = persona ? personaConfig[persona].uploadHint : "UploadYour first file"
+  const uploadHint = persona ? personaConfig[persona].uploadHint : "Upload your first file"
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleSkip() }}>

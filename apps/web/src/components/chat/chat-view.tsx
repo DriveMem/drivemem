@@ -65,11 +65,11 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
     <div className="flex flex-1 flex-col items-center px-4 pt-8 pb-4 overflow-y-auto">
       {/* Hero section */}
       <div className="flex flex-col items-center gap-2 mb-6">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-500/20 to-brand-500/5">
-          <MessageSquare className="h-7 w-7 text-brand-500" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-500/20 to-brand-500/5">
+          <MessageSquare className="h-8 w-8 text-brand-500" />
         </div>
         <h2 className="text-xl font-semibold text-foreground">Your DriveMem assistant</h2>
-        <p className="text-sm text-muted-foreground text-center max-w-md">
+        <p className="text-sm text-muted-foreground text-center max-w-md leading-relaxed">
           {indexedCount > 0
             ? `Remembered ${indexedCount} files. Ready to answer questions and discover connections`
             : "Upload files to your knowledge library. I'll help you memorize, analyze, and connect"}
@@ -82,7 +82,7 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
         <div className="flex flex-wrap justify-center gap-2">
           {chips.map((q, i) => (
             <button key={i} onClick={() => onSend(q)}
-              className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground/80 hover:bg-primary/10 hover:shadow-sm hover:scale-[1.02] transition-all cursor-pointer">
+              className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground/80 hover:bg-primary/10 hover:shadow-sm hover:scale-[1.02] transition-all duration-200 cursor-pointer">
               {suggestions.length > 0 ? `✨ ${q}` : q}
             </button>
           ))}
@@ -92,7 +92,7 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
       {/* Feature cards */}
       <div className="grid grid-cols-3 gap-3 w-full max-w-lg">
         {FEATURE_CARDS.map((card, i) => (
-          <div key={i} className="flex flex-col items-center gap-1.5 rounded-xl border border-border/50 bg-muted/30 p-3 text-center">
+          <div key={i} className="flex flex-col items-center gap-2 rounded-2xl border border-border/50 bg-muted/30 p-4 text-center shadow-soft hover:shadow-soft-md transition-all duration-200">
             <span className="text-xl">{card.icon}</span>
             <span className="text-xs font-medium text-foreground">{card.title}</span>
             <span className="text-[11px] text-muted-foreground leading-tight">{card.desc}</span>
@@ -308,7 +308,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
           <MessageSquare className="h-8 w-8 text-brand-500" />
         </div>
         <p className="text-lg font-medium text-foreground">You haven't let AI remember any files yet</p>
-        <Button asChild className="bg-brand-500 hover:bg-brand-500/90 text-white rounded-xl px-6"><Link href="/dashboard">Upload files</Link></Button>
+        <Button asChild className="bg-brand-500 hover:bg-brand-500/90 text-white rounded-xl px-6 shadow-soft active:scale-[0.98] transition-all duration-200"><Link href="/dashboard">Upload files</Link></Button>
       </div>
     )
   }
@@ -346,7 +346,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       }}
     >
       {isDragging && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-brand-500/10 border-2 border-dashed border-brand-500 rounded-xl">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-primary/5 border-2 border-dashed border-primary/30 rounded-2xl">
           <div className="text-center">
             <Upload className="h-10 w-10 text-brand-500 mx-auto mb-2" />
             <p className="text-sm font-medium text-brand-500">Drag files here to upload</p>
