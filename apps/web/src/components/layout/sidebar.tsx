@@ -27,20 +27,12 @@ export function Sidebar() {
   return (
     <TooltipProvider delayDuration={0}>
       <div className="flex h-full flex-col">
-        {/* Logo area */}
-        <div className="flex h-14 items-center justify-between px-3 border-b border-white/[0.06]">
-          {!sidebarCollapsed && (
-            <div className="flex flex-col">
-              <span className="text-lg font-bold text-white" style={{ fontFamily: "'Instrument Serif', serif" }}>DriveMem</span>
-              <div className="h-px w-full bg-[#5E6AD2]/30 mt-0.5" />
-            </div>
-          )}
-          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8 text-gray-400 hover:text-gray-200 hover:bg-white/5">
+        <div className="flex h-14 items-center justify-between px-3 border-b border-zinc-200 dark:border-zinc-800">
+          {!sidebarCollapsed && <span className="text-lg font-bold text-brand-500">DriveMem</span>}
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
             {sidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
           </Button>
         </div>
-
-        {/* Navigation */}
         <nav className="flex flex-col gap-0.5 p-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href || pathname?.startsWith(item.href + "/") || (item.href === "/files" && pathname === "/dashboard")
@@ -51,14 +43,14 @@ export function Sidebar() {
                   "w-full justify-start gap-2 relative rounded-lg",
                   sidebarCollapsed && "justify-center px-2",
                   isActive
-                    ? "border-l-2 border-[#5E6AD2] bg-white/[0.08] text-white font-medium rounded-l-none"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-white/5 border-l-2 border-transparent"
+                    ? "bg-brand-50 dark:bg-brand-500/10 text-zinc-900 dark:text-zinc-100 font-medium border-l-2 border-brand-500 rounded-l-none"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-l-2 border-transparent"
                 )}
                 size={sidebarCollapsed ? "icon" : "default"}
                 asChild
               >
                 <Link href={item.href} onClick={() => setMobileSidebarOpen(false)}>
-                  <item.icon className="h-4 w-4 flex-shrink-0" />
+                  <item.icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-brand-500" : "")} />
                   {!sidebarCollapsed && <span>{item.label}</span>}
                 </Link>
               </Button>
@@ -74,22 +66,20 @@ export function Sidebar() {
             return <div key={item.href}>{btn}</div>
           })}
         </nav>
-
-        {/* Projects & Tags sections */}
         {!sidebarCollapsed && !pathname?.startsWith("/chat") && !pathname?.startsWith("/settings") && !pathname?.startsWith("/timeline") && (
-          <div className="flex-1 overflow-auto border-t border-white/[0.06] p-2">
-            <p className="px-2 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-gray-600">Projects</p>
+          <div className="flex-1 overflow-auto border-t border-zinc-200 dark:border-zinc-800 p-2">
+            <p className="px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider text-zinc-400">Projects</p>
             <FolderTree />
             {tags.length > 0 ? (
-              <div className="mt-3 border-t border-white/[0.06] pt-2">
-                <p className="px-2 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-gray-600 flex items-center gap-1">
+              <div className="mt-3 border-t border-zinc-200 dark:border-zinc-800 pt-2">
+                <p className="px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider text-zinc-400 flex items-center gap-1">
                   <Tag className="h-3 w-3" /> Tags
                 </p>
                 <div className="flex flex-wrap gap-1 px-2 py-1">
                   {activeTagFilter && (
                     <button
                       onClick={() => setActiveTagFilter(null)}
-                      className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-white/[0.05] text-gray-400 hover:bg-white/[0.08] transition"
+                      className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
                     >
                       All ×
                     </button>
@@ -101,11 +91,11 @@ export function Sidebar() {
                       className={cn(
                         "rounded-full px-2 py-0.5 text-[10px] font-medium transition-all",
                         activeTagFilter === tag.name
-                          ? "ring-1 ring-offset-1 ring-offset-[#0A0E1A] shadow-sm"
+                          ? "ring-1 ring-offset-1 ring-offset-background shadow-sm"
                           : "opacity-70 hover:opacity-100"
                       )}
                       style={{
-                        backgroundColor: tag.color + "15",
+                        backgroundColor: tag.color + "20",
                         color: tag.color,
                       }}
                     >
@@ -115,8 +105,8 @@ export function Sidebar() {
                 </div>
               </div>
             ) : (
-              <div className="mt-3 border-t border-white/[0.06] pt-2 px-2">
-                <p className="py-2 text-xs text-gray-600 text-center">
+              <div className="mt-3 border-t border-zinc-200 dark:border-zinc-800 pt-2 px-2">
+                <p className="py-2 text-xs text-zinc-400 text-center">
                   Right-click to add tags
                 </p>
               </div>

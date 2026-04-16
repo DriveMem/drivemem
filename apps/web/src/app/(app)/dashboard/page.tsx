@@ -58,9 +58,9 @@ function QuickActions({ onGenerate, onOrganize }: {
         <button
           key={c.label}
           onClick={c.action}
-          className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.05] px-4 py-2 text-sm text-gray-400 hover:bg-white/[0.08] hover:text-gray-200 transition"
+          className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
         >
-          <c.icon className="h-3.5 w-3.5" />
+          <c.icon className="h-3.5 w-3.5 text-zinc-400" />
           {c.label}
         </button>
       ))}
@@ -77,7 +77,7 @@ function ActivitySummary({ activities }: { activities: any[] }) {
 
   if (activities.length === 0) {
     return (
-      <div className="mx-3 mb-3 rounded-xl border border-dashed border-white/[0.10] p-4 text-center text-sm text-gray-500">
+      <div className="mx-3 mb-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 p-4 text-center text-sm text-zinc-400">
         AI will notify you when it discovers knowledge links
       </div>
     )
@@ -85,24 +85,24 @@ function ActivitySummary({ activities }: { activities: any[] }) {
 
   return (
     <div className="mx-3 mb-3">
-      <h4 className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-2.5">Recent activity</h4>
-      <div className="text-xs text-gray-500 mb-2.5">
+      <h4 className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-2.5">Recent activity</h4>
+      <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2.5">
         Indexed {fileCount} {fileCount === 1 ? 'file' : 'files'} · {insightCount} {insightCount === 1 ? 'insight' : 'insights'} · {linkCount} {linkCount === 1 ? 'link' : 'links'}
       </div>
-      <div className="space-y-0 divide-y divide-white/[0.04]">
+      <div className="space-y-0 divide-y divide-zinc-100 dark:divide-zinc-800">
         {shown.map((a: any) => {
           const Icon = activityIcons[a.type] || Lightbulb
           return (
             <div key={a.id} className="flex items-center gap-2 text-sm truncate py-1.5">
-              <Icon className="h-3.5 w-3.5 shrink-0 text-gray-500" />
-              <span className="truncate flex-1 text-gray-400">{a.title}</span>
-              <span className="shrink-0 text-xs text-gray-600" title={a.createdAt ? new Date(a.createdAt).toLocaleString() : ""}>{a.createdAt ? relativeTime(a.createdAt) : ""}</span>
+              <Icon className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+              <span className="truncate flex-1 text-zinc-600 dark:text-zinc-300">{a.title}</span>
+              <span className="shrink-0 text-xs text-zinc-400" title={a.createdAt ? new Date(a.createdAt).toLocaleString() : ""}>{a.createdAt ? relativeTime(a.createdAt) : ""}</span>
             </div>
           )
         })}
       </div>
       {activities.length > 5 && (
-        <button className="mt-2 text-xs text-[#5E6AD2] hover:underline">View all</button>
+        <button className="mt-2 text-xs text-brand-500 hover:underline">View all</button>
       )}
     </div>
   )
@@ -142,14 +142,14 @@ function InsightsSummaryCard({ insights, onSwitchToAi }: { insights: any[]; onSw
   }
 
   return (
-    <div className="mx-6 mb-3 rounded-xl border border-white/[0.06] bg-[#1A1D24] p-3">
+    <div className="mx-6 mb-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-3">
       <div className="flex items-center justify-between mb-1.5">
-        <button onClick={onSwitchToAi} className="flex items-center gap-1.5 text-sm font-medium text-gray-200 hover:underline">
-          <Lightbulb className="h-4 w-4 text-[#5E6AD2]" />
+        <button onClick={onSwitchToAi} className="flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:underline">
+          <Lightbulb className="h-4 w-4 text-brand-500" />
           AI discovered {label}
-          <span className="text-xs text-[#5E6AD2]">View →</span>
+          <span className="text-xs text-brand-500">View →</span>
         </button>
-        <button onClick={handleDismiss} className="text-gray-500 hover:text-gray-300 p-0.5">
+        <button onClick={handleDismiss} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-0.5">
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
@@ -158,7 +158,7 @@ function InsightsSummaryCard({ insights, onSwitchToAi }: { insights: any[]; onSw
           const Icon = insightTypeIcon[i.type] || Lightbulb
           const color = insightTypeColor[i.type] || "text-amber-500"
           return (
-            <div key={i.id} className="flex items-center gap-2 text-xs text-gray-500 truncate">
+            <div key={i.id} className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 truncate">
               <Icon className={cn("h-3 w-3 shrink-0", color)} />
               <span className="truncate">{i.title}</span>
               <span className="shrink-0">·</span>
@@ -249,14 +249,14 @@ export default function DashboardPage() {
 
       {/* Tab switcher — pill/segment style */}
       <div className="px-6 pt-6 pb-2">
-        <div className="inline-flex rounded-lg bg-white/[0.05] p-1">
+        <div className="inline-flex rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1.5">
           <button
             onClick={() => handleTabSwitch("files")}
             className={cn(
               "flex items-center gap-2 px-5 py-2 text-sm rounded-md transition-all duration-200",
               activeTab === "files"
-                ? "bg-white/[0.10] text-white shadow-sm font-medium"
-                : "text-gray-500 hover:text-gray-300"
+                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm font-medium"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
             )}
           >
             <FolderOpen className="h-4 w-4" />
@@ -267,14 +267,14 @@ export default function DashboardPage() {
             className={cn(
               "relative flex items-center gap-2 px-5 py-2 text-sm rounded-md transition-all duration-200",
               activeTab === "ai"
-                ? "bg-white/[0.10] text-white shadow-sm font-medium"
-                : "text-gray-500 hover:text-gray-300"
+                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm font-medium"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
             )}
           >
             <Sparkles className="h-4 w-4" />
             AI Chat
             {fileCount > 3 && activeTab !== "ai" && (
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#5E6AD2]" />
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-brand-500" />
             )}
           </button>
         </div>
@@ -284,31 +284,31 @@ export default function DashboardPage() {
       {activeTab === "files" ? (
         <div className="flex-1 min-h-0 flex flex-col">
           {resumeBrief && (
-            <div className="mx-6 mb-4 rounded-xl border border-white/[0.06] bg-[#1A1D24] p-4">
+            <div className="mx-6 mb-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-4">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold text-gray-100">Welcome back</h3>
-                <button onClick={() => setResumeBrief(null)} className="text-gray-500 hover:text-gray-300">
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Welcome back</h3>
+                <button onClick={() => setResumeBrief(null)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
                 You were away for {resumeBrief.hoursSinceActive}h. Here&apos;s what happened:
               </p>
-              <div className="flex gap-4 text-xs text-gray-400">
+              <div className="flex gap-4 text-xs text-zinc-600 dark:text-zinc-300">
                 {resumeBrief.newFilesCount > 0 && (
-                  <span className="flex items-center gap-1"><FileText className="h-3.5 w-3.5 text-gray-500" /> {resumeBrief.newFilesCount} new files</span>
+                  <span className="flex items-center gap-1"><FileText className="h-3.5 w-3.5 text-zinc-400" /> {resumeBrief.newFilesCount} new files</span>
                 )}
                 {resumeBrief.newInsightsCount > 0 && (
-                  <span className="flex items-center gap-1"><Lightbulb className="h-3.5 w-3.5 text-gray-500" /> {resumeBrief.newInsightsCount} new insights</span>
+                  <span className="flex items-center gap-1"><Lightbulb className="h-3.5 w-3.5 text-zinc-400" /> {resumeBrief.newInsightsCount} new insights</span>
                 )}
                 {resumeBrief.recentActivity.length > 0 && (
-                  <span className="flex items-center gap-1"><Sparkles className="h-3.5 w-3.5 text-gray-500" /> {resumeBrief.recentActivity.length} agent actions</span>
+                  <span className="flex items-center gap-1"><Sparkles className="h-3.5 w-3.5 text-zinc-400" /> {resumeBrief.recentActivity.length} agent actions</span>
                 )}
               </div>
               {resumeBrief.recentActivity.length > 0 && (
                 <div className="mt-2 space-y-1">
                   {resumeBrief.recentActivity.slice(0, 3).map((a: any, i: number) => (
-                    <p key={i} className="text-xs text-gray-500">
+                    <p key={i} className="text-xs text-zinc-500 dark:text-zinc-400">
                       {a.agentName} {a.action === 'store' ? 'saved' : a.action === 'search' ? 'searched for' : a.action === 'compile' ? 'compiled' : a.action} &quot;{a.detail}&quot;
                     </p>
                   ))}
@@ -317,19 +317,19 @@ export default function DashboardPage() {
             </div>
           )}
           {conflicts.length > 0 && (
-            <div className="mx-6 mb-4 rounded-xl border border-amber-800/50 bg-amber-950/20 p-4">
+            <div className="mx-6 mb-4 rounded-xl border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800 p-4">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="h-4 w-4 text-amber-500" />
-                <h3 className="text-sm font-semibold text-amber-400">
+                <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-400">
                   Knowledge conflicts detected
                 </h3>
-                <span className="text-xs text-amber-500 bg-amber-900/50 rounded-full px-2 py-0.5">
+                <span className="text-xs text-amber-500 bg-amber-100 dark:bg-amber-900/50 rounded-full px-2 py-0.5">
                   {conflicts.length}
                 </span>
               </div>
               <div className="space-y-2">
                 {conflicts.slice(0, 3).map((c: any) => (
-                  <div key={c.id} className="flex items-start gap-2 text-xs text-amber-400">
+                  <div key={c.id} className="flex items-start gap-2 text-xs text-amber-600 dark:text-amber-400">
                     <span className="shrink-0">⚡</span>
                     <span>
                       <strong>{c.sourceFile.name}</strong> contradicts <strong>{c.targetFile.name}</strong>
@@ -344,25 +344,25 @@ export default function DashboardPage() {
           )}
           <InsightsSummaryCard insights={insights} onSwitchToAi={() => handleTabSwitch("ai")} />
           {hasApiKeys === false && (
-            <div className="mx-6 mb-4 rounded-xl border border-white/[0.06] bg-[#1A1D24] p-5">
+            <div className="mx-6 mb-4 rounded-xl border border-brand-200 bg-gradient-to-r from-brand-50/50 to-transparent p-5">
               <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#5E6AD2]/10">
-                  <Plug className="h-5 w-5 text-[#5E6AD2]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100">
+                  <Plug className="h-5 w-5 text-brand-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-gray-100">Connect Your AI Agent</h3>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <h3 className="text-sm font-semibold">Connect Your AI Agent</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
                     Let your agents access your knowledge base
                   </p>
                   <div className="flex gap-2 mt-3">
-                    <Button size="sm" onClick={() => router.push('/settings?tab=developer')} className="bg-[#5E6AD2] hover:bg-[#4F5BC4] text-white">
+                    <Button size="sm" onClick={() => router.push('/settings?tab=developer')} className="bg-brand-500 hover:bg-brand-600 text-white">
                       Create API Key
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => router.push('/developers')} className="border-white/[0.06] text-gray-300 hover:bg-white/[0.05]">
+                    <Button size="sm" variant="outline" onClick={() => router.push('/developers')}>
                       View docs
                     </Button>
                   </div>
-                  <a href="/developers" className="inline-block mt-2 text-xs text-gray-500 hover:text-gray-300 hover:underline">
+                  <a href="/developers" className="inline-block mt-2 text-xs text-muted-foreground hover:text-brand-500 hover:underline">
                     Learn more about agent integration →
                   </a>
                 </div>
@@ -371,45 +371,45 @@ export default function DashboardPage() {
           )}
           {!currentFolderId ? (
             <div className="flex-1 min-h-0 overflow-auto p-6">
-              <h2 className="text-lg font-semibold text-gray-100 mb-4">Projects</h2>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Projects</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {folders.map((folder: any) => (
                   <div
                     key={folder.id}
                     onClick={() => setCurrentFolder(folder.id)}
-                    className="rounded-xl border border-white/[0.06] bg-[#1A1D24] p-5 hover:border-white/[0.12] hover:shadow-[0_0_20px_rgba(94,106,210,0.06)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                    className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:border-zinc-300 dark:hover:border-zinc-600 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5 mb-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#5E6AD2]/10">
-                        <Folder className="h-4 w-4 text-[#5E6AD2]" />
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-500/10">
+                        <Folder className="h-4 w-4 text-brand-500" />
                       </div>
-                      <h3 className="font-medium text-gray-100 truncate">{folder.name}</h3>
+                      <h3 className="font-medium text-zinc-900 dark:text-zinc-100 truncate">{folder.name}</h3>
                       {folder.status && (
                         <span className={cn(
                           "ml-auto rounded-full px-2 py-0.5 text-[11px] tracking-wide uppercase font-medium",
-                          folder.status === 'active' ? 'bg-green-500/10 text-green-400' :
-                          folder.status === 'completed' ? 'bg-[#5E6AD2]/10 text-[#5E6AD2]' :
-                          'bg-white/[0.05] text-gray-500'
+                          folder.status === 'active' ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
+                          folder.status === 'completed' ? 'bg-brand-500/10 text-brand-500' :
+                          'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
                         )}>
                           {folder.status === 'active' ? 'Active' : folder.status === 'completed' ? 'Completed' : folder.status}
                         </span>
                       )}
                     </div>
                     {folder.brief && (
-                      <p className="text-sm text-gray-500 line-clamp-2 mb-2">{folder.brief}</p>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-2">{folder.brief}</p>
                     )}
                     {folder.goal && (
-                      <p className="text-xs text-[#5E6AD2] mb-2">{folder.goal}</p>
+                      <p className="text-xs text-brand-500 mb-2">{folder.goal}</p>
                     )}
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                      <div className="flex items-center gap-1.5 text-xs text-zinc-400">
                         <FileText className="h-3.5 w-3.5" />
                         <span className="mx-0.5">·</span>
                         <span>{folder.fileCount ?? 0} {(folder.fileCount ?? 0) === 1 ? 'file' : 'files'}</span>
                       </div>
                       <button
                         onClick={(e) => { e.stopPropagation(); router.push(`/compile?project=${folder.id}`) }}
-                        className="flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium text-gray-500 hover:text-[#5E6AD2] hover:bg-[#5E6AD2]/10 transition-colors hover:shadow-sm"
+                        className="flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium text-zinc-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors hover:shadow-sm"
                       >
                         <Sparkles className="h-3 w-3" />
                         Compile
@@ -421,7 +421,7 @@ export default function DashboardPage() {
                 {/* New project card */}
                 <div
                   onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }}
-                  className="rounded-xl border border-dashed border-white/[0.10] p-5 hover:border-[#5E6AD2]/30 hover:bg-[#5E6AD2]/5 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-3 text-gray-500 hover:text-[#5E6AD2] min-h-[120px]"
+                  className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-5 hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/30 dark:hover:bg-brand-500/5 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-3 text-zinc-400 hover:text-brand-500 min-h-[120px]"
                 >
                   <span className="text-2xl font-light">+</span>
                   <span className="text-sm font-medium">New project</span>
@@ -431,10 +431,10 @@ export default function DashboardPage() {
               {/* Unfiled section */}
               {unfiledCount > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2 flex items-center gap-1.5">
-                    <FileText className="h-4 w-4 text-gray-500" /> Unfiled ({unfiledCount})
+                  <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2 flex items-center gap-1.5">
+                    <FileText className="h-4 w-4 text-zinc-400" /> Unfiled ({unfiledCount})
                   </h3>
-                  <button onClick={() => router.push("/files")} className="text-sm text-[#5E6AD2] hover:underline">
+                  <button onClick={() => router.push("/files")} className="text-sm text-brand-500 hover:underline">
                     View all files →
                   </button>
                 </div>
@@ -442,37 +442,37 @@ export default function DashboardPage() {
 
               {/* Empty state guide */}
               {(folders.length === 0 || fileCount === 0) && (
-                <div className="mt-8 bg-white/[0.02] rounded-xl p-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-3">Get started</h3>
+                <div className="mt-8 bg-gradient-to-b from-zinc-50/50 to-transparent dark:from-zinc-800/30 rounded-xl p-4">
+                  <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Get started</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <button
                       onClick={() => { handleTabSwitch("files"); setShowUpload(true) }}
-                      className="flex items-start gap-3 rounded-xl border border-dashed border-white/[0.10] bg-[#1A1D24] p-5 text-left hover:border-[#5E6AD2]/30 hover:bg-[#5E6AD2]/5 transition-all duration-200"
+                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-5 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/30 dark:hover:bg-brand-500/5 transition-all duration-200"
                     >
-                      <Upload className="h-5 w-5 text-gray-500 shrink-0 mt-0.5" />
+                      <Upload className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium text-gray-200">Upload your first file</p>
-                        <p className="text-xs text-gray-500 mt-1">PDF, docs, notes — AI indexes everything</p>
+                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Upload your first file</p>
+                        <p className="text-xs text-zinc-400 mt-1">PDF, docs, notes — AI indexes everything</p>
                       </div>
                     </button>
                     <button
                       onClick={() => router.push("/chat?new=1")}
-                      className="flex items-start gap-3 rounded-xl border border-dashed border-white/[0.10] bg-[#1A1D24] p-5 text-left hover:border-[#5E6AD2]/30 hover:bg-[#5E6AD2]/5 transition-all duration-200"
+                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-5 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/30 dark:hover:bg-brand-500/5 transition-all duration-200"
                     >
-                      <MessageSquare className="h-5 w-5 text-gray-500 shrink-0 mt-0.5" />
+                      <MessageSquare className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium text-gray-200">Try AI Chat</p>
-                        <p className="text-xs text-gray-500 mt-1">Ask questions, get cited answers</p>
+                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Try AI Chat</p>
+                        <p className="text-xs text-zinc-400 mt-1">Ask questions, get cited answers</p>
                       </div>
                     </button>
                     <button
                       onClick={() => router.push("/developers")}
-                      className="flex items-start gap-3 rounded-xl border border-dashed border-white/[0.10] bg-[#1A1D24] p-5 text-left hover:border-[#5E6AD2]/30 hover:bg-[#5E6AD2]/5 transition-all duration-200"
+                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-5 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/30 dark:hover:bg-brand-500/5 transition-all duration-200"
                     >
-                      <Plug className="h-5 w-5 text-gray-500 shrink-0 mt-0.5" />
+                      <Plug className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium text-gray-200">Connect via CLI / MCP</p>
-                        <p className="text-xs text-gray-500 mt-1">Let your AI assistant access your knowledge</p>
+                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Connect via CLI / MCP</p>
+                        <p className="text-xs text-zinc-400 mt-1">Let your AI assistant access your knowledge</p>
                       </div>
                     </button>
                   </div>
@@ -487,8 +487,8 @@ export default function DashboardPage() {
 
           {/* New project dialog */}
           <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
-            <DialogContent className="bg-[#1A1D24] border border-white/[0.06]">
-              <DialogHeader><DialogTitle className="text-gray-100">New project</DialogTitle></DialogHeader>
+            <DialogContent>
+              <DialogHeader><DialogTitle>New project</DialogTitle></DialogHeader>
               <Input
                 placeholder="Project name"
                 value={newFolderName}
@@ -500,10 +500,9 @@ export default function DashboardPage() {
                   }
                 }}
                 autoFocus
-                className="bg-white/[0.05] border-white/[0.08] text-gray-100"
               />
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setFolderDialogOpen(false)} className="border-white/[0.06] text-gray-300 hover:bg-white/[0.05]">Cancel</Button>
+                <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>Cancel</Button>
                 <Button
                   onClick={() => {
                     if (newFolderName.trim()) {
@@ -512,7 +511,6 @@ export default function DashboardPage() {
                     }
                   }}
                   disabled={!newFolderName.trim()}
-                  className="bg-[#5E6AD2] hover:bg-[#4F5BC4] text-white"
                 >Create</Button>
               </div>
             </DialogContent>
@@ -523,25 +521,25 @@ export default function DashboardPage() {
           {fileCount === 0 ? (
             <div className="px-4 py-5 space-y-5">
               {/* Hero section */}
-              <div className="rounded-xl border border-white/[0.06] bg-[#1A1D24] p-8 text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#5E6AD2]/10">
-                  <Sparkles className="h-6 w-6 text-[#5E6AD2]" />
+              <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-8 text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/10">
+                  <Sparkles className="h-6 w-6 text-brand-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-100 mb-1.5">Upload files to start your AI knowledge base</h3>
-                <p className="text-sm text-gray-500 max-w-md mx-auto mb-5">
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5">Upload files to start your AI knowledge base</h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto mb-5">
                   After uploading, AI will understand your content, build knowledge memory, and provide insights and cross-file analysis.
                 </p>
                 <div className="flex items-center justify-center gap-3">
                   <button
                     onClick={() => { handleTabSwitch("files"); setShowUpload(true) }}
-                    className="rounded-lg bg-[#5E6AD2] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#4F5BC4] transition inline-flex items-center gap-2"
+                    className="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition inline-flex items-center gap-2"
                   >
                     <Upload className="h-4 w-4" />
                     Upload your first file
                   </button>
                   <button
                     onClick={() => router.push("/chat?new=1")}
-                    className="rounded-lg border border-white/[0.08] px-5 py-2.5 text-sm text-gray-300 hover:bg-white/[0.05] transition inline-flex items-center gap-2"
+                    className="rounded-lg border border-zinc-300 dark:border-zinc-600 px-5 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition inline-flex items-center gap-2"
                   >
                     <MessageSquare className="h-4 w-4" />
                     Start a conversation
@@ -557,17 +555,17 @@ export default function DashboardPage() {
                   { icon: Lightbulb, title: "Smart insights", desc: "Auto-discover connections, contradictions, and trends" },
                   { icon: BarChart3, title: "Analysis reports", desc: "Generate cross-file analysis, study notes, and comparisons" },
                 ].map((item) => (
-                  <div key={item.title} className="rounded-xl border border-white/[0.06] bg-[#1A1D24] p-4">
-                    <item.icon className="h-5 w-5 text-gray-500 mb-2" />
-                    <h4 className="text-sm font-medium text-gray-200 mb-0.5">{item.title}</h4>
-                    <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
+                  <div key={item.title} className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-4">
+                    <item.icon className="h-5 w-5 text-zinc-400 mb-2" />
+                    <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-0.5">{item.title}</h4>
+                    <p className="text-xs text-zinc-400 leading-relaxed">{item.desc}</p>
                   </div>
                 ))}
               </div>
 
               {/* Example questions */}
-              <div className="rounded-xl border border-white/[0.06] bg-[#1A1D24] p-4">
-                <h4 className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-3">Try these questions</h4>
+              <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-4">
+                <h4 className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-3">Try these questions</h4>
                 <div className="space-y-2">
                   {[
                     "Summarize the key points of this document",
@@ -578,10 +576,10 @@ export default function DashboardPage() {
                     <button
                       key={q}
                       onClick={() => router.push(`/chat?q=${encodeURIComponent(q)}`)}
-                      className="flex w-full items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-2 text-left text-sm hover:bg-white/[0.05] transition"
+                      className="flex w-full items-center gap-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 px-3 py-2 text-left text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
                     >
-                      <MessageSquare className="h-3.5 w-3.5 text-gray-500 shrink-0" />
-                      <span className="text-gray-400">{q}</span>
+                      <MessageSquare className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                      <span className="text-zinc-500 dark:text-zinc-400">{q}</span>
                     </button>
                   ))}
                 </div>
@@ -591,30 +589,30 @@ export default function DashboardPage() {
               <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={() => { handleTabSwitch("files"); setShowUpload(true) }}
-                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-white/[0.10] p-3 hover:border-[#5E6AD2]/30 hover:bg-[#5E6AD2]/5 transition"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-3 hover:border-brand-400 hover:bg-brand-500/5 transition"
                 >
-                  <Upload className="h-5 w-5 text-[#5E6AD2]" />
-                  <span className="text-xs font-medium text-gray-400">Upload files</span>
+                  <Upload className="h-5 w-5 text-brand-500" />
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Upload files</span>
                 </button>
                 <Link
                   href="/chat"
-                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-white/[0.10] p-3 hover:border-[#5E6AD2]/30 hover:bg-[#5E6AD2]/5 transition"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-3 hover:border-brand-400 hover:bg-brand-500/5 transition"
                 >
-                  <MessageSquare className="h-5 w-5 text-gray-500" />
-                  <span className="text-xs font-medium text-gray-400">AI Chat</span>
+                  <MessageSquare className="h-5 w-5 text-zinc-400" />
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">AI Chat</span>
                 </Link>
                 <Link
                   href="/developers"
-                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-white/[0.10] p-3 hover:border-[#5E6AD2]/30 hover:bg-[#5E6AD2]/5 transition"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-3 hover:border-brand-400 hover:bg-brand-500/5 transition"
                 >
-                  <FolderOpen className="h-5 w-5 text-gray-500" />
-                  <span className="text-xs font-medium text-gray-400">API Docs</span>
+                  <FolderOpen className="h-5 w-5 text-zinc-400" />
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">API Docs</span>
                 </Link>
               </div>
 
               {/* How it works */}
-              <div className="rounded-xl border border-dashed border-white/[0.10] p-4">
-                <h4 className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-3">How it works</h4>
+              <div className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-4">
+                <h4 className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-3">How it works</h4>
                 <div className="flex items-start gap-4">
                   {[
                     { step: "1", label: "Upload files", sub: "PDF, docs, notes, etc." },
@@ -622,11 +620,11 @@ export default function DashboardPage() {
                     { step: "3", label: "Get insights", sub: "Analysis, reports, Q&A" },
                   ].map((s) => (
                     <div key={s.step} className="flex-1 flex flex-col items-center text-center">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#5E6AD2]/10 text-xs font-semibold text-[#5E6AD2] mb-1.5">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500/10 text-xs font-semibold text-brand-500 mb-1.5">
                         {s.step}
                       </div>
-                      <span className="text-xs font-medium text-gray-200">{s.label}</span>
-                      <span className="text-[11px] text-gray-500 mt-0.5">{s.sub}</span>
+                      <span className="text-xs font-medium text-zinc-700 dark:text-zinc-200">{s.label}</span>
+                      <span className="text-[11px] text-zinc-400 mt-0.5">{s.sub}</span>
                     </div>
                   ))}
                 </div>
@@ -638,26 +636,26 @@ export default function DashboardPage() {
               <MemoryOverview />
 
               {/* AI Reports section */}
-              <div className="mx-4 mb-4 rounded-xl border border-white/[0.06] bg-[#1A1D24] p-5">
+              <div className="mx-4 mb-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <BarChart3 className="h-4 w-4 text-gray-500" />
-                  <h3 className="text-sm font-medium text-gray-100">AI Reports</h3>
+                  <BarChart3 className="h-4 w-4 text-zinc-400" />
+                  <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">AI Reports</h3>
                 </div>
                 <ReportSection ref={reportRef} />
               </div>
 
               {/* Divider */}
               <div className="mx-4 mb-4">
-                <div className="border-t border-white/[0.04]" />
+                <div className="border-t border-zinc-200 dark:border-zinc-800" />
               </div>
 
               {/* AI Insights section */}
-              <div className="mx-4 mb-4 rounded-xl border border-white/[0.06] bg-[#1A1D24] p-5">
+              <div className="mx-4 mb-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <Lightbulb className="h-4 w-4 text-gray-500" />
-                  <h3 className="text-sm font-medium text-gray-100">AI Insights</h3>
+                  <Lightbulb className="h-4 w-4 text-zinc-400" />
+                  <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">AI Insights</h3>
                   {insights.filter(i => !i.read).length > 0 && (
-                    <span className="rounded-full bg-[#5E6AD2] px-1.5 py-0.5 text-[10px] text-white">
+                    <span className="rounded-full bg-brand-500 px-1.5 py-0.5 text-[10px] text-white">
                       {insights.filter(i => !i.read).length} new
                     </span>
                   )}
@@ -671,7 +669,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-500">AI will show insights when it discovers connections between files</p>
+                  <p className="text-xs text-zinc-400">AI will show insights when it discovers connections between files</p>
                 )}
                 {fileCount > 3 && (
                   <>

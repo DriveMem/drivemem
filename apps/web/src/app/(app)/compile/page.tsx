@@ -302,7 +302,7 @@ function CompileContent() {
         <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-red-400">{error}</p>
+            <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
             <p className="text-xs text-muted-foreground mt-1">Check your AI service configuration or try again later.</p>
           </div>
         </div>
@@ -331,9 +331,9 @@ function CompileContent() {
                 <span>{result.metadata.compilationTimeMs}ms</span>
                 <span>·</span>
                 <span className={
-                  result.metadata.coverage === "full" ? "text-green-400" :
-                  result.metadata.coverage === "partial" ? "text-yellow-400" :
-                  "text-red-400"
+                  result.metadata.coverage === "full" ? "text-green-600 dark:text-green-400" :
+                  result.metadata.coverage === "partial" ? "text-yellow-600 dark:text-yellow-400" :
+                  "text-red-600 dark:text-red-400"
                 }>
                   Coverage: {result.metadata.coverage}
                 </span>

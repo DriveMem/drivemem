@@ -186,8 +186,8 @@ function WebhookDeliveryLog() {
 
   if (!isLoggedIn) {
     return (
-      <div className="mt-8 rounded-xl border border-white/[0.06] bg-[#1A1D24] p-6 text-center">
-        <p className="text-sm text-gray-400">Sign in to view webhook logs</p>
+      <div className="mt-8 rounded-xl border border-[#E5E4E1] bg-white p-6 text-center">
+        <p className="text-sm text-[#6B6966]">Sign in to view webhook logs</p>
       </div>
     )
   }
@@ -195,11 +195,11 @@ function WebhookDeliveryLog() {
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-100">📋 Webhook Event Log</h3>
+        <h3 className="font-semibold text-[#1C1B18]">📋 Webhook Event Log</h3>
         <button
           onClick={fetchDeliveries}
           disabled={loading}
-          className="flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-3 py-1.5 text-xs font-medium text-gray-400 hover:bg-[#0F1318] transition disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-lg border border-[#E5E4E1] px-3 py-1.5 text-xs font-medium text-[#6B6966] hover:bg-[#F8F7F5] transition disabled:opacity-50"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           Refresh
@@ -214,37 +214,37 @@ function WebhookDeliveryLog() {
       )}
 
       {!loading && !error && deliveries.length === 0 && (
-        <div className="rounded-xl border border-white/[0.06] bg-[#1A1D24] p-8 text-center">
-          <p className="text-sm text-gray-400">
+        <div className="rounded-xl border border-[#E5E4E1] bg-white p-8 text-center">
+          <p className="text-sm text-[#6B6966]">
             No webhook deliveries yet. Events will appear here after you register a webhook.
           </p>
         </div>
       )}
 
       {deliveries.length > 0 && (
-        <div className="overflow-x-auto rounded-xl border border-white/[0.06]">
+        <div className="overflow-x-auto rounded-xl border border-[#E5E4E1]">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/[0.06] bg-[#1A1D24]">
-                <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Event</th>
-                <th className="px-4 py-2.5 text-left font-semibold text-gray-100">URL</th>
-                <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Status</th>
-                <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Duration</th>
-                <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Time</th>
-                <th className="px-4 py-2.5 text-left font-semibold text-gray-100"></th>
+              <tr className="border-b border-[#E5E4E1] bg-white">
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Event</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">URL</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Status</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Duration</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Time</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E5E4E1]">
               {deliveries.map((d) => (
                 <>
-                  <tr key={d.id} className="hover:bg-white/[0.03] transition">
+                  <tr key={d.id} className="hover:bg-white/60 transition">
                     <td className="px-4 py-2.5">
                       <span className={`inline-block rounded-full border px-2 py-0.5 text-xs font-medium ${EVENT_BADGE_COLORS[d.event] || "bg-gray-100 text-gray-700 border-gray-200"}`}>
                         {d.event}
                       </span>
                     </td>
                     <td className="px-4 py-2.5">
-                      <span className="font-mono text-xs text-gray-400" title={d.url}>
+                      <span className="font-mono text-xs text-[#6B6966]" title={d.url}>
                         {truncateUrl(d.url)}
                       </span>
                     </td>
@@ -258,20 +258,20 @@ function WebhookDeliveryLog() {
                           {d.statusCode}
                         </span>
                       ) : (
-                        <span className="text-xs text-gray-400">—</span>
+                        <span className="text-xs text-[#6B6966]">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-gray-400 font-mono">
+                    <td className="px-4 py-2.5 text-xs text-[#6B6966] font-mono">
                       {d.duration != null ? `${d.duration}ms` : "—"}
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-gray-400">
+                    <td className="px-4 py-2.5 text-xs text-[#6B6966]">
                       {relativeTime(d.createdAt)}
                     </td>
                     <td className="px-4 py-2.5">
                       {d.error && (
                         <button
                           onClick={() => setExpandedId(expandedId === d.id ? null : d.id)}
-                          className="text-gray-400 hover:text-gray-100 transition"
+                          className="text-[#6B6966] hover:text-[#1C1B18] transition"
                         >
                           {expandedId === d.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </button>
@@ -293,9 +293,9 @@ function WebhookDeliveryLog() {
       )}
 
       {loading && deliveries.length === 0 && (
-        <div className="rounded-xl border border-white/[0.06] bg-[#1A1D24] p-8 text-center">
-          <RefreshCw className="mx-auto h-5 w-5 animate-spin text-gray-400" />
-          <p className="mt-2 text-sm text-gray-400">Loading...</p>
+        <div className="rounded-xl border border-[#E5E4E1] bg-white p-8 text-center">
+          <RefreshCw className="mx-auto h-5 w-5 animate-spin text-[#6B6966]" />
+          <p className="mt-2 text-sm text-[#6B6966]">Loading...</p>
         </div>
       )}
     </div>
@@ -312,12 +312,12 @@ export default function DevelopersPage() {
     <div className="flex-1 overflow-auto">
 
       {/* Hero */}
-      <section className="relative z-10 flex min-h-[70vh] flex-col items-center justify-center bg-gradient-to-b from-[#111318] to-[#111318] px-6 text-center">
+      <section className="relative z-10 flex min-h-[70vh] flex-col items-center justify-center bg-gradient-to-b from-[#F4F5FD] to-white px-6 text-center">
         <FadeIn>
           <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
             Give your agents memory
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-gray-400">
+          <p className="mx-auto mt-6 max-w-xl text-lg text-[#6B6966]">
             DriveMem is the knowledge infrastructure for agents — connect via API and MCP
           </p>
           <div className="mt-10">
@@ -332,16 +332,16 @@ export default function DevelopersPage() {
       <section id="features" className="relative z-10 mx-auto max-w-5xl px-6 py-24">
         <FadeIn>
           <h2 className="text-center text-3xl font-bold sm:text-4xl">Core capabilities</h2>
-          <p className="mt-4 text-center text-gray-400">A complete API to give your app AI knowledge</p>
+          <p className="mt-4 text-center text-[#6B6966]">A complete API to give your app AI knowledge</p>
         </FadeIn>
         <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
           {CAPABILITIES.map((c, i) => (
             <FadeIn key={i}>
-              <div className="flex gap-4 rounded-xl border border-white/[0.06] p-6 hover:shadow-sm transition">
+              <div className="flex gap-4 rounded-xl border border-[#E5E4E1] p-6 hover:shadow-sm transition">
                 <span className="text-3xl">{c.emoji}</span>
                 <div>
-                  <h3 className="font-semibold text-gray-100">{c.title}</h3>
-                  <p className="mt-1 text-sm text-gray-400">{c.desc}</p>
+                  <h3 className="font-semibold text-[#1C1B18]">{c.title}</h3>
+                  <p className="mt-1 text-sm text-[#6B6966]">{c.desc}</p>
                 </div>
               </div>
             </FadeIn>
@@ -350,43 +350,43 @@ export default function DevelopersPage() {
       </section>
 
       {/* Quick Start */}
-      <section id="quickstart" className="relative z-10 bg-[#0F1318] px-6 py-24">
+      <section id="quickstart" className="relative z-10 bg-[#F8F7F5] px-6 py-24">
         <div className="mx-auto max-w-3xl">
           <FadeIn>
             <h2 className="text-center text-3xl font-bold sm:text-4xl">Quick start</h2>
-            <p className="mt-4 text-center text-gray-400">Three steps to connect</p>
+            <p className="mt-4 text-center text-[#6B6966]">Three steps to connect</p>
 
             {/* Step guide */}
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="rounded-xl border border-white/[0.06] bg-[#1A1D24] p-4 text-center">
+              <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">1</span>
                 <p className="mt-2 text-sm font-medium">Get API Key</p>
-                <p className="mt-1 text-xs text-gray-400">Create your key in <a href="/settings?tab=developer" className="text-brand-500 hover:underline">Settings</a></p>
+                <p className="mt-1 text-xs text-[#6B6966]">Create your key in <a href="/settings?tab=developer" className="text-brand-500 hover:underline">Settings</a></p>
               </div>
-              <div className="rounded-xl border border-white/[0.06] bg-[#1A1D24] p-4 text-center">
+              <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">2</span>
                 <p className="mt-2 text-sm font-medium">Copy config</p>
-                <p className="mt-1 text-xs text-gray-400">Choose REST API or MCP</p>
+                <p className="mt-1 text-xs text-[#6B6966]">Choose REST API or MCP</p>
               </div>
-              <div className="rounded-xl border border-white/[0.06] bg-[#1A1D24] p-4 text-center">
+              <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 text-center">
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">3</span>
                 <p className="mt-2 text-sm font-medium">Paste and go</p>
-                <p className="mt-1 text-xs text-gray-400">Paste into Claude / Cursor / your app</p>
+                <p className="mt-1 text-xs text-[#6B6966]">Paste into Claude / Cursor / your app</p>
               </div>
             </div>
           </FadeIn>
 
           <FadeIn className="mt-12">
             {/* Tabs */}
-            <div className="flex gap-6 border-b border-white/[0.06]">
+            <div className="flex gap-6 border-b border-[#E5E4E1]">
               {TABS.map((tab, i) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(i)}
                   className={`pb-3 text-sm font-medium transition ${
                     activeTab === i
-                      ? "border-b-2 border-brand-500 text-gray-100"
-                      : "text-gray-400 hover:text-gray-100"
+                      ? "border-b-2 border-brand-500 text-[#1C1B18]"
+                      : "text-[#6B6966] hover:text-[#1C1B18]"
                   }`}
                 >
                   {tab}
@@ -447,15 +447,15 @@ plugins:
           Authorization: "Bearer YOUR_API_KEY"`,
                   },
                 ].map((client) => (
-                  <div key={client.name} className="rounded-xl border border-white/[0.06] overflow-hidden">
-                    <div className="flex items-center justify-between bg-[#1A1D24] px-4 py-2 border-b border-white/[0.06]">
+                  <div key={client.name} className="rounded-xl border border-[#E5E4E1] overflow-hidden">
+                    <div className="flex items-center justify-between bg-white px-4 py-2 border-b border-[#E5E4E1]">
                       <div>
-                        <span className="text-sm font-medium text-gray-100">{client.name}</span>
-                        <span className="ml-2 text-xs text-gray-400">{client.path}</span>
+                        <span className="text-sm font-medium text-[#1C1B18]">{client.name}</span>
+                        <span className="ml-2 text-xs text-[#6B6966]">{client.path}</span>
                       </div>
                       <button
                         onClick={() => { navigator.clipboard.writeText(client.config); setCopiedClient(client.name) ; setTimeout(() => setCopiedClient(null), 2000) }}
-                        className="rounded-md border border-white/[0.06] px-2.5 py-1 text-xs text-gray-400 hover:bg-[#0F1318] transition"
+                        className="rounded-md border border-[#E5E4E1] px-2.5 py-1 text-xs text-[#6B6966] hover:bg-[#F8F7F5] transition"
                       >
                         {copiedClient === client.name ? "✓ Copied" : "Copy"}
                       </button>
@@ -466,21 +466,21 @@ plugins:
                   </div>
                 ))}
                 {/* URL options */}
-                <div className="rounded-xl border border-white/[0.06] bg-[#1A1D24] p-4 space-y-3">
-                  <p className="text-sm font-medium text-gray-100">🌐 MCP Server</p>
+                <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 space-y-3">
+                  <p className="text-sm font-medium text-[#1C1B18]">🌐 MCP Server</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="rounded-lg border border-brand-500/30 bg-brand-500/5 p-3">
                       <p className="text-xs font-medium text-brand-500 mb-1">☁️ Public URL (recommended)</p>
-                      <code className="text-xs font-mono text-gray-100 break-all">https://api.drivemem.cloud/mcp</code>
-                      <p className="text-[10px] text-gray-400 mt-1">Ready to use, no self-hosting</p>
+                      <code className="text-xs font-mono text-[#1C1B18] break-all">https://api.drivemem.cloud/mcp</code>
+                      <p className="text-[10px] text-[#6B6966] mt-1">Ready to use, no self-hosting</p>
                     </div>
-                    <div className="rounded-lg border border-white/[0.06] bg-[#0F1318] p-3">
-                      <p className="text-xs font-medium text-gray-400 mb-1">🏠 Local / Self-hosted</p>
-                      <code className="text-xs font-mono text-gray-100 break-all">http://localhost:3000/mcp</code>
-                      <p className="text-[10px] text-gray-400 mt-1">For local dev or private deployment</p>
+                    <div className="rounded-lg border border-[#E5E4E1] bg-[#F8F7F5] p-3">
+                      <p className="text-xs font-medium text-[#6B6966] mb-1">🏠 Local / Self-hosted</p>
+                      <code className="text-xs font-mono text-[#1C1B18] break-all">http://localhost:3000/mcp</code>
+                      <p className="text-[10px] text-[#6B6966] mt-1">For local dev or private deployment</p>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-[#6B6966]">
                     💡 Replace <code className="font-mono">YOUR_API_KEY</code> with your API key.
                     Create one in <a href="/settings?tab=developer" className="text-brand-500 hover:underline">Settings → Developer</a>.
                   </p>
@@ -535,7 +535,7 @@ plugins:
       <section className="relative z-10 mx-auto max-w-3xl px-6 py-24 text-center">
         <FadeIn>
           <h2 className="text-2xl font-bold sm:text-3xl">Get API Key</h2>
-          <p className="mt-4 text-gray-400">
+          <p className="mt-4 text-[#6B6966]">
             Create your API key in Settings to start integrating.
           </p>
           <div className="mt-8">
@@ -547,7 +547,7 @@ plugins:
       </section>
 
       {/* API Reference */}
-      <section id="api" className="relative z-10 border-t border-white/[0.06] bg-[#0F1318] px-6 py-24">
+      <section id="api" className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5] px-6 py-24">
         <div className="mx-auto max-w-3xl">
           <FadeIn>
             <h2 className="text-2xl font-bold sm:text-3xl">API Reference</h2>
@@ -555,17 +555,17 @@ plugins:
             <div className="mt-8 space-y-6">
               {/* REST API Endpoints */}
               <div>
-                <h3 className="font-semibold text-gray-100">REST API Endpoints</h3>
-                <p className="mt-2 text-sm text-gray-400">
-                  All v1 endpoints are prefixed with <code className="rounded bg-white/[0.08] px-1.5 py-0.5 text-xs font-mono border border-white/[0.06]">/api/v1</code>. Auth via API Key. Webhook endpoints use <code className="rounded bg-white/[0.08] px-1.5 py-0.5 text-xs font-mono border border-white/[0.06]">/api/webhooks</code>.
+                <h3 className="font-semibold text-[#1C1B18]">REST API Endpoints</h3>
+                <p className="mt-2 text-sm text-[#6B6966]">
+                  All v1 endpoints are prefixed with <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">/api/v1</code>. Auth via API Key. Webhook endpoints use <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">/api/webhooks</code>.
                 </p>
-                <div className="mt-3 overflow-x-auto rounded-lg border border-white/[0.06]">
+                <div className="mt-3 overflow-x-auto rounded-lg border border-[#E5E4E1]">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-white/[0.06] bg-[#1A1D24]">
-                        <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Method</th>
-                        <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Path</th>
-                        <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Description</th>
+                      <tr className="border-b border-[#E5E4E1] bg-white">
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Method</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Path</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Description</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E5E4E1]">
@@ -589,7 +589,7 @@ plugins:
                         ["PATCH", "/api/webhooks/:id", "Update webhook"],
                         ["DELETE", "/api/webhooks/:id", "Delete webhook"],
                       ].map(([method, path, desc], i) => (
-                        <tr key={i} className="hover:bg-white/[0.03] transition">
+                        <tr key={i} className="hover:bg-white/60 transition">
                           <td className="px-4 py-2 whitespace-nowrap">
                             <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-mono font-semibold ${
                               method === "GET" ? "bg-emerald-50 text-emerald-700" :
@@ -600,9 +600,9 @@ plugins:
                             }`}>{method}</span>
                           </td>
                           <td className="px-4 py-2">
-                            <code className="text-xs font-mono text-gray-100">{path}</code>
+                            <code className="text-xs font-mono text-[#1C1B18]">{path}</code>
                           </td>
-                          <td className="px-4 py-2 text-gray-400">{desc}</td>
+                          <td className="px-4 py-2 text-[#6B6966]">{desc}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -611,25 +611,25 @@ plugins:
               </div>
 
               <div id="mcp">
-                <h3 className="font-semibold text-gray-100">MCP Tools</h3>
-                <p className="mt-2 text-sm text-gray-400">
+                <h3 className="font-semibold text-[#1C1B18]">MCP Tools</h3>
+                <p className="mt-2 text-sm text-[#6B6966]">
                   DriveMem MCP Server provides {MCP_TOOLS.length} tools:
                 </p>
-                <div className="mt-3 overflow-x-auto rounded-lg border border-white/[0.06]">
+                <div className="mt-3 overflow-x-auto rounded-lg border border-[#E5E4E1]">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-white/[0.06] bg-[#1A1D24]">
-                        <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Tool</th>
-                        <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Description</th>
+                      <tr className="border-b border-[#E5E4E1] bg-white">
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Tool</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Description</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E5E4E1]">
                       {MCP_TOOLS.map((t) => (
-                        <tr key={t.name} className="hover:bg-white/[0.03] transition">
+                        <tr key={t.name} className="hover:bg-white/60 transition">
                           <td className="px-4 py-2 whitespace-nowrap">
-                            <code className="rounded bg-white/[0.08] px-1.5 py-0.5 text-xs font-mono text-brand-500 border border-white/[0.06]">{t.name}</code>
+                            <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono text-brand-500 border border-[#E5E4E1]">{t.name}</code>
                           </td>
-                          <td className="px-4 py-2 text-gray-400">{t.desc}</td>
+                          <td className="px-4 py-2 text-[#6B6966]">{t.desc}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -639,17 +639,17 @@ plugins:
 
               {/* Error Codes */}
               <div>
-                <h3 className="font-semibold text-gray-100">Error Codes</h3>
-                <p className="mt-2 text-sm text-gray-400">
-                  All API and MCP errors return a JSON body with <code className="rounded bg-white/[0.08] px-1.5 py-0.5 text-xs font-mono border border-white/[0.06]">error</code> and <code className="rounded bg-white/[0.08] px-1.5 py-0.5 text-xs font-mono border border-white/[0.06]">message</code> fields.
+                <h3 className="font-semibold text-[#1C1B18]">Error Codes</h3>
+                <p className="mt-2 text-sm text-[#6B6966]">
+                  All API and MCP errors return a JSON body with <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">error</code> and <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">message</code> fields.
                 </p>
-                <div className="mt-3 overflow-x-auto rounded-lg border border-white/[0.06]">
+                <div className="mt-3 overflow-x-auto rounded-lg border border-[#E5E4E1]">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-white/[0.06] bg-[#1A1D24]">
-                        <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Status</th>
-                        <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Error</th>
-                        <th className="px-4 py-2.5 text-left font-semibold text-gray-100">Description</th>
+                      <tr className="border-b border-[#E5E4E1] bg-white">
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Status</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Error</th>
+                        <th className="px-4 py-2.5 text-left font-semibold text-[#1C1B18]">Description</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E5E4E1]">
@@ -660,7 +660,7 @@ plugins:
                         ["429", "Rate Limited", "Too many requests — back off and retry after the Retry-After header"],
                         ["500", "Internal Server Error", "Unexpected server error — please retry or contact support"],
                       ].map(([code, error, desc]) => (
-                        <tr key={code} className="hover:bg-white/[0.03] transition">
+                        <tr key={code} className="hover:bg-white/60 transition">
                           <td className="px-4 py-2 whitespace-nowrap">
                             <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-mono font-semibold ${
                               code === "401" || code === "403" ? "bg-amber-50 text-amber-700" :
@@ -669,8 +669,8 @@ plugins:
                               "bg-red-50 text-red-700"
                             }`}>{code}</span>
                           </td>
-                          <td className="px-4 py-2 font-medium text-gray-100">{error}</td>
-                          <td className="px-4 py-2 text-gray-400">{desc}</td>
+                          <td className="px-4 py-2 font-medium text-[#1C1B18]">{error}</td>
+                          <td className="px-4 py-2 text-[#6B6966]">{desc}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -679,9 +679,9 @@ plugins:
               </div>
 
               <div id="cli">
-                <h3 className="font-semibold text-gray-100">CLI Tools</h3>
-                <p className="mt-2 text-sm text-gray-400">
-                  The <code className="rounded bg-white/[0.08] px-1.5 py-0.5 text-xs font-mono border border-white/[0.06]">drivemem</code> CLI lets you interact with your knowledge base from the terminal.
+                <h3 className="font-semibold text-[#1C1B18]">CLI Tools</h3>
+                <p className="mt-2 text-sm text-[#6B6966]">
+                  The <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">drivemem</code> CLI lets you interact with your knowledge base from the terminal.
                 </p>
                 <pre className="mt-3 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
                   <code>{`# Install globally from npm

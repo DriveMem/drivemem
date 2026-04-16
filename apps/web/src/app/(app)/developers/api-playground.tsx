@@ -247,14 +247,14 @@ const CATEGORY_LABELS: Record<string, string> = {
 function ConfirmDialog({ endpoint, onConfirm, onCancel }: { endpoint: EndpointDef; onConfirm: () => void; onCancel: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="mx-4 w-full max-w-md rounded-xl border border-white/[0.06] bg-white p-6 shadow-xl">
+      <div className="mx-4 w-full max-w-md rounded-xl border border-[#E5E4E1] bg-white p-6 shadow-xl">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
             <AlertTriangle className="h-5 w-5 text-amber-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-100">确认写入操作</h3>
-            <p className="text-sm text-gray-400">
+            <h3 className="font-semibold text-[#1C1B18]">确认写入操作</h3>
+            <p className="text-sm text-[#6B6966]">
               <span className={`inline-block rounded border px-1.5 py-0.5 text-xs font-mono font-semibold ${METHOD_COLORS[endpoint.method]}`}>
                 {endpoint.method}
               </span>{" "}
@@ -262,13 +262,13 @@ function ConfirmDialog({ endpoint, onConfirm, onCancel }: { endpoint: EndpointDe
             </p>
           </div>
         </div>
-        <p className="mt-4 text-sm text-gray-400">
+        <p className="mt-4 text-sm text-[#6B6966]">
           此操作将修改你的知识库数据，确定要继续吗？
         </p>
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="rounded-lg border border-white/[0.06] px-4 py-2 text-sm font-medium text-gray-400 hover:bg-white/[0.05] transition"
+            className="rounded-lg border border-[#E5E4E1] px-4 py-2 text-sm font-medium text-[#6B6966] hover:bg-[#F8F7F5] transition"
           >
             取消
           </button>
@@ -345,7 +345,7 @@ function ResponseViewer({
           }`}>
             {response.status === 0 ? "ERR" : response.status}
           </span>
-          <span className="flex items-center gap-1 text-xs text-gray-400">
+          <span className="flex items-center gap-1 text-xs text-[#6B6966]">
             <Clock className="h-3 w-3" />
             {response.duration}ms
           </span>
@@ -354,7 +354,7 @@ function ResponseViewer({
           {curlCommand && (
             <button
               onClick={copyCurl}
-              className="flex items-center gap-1.5 rounded-md border border-white/[0.06] px-2.5 py-1 text-xs font-medium text-gray-400 hover:bg-white/[0.05] transition"
+              className="flex items-center gap-1.5 rounded-md border border-[#E5E4E1] px-2.5 py-1 text-xs font-medium text-[#6B6966] hover:bg-[#F8F7F5] transition"
             >
               {copiedCurl ? <Check className="h-3 w-3 text-emerald-600" /> : <Terminal className="h-3 w-3" />}
               {copiedCurl ? "已复制" : "Copy as curl"}
@@ -362,7 +362,7 @@ function ResponseViewer({
           )}
           <button
             onClick={copyJson}
-            className="flex items-center gap-1.5 rounded-md border border-white/[0.06] px-2.5 py-1 text-xs font-medium text-gray-400 hover:bg-white/[0.05] transition"
+            className="flex items-center gap-1.5 rounded-md border border-[#E5E4E1] px-2.5 py-1 text-xs font-medium text-[#6B6966] hover:bg-[#F8F7F5] transition"
           >
             {copied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
             {copied ? "已复制" : "Copy JSON"}
@@ -524,7 +524,7 @@ export default function ApiPlayground() {
 
       {!isLoggedIn && (
         <div className="mb-4">
-          <label className="flex items-center gap-1 text-xs font-medium text-gray-400 mb-1">
+          <label className="flex items-center gap-1 text-xs font-medium text-[#6B6966] mb-1">
             API Key <TypeBadge type="string" />
           </label>
           <input
@@ -532,20 +532,20 @@ export default function ApiPlayground() {
             value={apiKey}
             onChange={e => setApiKey(e.target.value)}
             placeholder="ak_..."
-            className="w-full rounded-lg border border-white/[0.06] bg-white/[0.05] px-3 py-2 text-sm font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
+            className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
           />
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4">
         {/* Endpoint list grouped by category */}
-        <div className="space-y-4 lg:border-r lg:border-white/[0.06] lg:pr-4 max-h-[600px] overflow-y-auto">
+        <div className="space-y-4 lg:border-r lg:border-[#E5E4E1] lg:pr-4 max-h-[600px] overflow-y-auto">
           {categories.map(cat => {
             const eps = ENDPOINTS.filter(e => e.category === cat)
             if (!eps.length) return null
             return (
               <div key={cat}>
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 px-1">
+                <p className="text-[10px] font-semibold text-[#6B6966] uppercase tracking-wider mb-1.5 px-1">
                   {CATEGORY_LABELS[cat]}
                 </p>
                 <div className="space-y-0.5">
@@ -556,7 +556,7 @@ export default function ApiPlayground() {
                       className={`w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-sm transition ${
                         selectedId === ep.id
                           ? "bg-brand-500/10 text-brand-500 font-medium"
-                          : "text-gray-400 hover:bg-white/[0.05]"
+                          : "text-[#6B6966] hover:bg-[#F8F7F5]"
                       }`}
                     >
                       <span className={`shrink-0 rounded border px-1 py-0 text-[10px] font-mono font-bold leading-relaxed ${METHOD_COLORS[ep.method]}`}>
@@ -581,14 +581,14 @@ export default function ApiPlayground() {
               <span className={`rounded border px-2 py-0.5 text-xs font-mono font-bold ${METHOD_COLORS[endpoint.method]}`}>
                 {endpoint.method}
               </span>
-              <code className="text-sm font-mono text-gray-100">{endpoint.path}</code>
+              <code className="text-sm font-mono text-[#1C1B18]">{endpoint.path}</code>
               {endpoint.isWrite && (
                 <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
                   写入操作
                 </span>
               )}
             </div>
-            <p className="mt-1 text-sm text-gray-400">{endpoint.description}</p>
+            <p className="mt-1 text-sm text-[#6B6966]">{endpoint.description}</p>
           </div>
 
           {/* Params */}
@@ -596,7 +596,7 @@ export default function ApiPlayground() {
             <div className="space-y-3">
               {endpoint.params.map(p => (
                 <div key={p.name}>
-                  <label className="flex items-center gap-0.5 text-xs font-medium text-gray-400 mb-1">
+                  <label className="flex items-center gap-0.5 text-xs font-medium text-[#6B6966] mb-1">
                     {p.label}
                     {p.required && <span className="text-red-500 ml-0.5">*</span>}
                     <TypeBadge type={p.dataType} />
@@ -607,13 +607,13 @@ export default function ApiPlayground() {
                       onChange={e => setParam(p.name, e.target.value)}
                       placeholder={p.placeholder}
                       rows={3}
-                      className="w-full rounded-lg border border-white/[0.06] bg-white/[0.05] px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
+                      className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
                     />
                   ) : p.type === "select" ? (
                     <select
                       value={paramValues[p.name] || p.defaultValue || ""}
                       onChange={e => setParam(p.name, e.target.value)}
-                      className="w-full rounded-lg border border-white/[0.06] bg-white/[0.05] px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
+                      className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
                     >
                       <option value="">— 选择 —</option>
                       {p.options?.map(o => <option key={o} value={o}>{o}</option>)}
@@ -624,14 +624,14 @@ export default function ApiPlayground() {
                       value={paramValues[p.name] || ""}
                       onChange={e => setParam(p.name, e.target.value)}
                       placeholder={p.placeholder}
-                      className="w-full rounded-lg border border-white/[0.06] bg-white/[0.05] px-3 py-2 text-sm font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
+                      className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
                     />
                   )}
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-400 italic mb-2">此端点无需参数</p>
+            <p className="text-sm text-[#6B6966] italic mb-2">此端点无需参数</p>
           )}
 
           {/* Send button */}

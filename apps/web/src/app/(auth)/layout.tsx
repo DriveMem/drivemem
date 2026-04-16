@@ -85,7 +85,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* Right panel - clean form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center bg-background px-4">
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-white dark:bg-zinc-950 px-4">
         <div className="w-full max-w-md">
           {children}
         </div>

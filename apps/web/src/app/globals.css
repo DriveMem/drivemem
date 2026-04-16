@@ -6,44 +6,49 @@
 
 @layer base {
   :root {
-    --background: 222 14% 7%;        /* #111318 */
-    --foreground: 240 6% 94%;        /* #F0F0F2 */
-    --card: 222 12% 12%;             /* #1A1D24 */
-    --card-foreground: 240 6% 94%;
-    --popover: 222 12% 12%;
-    --popover-foreground: 240 6% 94%;
-    --primary: 235 55% 59%;          /* #5E6AD2 */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 222 10% 16%;        /* #22252E */
-    --secondary-foreground: 240 6% 94%;
-    --muted: 222 10% 16%;
-    --muted-foreground: 218 11% 55%; /* #6B7280 */
-    --accent: 222 10% 16%;
-    --accent-foreground: 240 6% 94%;
-    --destructive: 0 62.8% 50%;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 222 10% 16%;
-    --input: 222 10% 16%;
-    --ring: 235 55% 59%;
-    --radius: 0.75rem;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
 
-    /* === DriveMem Deep Space Design System === */
-    --bg-primary: #111318;
-    --bg-secondary: #1A1D24;
-    --bg-tertiary: #22252E;
-    --bg-elevated: #22252E;
-    --bg-sunken: #0A0E1A;
-    --text-primary: #F0F0F2;
-    --text-secondary: #9CA3AF;
-    --text-tertiary: #6B7280;
-    --text-inverse: #111318;
-    --ad-accent: #5E6AD2;
-    --ad-accent-hover: #4F5BC4;
-    --ad-accent-light: #5E6AD2/10;
-    --ad-accent-subtle: #5E6AD2/5;
-    --border-default: rgba(255,255,255,0.06);
-    --border-subtle: rgba(255,255,255,0.04);
-    --border-strong: rgba(255,255,255,0.12);
+    /* === DriveMem Design System === */
+    /* 背景 */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F8F7F5;
+    --bg-tertiary: #F1F0EE;
+    --bg-elevated: #FFFFFF;
+    --bg-sunken: #EFEEED;
+    /* 文字 */
+    --text-primary: #1C1B18;
+    --text-secondary: #6B6966;
+    --text-tertiary: #9B9893;
+    --text-inverse: #FFFFFF;
+    /* 品牌强调色 */
+    --ad-accent: #4F5BD5;
+    --ad-accent-hover: #3D49C4;
+    --ad-accent-light: #ECEEFB;
+    --ad-accent-subtle: #F4F5FD;
+    /* 边框 */
+    --border-default: #E5E4E1;
+    --border-subtle: #EEEDEB;
+    --border-strong: #D0CFCC;
+    /* 语义色 */
     --success: #30A46C;
     --warning: #F5A623;
     --error: #E5484D;
@@ -51,41 +56,45 @@
   }
 
   .dark {
-    --background: 222 14% 6%;
-    --foreground: 240 6% 94%;
-    --card: 222 12% 11%;
-    --card-foreground: 240 6% 94%;
-    --popover: 222 12% 11%;
-    --popover-foreground: 240 6% 94%;
-    --primary: 235 55% 59%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 222 10% 15%;
-    --secondary-foreground: 240 6% 94%;
-    --muted: 222 10% 15%;
-    --muted-foreground: 218 11% 55%;
-    --accent: 222 10% 15%;
-    --accent-foreground: 240 6% 94%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 222 10% 15%;
-    --input: 222 10% 15%;
-    --ring: 235 55% 59%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
 
-    --bg-primary: #0F1117;
-    --bg-secondary: #181B22;
-    --bg-tertiary: #20232B;
-    --bg-elevated: #20232B;
-    --bg-sunken: #080B14;
-    --text-primary: #F0F0F2;
-    --text-secondary: #9CA3AF;
-    --text-tertiary: #6B7280;
-    --ad-accent: #5E6AD2;
-    --ad-accent-hover: #4F5BC4;
-    --ad-accent-light: #5E6AD2/10;
-    --ad-accent-subtle: #5E6AD2/5;
-    --border-default: rgba(255,255,255,0.05);
-    --border-subtle: rgba(255,255,255,0.03);
-    --border-strong: rgba(255,255,255,0.10);
+    /* DriveMem Design System — Dark Mode */
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #252525;
+    --bg-tertiary: #303030;
+    --bg-elevated: #2a2a2a;
+    --bg-sunken: #1f1f1f;
+
+    --text-primary: #e8e8e8;
+    --text-secondary: #999999;
+    --text-tertiary: #666666;
+
+    --ad-accent: #7B85E8;
+    --ad-accent-hover: #6E78E0;
+    --ad-accent-light: #2a2d4a;
+    --ad-accent-subtle: #22243a;
+
+    --border-default: #333333;
+    --border-subtle: #2a2a2a;
+    --border-strong: #444444;
   }
 }
 
@@ -113,8 +122,8 @@
   @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
 }
 .card-hover:hover {
-  box-shadow: 0 0 20px rgba(94, 106, 210, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(79, 91, 213, 0.08);
+  border-color: rgba(79, 91, 213, 0.2);
 }
 
 /* Fade in animation */
@@ -144,14 +153,14 @@
   transition: all 0.2s ease;
 }
 .border-gradient-hover:hover {
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 20px rgba(94, 106, 210, 0.06);
+  border-color: rgba(79, 91, 213, 0.3);
+  box-shadow: 0 4px 16px rgba(79, 91, 213, 0.08);
   transform: translateY(-2px);
 }
 
 /* Subtle glow */
 .brand-glow {
-  box-shadow: 0 0 60px rgba(94, 106, 210, 0.08), 0 8px 32px rgba(94, 106, 210, 0.05);
+  box-shadow: 0 0 60px rgba(79, 91, 213, 0.12), 0 8px 32px rgba(79, 91, 213, 0.08);
 }
 
 /* Step connector */
@@ -161,12 +170,12 @@
   top: 2rem;
   right: -1.5rem;
   width: 3rem;
-  border-top: 2px dashed rgba(94, 106, 210, 0.15);
+  border-top: 2px dashed rgba(79, 91, 213, 0.25);
 }
 
 /* Citation superscript */
 .citation-ref {
-  color: #5E6AD2;
+  color: var(--ad-accent, #4F5BD5);
   font-size: 0.7em;
   font-weight: 600;
   cursor: pointer;

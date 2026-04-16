@@ -84,7 +84,7 @@ function ApiKeysCard() {
           <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
             <p className="text-sm font-medium text-amber-600 mb-2">⚠️ Please save your API Key — shown only once</p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 rounded bg-white/[0.05] px-3 py-2 text-sm font-mono select-all">{newKey}</code>
+              <code className="flex-1 rounded bg-zinc-50 dark:bg-zinc-800 px-3 py-2 text-sm font-mono select-all">{newKey}</code>
               <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newKey); toast.success("Copied") }}>
                 Copy
               </Button>
@@ -93,15 +93,15 @@ function ApiKeysCard() {
         )}
 
         {keys.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-4">No API Keys yet</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4">No API Keys yet</p>
         ) : (
           <div className="space-y-2">
             {keys.map(k => (
               <div key={k.id} className="flex items-center justify-between rounded-lg border p-3">
                 <div>
                   <p className="text-sm font-medium">{k.name}</p>
-                  <p className="text-xs text-gray-400 font-mono">{k.keyPrefix}••••••••</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">{k.keyPrefix}••••••••</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     Created on {new Date(k.createdAt).toLocaleDateString("zh-CN")}
                     {k.lastUsedAt && ` · Last used ${new Date(k.lastUsedAt).toLocaleDateString("zh-CN")}`}
                   </p>
@@ -119,7 +119,7 @@ function ApiKeysCard() {
           </div>
         )}
 
-        <p className="mt-4 text-xs text-gray-400">
+        <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400">
           📖 API Documentation: Upload files, search knowledge, AI Q&A. See <a href="/developers" className="text-brand-500 hover:underline">Developer Docs</a>
         </p>
       </CardContent>
@@ -131,7 +131,7 @@ function ApiKeysCard() {
         <DialogHeader>
           <DialogTitle>Agent Configuration</DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-gray-400 mb-3">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">
           Copy this config into your AI tool. Replace <code className="font-mono text-xs">YOUR_API_KEY</code> with your full API key.
         </p>
         <AgentConfigTabs apiKey="YOUR_API_KEY" />
@@ -144,14 +144,14 @@ function ApiKeysCard() {
         <DialogHeader>
           <DialogTitle>🎉 API Key Created — Configure Your Agent</DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-gray-400 mb-1">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
           Your API key has been auto-filled in the config below. Copy and paste into your AI tool.
         </p>
         {newKey && (
           <div className="mb-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
             <p className="text-xs font-medium text-amber-600 mb-1">⚠️ Save your API Key — shown only once</p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 rounded bg-white/[0.05] px-2 py-1.5 text-xs font-mono select-all truncate">{newKey}</code>
+              <code className="flex-1 rounded bg-zinc-50 dark:bg-zinc-800 px-2 py-1.5 text-xs font-mono select-all truncate">{newKey}</code>
               <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newKey); toast.success("Copied") }}>
                 Copy
               </Button>
@@ -220,12 +220,12 @@ function AgentConfigTabs({ apiKey }: { apiKey: string }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-1 rounded-lg bg-white/[0.05] p-1">
+      <div className="flex gap-1 rounded-lg bg-zinc-50 dark:bg-zinc-800 p-1">
         {(Object.keys(configs) as Array<keyof typeof configs>).map(key => (
           <button
             key={key}
             onClick={() => { setActiveTab(key as any); setCopied(false) }}
-            className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition ${activeTab === key ? "bg-background shadow-sm" : "text-gray-400 hover:text-foreground"}`}
+            className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition ${activeTab === key ? "bg-background shadow-sm" : "text-zinc-500 dark:text-zinc-400 hover:text-foreground"}`}
           >
             {configs[key].label}
           </button>
@@ -356,7 +356,7 @@ function AgentProfilesSection() {
             <Input placeholder="Profile name (e.g. My Cursor, Writing Agent)" value={newName} onChange={e => setNewName(e.target.value)} />
             <Input placeholder="Model hint (e.g. claude-opus, gpt-4o)" value={newModelHint} onChange={e => setNewModelHint(e.target.value)} />
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">Role:</span>
+              <span className="text-xs text-zinc-500">Role:</span>
               <select className="rounded-md border px-2 py-1 text-sm bg-background" value={newRole} onChange={e => setNewRole(e.target.value)}>
                 <option value="general">General</option>
                 <option value="coder">Coder</option>
@@ -366,20 +366,20 @@ function AgentProfilesSection() {
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">Token budget:</span>
+              <span className="text-xs text-zinc-500">Token budget:</span>
               <Input type="number" className="w-24" value={newBudget} onChange={e => setNewBudget(Number(e.target.value))} />
             </div>
             <Button size="sm" onClick={handleCreate} disabled={!newName.trim()}>Create</Button>
           </div>
         )}
         {profiles.length === 0 && !showCreate && (
-          <p className="text-sm text-gray-400">No custom profiles. Using default profiles (claude-opus, gpt-4o, etc.)</p>
+          <p className="text-sm text-zinc-500">No custom profiles. Using default profiles (claude-opus, gpt-4o, etc.)</p>
         )}
         {profiles.map(p => (
           <div key={p.id} className="flex items-center justify-between rounded-lg border p-3">
             <div>
               <p className="text-sm font-medium">{p.name}</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-zinc-500">
                 {p.modelHint || "Any model"} · {p.contextBudget || 8000} tokens{p.role && p.role !== 'general' ? ` · ${p.role}` : ''}
               </p>
             </div>
@@ -416,19 +416,19 @@ function ConnectedAgentsCard() {
       </CardHeader>
       <CardContent className="space-y-3">
         {keys.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-4">No agents connected yet. Create an API Key to get started.</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4">No agents connected yet. Create an API Key to get started.</p>
         ) : (
           <>
             {activeKeys.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-gray-400">Active connections</p>
+                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Active connections</p>
                 {activeKeys.map(k => (
                   <div key={k.id} className="flex items-center justify-between rounded-lg border p-3">
                     <div className="flex items-center gap-3">
                       <span className="h-2.5 w-2.5 rounded-full bg-green-500 shrink-0" />
                       <div>
                         <p className="text-sm font-medium">{k.name}</p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
                           Last active: {new Date(k.lastUsedAt).toLocaleString("zh-CN")}
                         </p>
                       </div>
@@ -448,12 +448,12 @@ function ConnectedAgentsCard() {
             )}
             {inactiveKeys.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-gray-400">Not used</p>
+                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Not used</p>
                 {inactiveKeys.map(k => (
                   <div key={k.id} className="flex items-center gap-3 rounded-lg border border-dashed p-3 opacity-60">
-                    <span className="h-2.5 w-2.5 rounded-full bg-white/[0.05] shrink-0" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-zinc-50 dark:bg-zinc-800 shrink-0" />
                     <p className="text-sm">{k.name}</p>
-                    <p className="text-xs text-gray-400 ml-auto">Never used</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 ml-auto">Never used</p>
                   </div>
                 ))}
               </div>
@@ -564,7 +564,7 @@ function WebhookCard() {
                 className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                   events.includes(evt.id)
                     ? "bg-brand-500 text-white"
-                    : "bg-white/[0.05] text-gray-400 hover:bg-white/[0.05]/80"
+                    : "bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:bg-zinc-800/80"
                 }`}
                 title={evt.desc}
               >
@@ -579,12 +579,12 @@ function WebhookCard() {
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
             <p className="text-sm font-medium text-amber-600 mb-2">⚠️ Please save your Signing Secret — shown only once</p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 rounded bg-white/[0.05] px-3 py-2 text-xs font-mono select-all break-all">{newSecret}</code>
+              <code className="flex-1 rounded bg-zinc-50 dark:bg-zinc-800 px-3 py-2 text-xs font-mono select-all break-all">{newSecret}</code>
               <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newSecret); toast.success("Copied") }}>
                 Copy
               </Button>
             </div>
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
               Use this secret to verify <code className="font-mono">X-AIDrive-Signature</code> header（HMAC-SHA256）
             </p>
           </div>
@@ -592,7 +592,7 @@ function WebhookCard() {
 
         {/* Webhook list */}
         {hooks.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-4">No Webhooks yet</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4">No Webhooks yet</p>
         ) : (
           <div className="space-y-2">
             {hooks.map(h => (
@@ -602,7 +602,7 @@ function WebhookCard() {
                   <p className="text-sm font-medium truncate">{h.url}</p>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {h.events?.map((e: string) => (
-                      <span key={e} className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[10px] text-gray-400">{e}</span>
+                      <span key={e} className="rounded-full bg-zinc-50 dark:bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">{e}</span>
                     ))}
                   </div>
                 </div>
@@ -625,7 +625,7 @@ function WebhookCard() {
                   </button>
                   <button
                     onClick={() => toggleHook(h.id, !h.active)}
-                    className={`rounded-full px-2 py-0.5 text-xs ${h.active ? "bg-green-500/10 text-green-600" : "bg-white/[0.05] text-gray-400"}`}
+                    className={`rounded-full px-2 py-0.5 text-xs ${h.active ? "bg-green-500/10 text-green-600" : "bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"}`}
                   >
                     {h.active ? "Enabled" : "Disabled"}
                   </button>
@@ -640,7 +640,7 @@ function WebhookCard() {
           </div>
         )}
 
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
           Each event sends a JSON POST containing <code className="font-mono">X-AIDrive-Signature</code> Signature。
           <a href="/developers" className="text-brand-500 hover:underline ml-1">View Docs ↗</a>
         </p>
@@ -713,15 +713,15 @@ function WebhookSubscriptions({ webhookId }: { webhookId: string }) {
     <div className="mt-1">
       <button
         onClick={() => setOpen(!open)}
-        className="text-xs text-gray-400 hover:text-gray-300 transition"
+        className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition"
       >
         {open ? '▾' : '▸'} Filters ({subs.length || '—'})
       </button>
       {open && (
-        <div className="mt-2 space-y-2 pl-2 border-l-2 border-white/[0.06]">
+        <div className="mt-2 space-y-2 pl-2 border-l-2 border-zinc-200 dark:border-zinc-700">
           {subs.map(s => (
             <div key={s.id} className="flex items-center justify-between text-xs">
-              <span className="text-gray-400">{formatSub(s)}</span>
+              <span className="text-zinc-600 dark:text-zinc-300">{formatSub(s)}</span>
               <button onClick={() => deleteSub(s.id)} className="text-red-500 hover:text-red-600 ml-2">✕</button>
             </div>
           ))}
@@ -729,7 +729,7 @@ function WebhookSubscriptions({ webhookId }: { webhookId: string }) {
             <select
               value={eventType}
               onChange={e => setEventType(e.target.value)}
-              className="rounded border px-2 py-1 text-xs bg-white"
+              className="rounded border px-2 py-1 text-xs bg-white dark:bg-zinc-800"
             >
               <option value="*">All events</option>
               <option value="knowledge.stored">knowledge.stored</option>
@@ -741,7 +741,7 @@ function WebhookSubscriptions({ webhookId }: { webhookId: string }) {
               placeholder="tags (comma sep)"
               value={tags}
               onChange={e => setTags(e.target.value)}
-              className="rounded border px-2 py-1 text-xs w-32 bg-white"
+              className="rounded border px-2 py-1 text-xs w-32 bg-white dark:bg-zinc-800"
             />
             <button
               onClick={addSub}
@@ -752,7 +752,7 @@ function WebhookSubscriptions({ webhookId }: { webhookId: string }) {
             </button>
           </div>
           {subs.length === 0 && (
-            <p className="text-[10px] text-gray-500">No filters — all events will be delivered</p>
+            <p className="text-[10px] text-zinc-400">No filters — all events will be delivered</p>
           )}
         </div>
       )}
@@ -776,8 +776,8 @@ function WebhookDeliveryLog() {
     fetchDeliveries()
   }, [])
 
-  if (loading) return <p className="text-xs text-gray-400 py-2">Loading delivery records...</p>
-  if (deliveries.length === 0) return <p className="text-xs text-gray-400 py-2">NoneDelivery records</p>
+  if (loading) return <p className="text-xs text-zinc-500 dark:text-zinc-400 py-2">Loading delivery records...</p>
+  if (deliveries.length === 0) return <p className="text-xs text-zinc-500 dark:text-zinc-400 py-2">NoneDelivery records</p>
 
   return (
     <div className="mt-4 border-t pt-4">
@@ -786,11 +786,11 @@ function WebhookDeliveryLog() {
         {deliveries.map((d: any) => (
           <div key={d.id} className="flex items-center gap-2 rounded-md border px-3 py-2 text-xs">
             <span className={`h-2 w-2 rounded-full shrink-0 ${d.success ? "bg-green-500" : "bg-red-500"}`} />
-            <span className="font-mono text-gray-400 shrink-0">{d.event}</span>
-            <span className="truncate text-gray-400 flex-1">{d.url}</span>
+            <span className="font-mono text-zinc-500 dark:text-zinc-400 shrink-0">{d.event}</span>
+            <span className="truncate text-zinc-500 dark:text-zinc-400 flex-1">{d.url}</span>
             {d.statusCode && <span className={`shrink-0 font-mono ${d.success ? "text-green-600" : "text-red-500"}`}>{d.statusCode}</span>}
-            {d.duration && <span className="shrink-0 text-gray-400">{d.duration}ms</span>}
-            <span className="shrink-0 text-gray-400/60">{new Date(d.createdAt).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}</span>
+            {d.duration && <span className="shrink-0 text-zinc-500 dark:text-zinc-400">{d.duration}ms</span>}
+            <span className="shrink-0 text-zinc-500 dark:text-zinc-400/60">{new Date(d.createdAt).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         ))}
       </div>
@@ -832,7 +832,7 @@ function AutoCaptureToggle() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium">Enable auto-capture</p>
-          <p className="text-xs text-gray-400">When enabled, DriveMem automatically extracts decisions, conclusions, and action items from your conversations</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">When enabled, DriveMem automatically extracts decisions, conclusions, and action items from your conversations</p>
         </div>
         <label className="relative inline-flex items-center cursor-pointer">
           <input
@@ -841,10 +841,10 @@ function AutoCaptureToggle() {
             onChange={(e) => toggle(e.target.checked)}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-white/[0.08] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-500"></div>
+          <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-500"></div>
         </label>
       </div>
-      <p className="text-xs text-gray-400 mt-2">Daily limit: 50 captures per day</p>
+      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">Daily limit: 50 captures per day</p>
     </>
   )
 }
@@ -985,16 +985,16 @@ export default function SettingsContent() {
       <h1 className="text-2xl font-bold">Settings</h1>
 
       {/* Tab switcher */}
-      <div className="flex gap-1 rounded-lg bg-white/[0.05] p-1">
+      <div className="flex gap-1 rounded-lg bg-zinc-50 dark:bg-zinc-800 p-1">
         <button
           onClick={() => setSettingsTab("general")}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "general" ? "bg-background shadow-sm" : "text-gray-400 hover:text-foreground"}`}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "general" ? "bg-background shadow-sm" : "text-zinc-500 dark:text-zinc-400 hover:text-foreground"}`}
         >
           ⚙️ General
         </button>
         <button
           onClick={() => setSettingsTab("developer")}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "developer" ? "bg-background shadow-sm" : "text-gray-400 hover:text-foreground"}`}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "developer" ? "bg-background shadow-sm" : "text-zinc-500 dark:text-zinc-400 hover:text-foreground"}`}
         >
           🔧 Developer
         </button>
@@ -1002,7 +1002,7 @@ export default function SettingsContent() {
 
       {settingsTab === "developer" ? (
         <>
-          <p className="text-sm text-gray-400">API Keys let your AI agents access your knowledge base securely. Connect Cursor, Claude Desktop, OpenClaw, or any MCP-compatible tool — create an API key, copy the config, and paste it into your tool.</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">API Keys let your AI agents access your knowledge base securely. Connect Cursor, Claude Desktop, OpenClaw, or any MCP-compatible tool — create an API key, copy the config, and paste it into your tool.</p>
           <ApiKeysCard />
           <ConnectedAgentsCard />
           <WebhookCard />
@@ -1024,7 +1024,7 @@ export default function SettingsContent() {
           {session?.user?.email && (
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" value={session.user.email} readOnly className="bg-white/[0.05]" />
+              <Input id="email" value={session.user.email} readOnly className="bg-zinc-50 dark:bg-zinc-800" />
             </div>
           )}
           <Button size="sm" className="bg-brand-500 hover:bg-brand-600 text-white" onClick={() => toast.success("Saved")}>Save</Button>
@@ -1070,13 +1070,13 @@ export default function SettingsContent() {
             {(() => {
               const pct = storageUsed !== "—" && storageTotal !== "—" ? (parseFloat(storageUsed) / parseFloat(storageTotal)) * 100 : 0
               const barColor = pct > 95 ? "bg-red-500" : pct > 80 ? "bg-yellow-500" : "bg-emerald-500"
-              const textColor = pct > 95 ? "text-red-500" : pct > 80 ? "text-yellow-600" : "text-gray-400"
+              const textColor = pct > 95 ? "text-red-500" : pct > 80 ? "text-yellow-600" : "text-zinc-500 dark:text-zinc-400"
               return (
                 <>
                   <p className={`mb-1 text-sm ${textColor}`}>
                     Storage: {storageUsed} GB / {storageTotal} GB {pct > 95 ? "⚠️ Almost used up" : pct > 80 ? "⚡ Approaching limit" : ""}
                   </p>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.05]">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-50 dark:bg-zinc-800">
                     <div
                       className={`h-full rounded-full ${barColor} transition-all`}
                       style={{ width: `${pct}%` }}
@@ -1090,13 +1090,13 @@ export default function SettingsContent() {
             {(() => {
               const chatPct = chatUsedToday !== "—" && chatLimitToday !== "—" ? (parseInt(chatUsedToday) / parseInt(chatLimitToday)) * 100 : 0
               const chatBarColor = chatPct > 95 ? "bg-red-500" : chatPct > 80 ? "bg-yellow-500" : "bg-emerald-500"
-              const chatTextColor = chatPct > 95 ? "text-red-500" : chatPct > 80 ? "text-yellow-600" : "text-gray-400"
+              const chatTextColor = chatPct > 95 ? "text-red-500" : chatPct > 80 ? "text-yellow-600" : "text-zinc-500 dark:text-zinc-400"
               return (
                 <>
                   <p className={`mb-1 text-sm ${chatTextColor}`}>
                     Today's chats: {chatUsedToday} / {chatLimitToday} {chatPct > 95 ? "⚠️ Almost used up" : chatPct > 80 ? "⚡ Approaching limit" : ""}
                   </p>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.05]">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-50 dark:bg-zinc-800">
                     <div
                       className={`h-full rounded-full ${chatBarColor} transition-all`}
                       style={{ width: `${chatPct}%` }}
@@ -1113,19 +1113,19 @@ export default function SettingsContent() {
       <Card>
         <CardHeader>
           <CardTitle>🧠 AI Memory</CardTitle>
-          <p className="text-sm text-gray-400">AI Preferences and interests learned from your conversations</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">AI Preferences and interests learned from your conversations</p>
         </CardHeader>
         <CardContent>
           {memories.length === 0 ? (
-            <p className="text-sm text-gray-400">AI is learning your preferences. Chat more and insights will appear here ✨</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">AI is learning your preferences. Chat more and insights will appear here ✨</p>
           ) : (
             <ul className="space-y-3">
               {memories.map(m => (
                 <li key={m.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
                   <div>
                     <p className="text-sm font-medium">{m.key}</p>
-                    <p className="text-xs text-gray-400">{m.value}</p>
-                    <p className="text-xs text-gray-400/50 mt-1">{new Date(m.createdAt).toLocaleDateString("zh-CN")}</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{m.value}</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400/50 mt-1">{new Date(m.createdAt).toLocaleDateString("zh-CN")}</p>
                   </div>
                   <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => handleDeleteMemory(m.id)}>
                     ✕
@@ -1168,7 +1168,7 @@ export default function SettingsContent() {
             Change Password
           </Button>
           {(!currentPassword || !newPassword || newPassword.length < 6) && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {!currentPassword && !newPassword
                 ? "Please enter current and new password"
                 : !currentPassword
@@ -1225,7 +1225,7 @@ export default function SettingsContent() {
                 <DialogHeader>
                   <DialogTitle className="text-red-600">⚠️ Confirm account deletion</DialogTitle>
                 </DialogHeader>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
                   This will permanently delete all files, conversations, and AI memory. This action cannot be undone. Please enter <strong>DELETE</strong> to continue.
                 </p>
                 <Input

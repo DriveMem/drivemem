@@ -193,15 +193,15 @@ export default function GraphPage() {
         const isHovered = hoveredNode?.id === n.id
         ctx.beginPath()
         ctx.arc(n.x, n.y, isHovered ? 8 : 6, 0, Math.PI * 2)
-        ctx.fillStyle = isHovered ? "#5E6AD2" : "#1A1D24"
-        ctx.strokeStyle = "#ffffff30"
+        ctx.fillStyle = isHovered ? "#18181b" : "#ffffff"
+        ctx.strokeStyle = "#a1a1aa"
         ctx.lineWidth = isHovered ? 2 : 1
         ctx.fill()
         ctx.stroke()
 
         // Label
         ctx.font = `${isHovered ? "bold " : ""}11px system-ui, sans-serif`
-        ctx.fillStyle = "#E0E0E4"
+        ctx.fillStyle = "#3f3f46"
         ctx.textAlign = "center"
         const label = n.name.length > 20 ? n.name.slice(0, 18) + "…" : n.name
         ctx.fillText(label, n.x, n.y - 12)
@@ -297,7 +297,7 @@ export default function GraphPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
         <div>
           <h1 className="text-lg font-semibold">Knowledge Graph</h1>
           <p className="text-xs text-muted-foreground">
@@ -313,7 +313,7 @@ export default function GraphPage() {
           ))}
         </div>
       </div>
-      <div className="flex-1 relative bg-transparent">
+      <div className="flex-1 relative bg-zinc-50 dark:bg-zinc-950">
         <canvas
           ref={canvasRef}
           className="w-full h-full"
@@ -324,7 +324,7 @@ export default function GraphPage() {
           onClick={handleClick}
         />
         {hoveredNode && (
-          <div className="absolute top-4 left-4 bg-white border border-white/[0.06] rounded-lg px-3 py-2 shadow-sm pointer-events-none">
+          <div className="absolute top-4 left-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 shadow-sm pointer-events-none">
             <p className="text-sm font-medium">{hoveredNode.name}</p>
             <p className="text-xs text-muted-foreground">Click to view file</p>
           </div>
