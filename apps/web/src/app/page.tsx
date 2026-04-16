@@ -469,6 +469,7 @@ export default function LandingPage() {
           <div className="flex gap-6">
             <Link href="/developers" className="hover:text-[#EDEDEF] transition-colors">Developers</Link>
             <Link href="/privacy" className="hover:text-[#EDEDEF] transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-[#EDEDEF] transition-colors">Terms</Link>
             <a href="mailto:support@drivemem.cloud" className="hover:text-[#EDEDEF] transition-colors">Contact</a>
             <a href="https://github.com/yufuche1/ai-drive" className="hover:text-[#EDEDEF] transition-colors">GitHub</a>
           </div>
