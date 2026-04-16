@@ -26,22 +26,27 @@ const profiles: Map<string, AgentProfile> = new Map();
 profiles.set('default', {
   id: 'default', name: 'Default', contextWindow: 128000,
   preferredFormat: 'markdown', maxFragments: 30, priorityRules: ['relevance'],
+  domain: 'general',
 });
 profiles.set('claude-opus', {
   id: 'claude-opus', name: 'Claude Opus', contextWindow: 200000,
   preferredFormat: 'markdown', maxFragments: 40, priorityRules: ['relevance', 'recency'],
+  domain: 'general',
 });
 profiles.set('claude-sonnet', {
   id: 'claude-sonnet', name: 'Claude Sonnet', contextWindow: 200000,
   preferredFormat: 'markdown', maxFragments: 30, priorityRules: ['relevance'],
+  domain: 'general',
 });
 profiles.set('gpt-4o', {
   id: 'gpt-4o', name: 'GPT-4o', contextWindow: 128000,
   preferredFormat: 'markdown', maxFragments: 25, priorityRules: ['relevance'],
+  domain: 'general',
 });
 profiles.set('gpt-4o-mini', {
   id: 'gpt-4o-mini', name: 'GPT-4o Mini', contextWindow: 128000,
   preferredFormat: 'markdown', maxFragments: 20, priorityRules: ['relevance', 'brevity'],
+  domain: 'general',
 });
 
 export function resolveProfile(modelName?: string): AgentProfile {

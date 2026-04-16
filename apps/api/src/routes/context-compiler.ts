@@ -12,6 +12,7 @@ const compileSchema = z.object({
   tokenBudget: z.number().int().min(500).max(100000).optional(),
   since: z.string().datetime().optional(),
   depth: z.enum(['L1', 'L2', 'L3', 'L4']).optional(),
+  outputSchema: z.enum(['coding', 'writing', 'research', 'strategy', 'general']).optional(),
   hints: z.object({
     project: z.string().optional(),
     tags: z.array(z.string()).optional(),
@@ -33,6 +34,7 @@ export default async function contextCompilerRoutes(fastify: FastifyInstance) {
       tokenBudget: body.tokenBudget,
       since: body.since,
       depth: body.depth,
+      outputSchema: body.outputSchema,
       hints: body.hints,
       format: body.format,
     });

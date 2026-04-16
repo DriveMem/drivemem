@@ -1,3 +1,4 @@
+import { inferDomain, extractSchema, isValidDomain } from './domain-schemas.js';
 import { embedTexts } from '../../services/embedding.service.js';
 import { searchSimilar, preprocessQuery } from '../../services/vector.service.js';
 import type { CompileContextRequest, CompileContextResponse, KnowledgeFragment, SourceInfo, CompilationSnapshot, DepthLevel } from './types.js';
@@ -27,6 +28,7 @@ function pruneCache(): void {
 export { resolveProfile, registerProfile, listProfiles } from './agent-profiles.js';
 export { ROLE_BOOSTS, inferRole } from './agent-profiles.js';
 export { estimateTokens } from './token-estimator.js';
+export { inferDomain, extractSchema, isValidDomain } from './domain-schemas.js';
 export type { CompileContextRequest, CompileContextResponse, KnowledgeFragment, AgentProfile, CompilationSnapshot, DepthLevel } from './types.js';
 
 /**
@@ -468,6 +470,11 @@ export async function compileContext(
     compiledAt: Date.now(),
   };
 
+  // --- Domain Schema extraction ---
+  const rawDomain = request.outputSchema || profile.domain || inferDomain(request.task);
+  const domain = isValidDomain(rawDomain) ? rawDomain : 'general';
+  const schema = domain !== 'general' ? extractSchema(domain, selected) : undefined;
+
   const response: CompileContextResponse = {
     compiledContext,
     metadata: {
@@ -481,6 +488,8 @@ export async function compileContext(
       depth,
       availableLayers: getAvailableLayers(depth),
     },
+    ...(domain !== 'general' ? { domain } : {}),
+    ...(schema ? { schema } : {}),
     ...(diff ? { diff } : {}),
   };
 
