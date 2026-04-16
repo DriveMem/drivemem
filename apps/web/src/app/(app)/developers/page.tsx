@@ -44,35 +44,38 @@ const TABS = ["REST API", "MCP Config", "Webhook", "Try it"] as const
 
 const CODE_BLOCKS = [
   `# 1. Get API Key (Settings → API Keys)
+# Base URL: https://drivemem.cloud
 
 # 2. Semantic search
 curl -X GET 'https://drivemem.cloud/api/v1/search?q=latest%20updates' \\
   -H 'Authorization: Bearer YOUR_API_KEY'
+# Response: { "results": [{ "fileId": "abc-123", "fileName": "weekly-report.md",
+#   "text": "Completed user auth module...", "score": 0.92 }] }
 
-# Response:
-# {
-#   "results": [
-#     {
-#       "fileId": "abc-123",
-#       "fileName": "weekly-report.md",
-#       "text": "Completed user auth module this week...",
-#       "score": 0.92
-#     }
-#   ]
-# }
+# 3. RAG Q&A — AI answers grounded in your files
+curl -X POST https://drivemem.cloud/api/v1/ask \\
+  -H 'Authorization: Bearer YOUR_API_KEY' \\
+  -H 'Content-Type: application/json' \\
+  -d '{"question": "What decisions were made about the auth module?"}'
+# Response: { "answer": "Based on your files...", "sources": [...] }
 
-# 3. Store knowledge
+# 4. Store a knowledge note
 curl -X POST https://drivemem.cloud/api/v1/store \\
   -H 'Authorization: Bearer YOUR_API_KEY' \\
   -H 'Content-Type: application/json' \\
-  -d '{"content": "Decision: adopting plan A", "title": "Decision log"}'
+  -d '{"content": "Decision: adopting plan A", "title": "Decision log", "tags": "decision"}'
+# Response: { "id": "def-456", "name": "note-2026-04-09.md", "status": "pending" }
 
-# Response:
-# {
-#   "id": "def-456",
-#   "name": "note-2026-04-09.md",
-#   "status": "pending"
-# }`,
+# 5. Upload a file
+curl -X POST https://drivemem.cloud/api/v1/files/upload \\
+  -H 'Authorization: Bearer YOUR_API_KEY' \\
+  -F 'file=@./report.md'
+# Response: { "id": "ghi-789", "name": "report.md", "status": "indexing" }
+
+# 6. List files
+curl -X GET 'https://drivemem.cloud/api/v1/files?detail=brief' \\
+  -H 'Authorization: Bearer YOUR_API_KEY'
+# Response: { "files": [{ "id": "...", "name": "...", "summary": "..." }] }`,
 
   `{
   "mcpServers": {
@@ -706,24 +709,46 @@ plugins:
 
               <div id="cli">
                 <h3 className="font-semibold text-[#1C1B18]">CLI Tools</h3>
-                <p className="mt-2 text-sm text-[#6B6966]">CLI for your knowledge base:</p>
+                <p className="mt-2 text-sm text-[#6B6966]">
+                  The <code className="rounded bg-white px-1.5 py-0.5 text-xs font-mono border border-[#E5E4E1]">drivemem</code> CLI lets you interact with your knowledge base from the terminal.
+                </p>
                 <pre className="mt-3 overflow-x-auto rounded-lg bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
-                  <code>{`# Install
-npm install -g aidrive
+                  <code>{`# Install globally from npm
+npm install -g drivemem
 
-# Configure API Key
-export AIDRIVE_API_KEY=ak_your_api_key
+# Configure your API key
+export DRIVEMEM_API_KEY=ak_your_api_key
+# Or pass inline: drivemem --key ak_... search "query"
 
-# Commands
-aidrive search "keyword"
-aidrive ask "answer based on files"
-aidrive store "save knowledge"
-aidrive upload report.md
-aidrive files              # list files
-aidrive info <file-id>     # file details + AI summary
-aidrive insights           # AI insights
+# Semantic search
+drivemem search "latest project updates"
 
-# All commands support --json (for agents/scripts)`}</code>
+# RAG Q&A — ask questions answered by your files
+drivemem ask "What were the key decisions last week?"
+
+# Store a knowledge note
+drivemem store "Decided to use PostgreSQL for persistence" --title "DB decision" --tags decision
+
+# Upload a file
+drivemem upload ./meeting-notes.md
+
+# List all files with AI summaries
+drivemem files
+
+# Get file details and AI summary
+drivemem info <file-id>
+
+# View AI-discovered insights
+drivemem insights
+
+# View activity timeline
+drivemem timeline
+
+# Generate a project context packet
+drivemem pack <folder-id>
+
+# All commands support --json for scripting
+drivemem search "auth module" --json | jq '.results[0]'`}</code>
                 </pre>
               </div>
             </div>
