@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useRef, useEffect, useState, useCallback, type ReactNode } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Search, FileText, Plug, Bell, ArrowRight, ChevronRight, RefreshCw, AlertCircle, ChevronDown, ChevronUp } from "lucide-react"
+import { Search, FileText, Plug, Bell, ArrowRight, ChevronRight, RefreshCw, AlertCircle, ChevronDown, ChevronUp, Key, Users } from "lucide-react"
 import ApiPlayground from "./api-playground"
 
 /* ---------- FadeIn ---------- */
@@ -373,6 +373,27 @@ export default function DevelopersPage() {
                 <p className="mt-2 text-sm font-medium">Paste and go</p>
                 <p className="mt-1 text-xs text-[#6B6966]">Paste into Claude / Cursor / your app</p>
               </div>
+            </div>
+          </FadeIn>
+
+          {/* Quick links to configuration */}
+          <FadeIn className="mt-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <Link href="/settings?tab=developer" className="rounded-xl border border-[#E5E4E1] p-4 hover:shadow-sm transition">
+                <Key className="h-5 w-5 text-[#6B6966] mb-2" />
+                <h3 className="font-medium text-sm text-[#1C1B18]">API Keys</h3>
+                <p className="text-xs text-[#6B6966] mt-1">Create and manage API keys for your agents</p>
+              </Link>
+              <Link href="/settings?tab=developer" className="rounded-xl border border-[#E5E4E1] p-4 hover:shadow-sm transition">
+                <Users className="h-5 w-5 text-[#6B6966] mb-2" />
+                <h3 className="font-medium text-sm text-[#1C1B18]">Agent Profiles</h3>
+                <p className="text-xs text-[#6B6966] mt-1">Configure role-based context delivery</p>
+              </Link>
+              <Link href="/settings?tab=developer" className="rounded-xl border border-[#E5E4E1] p-4 hover:shadow-sm transition">
+                <Bell className="h-5 w-5 text-[#6B6966] mb-2" />
+                <h3 className="font-medium text-sm text-[#1C1B18]">Webhooks</h3>
+                <p className="text-xs text-[#6B6966] mt-1">Subscribe to knowledge change events</p>
+              </Link>
             </div>
           </FadeIn>
 
