@@ -17,10 +17,26 @@ export function OnboardingFlow() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    apiFetch("/api/users/me/profile")
-      .then((data: any) => {
-        setCompleted(data?.onboardingCompleted ?? false)
-        setStep(data?.onboardingStep ?? 0)
+    Promise.all([
+      apiFetch("/api/users/me/profile"),
+      apiFetch("/api/files?limit=1").catch(() => ({ files: [] })),
+    ])
+      .then(([profile, filesData]: any[]) => {
+        const alreadyCompleted = profile?.onboardingCompleted ?? false
+        const hasFiles = (filesData?.files?.length ?? filesData?.length ?? 0) > 0
+
+        if (!alreadyCompleted && hasFiles) {
+          // User already has files — skip onboarding silently
+          setCompleted(true)
+          apiFetch("/api/users/me/onboarding", {
+            method: "PATCH",
+            body: JSON.stringify({ completed: true }),
+          }).catch(() => {})
+          return
+        }
+
+        setCompleted(alreadyCompleted)
+        setStep(profile?.onboardingStep ?? 0)
       })
       .catch(() => {})
       .finally(() => setLoading(false))

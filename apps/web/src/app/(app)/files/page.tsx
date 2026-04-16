@@ -57,17 +57,17 @@ export default function KnowledgePage() {
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Top bar with view toggle */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-          <h1 className="text-sm font-medium">Knowledge</h1>
+          <h1 className="text-body font-medium">Knowledge</h1>
           <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
             <button
               onClick={() => setView("list")}
-              className={cn("px-2.5 py-1 text-xs rounded", view === "list" ? "bg-background shadow-sm font-medium" : "text-muted-foreground")}
+              className={cn("px-2.5 py-1 text-caption rounded", view === "list" ? "bg-background shadow-sm font-medium" : "text-muted-foreground")}
             >
               <List className="h-3.5 w-3.5 inline mr-1" />List
             </button>
             <button
               onClick={() => setView("graph")}
-              className={cn("px-2.5 py-1 text-xs rounded", view === "graph" ? "bg-background shadow-sm font-medium" : "text-muted-foreground")}
+              className={cn("px-2.5 py-1 text-caption rounded", view === "graph" ? "bg-background shadow-sm font-medium" : "text-muted-foreground")}
             >
               <Network className="h-3.5 w-3.5 inline mr-1" />Graph
             </button>
