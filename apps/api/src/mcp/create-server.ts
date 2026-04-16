@@ -6,9 +6,13 @@ import { searchSimilar, preprocessQuery } from '../services/vector.service.js';
 import { chat } from '../services/llm.service.js';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, inArray } from 'drizzle-orm';
 
 export function createMcpServer(userId: string, agentName: string = ''): Server {
+  // Track detected project across the session
+  let detectedProjectId: string | null = null;
+  let detectedProjectName: string | null = null;
+
   const server = new Server(
     { name: 'ai-drive', version: '1.0.0' },
     {
@@ -251,6 +255,11 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           parts.push(`Recent files: ${recentFiles.map(f => f.name).join(', ')}`);
         }
 
+        // Include detected project info
+        if (detectedProjectId && detectedProjectName) {
+          parts.push(`Active project: ${detectedProjectName}`);
+        }
+
         if (parts.length > 0) {
           contextPrefix = `[AI Drive Context] ${parts.join(' | ')}\n\n`;
         }
@@ -263,8 +272,37 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           const query = (args as any).query as string;
           const budget = ((args as any).contextBudget as number) || 0;
           const format = ((args as any).preferFormat as string) || 'text';
+
+          // Auto-detect project if not yet detected
+          if (!detectedProjectId && query.length > 10) {
+            try {
+              const { detectProject } = await import('../services/project-detector.js');
+              const detection = await detectProject(userId, { content: query, apiKeyId: undefined });
+              if (detection.projectId) {
+                detectedProjectId = detection.projectId;
+                detectedProjectName = detection.projectName;
+              }
+            } catch { /* don't block on detection failure */ }
+          }
+
           const [queryVec] = await embedTexts([preprocessQuery(query)]);
-          const results = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: budget && budget < 3000 ? 3 : 5 });
+          let results = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: budget && budget < 3000 ? 3 : 5 });
+
+          // Boost project-scoped results
+          if (detectedProjectId && results.length > 0) {
+            const resultFileIds = [...new Set(results.map(r => r.fileId))];
+            const fileRecords = await db.select({ id: schema.files.id, folderId: schema.files.folderId })
+              .from(schema.files)
+              .where(inArray(schema.files.id, resultFileIds));
+            const fileFolderMap: Record<string, string | null> = {};
+            fileRecords.forEach(f => { fileFolderMap[f.id] = f.folderId; });
+            results = results.map(r => ({
+              ...r,
+              score: fileFolderMap[r.fileId] === detectedProjectId ? r.score * 1.2 : r.score,
+            }));
+            results.sort((a, b) => b.score - a.score);
+          }
+
           const fileIds = [...new Set(results.map(r => r.fileId))];
           const fileDates: Record<string, string> = {};
           for (const fid of fileIds) {
@@ -292,8 +330,36 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           const question = (args as any).question as string;
           const budget = ((args as any).contextBudget as number) || 0;
           const format = ((args as any).preferFormat as string) || 'text';
+
+          // Auto-detect project if not yet detected
+          if (!detectedProjectId && question.length > 10) {
+            try {
+              const { detectProject } = await import('../services/project-detector.js');
+              const detection = await detectProject(userId, { content: question, apiKeyId: undefined });
+              if (detection.projectId) {
+                detectedProjectId = detection.projectId;
+                detectedProjectName = detection.projectName;
+              }
+            } catch { /* don't block on detection failure */ }
+          }
+
           const [queryVec] = await embedTexts([preprocessQuery(question)]);
-          const chunks = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: budget && budget < 2000 ? 3 : 6 });
+          let chunks = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: budget && budget < 2000 ? 3 : 6 });
+
+          // Boost project-scoped chunks
+          if (detectedProjectId && chunks.length > 0) {
+            const chunkFileIds = [...new Set(chunks.map(c => c.fileId))];
+            const fileRecords = await db.select({ id: schema.files.id, folderId: schema.files.folderId })
+              .from(schema.files)
+              .where(inArray(schema.files.id, chunkFileIds));
+            const fileFolderMap: Record<string, string | null> = {};
+            fileRecords.forEach(f => { fileFolderMap[f.id] = f.folderId; });
+            chunks = chunks.map(c => ({
+              ...c,
+              score: fileFolderMap[c.fileId] === detectedProjectId ? c.score * 1.2 : c.score,
+            }));
+            chunks.sort((a, b) => b.score - a.score);
+          }
           const chunkChars = budget ? Math.min(Math.floor((budget * 2) / Math.max(chunks.length, 1)), 1000) : 500;
           const citations = chunks.map((c, i) => `来源 ${i + 1} (${c.fileName}): ${c.text.slice(0, chunkChars)}`).join('\n\n');
           const lengthHint = budget && budget < 1000 ? `\n请简洁回答，控制在 ${budget} 字以内。` : '';
@@ -432,6 +498,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           await db.insert(schema.files).values({
             id: fileId, name: filename, originalName: filename,
             mimeType: 'text/markdown', size: buffer.length, status: 'parsing', userId, s3Key,
+            ...(detectedProjectId ? { folderId: detectedProjectId } : {}),
           });
 
           const { Queue } = await import('bullmq');
