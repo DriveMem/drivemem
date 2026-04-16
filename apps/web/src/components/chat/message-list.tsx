@@ -1,5 +1,6 @@
 "use client"
 import { useRef, useEffect, useState } from "react"
+import { motion } from "framer-motion"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
@@ -168,13 +169,13 @@ function MessageActions({ content }: { content: string }) {
 
   return (
     <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition">
-      <button onClick={handleCopy} className="p-1 rounded hover:bg-accent" title="CopyAnswer">
+      <button onClick={handleCopy} className="p-1 rounded-lg hover:bg-muted/50 transition-all duration-200" title="CopyAnswer">
         {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
       </button>
-      <button onClick={handleSaveAsNote} disabled={saving} className="p-1 rounded hover:bg-accent" title="Save as note">
+      <button onClick={handleSaveAsNote} disabled={saving} className="p-1 rounded-lg hover:bg-muted/50 transition-all duration-200" title="Save as note">
         <Bookmark className={cn("h-3.5 w-3.5", saving ? "animate-pulse text-brand-500" : "text-muted-foreground")} />
       </button>
-      <button onClick={handleShare} className="p-1 rounded hover:bg-accent" title="Share">
+      <button onClick={handleShare} className="p-1 rounded-lg hover:bg-muted/50 transition-all duration-200" title="Share">
         <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
       </button>
     </div>
@@ -185,17 +186,23 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
   const bottomRef = useRef<HTMLDivElement>(null)
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }) }, [messages, streaming])
   return (
-    <div className="flex-1 overflow-auto px-4 py-6 space-y-6">
-      {messages.map((msg) => (
-        <div key={msg.id} className={cn("flex gap-3 group", msg.role === "user" ? "justify-end" : "")}>
-          {msg.role === "assistant" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>}
-          <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-brand-500 text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-soft" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>
+    <div className="flex-1 overflow-auto px-4 py-6 space-y-4">
+      {messages.map((msg, index) => (
+        <motion.div
+          key={msg.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className={cn("flex gap-3 group", msg.role === "user" ? "justify-end" : "")}
+        >
+          {msg.role === "assistant" && <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>}
+          <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-brand-500 text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-soft" : "mr-auto w-full bg-muted/30 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/30")}>
             {msg.role === "assistant" ? (
               <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight, rehypeRaw]} components={markdownComponents}>{transformCitations(msg.content)}</ReactMarkdown>
                 {msg.citations && msg.citations.length > 0 && /[¹²³⁴⁵⁶⁷⁸⁹⁰]/.test(msg.content) && (
                   <details className="mt-3 pt-3 border-t border-border">
-                    <summary className="text-xs text-muted-foreground font-medium cursor-pointer select-none hover:text-foreground">📎 {msg.citations.length} source citations</summary>
+                    <summary className="text-xs text-muted-foreground font-medium cursor-pointer select-none hover:text-foreground transition-colors rounded-lg px-1">📎 {msg.citations.length} source citations</summary>
                     <div className="mt-2 space-y-1">
                       {msg.citations.map((c, i) => <Citation key={i} citation={c} idx={i} />)}
                     </div>
@@ -215,27 +222,32 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
                   </p>
                 )}</>)}
           </div>
-          {msg.role === "user" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold">U</div>}
-        </div>
+          {msg.role === "user" && <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center text-white text-xs font-bold">U</div>}
+        </motion.div>
       ))}
       {streaming !== undefined && (
-        <div className="flex gap-3">
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>
-          <div className="max-w-[80%] rounded-lg px-4 py-3 text-sm bg-muted">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex gap-3"
+        >
+          <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>
+          <div className="max-w-[80%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm bg-muted/30 border border-border/30">
             {streaming ? (
               <div className="prose prose-sm dark:prose-invert max-w-none"><ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={markdownComponents}>{streaming + "▊"}</ReactMarkdown></div>
             ) : (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <div className="flex gap-1">
-                  <span className="animate-bounce [animation-delay:0ms] h-2 w-2 rounded-full bg-blue-500" />
-                  <span className="animate-bounce [animation-delay:150ms] h-2 w-2 rounded-full bg-blue-500" />
-                  <span className="animate-bounce [animation-delay:300ms] h-2 w-2 rounded-full bg-blue-500" />
+                  <span className="animate-pulse [animation-delay:0ms] h-2 w-2 rounded-full bg-primary/60" />
+                  <span className="animate-pulse [animation-delay:150ms] h-2 w-2 rounded-full bg-primary/60" />
+                  <span className="animate-pulse [animation-delay:300ms] h-2 w-2 rounded-full bg-primary/60" />
                 </div>
                 <span>AI Thinking...</span>
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
       <div ref={bottomRef} />
     </div>
