@@ -58,7 +58,7 @@ function QuickActions({ onGenerate, onOrganize }: {
         <button
           key={c.label}
           onClick={c.action}
-          className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition"
+          className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
         >
           <c.icon className="h-3.5 w-3.5 text-zinc-400" />
           {c.label}
@@ -85,15 +85,15 @@ function ActivitySummary({ activities }: { activities: any[] }) {
 
   return (
     <div className="mx-3 mb-3">
-      <h4 className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-2">Recent activity</h4>
-      <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+      <h4 className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-2.5">Recent activity</h4>
+      <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2.5">
         Indexed {fileCount} files · {insightCount} insights · {linkCount} links
       </div>
-      <div className="space-y-1">
+      <div className="space-y-0 divide-y divide-zinc-100 dark:divide-zinc-800">
         {shown.map((a: any) => {
           const Icon = activityIcons[a.type] || Lightbulb
           return (
-            <div key={a.id} className="flex items-center gap-2 text-sm truncate">
+            <div key={a.id} className="flex items-center gap-2 text-sm truncate py-1.5">
               <Icon className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
               <span className="truncate flex-1 text-zinc-600 dark:text-zinc-300">{a.title}</span>
               <span className="shrink-0 text-xs text-zinc-400" title={a.createdAt ? new Date(a.createdAt).toLocaleString() : ""}>{a.createdAt ? relativeTime(a.createdAt) : ""}</span>
@@ -242,13 +242,13 @@ export default function DashboardPage() {
 
       {/* Tab switcher — pill/segment style */}
       <div className="px-6 pt-6 pb-2">
-        <div className="inline-flex rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1">
+        <div className="inline-flex rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1.5">
           <button
             onClick={() => handleTabSwitch("files")}
             className={cn(
-              "flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition",
+              "flex items-center gap-2 px-5 py-2 text-sm rounded-md transition-all duration-200",
               activeTab === "files"
-                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm font-medium"
                 : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
             )}
           >
@@ -258,9 +258,9 @@ export default function DashboardPage() {
           <button
             onClick={() => handleTabSwitch("ai")}
             className={cn(
-              "relative flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition",
+              "relative flex items-center gap-2 px-5 py-2 text-sm rounded-md transition-all duration-200",
               activeTab === "ai"
-                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm font-medium"
                 : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
             )}
           >
@@ -344,14 +344,16 @@ export default function DashboardPage() {
                   <div
                     key={folder.id}
                     onClick={() => setCurrentFolder(folder.id)}
-                    className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 hover:shadow-sm hover:border-zinc-300 dark:hover:border-zinc-600 transition-all cursor-pointer"
+                    className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:border-zinc-300 dark:hover:border-zinc-600 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5 mb-2">
-                      <Folder className="h-5 w-5 text-zinc-400" />
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-500/10">
+                        <Folder className="h-4 w-4 text-brand-500" />
+                      </div>
                       <h3 className="font-medium text-zinc-900 dark:text-zinc-100 truncate">{folder.name}</h3>
                       {folder.status && (
                         <span className={cn(
-                          "ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium",
+                          "ml-auto rounded-full px-2 py-0.5 text-[11px] tracking-wide uppercase font-medium",
                           folder.status === 'active' ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
                           folder.status === 'completed' ? 'bg-brand-500/10 text-brand-500' :
                           'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
@@ -369,11 +371,12 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs text-zinc-400">
                         <FileText className="h-3.5 w-3.5" />
+                        <span className="mx-0.5">·</span>
                         <span>{folder.fileCount ?? 0} {(folder.fileCount ?? 0) === 1 ? 'file' : 'files'}</span>
                       </div>
                       <button
                         onClick={(e) => { e.stopPropagation(); router.push(`/compile?project=${folder.id}`) }}
-                        className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-zinc-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors"
+                        className="flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium text-zinc-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors hover:shadow-sm"
                       >
                         <Sparkles className="h-3 w-3" />
                         Compile
@@ -385,7 +388,7 @@ export default function DashboardPage() {
                 {/* New project card */}
                 <div
                   onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }}
-                  className="rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-600 p-5 hover:border-brand-400 dark:hover:border-brand-500 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 text-zinc-400 hover:text-brand-500"
+                  className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-5 hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/30 dark:hover:bg-brand-500/5 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-3 text-zinc-400 hover:text-brand-500 min-h-[120px]"
                 >
                   <span className="text-2xl font-light">+</span>
                   <span className="text-sm font-medium">New project</span>
@@ -406,47 +409,37 @@ export default function DashboardPage() {
 
               {/* Empty state guide */}
               {(folders.length === 0 || fileCount === 0) && (
-                <div className="mt-8">
+                <div className="mt-8 bg-gradient-to-b from-zinc-50/50 to-transparent dark:from-zinc-800/30 rounded-xl p-4">
                   <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Get started</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button
-                      onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }}
-                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-4 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-500/5 transition-all"
-                    >
-                      <Folder className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Create your first project</p>
-                        <p className="text-xs text-zinc-400 mt-0.5">Organize your knowledge by project</p>
-                      </div>
-                    </button>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <button
                       onClick={() => { handleTabSwitch("files"); setShowUpload(true) }}
-                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-4 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-500/5 transition-all"
+                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-5 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/30 dark:hover:bg-brand-500/5 transition-all duration-200"
                     >
                       <Upload className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Upload your first file</p>
-                        <p className="text-xs text-zinc-400 mt-0.5">PDF, docs, notes — AI indexes everything</p>
+                        <p className="text-xs text-zinc-400 mt-1">PDF, docs, notes — AI indexes everything</p>
                       </div>
                     </button>
                     <button
                       onClick={() => router.push("/chat?new=1")}
-                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-4 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-500/5 transition-all"
+                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-5 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/30 dark:hover:bg-brand-500/5 transition-all duration-200"
                     >
                       <MessageSquare className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Try AI Chat</p>
-                        <p className="text-xs text-zinc-400 mt-0.5">Ask questions, get cited answers</p>
+                        <p className="text-xs text-zinc-400 mt-1">Ask questions, get cited answers</p>
                       </div>
                     </button>
                     <button
                       onClick={() => router.push("/developers")}
-                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-4 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-500/5 transition-all"
+                      className="flex items-start gap-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600 p-5 text-left hover:border-brand-400 dark:hover:border-brand-500 hover:bg-brand-50/30 dark:hover:bg-brand-500/5 transition-all duration-200"
                     >
                       <Plug className="h-5 w-5 text-zinc-400 shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Connect via CLI / MCP</p>
-                        <p className="text-xs text-zinc-400 mt-0.5">Let your AI assistant access your knowledge</p>
+                        <p className="text-xs text-zinc-400 mt-1">Let your AI assistant access your knowledge</p>
                       </div>
                     </button>
                   </div>
@@ -495,8 +488,8 @@ export default function DashboardPage() {
           {fileCount === 0 ? (
             <div className="px-4 py-5 space-y-5">
               {/* Hero section */}
-              <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-6 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/10">
+              <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-8 text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/10">
                   <Sparkles className="h-6 w-6 text-brand-500" />
                 </div>
                 <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5">Upload files to start your AI knowledge base</h3>
@@ -610,12 +603,10 @@ export default function DashboardPage() {
               <MemoryOverview />
 
               {/* AI Reports section */}
-              <div className="mx-4 mb-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4">
+              <div className="mx-4 mb-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500/10">
-                    <BarChart3 className="h-3.5 w-3.5 text-brand-500" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">AI Reports</h3>
+                  <BarChart3 className="h-4 w-4 text-zinc-400" />
+                  <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">AI Reports</h3>
                 </div>
                 <ReportSection ref={reportRef} />
               </div>
@@ -626,12 +617,10 @@ export default function DashboardPage() {
               </div>
 
               {/* AI Insights section */}
-              <div className="mx-4 mb-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4">
+              <div className="mx-4 mb-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500/10">
-                    <Lightbulb className="h-3.5 w-3.5 text-brand-500" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">AI Insights</h3>
+                  <Lightbulb className="h-4 w-4 text-zinc-400" />
+                  <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">AI Insights</h3>
                   {insights.filter(i => !i.read).length > 0 && (
                     <span className="rounded-full bg-brand-500 px-1.5 py-0.5 text-[10px] text-white">
                       {insights.filter(i => !i.read).length} new
