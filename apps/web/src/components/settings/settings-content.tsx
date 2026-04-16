@@ -1040,7 +1040,32 @@ export default function SettingsContent() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="role">Your role</Label>
-            <Input id="role" placeholder="e.g., Product Manager, Developer, Researcher" value={profileRole} onChange={(e) => setProfileRole(e.target.value)} />
+            <div className="flex gap-2">
+              <select
+                id="role"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                value={["developer","designer","pm","researcher","writer","general"].includes(profileRole) ? profileRole : "other"}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setProfileRole(v === "other" ? "" : v);
+                }}
+              >
+                <option value="developer">Developer</option>
+                <option value="designer">Designer</option>
+                <option value="pm">Product Manager</option>
+                <option value="researcher">Researcher</option>
+                <option value="writer">Writer</option>
+                <option value="general">General</option>
+                <option value="other">Other…</option>
+              </select>
+            </div>
+            {!["developer","designer","pm","researcher","writer","general"].includes(profileRole) && (
+              <Input
+                placeholder="Enter your role"
+                value={profileRole}
+                onChange={(e) => setProfileRole(e.target.value)}
+              />
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="goal">Current goal</Label>
