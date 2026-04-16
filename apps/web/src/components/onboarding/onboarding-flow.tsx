@@ -169,7 +169,7 @@ function StepUpload({ onNext }: { onNext: () => void }) {
 
       <button
         onClick={onNext}
-        className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors relative z-10"
       >
         Skip for now
       </button>
@@ -311,7 +311,7 @@ function StepConnect({
 
       <button
         onClick={onSkip}
-        className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors relative z-10"
       >
         Skip for now
       </button>
