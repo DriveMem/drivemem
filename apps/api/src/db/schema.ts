@@ -262,3 +262,14 @@ export const knowledgeFeedback = pgTable('knowledge_feedback', {
   context: text('context'), // 'search' | 'compile' | 'detail' | 'auto_capture'
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+// --- Knowledge Edges (Work Graph) ---
+export const knowledgeEdges = pgTable('knowledge_edges', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  sourceId: uuid('source_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  targetId: uuid('target_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  relation: text('relation').notNull(), // supports | contradicts | depends_on | follows | related
+  confidence: real('confidence').notNull().default(0.5),
+  discoveredBy: text('discovered_by').notNull().default('auto'), // auto | user
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});

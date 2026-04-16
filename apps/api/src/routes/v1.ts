@@ -558,6 +558,11 @@ export default async function v1Routes(fastify: FastifyInstance) {
       });
     } catch { /* don't block store on webhook failure */ }
 
+    // Async relationship discovery (non-blocking)
+    import('../services/knowledge-graph.js').then(({ discoverRelationships }) => {
+      discoverRelationships(userId, fileId, body.content).catch(console.error);
+    }).catch(() => {});
+
     return reply.status(201).send({ fileId, title, message: `Stored "${title}"` });
   });
 

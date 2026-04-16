@@ -236,6 +236,17 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     return reply.send(file);
   });
 
+  // GET /:id/relationships — get knowledge graph edges for a file
+  fastify.get('/:id/relationships', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    if (!UUID_REGEX.test(id)) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'File not found' } });
+    }
+    const { getFileRelationships } = await import('../services/knowledge-graph.js');
+    const relationships = await getFileRelationships(id);
+    return reply.send({ relationships });
+  });
+
   // PATCH /:id — rename
   fastify.patch('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
@@ -650,6 +661,11 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     const queue = new Queue('file-parse', { connection: { host: 'localhost', port: 6379 } });
     await queue.add('parse', { fileId, userId, s3Key, mimeType: 'text/markdown' });
     await queue.close();
+
+    // Async relationship discovery (non-blocking)
+    import('../services/knowledge-graph.js').then(({ discoverRelationships }) => {
+      discoverRelationships(userId, fileId, body.content).catch(console.error);
+    }).catch(() => {});
 
     return reply.status(201).send({ fileId, title });
   });
