@@ -7,7 +7,6 @@ import {
   MessageCircle, Folder, Plus, ChevronRight
 } from "lucide-react"
 import { MobileUploadFab } from "@/components/file/mobile-upload-fab"
-import { WelcomeModal } from "@/components/onboarding/welcome-modal"
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow"
 import { useFiles } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
@@ -202,7 +201,6 @@ export default function HomePage() {
   return (
     <div className="flex flex-col h-full overflow-auto">
       <OnboardingFlow />
-      <WelcomeModal onUpload={() => setShowUpload(true)} />
       <MobileUploadFab />
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} />}
 
