@@ -319,7 +319,7 @@ export default function LandingPage() {
                 Start for free
               </Link>
               <a
-                href="#features"
+                href="#how-it-works"
                 className="px-6 py-2.5 rounded-md text-sm font-medium text-[#8A8F98] border border-white/[0.08] hover:border-white/[0.16] hover:text-[#EDEDEF] transition-all"
               >
                 See how it works
