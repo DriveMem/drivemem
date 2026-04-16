@@ -145,7 +145,7 @@ function DrawerTagSection({ fileId, drawerTags, setDrawerTags }: { fileId: strin
         {drawerTags.map((tag: any) => (
           <span key={tag.id} className="group inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>
             {tag.name}
-            <button onClick={() => handleRemove(tag.id)} className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 ml-0.5" title="RemoveTags">×</button>
+            <button onClick={() => handleRemove(tag.id)} className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 ml-0.5" title="Remove tag">×</button>
           </span>
         ))}
         <Popover open={showPicker} onOpenChange={setShowPicker}>
@@ -154,7 +154,7 @@ function DrawerTagSection({ fileId, drawerTags, setDrawerTags }: { fileId: strin
           </PopoverTrigger>
           <PopoverContent className="w-48 p-2" align="start">
             {availableTags.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-2">No moreTags</p>
+              <p className="text-xs text-muted-foreground text-center py-2">No more tags</p>
             ) : (
               <div className="space-y-1 max-h-40 overflow-auto">
                 {availableTags.map((tag: any) => (
@@ -240,7 +240,7 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
             }
           }}
         >
-          <Download className="h-3.5 w-3.5 mr-1.5" />DownloadFiles
+          <Download className="h-3.5 w-3.5 mr-1.5" />Download file
         </Button>
       </div>
     )
@@ -257,7 +257,7 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
   if (error) {
     return (
       <div className="flex h-24 items-center justify-center rounded-lg border text-sm text-muted-foreground">
-        PreviewFailed to load
+        Preview failed to load
       </div>
     )
   }
@@ -559,7 +559,7 @@ export function FileList() {
           <div className="rounded-2xl bg-gradient-to-br from-brand-500/10 via-green-500/5 to-amber-500/10 p-1 mb-6">
             <div className="rounded-xl bg-background px-8 py-6">
               <Sparkles className="h-8 w-8 text-brand-500 mx-auto mb-3" />
-              <h3 className="text-xl font-semibold mb-2">StartBuild your knowledge library</h3>
+              <h3 className="text-xl font-semibold mb-2">Start building your knowledge library</h3>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto">
                 Upload files or create notes. AI automatically understands content and builds connections. Ask anytime, AI answers using your knowledge.
               </p>
@@ -585,14 +585,14 @@ export function FileList() {
                   })
                   queryClient.invalidateQueries({ queryKey: ["files"] })
                   toast.success("Note created")
-                } catch { toast.error("CreateNote failed") }
+                } catch { toast.error("Create note failed") }
               }}
               className="group rounded-xl border p-4 hover:border-purple-500/50 hover:shadow-md transition-all text-center"
             >
               <div className="rounded-lg bg-purple-500/10 p-3 mx-auto w-fit mb-2 group-hover:scale-110 transition-transform">
                 <FileText className="h-5 w-5 text-purple-500" />
               </div>
-              <p className="text-sm font-medium">CreateNotes</p>
+              <p className="text-sm font-medium">Create note</p>
               <p className="text-xs text-muted-foreground mt-0.5">Quick note</p>
             </button>
             <Link
@@ -934,7 +934,7 @@ export function FileList() {
               setMoveTarget(contextMenu.fileId)
               setMoveFolderId("")
               setContextMenu(null)
-            }}>Moveto folder</DropdownMenuItem>
+            }}>Move to folder</DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
               setTagManagerFileId(contextMenu.fileId)
               setContextMenu(null)
@@ -985,7 +985,7 @@ export function FileList() {
               router.push(`/files/${contextMenu.fileId}/preview`)
               setContextMenu(null)
             }}>
-              <Link2 className="h-4 w-4 mr-2" />🔗 ViewKnowledge connections
+              <Link2 className="h-4 w-4 mr-2" />🔗 View knowledge connections
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -1076,7 +1076,7 @@ export function FileList() {
       {/* Rename Dialog */}
       <Dialog open={!!renameTarget} onOpenChange={(open) => { if (!open) setRenameTarget(null) }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>RenameFiles</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Rename file</DialogTitle></DialogHeader>
           <Input value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && renameValue.trim() && renameTarget) { renameFile.mutate({ fileId: renameTarget.fileId, name: renameValue.trim() }); setRenameTarget(null) } }} placeholder="Enter new name" autoFocus />
           <DialogFooter>
             <Button variant="outline" onClick={() => setRenameTarget(null)}>Cancel</Button>
@@ -1088,8 +1088,8 @@ export function FileList() {
       {/* Delete Confirm Dialog */}
       <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>ConfirmDelete</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">OKDelete this file? This action cannot be undone.</p>
+          <DialogHeader><DialogTitle>Confirm delete</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Delete this file? This action cannot be undone.</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
             <Button variant="destructive" onClick={() => { if (deleteTarget) { deleteFile.mutate(deleteTarget); setDeleteTarget(null) } }}>Delete</Button>
@@ -1121,7 +1121,7 @@ export function FileList() {
       {/* Share Dialog */}
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>ShareLink</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Share link</DialogTitle></DialogHeader>
           {shareLoading ? (
             <div className="flex items-center justify-center py-4"><Loader2 className="h-5 w-5 animate-spin" /></div>
           ) : (
@@ -1166,7 +1166,7 @@ export function FileList() {
               {/* Tags management */}
               <DrawerTagSection fileId={drawerFile.id} drawerTags={drawerTags} setDrawerTags={setDrawerTags} />
               <div className="rounded-lg border p-3 space-y-2">
-                <p className="text-xs font-medium text-muted-foreground mb-1">📋 FilesInfo</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">📋 File info</p>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Size</span>
                   <span>{fmtSize(drawerFile.size)}</span>
@@ -1176,7 +1176,7 @@ export function FileList() {
                   <span>{formatFileType(drawerFile.mimeType, drawerFile.name)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">UploadTime</span>
+                  <span className="text-muted-foreground">Upload time</span>
                   <span>{new Date(drawerFile.createdAt).toLocaleDateString("zh-CN")}</span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -1196,7 +1196,7 @@ export function FileList() {
                 href={`/files/${drawerFile.id}/preview`}
                 className="flex items-center justify-center gap-2 w-full rounded-lg border hover:bg-accent py-2.5 text-sm transition"
               >
-                👁️ ViewFull preview
+                👁️ View full preview
               </Link>
             </div>
           </div>
@@ -1206,7 +1206,7 @@ export function FileList() {
       {/* Move Dialog */}
       <Dialog open={!!moveTarget} onOpenChange={(open) => { if (!open) setMoveTarget(null) }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Moveto folder</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Move to folder</DialogTitle></DialogHeader>
           <div className="space-y-2 max-h-60 overflow-y-auto">
             <button onClick={() => setMoveFolderId("")} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent", moveFolderId === "" && "bg-accent font-medium")}>
               <FileText className="h-4 w-4" /> Root

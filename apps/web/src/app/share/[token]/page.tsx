@@ -88,7 +88,7 @@ export default function SharePage() {
               )}
 
               <Button className="mt-6 w-full" onClick={() => window.open(data.downloadUrl)}>
-                DownloadFiles
+                Download file
               </Button>
             </CardContent>
           </Card>

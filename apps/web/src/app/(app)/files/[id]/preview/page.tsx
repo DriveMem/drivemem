@@ -329,7 +329,7 @@ export default function FilePreviewPage() {
         {/* File info sidebar */}
         <Card className="w-72 shrink-0">
           <CardContent className="space-y-4 p-4">
-            <h2 className="font-semibold">FilesInfo</h2>
+            <h2 className="font-semibold">File info</h2>
             <dl className="space-y-2 text-sm">
               <div>
                 <dt className="text-muted-foreground">Filename</dt>
@@ -357,7 +357,7 @@ export default function FilePreviewPage() {
               )}
               {file.createdAt && (
                 <div>
-                  <dt className="text-muted-foreground">UploadTime</dt>
+                  <dt className="text-muted-foreground">Upload time</dt>
                   <dd>{new Date(file.createdAt).toLocaleString("zh-CN")}</dd>
                 </div>
               )}

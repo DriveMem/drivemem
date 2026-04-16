@@ -88,7 +88,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
         onClick={() => openDrawer(fileId)}
       >
         <Info className="h-3.5 w-3.5" />
-        ViewFull details
+        View full details
       </Button>
     </div>
   )

@@ -332,7 +332,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
           toast.success(`${files.length} files uploaded successfully. AI is processing...`)
           queryClient.invalidateQueries({ queryKey: ["files"] })
         } catch {
-          toast.error("UploadFailed")
+          toast.error("Upload failed")
         } finally {
           setUploading(false)
         }

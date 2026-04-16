@@ -126,7 +126,7 @@ export function TagManagerDialog({ fileId, fileIds, fileName, open, onOpenChange
 
         {/* Existing tags */}
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">ClickTagsAddorRemove</p>
+          <p className="text-xs text-muted-foreground">Click tags to add or remove</p>
           <div className="flex flex-wrap gap-2 max-h-48 overflow-auto">
             {allTags.map((tag: any) => {
               const state = getTagState(tag.id)

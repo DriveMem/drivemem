@@ -27,7 +27,7 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
   const onDrop = useCallback((accepted: File[], rejected: FileRejection[]) => {
     // Add rejected files with error to the global upload store
     rejected.forEach((r) => {
-      const msg = r.errors[0]?.code === "file-too-large" ? "FilesExceeds 50MB limit" : "Unsupported file format"
+      const msg = r.errors[0]?.code === "file-too-large" ? "File exceeds 50MB limit" : "Unsupported file format"
       addEntry({ id: crypto.randomUUID(), name: r.file.name, progress: 0, status: "error", error: msg })
     })
 
@@ -45,7 +45,7 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
             updateEntry(itemId, { status: "done", progress: 100 })
           },
           onError: (err: any) => {
-            updateEntry(itemId, { status: "error", error: err.message || "UploadFailed" })
+            updateEntry(itemId, { status: "error", error: err.message || "Upload failed" })
           },
         }
       )
