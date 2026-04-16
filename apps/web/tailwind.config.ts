@@ -46,6 +46,9 @@ const config: Config = {
         'brand-md': '0 4px 12px rgba(79, 91, 213, 0.1)',
         'brand-lg': '0 8px 24px rgba(79, 91, 213, 0.12)',
         'brand-glow': '0 0 40px rgba(79, 91, 213, 0.15)',
+        'soft': '0 2px 8px -2px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
+        'soft-md': '0 4px 16px -4px rgba(0, 0, 0, 0.08), 0 2px 6px -2px rgba(0, 0, 0, 0.05)',
+        'soft-lg': '0 10px 40px -10px rgba(0, 0, 0, 0.1), 0 4px 12px -2px rgba(0, 0, 0, 0.06)',
       },
       borderRadius: {
         lg: 'var(--radius)',

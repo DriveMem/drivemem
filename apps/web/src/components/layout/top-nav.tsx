@@ -96,7 +96,7 @@ export function TopNav() {
 
       {/* Search trigger */}
       <button
-        className="hidden sm:flex items-center gap-2 w-64 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
+        className="hidden sm:flex items-center gap-2 w-64 rounded-xl bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all duration-200 focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/20"
         onClick={() => {
           document.dispatchEvent(
             new KeyboardEvent("keydown", { key: "k", metaKey: true })
@@ -112,7 +112,7 @@ export function TopNav() {
         {/* Notification bell */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
+            <Button variant="ghost" size="icon" className="relative text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:scale-110 transition-transform duration-200">
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-brand-500 text-[10px] text-white flex items-center justify-center">
@@ -168,7 +168,7 @@ export function TopNav() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 text-sm font-medium">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 text-sm font-medium transition-all duration-200 hover:ring-2 hover:ring-primary/20">
                 U
               </span>
             </Button>

@@ -790,7 +790,7 @@ export function FileList() {
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                 draggable
                 onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
-                className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-zinc-200/50 dark:border-zinc-700/50 px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors", isSel && "bg-brand-50 dark:bg-brand-500/10")}
+                className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-zinc-200/50 dark:border-zinc-700/50 px-4 py-3 hover:bg-muted/50 rounded-lg transition-colors duration-200", isSel && "bg-brand-50 dark:bg-brand-500/10")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <Checkbox
                   checked={selected.has(file.id)}
@@ -1146,7 +1146,7 @@ export function FileList() {
         const drawerFile = rawFiles?.find((f: any) => f.id === drawerFileId)
         if (!drawerFile) return null
         return (
-          <div className="fixed inset-y-0 right-0 z-50 w-[400px] border-l bg-background shadow-xl">
+          <div className="fixed inset-y-0 right-0 z-50 w-[400px] border-l bg-background shadow-soft-lg rounded-l-2xl">
             <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="text-sm font-semibold">File Details</h3>
               <button onClick={() => closeDrawer()} className="h-8 w-8 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center">

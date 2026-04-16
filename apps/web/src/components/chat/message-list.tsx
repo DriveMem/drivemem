@@ -189,7 +189,7 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
       {messages.map((msg) => (
         <div key={msg.id} className={cn("flex gap-3 group", msg.role === "user" ? "justify-end" : "")}>
           {msg.role === "assistant" && <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"><Bot className="h-4 w-4 text-primary" /></div>}
-          <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-brand-500 text-white rounded-2xl rounded-br-sm px-4 py-3" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>
+          <div className={cn("text-sm", msg.role === "user" ? "ml-auto max-w-[70%] bg-brand-500 text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-soft" : "mr-auto w-full bg-muted/50 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/50")}>
             {msg.role === "assistant" ? (
               <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight, rehypeRaw]} components={markdownComponents}>{transformCitations(msg.content)}</ReactMarkdown>
