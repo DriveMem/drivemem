@@ -306,7 +306,7 @@ function WebhookDeliveryLog() {
 export default function DevelopersPage() {
   const [activeTab, setActiveTab] = useState(0)
   const [copiedClient, setCopiedClient] = useState<string | null>(null)
-  useEffect(() => { document.title = "Developers — DriveMem" }, [])
+  // title set via layout.tsx metadata
 
   return (
     <div className="flex-1 overflow-auto">
