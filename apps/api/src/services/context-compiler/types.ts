@@ -3,6 +3,7 @@ export interface CompileContextRequest {
   model?: { name?: string; contextWindow?: number };
   tokenBudget?: number; // default 8000
   role?: string; // agent role for content routing
+  since?: string; // ISO timestamp for incremental diff
   hints?: {
     project?: string;
     tags?: string[];
@@ -10,11 +11,24 @@ export interface CompileContextRequest {
     folderId?: string;
   };
   format?: 'markdown'; // v1 only markdown
+  depth?: 'L1' | 'L2' | 'L3' | 'L4';
 }
 
 export interface CompileContextResponse {
   compiledContext: string;
   metadata: CompilationMetadata;
+  diff?: {
+    added: KnowledgeFragment[];
+    updated: KnowledgeFragment[];
+    removed: string[];
+  };
+}
+
+export interface CompilationSnapshot {
+  fragments: KnowledgeFragment[];
+  fragmentIds: Set<string>;
+  timestamp: string;
+  compiledAt: number;
 }
 
 export interface CompilationMetadata {
@@ -25,6 +39,8 @@ export interface CompilationMetadata {
   coverage: 'full' | 'partial' | 'insufficient';
   sources: SourceInfo[];
   graphExpanded?: number;
+  depth?: string;
+  availableLayers?: string[];
 }
 
 export interface SourceInfo {
@@ -42,6 +58,16 @@ export interface KnowledgeFragment {
   relevanceScore: number;
   chunkIndex: number;
 }
+
+export const DEPTH_LEVELS = ['L1', 'L2', 'L3', 'L4'] as const;
+export type DepthLevel = (typeof DEPTH_LEVELS)[number];
+
+export const LAYER_BUDGETS: Record<DepthLevel, number> = {
+  L1: 500,
+  L2: 2000,
+  L3: 5000,
+  L4: 8000,
+};
 
 export interface AgentProfile {
   id: string;

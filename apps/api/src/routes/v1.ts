@@ -715,6 +715,8 @@ ${insightsSection}
       task: body.task,
       model: body.model,
       tokenBudget: body.tokenBudget,
+      since: body.since,
+      depth: body.depth,
       hints,
       format: body.format,
     });

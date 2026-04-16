@@ -1,13 +1,51 @@
 import { embedTexts } from '../../services/embedding.service.js';
 import { searchSimilar, preprocessQuery } from '../../services/vector.service.js';
-import type { CompileContextRequest, CompileContextResponse, KnowledgeFragment, SourceInfo } from './types.js';
+import type { CompileContextRequest, CompileContextResponse, KnowledgeFragment, SourceInfo, CompilationSnapshot, DepthLevel } from './types.js';
 import { estimateTokens } from './token-estimator.js';
 import { resolveProfile } from './agent-profiles.js';
+import { LAYER_BUDGETS, DEPTH_LEVELS } from './types.js';
+import { createHash } from 'crypto';
+
+// --- Compilation cache for dedup (10-min TTL) ---
+const CACHE_TTL_MS = 10 * 60 * 1000;
+const compilationCache = new Map<string, { response: CompileContextResponse; snapshot: CompilationSnapshot }>();
+
+function getCacheKey(userId: string, task: string): string {
+  const hash = createHash('sha256').update(task).digest('hex').slice(0, 16);
+  return `${userId}:${hash}`;
+}
+
+function pruneCache(): void {
+  const now = Date.now();
+  for (const [key, entry] of compilationCache) {
+    if (now - entry.snapshot.compiledAt > CACHE_TTL_MS) {
+      compilationCache.delete(key);
+    }
+  }
+}
 
 export { resolveProfile, registerProfile, listProfiles } from './agent-profiles.js';
 export { ROLE_BOOSTS, inferRole } from './agent-profiles.js';
 export { estimateTokens } from './token-estimator.js';
-export type { CompileContextRequest, CompileContextResponse, KnowledgeFragment, AgentProfile } from './types.js';
+export type { CompileContextRequest, CompileContextResponse, KnowledgeFragment, AgentProfile, CompilationSnapshot, DepthLevel } from './types.js';
+
+/**
+ * Infer depth from agent context window size.
+ */
+function inferDepthFromContextWindow(contextWindow: number): DepthLevel {
+  if (contextWindow < 8000) return 'L1';
+  if (contextWindow < 32000) return 'L2';
+  if (contextWindow < 128000) return 'L3';
+  return 'L4';
+}
+
+/**
+ * Get available deeper layers beyond current depth.
+ */
+function getAvailableLayers(currentDepth: DepthLevel): string[] {
+  const idx = DEPTH_LEVELS.indexOf(currentDepth);
+  return DEPTH_LEVELS.slice(idx + 1) as unknown as string[];
+}
 
 /**
  * Expand a task description into multiple search queries for broader recall.
@@ -209,12 +247,34 @@ export async function compileContext(
   request: CompileContextRequest,
 ): Promise<CompileContextResponse> {
   const startTime = Date.now();
+
+  // --- Cache dedup: return cached result if same task compiled within 10 min ---
+  pruneCache();
+  const cacheKey = getCacheKey(userId, request.task);
+  const cached = compilationCache.get(cacheKey);
+  if (cached && Date.now() - cached.snapshot.compiledAt < CACHE_TTL_MS) {
+    return cached.response;
+  }
+
   const profile = resolveProfile(request.model?.name);
   // Apply role override from request
   if (request.role) {
     profile.role = request.role;
   }
-  const tokenBudget = request.tokenBudget || Math.min(8000, Math.floor(profile.contextWindow * 0.3));
+
+  // --- Resolve depth ---
+  let depth: DepthLevel = request.depth || 'L3';
+  if (!request.depth && request.model?.contextWindow) {
+    depth = inferDepthFromContextWindow(request.model.contextWindow);
+  } else if (!request.depth && profile.contextWindow) {
+    depth = inferDepthFromContextWindow(profile.contextWindow);
+  }
+
+  // Determine token budget: layer budget is the default, user can override for L4
+  const layerBudget = LAYER_BUDGETS[depth];
+  const tokenBudget = depth === 'L4'
+    ? (request.tokenBudget || Math.min(layerBudget, Math.floor(profile.contextWindow * 0.3)))
+    : Math.min(request.tokenBudget || layerBudget, layerBudget);
 
   // Step 1: Query Expansion
   const queries = expandQueries(request.task);
@@ -319,14 +379,96 @@ export async function compileContext(
   // Step 3: Score and rank
   const scored = scoreFragments(fragments, request.task);
 
+  // Step 3.5: Depth-aware fragment filtering
+  // L1/L2 prefer summary-type content over raw document chunks
+  let depthFiltered = scored;
+  if (depth === 'L1' || depth === 'L2') {
+    const summaryFragments = scored.filter(f =>
+      f.text.toLowerCase().includes('summary') ||
+      f.text.startsWith('[Via ') ||
+      f.fileName.toLowerCase().includes('summary') ||
+      f.fileName.toLowerCase().includes('auto-capture')
+    );
+    // Use summary fragments if we have enough, otherwise fall back to top-scored
+    if (summaryFragments.length >= 2) {
+      depthFiltered = summaryFragments;
+    } else {
+      // For L1, take only top fragments by score
+      depthFiltered = scored.slice(0, depth === 'L1' ? 5 : 10);
+    }
+  }
+
   // Step 4: Budget allocation
-  const { selected, coverage } = allocateBudget(scored, tokenBudget);
+  const { selected, coverage } = allocateBudget(depthFiltered, tokenBudget);
 
   // Step 5: Format output
   const compiledContext = formatOutput(selected, request.task, tokenBudget);
   const totalTokens = estimateTokens(compiledContext);
 
-  return {
+  // --- Incremental diff logic ---
+  let diff: CompileContextResponse['diff'] | undefined;
+  if (request.since) {
+    const sinceTime = new Date(request.since).getTime();
+    if (!isNaN(sinceTime)) {
+      // Fetch updatedAt for selected fragments' files
+      const fileIds = [...new Set(selected.map(f => f.fileId))];
+      let fileTimestamps: Record<string, number> = {};
+      try {
+        const { db } = await import('../../db/index.js');
+        const { files } = await import('../../db/schema.js');
+        const { inArray } = await import('drizzle-orm');
+        if (fileIds.length > 0) {
+          const fileRows = await db.select({ id: files.id, updatedAt: files.updatedAt }).from(files).where(inArray(files.id, fileIds));
+          for (const row of fileRows) {
+            fileTimestamps[row.id] = new Date(row.updatedAt).getTime();
+          }
+        }
+      } catch { /* best-effort */ }
+
+      // Compare with previous snapshot
+      const previousSnapshot = cached?.snapshot;
+      const previousIds = previousSnapshot?.fragmentIds || new Set<string>();
+      const currentIds = new Set(selected.map(f => f.id));
+
+      const added: KnowledgeFragment[] = [];
+      const updated: KnowledgeFragment[] = [];
+      const removed: string[] = [];
+
+      for (const f of selected) {
+        const fileUpdatedAt = fileTimestamps[f.fileId] || 0;
+        if (!previousIds.has(f.id)) {
+          // New fragment not in previous snapshot
+          if (fileUpdatedAt > sinceTime) {
+            added.push(f);
+          }
+        } else if (fileUpdatedAt > sinceTime) {
+          // Existed before but file was updated since
+          updated.push(f);
+        }
+      }
+
+      // Fragments in previous snapshot but not in current
+      if (previousSnapshot) {
+        for (const prevId of previousSnapshot.fragmentIds) {
+          if (!currentIds.has(prevId)) {
+            removed.push(prevId);
+          }
+        }
+      }
+
+      diff = { added, updated, removed };
+    }
+  }
+
+  // --- Store snapshot in cache ---
+  const snapshot: CompilationSnapshot = {
+    fragments: selected,
+    fragmentIds: new Set(selected.map(f => f.id)),
+    timestamp: new Date().toISOString(),
+    compiledAt: Date.now(),
+  };
+
+  const response: CompileContextResponse = {
     compiledContext,
     metadata: {
       fragmentCount: selected.length,
@@ -336,6 +478,13 @@ export async function compileContext(
       coverage,
       sources: buildSourceIndex(selected),
       graphExpanded: graphExpandedCount,
+      depth,
+      availableLayers: getAvailableLayers(depth),
     },
+    ...(diff ? { diff } : {}),
   };
+
+  compilationCache.set(cacheKey, { response, snapshot });
+
+  return response;
 }
