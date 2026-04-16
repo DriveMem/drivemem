@@ -63,7 +63,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center justify-center w-full px-12">
-          <h1 className="text-5xl text-white mb-3" style={{ fontFamily: "'Instrument Serif', serif" }}>
+          <h1 className="text-5xl text-white mb-3 font-serif">
             DriveMem
           </h1>
           <p className="text-lg text-zinc-400 font-light mb-14">

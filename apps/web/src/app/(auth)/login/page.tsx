@@ -66,7 +66,7 @@ function LoginForm() {
     <div className="p-8">
       {/* Mobile-only header */}
       <div className="lg:hidden text-center mb-8">
-        <h1 className="text-3xl text-zinc-900 dark:text-white" style={{ fontFamily: "'Instrument Serif', serif" }}>DriveMem</h1>
+        <h1 className="text-3xl text-zinc-900 dark:text-white font-serif">DriveMem</h1>
         <p className="mt-2 text-sm text-zinc-400">Memory for your AI agents</p>
       </div>
 
