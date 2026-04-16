@@ -35,7 +35,7 @@ export function KnowledgeFeedback({ fileId }: { fileId: string }) {
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); rate("useful") }}
         className={cn(
-          "p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors",
+          "p-1 rounded text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-600 transition-colors",
           rating === "useful" && "text-green-600 bg-green-50 dark:bg-green-900/20"
         )}
         title="Useful"
@@ -45,7 +45,7 @@ export function KnowledgeFeedback({ fileId }: { fileId: string }) {
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); rate("not_useful") }}
         className={cn(
-          "p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors",
+          "p-1 rounded text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-600 transition-colors",
           rating === "not_useful" && "text-red-500 bg-red-50 dark:bg-red-900/20"
         )}
         title="Not useful"
