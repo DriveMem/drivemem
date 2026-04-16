@@ -217,7 +217,49 @@ export async function compileContext(
   // Step 2: Retrieval
   const rawFragments = await retrieveFragments(userId, queries, request.hints);
 
-  // Step 2.5: Apply feedback weights
+  // Step 2.5: Graph expansion — follow Work Graph edges for related knowledge
+  let graphExpandedCount = 0;
+  try {
+    const { getFileRelationships } = await import('../knowledge-graph.js');
+    const retrievedFileIds = [...new Set(rawFragments.map(f => f.fileId))];
+
+    for (const fid of retrievedFileIds.slice(0, 3)) {
+      const relationships = await getFileRelationships(fid);
+
+      for (const rel of relationships) {
+        if (['supports', 'depends_on'].includes(rel.relation) && rel.confidence > 0.7) {
+          // Skip if already present in fragments
+          if (rawFragments.some(f => f.fileId === rel.relatedFileId)) continue;
+
+          // Get file summary as a lightweight fragment
+          const { db } = await import('../../db/index.js');
+          const { files } = await import('../../db/schema.js');
+          const { eq } = await import('drizzle-orm');
+          const [file] = await db.select({
+            id: files.id,
+            name: files.name,
+            summary: files.summary,
+          })
+            .from(files)
+            .where(eq(files.id, rel.relatedFileId));
+
+          if (file?.summary) {
+            rawFragments.push({
+              id: `graph-${file.id}`,
+              fileId: file.id,
+              fileName: file.name,
+              text: `[Via ${rel.relation} relationship] ${file.summary}`,
+              relevanceScore: 0.6,
+              chunkIndex: 0,
+            });
+            graphExpandedCount++;
+          }
+        }
+      }
+    }
+  } catch { /* graph expansion is best-effort */ }
+
+  // Step 2.6: Apply feedback weights
   const { applyFeedbackWeights } = await import('../feedback-weights.js');
   const weightedAsScore = rawFragments.map(f => ({ ...f, fileId: f.fileId, score: f.relevanceScore }));
   const reweighted = await applyFeedbackWeights(userId, weightedAsScore);
@@ -242,6 +284,7 @@ export async function compileContext(
       compilationTimeMs: Date.now() - startTime,
       coverage,
       sources: buildSourceIndex(selected),
+      graphExpanded: graphExpandedCount,
     },
   };
 }

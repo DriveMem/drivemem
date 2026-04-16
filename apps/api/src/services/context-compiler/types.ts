@@ -23,6 +23,7 @@ export interface CompilationMetadata {
   compilationTimeMs: number;
   coverage: 'full' | 'partial' | 'insufficient';
   sources: SourceInfo[];
+  graphExpanded?: number;
 }
 
 export interface SourceInfo {
