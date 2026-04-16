@@ -63,12 +63,12 @@ export function ConversationList() {
   })()
 
   return (
-    <div className="flex h-full flex-col border-r">
+    <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b p-3">
         <h2 className="text-sm font-semibold">Conversation history</h2>
       </div>
       <div className="px-3 pt-3">
-        <Button className="w-full bg-brand-500 hover:bg-brand-600 text-white rounded-lg py-2.5 text-sm font-medium" onClick={() => router.push("/chat?new=" + Date.now())}>
+        <Button className="w-full bg-brand-500 hover:bg-brand-600 text-white rounded-xl py-2.5 text-sm font-medium shadow-soft active:scale-[0.98] transition-all duration-200" onClick={() => router.push("/chat?new=" + Date.now())}>
           + New conversation
         </Button>
       </div>
@@ -90,11 +90,11 @@ export function ConversationList() {
         </div>
       ) : sorted.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-          <div className="rounded-full bg-brand-500/10 p-3">
-            <MessageCircle className="h-5 w-5 text-brand-500" />
+          <div className="rounded-full bg-brand-500/10 p-4">
+            <MessageCircle className="h-7 w-7 text-brand-500/50" />
           </div>
-          <p className="text-sm text-muted-foreground">No conversations yet</p>
-          <p className="text-xs text-muted-foreground/60">Clickbutton above to start your first AI conversation</p>
+          <p className="text-sm text-muted-foreground/50">No conversations yet</p>
+          <p className="text-xs text-muted-foreground/40">Clickbutton above to start your first AI conversation</p>
         </div>
       ) : (
         <ul className="flex-1 overflow-y-auto">
@@ -131,8 +131,8 @@ export function ConversationList() {
                 {g.items.map((c: Conversation) => (
             <li
               key={c.id}
-              className={`group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 transition-colors duration-200 hover:bg-muted/50 ${
-                activeId === c.id ? "bg-accent" : ""
+              className={`group flex cursor-pointer items-center justify-between rounded-xl mx-2 px-3 py-2.5 transition-colors duration-200 hover:bg-muted/50 ${
+                activeId === c.id ? "bg-primary/5 border-l-2 border-primary" : ""
               }`}
               onClick={() => router.push(`/chat/${c.id}`)}
             >
@@ -174,7 +174,7 @@ export function ConversationList() {
                     }}
                   >{c.title || "New conversation"}</p>
                 )}
-                <p className="text-xs text-muted-foreground truncate mt-0.5">{formatTime(c.updatedAt)}</p>
+                <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">{formatTime(c.updatedAt)}</p>
               </div>
               {c.isPinned && <Pin className="h-3 w-3 text-blue-400 shrink-0" />}
               <Button
