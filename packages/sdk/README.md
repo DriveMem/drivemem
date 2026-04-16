@@ -1,15 +1,15 @@
-# @drivemem/sdk
+# drivemem
 
 TypeScript SDK for DriveMem — connect any AI agent to shared knowledge.
 
 ## Install
 ```bash
-npm install @drivemem/sdk
+npm install drivemem
 ```
 
 ## Quick Start
 ```typescript
-import { DriveMem } from '@drivemem/sdk'
+import { DriveMem } from 'drivemem'
 
 const mem = new DriveMem({ apiKey: 'ak_your_key' })
 

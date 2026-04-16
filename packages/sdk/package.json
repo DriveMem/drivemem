@@ -1,5 +1,5 @@
 {
-  "name": "@drivemem/sdk",
+  "name": "drivemem",
   "version": "0.1.0",
   "description": "DriveMem SDK — connect any AI agent to shared knowledge",
   "main": "dist/index.js",
