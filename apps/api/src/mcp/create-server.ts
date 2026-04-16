@@ -8,11 +8,21 @@ import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { eq, desc, and, inArray } from 'drizzle-orm';
 import { inferRole } from '../services/context-compiler/agent-profiles.js';
+import type { DetectedCapabilities } from '../services/capability-detector.js';
 
 export function createMcpServer(userId: string, agentName: string = ''): Server {
   // Track detected project across the session
   let detectedProjectId: string | null = null;
   let detectedProjectName: string | null = null;
+  // Track detected capabilities across the session
+  let detectedCaps: DetectedCapabilities | null = null;
+
+  // Kick off async capability detection on connect
+  import('../services/capability-detector.js').then(({ detectCapabilities }) => {
+    detectCapabilities(userId, { agentName }).then(caps => {
+      detectedCaps = caps;
+    }).catch(() => {});
+  }).catch(() => {});
 
   const server = new Server(
     { name: 'ai-drive', version: '1.0.0' },
@@ -653,7 +663,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             task,
             tokenBudget: (args as any).tokenBudget as number | undefined,
             model: (args as any).model ? { name: (args as any).model as string } : undefined,
-            role: inferRole(agentName),
+            role: detectedCaps?.role || inferRole(agentName),
             hints: {
               project: (args as any).project as string | undefined,
               tags: (args as any).tags ? ((args as any).tags as string).split(',').map((t: string) => t.trim()) : undefined,

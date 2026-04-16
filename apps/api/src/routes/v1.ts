@@ -695,6 +695,22 @@ ${insightsSection}
     });
   });
 
+  // GET /agent/capabilities — auto-detect agent role and domain
+  fastify.get('/agent/capabilities', { preHandler: [requireApiKey] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const query = request.query as { task?: string };
+    const { detectCapabilities } = await import('../services/capability-detector.js');
+    const capabilities = await detectCapabilities(userId, {
+      agentName: (request as any).apiKeyName,
+      headers: {
+        'user-agent': request.headers['user-agent'],
+        'x-agent-name': request.headers['x-agent-name'] as string | undefined,
+      },
+      taskText: query.task,
+    });
+    return reply.send(capabilities);
+  });
+
   // Context Compiler
   fastify.post('/context/compile', { preHandler: [requireApiKey] }, async (request, reply) => {
     const { compileContext } = await import('../services/context-compiler/index.js');
@@ -711,12 +727,32 @@ ${insightsSection}
         hints.folderId = detection.projectId;
       }
     }
+    // Auto-detect role if not provided
+    let role = body.role;
+    if (!role) {
+      try {
+        const { detectCapabilities } = await import('../services/capability-detector.js');
+        const detected = await detectCapabilities(request.user!.id, {
+          agentName: (request as any).apiKeyName,
+          headers: {
+            'user-agent': request.headers['user-agent'],
+            'x-agent-name': request.headers['x-agent-name'] as string | undefined,
+          },
+          taskText: body.task,
+        });
+        if (detected.role !== 'general' && detected.confidence > 0.3) {
+          role = detected.role;
+        }
+      } catch { /* best-effort */ }
+    }
+
     const result = await compileContext(request.user!.id, {
       task: body.task,
       model: body.model,
       tokenBudget: body.tokenBudget,
       since: body.since,
       depth: body.depth,
+      role,
       hints,
       format: body.format,
     });

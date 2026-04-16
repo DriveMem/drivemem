@@ -264,6 +264,23 @@ export async function compileContext(
     profile.role = request.role;
   }
 
+  // Auto-detect role/domain if not specified
+  if (!request.role || !request.outputSchema) {
+    try {
+      const { detectCapabilities } = await import('../capability-detector.js');
+      const detected = await detectCapabilities(userId, {
+        agentName: request.model?.name,
+        taskText: request.task,
+      });
+      if (!request.role && detected.role !== 'general' && detected.confidence > 0.3) {
+        profile.role = detected.role;
+      }
+      if (!request.outputSchema && detected.domain !== 'general' && detected.confidence > 0.3) {
+        request.outputSchema = detected.domain;
+      }
+    } catch { /* best-effort */ }
+  }
+
   // --- Resolve depth ---
   let depth: DepthLevel = request.depth || 'L3';
   if (!request.depth && request.model?.contextWindow) {
