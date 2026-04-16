@@ -103,7 +103,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
         {step === 0 && (
           <div className="space-y-4">
             <p className="text-center text-sm text-muted-foreground">
-              Choose your role and AI Drive will customize your experience
+              Choose your role and DriveMem will customize your experience
             </p>
             <div className="grid grid-cols-2 gap-3">
               {personas.map((p) => (
@@ -234,7 +234,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
                 📎 Try with sample files
               </Button>
               <Button onClick={handleFinish} className="bg-brand-500 hover:bg-brand-600">
-                Start using AI Drive 🚀
+                Start using DriveMem 🚀
               </Button>
               <Button variant="ghost" onClick={() => setStep(1)} className="text-muted-foreground">
                 <ChevronLeft className="mr-1 h-4 w-4" />

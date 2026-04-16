@@ -312,7 +312,7 @@ export default function DevelopersPage() {
     <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-brand-500/30">
       {/* Nav */}
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-[#E5E4E1] bg-white/80 px-6 py-4 backdrop-blur">
-        <Link href={isLoggedIn ? "/dashboard" : "/"} className="text-lg font-bold text-[#1C1B18]">AI Drive</Link>
+        <Link href={isLoggedIn ? "/dashboard" : "/"} className="text-lg font-bold text-[#1C1B18]">DriveMem</Link>
         <div className="flex items-center gap-4">
           <a href="#features" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Features</a>
           {isLoggedIn ? (
@@ -344,7 +344,7 @@ export default function DevelopersPage() {
             Give your agents memory
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-[#6B6966]">
-            AI Drive is the knowledge infrastructure for agents — connect via API and MCP
+            DriveMem is the knowledge infrastructure for agents — connect via API and MCP
           </p>
           <div className="mt-10">
             <Button asChild size="lg" className="h-12 px-10 text-base bg-brand-500 hover:bg-brand-600 text-white">
@@ -639,7 +639,7 @@ plugins:
               <div id="mcp">
                 <h3 className="font-semibold text-[#1C1B18]">MCP Tools</h3>
                 <p className="mt-2 text-sm text-[#6B6966]">
-                  AI Drive MCP Server provides {MCP_TOOLS.length} tools:
+                  DriveMem MCP Server provides {MCP_TOOLS.length} tools:
                 </p>
                 <div className="mt-3 overflow-x-auto rounded-lg border border-[#E5E4E1]">
                   <table className="w-full text-sm">
@@ -736,7 +736,7 @@ aidrive insights           # AI insights
         <div className="mx-auto max-w-6xl px-6 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-bold text-[#1C1B18]">AI Drive</h3>
+              <h3 className="text-lg font-bold text-[#1C1B18]">DriveMem</h3>
               <p className="mt-2 text-sm text-[#6B6966]">The memory layer for AI agents</p>
             </div>
             <div>
@@ -764,7 +764,7 @@ aidrive insights           # AI insights
             </div>
           </div>
           <div className="mt-8 border-t border-[#E5E4E1] pt-6 text-center text-xs text-[#6B6966]">
-            © {new Date().getFullYear()} AI Drive. All rights reserved.
+            © {new Date().getFullYear()} DriveMem. All rights reserved.
           </div>
         </div>
       </footer>
