@@ -108,8 +108,8 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-AIDrive-Signature': `sha256=${signature}`,
-          'X-AIDrive-Event': 'test.ping',
+          'X-DriveMem-Signature': `sha256=${signature}`,
+          'X-DriveMem-Event': 'test.ping',
         },
         body,
         signal: AbortSignal.timeout(10000),

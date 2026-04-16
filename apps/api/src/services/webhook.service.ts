@@ -42,8 +42,8 @@ async function deliverWithRetry(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-AIDrive-Signature': `sha256=${signature}`,
-        'X-AIDrive-Event': event,
+        'X-DriveMem-Signature': `sha256=${signature}`,
+        'X-DriveMem-Event': event,
       },
       body,
       signal: AbortSignal.timeout(TIMEOUT_MS),

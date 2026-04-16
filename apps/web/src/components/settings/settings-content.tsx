@@ -178,7 +178,7 @@ function AgentConfigTabs({ apiKey }: { apiKey: string }) {
       lang: "json",
       content: JSON.stringify({
         mcpServers: {
-          "ai-drive": {
+          "drivemem": {
             url: "https://api.drivemem.cloud/mcp",
             headers: {
               Authorization: `Bearer ${apiKey}`
@@ -192,7 +192,7 @@ function AgentConfigTabs({ apiKey }: { apiKey: string }) {
       lang: "json",
       content: JSON.stringify({
         mcpServers: {
-          "ai-drive": {
+          "drivemem": {
             command: "npx",
             args: ["-y", "@anthropic/mcp-remote", "https://api.drivemem.cloud/mcp"],
             env: {
@@ -205,7 +205,7 @@ function AgentConfigTabs({ apiKey }: { apiKey: string }) {
     openclaw: {
       label: "OpenClaw",
       lang: "yaml",
-      content: `plugins:\n  entries:\n    ai-drive:\n      enabled: true\n      config:\n        apiKey: "${apiKey}"\n        baseUrl: "https://api.drivemem.cloud"`,
+      content: `plugins:\n  entries:\n    drivemem:\n      enabled: true\n      config:\n        apiKey: "${apiKey}"\n        baseUrl: "https://api.drivemem.cloud"`,
     },
   }
 
@@ -585,7 +585,7 @@ function WebhookCard() {
               </Button>
             </div>
             <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-              Use this secret to verify <code className="font-mono">X-AIDrive-Signature</code> header（HMAC-SHA256）
+              Use this secret to verify <code className="font-mono">X-DriveMem-Signature</code> header（HMAC-SHA256）
             </p>
           </div>
         )}
@@ -641,7 +641,7 @@ function WebhookCard() {
         )}
 
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Each event sends a JSON POST containing <code className="font-mono">X-AIDrive-Signature</code> Signature。
+          Each event sends a JSON POST containing <code className="font-mono">X-DriveMem-Signature</code> Signature。
           <a href="/developers" className="text-brand-500 hover:underline ml-1">View Docs ↗</a>
         </p>
 
@@ -965,7 +965,7 @@ export default function SettingsContent() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `ai-drive-export-${new Date().toISOString().slice(0, 10)}.zip`
+      a.download = `drivemem-export-${new Date().toISOString().slice(0, 10)}.zip`
       a.click()
       URL.revokeObjectURL(url)
     } catch {

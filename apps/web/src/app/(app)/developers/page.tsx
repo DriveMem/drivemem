@@ -81,7 +81,7 @@ curl -X GET 'https://drivemem.cloud/api/v1/files?detail=brief' \\
 
   `{
   "mcpServers": {
-    "ai-drive": {
+    "drivemem": {
       // Public: https://api.drivemem.cloud/mcp
       // Local: http://localhost:3000/mcp
       "url": "https://api.drivemem.cloud/mcp",
@@ -105,7 +105,7 @@ curl -X POST https://drivemem.cloud/api/webhooks \\
 
 # Response:
 # { "id": "...", "url": "...", "events": [...], "secret": "..." }
-# Verify signature with secret：X-AIDrive-Signature: sha256=<HMAC(secret, body)>`,
+# Verify signature with secret：X-DriveMem-Signature: sha256=<HMAC(secret, body)>`,
 ]
 
 const MCP_TOOLS = [
@@ -429,7 +429,7 @@ export default function DevelopersPage() {
                     path: "~/Library/Application Support/Claude/claude_desktop_config.json",
                     config: `{
   "mcpServers": {
-    "ai-drive": {
+    "drivemem": {
       // Public: https://api.drivemem.cloud/mcp
       // Local: http://localhost:3000/mcp
       "url": "https://api.drivemem.cloud/mcp",
@@ -445,7 +445,7 @@ export default function DevelopersPage() {
                     path: "~/.cursor/mcp.json",
                     config: `{
   "mcpServers": {
-    "ai-drive": {
+    "drivemem": {
       // Public: https://api.drivemem.cloud/mcp
       // Local: http://localhost:3000/mcp
       "url": "https://api.drivemem.cloud/mcp",
@@ -462,7 +462,7 @@ export default function DevelopersPage() {
                     config: `# OpenClaw MCP Config（openclaw.yaml）
 plugins:
   entries:
-    ai-drive:
+    drivemem:
       kind: mcp
       transport:
         type: sse
