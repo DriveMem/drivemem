@@ -89,11 +89,11 @@ export default function SignupPage() {
     <div className="p-8">
       {/* Mobile-only header */}
       <div className="lg:hidden text-center mb-8">
-        <h1 className="text-3xl font-bold">DriveMem</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Agent's memory layer</p>
+        <h1 className="text-3xl text-zinc-900 dark:text-white" style={{ fontFamily: "'Instrument Serif', serif" }}>DriveMem</h1>
+        <p className="mt-2 text-sm text-zinc-400">Memory for your AI agents</p>
       </div>
 
-      <h2 className="mb-6 text-2xl font-semibold">Sign up</h2>
+      <h2 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Create account</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -101,7 +101,7 @@ export default function SignupPage() {
             id="email"
             type="email"
             placeholder="your@email.com"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+            className="rounded-xl h-12 text-base border-zinc-200 dark:border-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-transparent"
             {...register("email")}
           />
           {errors.email && (
@@ -115,7 +115,7 @@ export default function SignupPage() {
             id="password"
             type="password"
             placeholder="At least 8 characters with letters and numbers"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+            className="rounded-xl h-12 text-base border-zinc-200 dark:border-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-transparent"
             {...register("password")}
           />
           {errors.password && (
@@ -129,7 +129,7 @@ export default function SignupPage() {
             id="confirmPassword"
             type="password"
             placeholder="Re-enter password"
-            className="rounded-xl h-12 text-base border-border/50 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+            className="rounded-xl h-12 text-base border-zinc-200 dark:border-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-transparent"
             {...register("confirmPassword")}
           />
           {errors.confirmPassword && (
@@ -143,7 +143,7 @@ export default function SignupPage() {
 
         <Button
           type="submit"
-          className="bg-brand-500 hover:bg-brand-600 rounded-xl h-12 w-full text-white font-medium"
+          className="bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 rounded-xl h-12 w-full text-white font-medium"
           disabled={loading}
         >
           {loading ? "Sign up..." : "Sign up"}
@@ -152,7 +152,7 @@ export default function SignupPage() {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="text-primary hover:underline">
+        <Link href="/login" className="text-brand-500 hover:underline">
           Sign in
         </Link>
       </p>
@@ -162,7 +162,7 @@ export default function SignupPage() {
       </p>
 
       <div className="mt-4 text-center">
-        <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition underline">
+        <Link href="/login" className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition underline">
           Sign in with Demo account →
         </Link>
       </div>

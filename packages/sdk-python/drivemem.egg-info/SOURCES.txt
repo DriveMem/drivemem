@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+drivemem/__init__.py
+drivemem/client.py
+drivemem.egg-info/PKG-INFO
+drivemem.egg-info/SOURCES.txt
+drivemem.egg-info/dependency_links.txt
+drivemem.egg-info/requires.txt
+drivemem.egg-info/top_level.txt
