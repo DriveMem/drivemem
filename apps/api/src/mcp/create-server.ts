@@ -260,6 +260,15 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           parts.push(`Active project: ${detectedProjectName}`);
         }
 
+        // Check for conflicts
+        try {
+          const { getConflicts } = await import('../services/knowledge-graph.js');
+          const conflicts = await getConflicts(userId);
+          if (conflicts.length > 0) {
+            parts.push(`⚠️ ${conflicts.length} knowledge conflict(s) detected`);
+          }
+        } catch { /* don't block */ }
+
         if (parts.length > 0) {
           contextPrefix = `[AI Drive Context] ${parts.join(' | ')}\n\n`;
         }

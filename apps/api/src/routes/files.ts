@@ -194,6 +194,14 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     return reply.send({ fileId, status: 'parsing' });
   });
 
+  // GET /conflicts — knowledge conflicts for current user
+  fastify.get('/conflicts', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const { getConflicts } = await import('../services/knowledge-graph.js');
+    const conflicts = await getConflicts(userId);
+    return reply.send({ conflicts, count: conflicts.length });
+  });
+
   // GET / — file list
   fastify.get('/', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;

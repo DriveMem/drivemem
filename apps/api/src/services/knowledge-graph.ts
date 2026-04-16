@@ -1,6 +1,6 @@
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, and, or, inArray } from 'drizzle-orm';
+import { eq, and, or, inArray, desc } from 'drizzle-orm';
 import { embedTexts } from './embedding.service.js';
 import { searchSimilar } from './vector.service.js';
 import { chat } from './llm.service.js';
@@ -164,4 +164,50 @@ export async function getFileRelationships(fileId: string): Promise<Array<{
       direction: 'incoming' as const,
     })),
   ];
+}
+
+export async function getConflicts(userId: string): Promise<Array<{
+  id: string;
+  sourceFile: { id: string; name: string; summary: string | null };
+  targetFile: { id: string; name: string; summary: string | null };
+  confidence: number;
+  createdAt: Date;
+}>> {
+  const edges = await db.select({
+    id: schema.knowledgeEdges.id,
+    sourceId: schema.knowledgeEdges.sourceId,
+    targetId: schema.knowledgeEdges.targetId,
+    confidence: schema.knowledgeEdges.confidence,
+    createdAt: schema.knowledgeEdges.createdAt,
+  })
+    .from(schema.knowledgeEdges)
+    .innerJoin(schema.files, eq(schema.knowledgeEdges.sourceId, schema.files.id))
+    .where(and(
+      eq(schema.files.userId, userId),
+      eq(schema.knowledgeEdges.relation, 'contradicts'),
+    ))
+    .orderBy(desc(schema.knowledgeEdges.createdAt))
+    .limit(20);
+
+  if (edges.length === 0) return [];
+
+  const allFileIds = [...new Set([...edges.map(e => e.sourceId), ...edges.map(e => e.targetId)])];
+  const fileDetails = await db.select({
+    id: schema.files.id,
+    name: schema.files.name,
+    summary: schema.files.summary,
+  })
+    .from(schema.files)
+    .where(inArray(schema.files.id, allFileIds));
+
+  const fileMap: Record<string, { id: string; name: string; summary: string | null }> = {};
+  fileDetails.forEach(f => { fileMap[f.id] = f; });
+
+  return edges.map(e => ({
+    id: e.id,
+    sourceFile: fileMap[e.sourceId] || { id: e.sourceId, name: 'Unknown', summary: null },
+    targetFile: fileMap[e.targetId] || { id: e.targetId, name: 'Unknown', summary: null },
+    confidence: e.confidence,
+    createdAt: e.createdAt!,
+  }));
 }

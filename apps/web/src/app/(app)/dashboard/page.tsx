@@ -191,6 +191,7 @@ export default function DashboardPage() {
   const [insights, setInsights] = useState<any[]>([])
   const [resumeBrief, setResumeBrief] = useState<any>(null)
   const [hasApiKeys, setHasApiKeys] = useState<boolean | null>(null)
+  const [conflicts, setConflicts] = useState<any[]>([])
   const reportRef = useRef<ReportSectionHandle>(null)
 
   useEffect(() => { document.title = "Dashboard — DriveMem" }, [])
@@ -203,6 +204,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     apiFetch('/api/api-keys').then((data: any) => setHasApiKeys(data?.keys?.length > 0)).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    apiFetch('/api/files/conflicts').then((data: any) => {
+      if (data?.conflicts?.length > 0) setConflicts(data.conflicts)
+    }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -307,6 +314,32 @@ export default function DashboardPage() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+          {conflicts.length > 0 && (
+            <div className="mx-6 mb-4 rounded-xl border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                  Knowledge conflicts detected
+                </h3>
+                <span className="text-xs text-amber-500 bg-amber-100 dark:bg-amber-900/50 rounded-full px-2 py-0.5">
+                  {conflicts.length}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {conflicts.slice(0, 3).map((c: any) => (
+                  <div key={c.id} className="flex items-start gap-2 text-xs text-amber-600 dark:text-amber-400">
+                    <span className="shrink-0">⚡</span>
+                    <span>
+                      <strong>{c.sourceFile.name}</strong> contradicts <strong>{c.targetFile.name}</strong>
+                    </span>
+                  </div>
+                ))}
+                {conflicts.length > 3 && (
+                  <p className="text-xs text-amber-500">+ {conflicts.length - 3} more conflicts</p>
+                )}
+              </div>
             </div>
           )}
           <InsightsSummaryCard insights={insights} onSwitchToAi={() => handleTabSwitch("ai")} />
