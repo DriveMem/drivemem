@@ -19,7 +19,7 @@ export function OnboardingFlow() {
   useEffect(() => {
     apiFetch("/api/users/me/profile")
       .then((data: any) => {
-        setCompleted(data?.onboardingCompleted ?? true)
+        setCompleted(data?.onboardingCompleted ?? false)
         setStep(data?.onboardingStep ?? 0)
       })
       .catch(() => {})

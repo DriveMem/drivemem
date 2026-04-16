@@ -137,7 +137,7 @@ export default function HomePage() {
   // Fetch resume brief
   useEffect(() => {
     apiFetch("/api/resume-brief")
-      .then((data: any) => { if (data?.show) setResumeBrief(data) })
+      .then((data: any) => { if (data?.show && data?.changes?.total > 0) setResumeBrief(data) })
       .catch(() => {})
   }, [])
 
