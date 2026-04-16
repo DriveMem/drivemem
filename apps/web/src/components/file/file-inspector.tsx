@@ -2,6 +2,7 @@
 
 import { FileText, Loader2, AlertCircle, Info, Tag } from "lucide-react"
 import { KnowledgeFeedback } from "@/components/feedback/knowledge-feedback"
+import { RelatedKnowledge } from "@/components/file/related-knowledge"
 import { Button } from "@/components/ui/button"
 import { useFile } from "@/hooks/use-files"
 import { useFileTags } from "@/hooks/use-tags"
@@ -83,6 +84,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
           </button>
         )}
       </div>
+      <RelatedKnowledge fileId={fileId} onFileClick={(id) => openDrawer(id)} />
       <Button
         variant="outline"
         size="sm"

@@ -584,7 +584,8 @@ function WebhookCard() {
         ) : (
           <div className="space-y-2">
             {hooks.map(h => (
-              <div key={h.id} className="flex items-center justify-between rounded-lg border p-3">
+              <div key={h.id} className="rounded-lg border p-3">
+                <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">{h.url}</p>
                   <div className="flex flex-wrap gap-1 mt-1">
@@ -620,6 +621,8 @@ function WebhookCard() {
                     Delete
                   </Button>
                 </div>
+                </div>
+                <WebhookSubscriptions webhookId={h.id} />
               </div>
             ))}
           </div>
