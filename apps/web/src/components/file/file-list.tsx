@@ -1,4 +1,5 @@
 "use client"
+import { KnowledgeFeedback } from "@/components/feedback/knowledge-feedback"
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -1157,6 +1158,9 @@ export function FileList() {
                 <TypeIcon type={drawerFile.type} name={drawerFile.name} className="h-16 w-16" />
               </div>
               <h2 className="text-lg font-semibold text-center truncate" title={drawerFile.name}>{drawerFile.name}</h2>
+              <div className="flex justify-center">
+                <KnowledgeFeedback fileId={drawerFileId!} />
+              </div>
               {drawerFile.summary && (
                 <div className="rounded-lg border p-3">
                   <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">🧠 AI Summary</p>
