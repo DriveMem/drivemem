@@ -356,7 +356,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
       )}
       <div className="flex items-center gap-2 border-b border-border px-4 py-2">
         <span className="text-xs text-muted-foreground">AI Memory scope: </span>
-        <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined); toast("Memory scope: All files", { duration: 1500 }) }} className="gap-1 text-xs">
+        <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined); toast("Memory scope: All files", { duration: 1500 }) }} className="gap-1 text-xs rounded-full">
           <Files className="h-3 w-3" />All Files{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}
         </Button>
         {scope !== "all" && scopeLabel && (
@@ -367,7 +367,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={scope === "folder" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs">
+            <Button variant={scope === "folder" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs rounded-full">
               <Folder className="h-3 w-3" />{scope === "folder" && scopeLabel ? scopeLabel : "Specified folder"}{scope === "folder" && scopeId && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
@@ -384,7 +384,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={scope === "file" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs">
+            <Button variant={scope === "file" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs rounded-full">
               <FileText className="h-3 w-3" />{scope === "file" && scopeLabel ? scopeLabel : "Specified files"}{scope === "file" && scopeId && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
@@ -450,7 +450,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         <div className="flex flex-wrap gap-2 px-4 py-2 border-t border-border">
           {followUpSuggestions.map((q, i) => (
             <button key={i} onClick={() => { handleSend(q); setFollowUpSuggestions([]) }}
-              className="rounded-full border border-border/50 bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition">
+              className="rounded-full border border-border/50 bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200 shadow-sm">
               {q}
             </button>
           ))}
