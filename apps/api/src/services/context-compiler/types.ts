@@ -12,11 +12,14 @@ export interface CompileContextRequest {
   };
   format?: 'markdown'; // v1 only markdown
   depth?: 'L1' | 'L2' | 'L3' | 'L4';
+  outputSchema?: string; // domain name: 'coding' | 'writing' | 'research' | 'strategy' | 'general'
 }
 
 export interface CompileContextResponse {
   compiledContext: string;
   metadata: CompilationMetadata;
+  domain?: string;
+  schema?: Record<string, any>;
   diff?: {
     added: KnowledgeFragment[];
     updated: KnowledgeFragment[];
@@ -77,4 +80,5 @@ export interface AgentProfile {
   maxFragments: number;
   priorityRules: string[]; // e.g. ["recency", "relevance"]
   role?: string; // 'coder' | 'writer' | 'researcher' | 'strategist' | 'general'
+  domain?: string; // 'coding' | 'writing' | 'research' | 'strategy' | 'general'
 }
