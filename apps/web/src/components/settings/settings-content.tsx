@@ -589,6 +589,57 @@ function WebhookDeliveryLog() {
   )
 }
 
+function AutoCaptureToggle() {
+  const [enabled, setEnabled] = useState(true)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/users/me")
+        setEnabled(data?.profile?.autoCaptureEnabled !== false)
+      } catch { /* default true */ }
+    }
+    load()
+  }, [])
+
+  const toggle = async (val: boolean) => {
+    setEnabled(val)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch("/api/users/me/profile", {
+        method: "PATCH",
+        body: JSON.stringify({ autoCaptureEnabled: val }),
+      })
+      toast.success(val ? "Auto-capture enabled" : "Auto-capture disabled")
+    } catch {
+      setEnabled(!val)
+      toast.error("Failed to update setting")
+    }
+  }
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium">Enable auto-capture</p>
+          <p className="text-xs text-muted-foreground">When enabled, DriveMem automatically extracts decisions, conclusions, and action items from your conversations</p>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => toggle(e.target.checked)}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-500"></div>
+        </label>
+      </div>
+      <p className="text-xs text-muted-foreground mt-2">Daily limit: 50 captures per day</p>
+    </>
+  )
+}
+
 type SettingsTab = "general" | "developer"
 
 export default function SettingsContent() {
@@ -917,6 +968,17 @@ export default function SettingsContent() {
                 : "New password must be at least 6 characters"}
             </p>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Auto Capture */}
+      <Card>
+        <CardHeader>
+          <CardTitle>🧲 Auto Capture</CardTitle>
+          <CardDescription>Automatically extract valuable knowledge from your conversations</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AutoCaptureToggle />
         </CardContent>
       </Card>
 

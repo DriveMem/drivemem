@@ -6,7 +6,7 @@ import { requireAuth } from '../plugins/auth.js';
 
 export interface TimelineEvent {
   id: string;
-  type: 'file_uploaded' | 'conversation' | 'insight' | 'report' | 'agent_activity';
+  type: 'file_uploaded' | 'conversation' | 'insight' | 'report' | 'agent_activity' | 'auto_capture';
   title: string;
   description?: string;
   icon: string;
@@ -112,10 +112,10 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
   const events: TimelineEvent[] = [
     ...files.map(f => ({
       id: f.id,
-      type: 'file_uploaded' as const,
+      type: (f.name.startsWith('auto-capture-') ? 'auto_capture' : 'file_uploaded') as 'auto_capture' | 'file_uploaded',
       title: f.name,
       description: f.summary?.slice(0, 100) || undefined,
-      icon: '📄',
+      icon: f.name.startsWith('auto-capture-') ? '🧲' : '📄',
       createdAt: f.createdAt,
       metadata: { mimeType: f.mimeType, size: Number(f.size), status: f.status },
     })),

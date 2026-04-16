@@ -25,7 +25,7 @@ interface FlowActivity {
 // ── List View Types (existing) ──
 interface TimelineEvent {
   id: string
-  type: "file_uploaded" | "conversation" | "insight" | "report" | "agent_activity"
+  type: "file_uploaded" | "conversation" | "insight" | "report" | "agent_activity" | "auto_capture"
   title: string
   description?: string
   subtitle?: string
@@ -39,6 +39,7 @@ const EVENT_CONFIG = {
   insight: { icon: Lightbulb, label: "AI Insights", dotColor: "bg-purple-500", iconColor: "text-purple-500" },
   report: { icon: BarChart3, label: "AI Report", dotColor: "bg-orange-500", iconColor: "text-orange-500" },
   agent_activity: { icon: Bot, label: "Agent Activity", dotColor: "bg-cyan-500", iconColor: "text-cyan-500" },
+  auto_capture: { icon: FileText, label: "Auto Captured", dotColor: "bg-fuchsia-500", iconColor: "text-fuchsia-500" },
 }
 
 function getEventLink(event: TimelineEvent): string {
@@ -113,6 +114,7 @@ function ListView() {
           { type: "insight", label: "💡 Insights" },
           { type: "report", label: "📊 Report" },
           { type: "agent_activity", label: "🤖 Agent" },
+          { type: "auto_capture", label: "🧲 Auto Capture" },
         ].map(f => (
           <button
             key={f.type || "all"}

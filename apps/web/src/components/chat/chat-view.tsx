@@ -275,7 +275,14 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
         createdAt: new Date().toISOString(),
         citations: assistantCitations,
       }
-      setMessages((prev) => [...prev, assistantMsg])
+      setMessages((prev) => {
+        const updated = [...prev, assistantMsg]
+        // Show toast when auto-capture likely triggered
+        if (updated.length > 0 && updated.length % 10 === 0 && updated.length >= 10) {
+          toast.success('✨ DriveMem is learning from this conversation', { duration: 3000 })
+        }
+        return updated
+      })
       // Refresh conversation list (title may have been auto-generated)
       queryClient.invalidateQueries({ queryKey: ["conversations"] })
     } catch (err: any) {
