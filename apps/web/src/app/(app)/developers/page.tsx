@@ -306,39 +306,10 @@ function WebhookDeliveryLog() {
 export default function DevelopersPage() {
   const [activeTab, setActiveTab] = useState(0)
   const [copiedClient, setCopiedClient] = useState<string | null>(null)
-  const { data: session, status } = useSession()
-  const isLoggedIn = status === "authenticated"
-
   useEffect(() => { document.title = "Developers — DriveMem" }, [])
 
   return (
-    <main className="min-h-screen bg-white text-[#1C1B18] selection:bg-brand-500/30">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-[#E5E4E1] bg-white/80 px-6 py-4 backdrop-blur">
-        <Link href={isLoggedIn ? "/dashboard" : "/"} className="text-lg font-bold text-[#1C1B18]">DriveMem</Link>
-        <div className="flex items-center gap-4">
-          <a href="#features" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Features</a>
-          {isLoggedIn ? (
-            <>
-              <Link href="/dashboard" className="rounded-lg border border-[#E5E4E1] px-4 py-2 text-sm font-medium text-[#1C1B18] hover:bg-[#F8F7F5] transition">
-                Back to Dashboard
-              </Link>
-              <Link href="/settings" className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-sm font-medium text-white">
-                {(session?.user?.name || "U").charAt(0).toUpperCase()}
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="text-sm text-[#6B6966] hover:text-[#1C1B18] transition">Sign in</Link>
-              <Link href="/signup" className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 transition">Get started free</Link>
-            </>
-          )}
-        </div>
-      </nav>
-
-      {/* Grid bg */}
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(rgba(0,0,0,.04)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(79,91,213,.1),transparent)]" />
+    <div className="flex-1 overflow-auto">
 
       {/* Hero */}
       <section className="relative z-10 flex min-h-[70vh] flex-col items-center justify-center bg-gradient-to-b from-[#F4F5FD] to-white px-6 text-center">
@@ -756,43 +727,6 @@ drivemem search "auth module" --json | jq '.results[0]'`}</code>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-[#E5E4E1] bg-[#F8F7F5]">
-        <div className="mx-auto max-w-6xl px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-lg font-bold text-[#1C1B18]">DriveMem</h3>
-              <p className="mt-2 text-sm text-[#6B6966]">The memory layer for AI agents</p>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Product</h4>
-              <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><a href="#features" className="hover:text-brand-500 transition">Features</a></li>
-                <li><Link href="/login" className="hover:text-brand-500 transition">Sign in</Link></li>
-                <li><Link href="/signup" className="hover:text-brand-500 transition">Sign up free</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Developers</h4>
-              <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><Link href="/developers#api" className="hover:text-brand-500 transition">API Docs</Link></li>
-                <li><Link href="/developers#mcp" className="hover:text-brand-500 transition">MCP Protocol</Link></li>
-                <li><Link href="/developers#cli" className="hover:text-brand-500 transition">CLI Tools</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-[#1C1B18] mb-3">Legal</h4>
-              <ul className="space-y-2 text-sm text-[#6B6966]">
-                <li><Link href="/terms" className="hover:text-brand-500 transition">Terms of Service</Link></li>
-                <li><Link href="/privacy" className="hover:text-brand-500 transition">Privacy Policy</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-[#E5E4E1] pt-6 text-center text-xs text-[#6B6966]">
-            © {new Date().getFullYear()} DriveMem. All rights reserved.
-          </div>
-        </div>
-      </footer>
-    </main>
+    </div>
   )
 }
