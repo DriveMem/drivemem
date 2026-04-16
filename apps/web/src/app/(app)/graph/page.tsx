@@ -43,6 +43,8 @@ export default function GraphPage() {
   const [insights, setInsights] = useState<Insight[]>([])
   const [loading, setLoading] = useState(true)
   const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null)
+  const [nodeCount, setNodeCount] = useState(0)
+  const [edgeCount, setEdgeCount] = useState(0)
   const [hoveredEdge, setHoveredEdge] = useState<GraphEdge | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const nodesRef = useRef<GraphNode[]>([])
@@ -94,7 +96,9 @@ export default function GraphPage() {
     }
 
     nodesRef.current = Array.from(nodeMap.values())
+    setNodeCount(nodesRef.current.length)
     edgesRef.current = edges
+    setEdgeCount(edges.length)
 
     const canvas = canvasRef.current
     if (!canvas) return
@@ -297,7 +301,7 @@ export default function GraphPage() {
         <div>
           <h1 className="text-lg font-semibold">Knowledge Graph</h1>
           <p className="text-xs text-muted-foreground">
-            {nodesRef.current.length} files · {edgesRef.current.length} connections
+            {nodeCount} files · {edgeCount} connections
           </p>
         </div>
         <div className="flex items-center gap-3">

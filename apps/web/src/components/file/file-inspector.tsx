@@ -36,7 +36,7 @@ export function FileInspector({ fileId }: { fileId: string }) {
   if (error || !file) {
     return (
       <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
-        <AlertCircle className="h-4 w-4" /><span>FilesNot found</span>
+        <AlertCircle className="h-4 w-4" /><span>File not found</span>
       </div>
     )
   }

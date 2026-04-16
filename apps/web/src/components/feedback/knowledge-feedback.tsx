@@ -31,7 +31,7 @@ export function KnowledgeFeedback({ fileId }: { fileId: string }) {
   }
 
   return (
-    <div className="inline-flex items-center gap-1">
+    <div className="inline-flex items-center gap-1 border border-zinc-200 dark:border-zinc-700 rounded-md px-1 py-0.5">
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); rate("useful") }}
         className={cn(
