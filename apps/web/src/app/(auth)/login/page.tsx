@@ -66,11 +66,11 @@ function LoginForm() {
     <div className="p-8">
       {/* Mobile-only header */}
       <div className="lg:hidden text-center mb-8">
-        <h1 className="text-3xl text-zinc-900 dark:text-white font-serif">DriveMem</h1>
+        <h1 className="text-3xl text-gray-100 font-serif">DriveMem</h1>
         <p className="mt-2 text-sm text-zinc-400">Memory for your AI agents</p>
       </div>
 
-      <h2 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Sign in</h2>
+      <h2 className="mb-6 text-2xl font-semibold text-gray-100">Sign in</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -78,7 +78,7 @@ function LoginForm() {
             id="email"
             type="email"
             placeholder="your@email.com"
-            className="rounded-xl h-12 text-base border-zinc-200 dark:border-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-transparent"
+            className="rounded-xl h-12 text-base border-white/[0.08] placeholder:text-gray-600 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-white/[0.05] text-gray-100"
             {...register("email")}
           />
           {errors.email && (
@@ -100,7 +100,7 @@ function LoginForm() {
             id="password"
             type="password"
             placeholder="••••••••"
-            className="rounded-xl h-12 text-base border-zinc-200 dark:border-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-transparent"
+            className="rounded-xl h-12 text-base border-white/[0.08] placeholder:text-gray-600 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-white/[0.05] text-gray-100"
             {...register("password")}
           />
           {errors.password && (
@@ -119,7 +119,7 @@ function LoginForm() {
 
         <Button
           type="submit"
-          className="bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 rounded-xl h-12 w-full text-white font-medium"
+          className="bg-[#5E6AD2] hover:bg-[#6E78E0] rounded-xl h-12 w-full text-white font-medium"
           disabled={loading}
         >
           {loading ? "Sign in..." : "Sign in"}
@@ -141,7 +141,7 @@ function LoginForm() {
             setValue("password", "demo123")
             handleSubmit(onSubmit)()
           }}
-          className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition underline"
+          className="text-sm text-gray-500 hover:text-gray-300 transition underline"
         >
           Sign in with Demo account →
         </button>

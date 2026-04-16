@@ -35,9 +35,9 @@ export function RelatedKnowledge({ fileId, onFileClick }: { fileId: string; onFi
   if (relationships.length === 0) return null
 
   const typeColors: Record<string, string> = {
-    relation: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    contradiction: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    trend: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    relation: "bg-blue-900/30 text-blue-400",
+    contradiction: "bg-red-900/30 text-red-400",
+    trend: "bg-emerald-900/30 text-emerald-400",
   }
 
   return (
@@ -50,10 +50,10 @@ export function RelatedKnowledge({ fileId, onFileClick }: { fileId: string; onFi
           <button
             key={rel.id}
             onClick={() => onFileClick?.(rel.relatedFileId)}
-            className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left"
+            className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-white/[0.05] transition-colors text-left"
           >
             <span className="truncate flex-1">{rel.relatedFileName}</span>
-            <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${typeColors[rel.type] || "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"}`}>
+            <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${typeColors[rel.type] || "bg-white/[0.05] text-gray-400"}`}>
               {rel.type}
             </span>
           </button>

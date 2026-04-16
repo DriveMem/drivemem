@@ -31,12 +31,12 @@ export function KnowledgeFeedback({ fileId }: { fileId: string }) {
   }
 
   return (
-    <div className="inline-flex items-center gap-1 border border-zinc-200 dark:border-zinc-700 rounded-md px-1 py-0.5">
+    <div className="inline-flex items-center gap-1 border border-white/[0.06] rounded-md px-1 py-0.5">
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); rate("useful") }}
         className={cn(
-          "p-1 rounded text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-600 transition-colors",
-          rating === "useful" && "text-green-600 bg-green-50 dark:bg-green-900/20"
+          "p-1 rounded text-gray-500 hover:bg-white/[0.05] hover:text-gray-300 transition-colors",
+          rating === "useful" && "text-green-500 bg-green-900/20"
         )}
         title="Useful"
       >
@@ -45,8 +45,8 @@ export function KnowledgeFeedback({ fileId }: { fileId: string }) {
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); rate("not_useful") }}
         className={cn(
-          "p-1 rounded text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-600 transition-colors",
-          rating === "not_useful" && "text-red-500 bg-red-50 dark:bg-red-900/20"
+          "p-1 rounded text-gray-500 hover:bg-white/[0.05] hover:text-gray-300 transition-colors",
+          rating === "not_useful" && "text-red-500 bg-red-900/20"
         )}
         title="Not useful"
       >

@@ -168,8 +168,8 @@ export function SwimlaneView({ data }: { data: ActivityFlowData }) {
     return (
       <div className="text-center py-16 animate-fade-in-up">
         <div className="text-4xl mb-4">🔀</div>
-        <p className="text-zinc-400 font-medium mb-2">No agent activity yet</p>
-        <p className="text-sm text-zinc-500 mb-6">Connect an agent to see information flow between your AI tools.</p>
+        <p className="text-gray-400 font-medium mb-2">No agent activity yet</p>
+        <p className="text-sm text-gray-500 mb-6">Connect an agent to see information flow between your AI tools.</p>
         <Link href="/developers">
           <Button variant="default" size="sm" className="gap-1.5">
             <Bot className="w-4 h-4" />
@@ -236,7 +236,7 @@ export function SwimlaneView({ data }: { data: ActivityFlowData }) {
                   x={(x1 + x2) / 2}
                   y={midY - 8}
                   textAnchor="middle"
-                  className="fill-zinc-500"
+                  className="fill-gray-500"
                   fontSize="10"
                   fontWeight="500"
                 >
@@ -255,7 +255,7 @@ export function SwimlaneView({ data }: { data: ActivityFlowData }) {
           }}
         >
           {/* Header Row */}
-          <div className="sticky top-0 z-20 bg-background border-b border-zinc-200 dark:border-zinc-700 p-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          <div className="sticky top-0 z-20 bg-background border-b border-white/[0.06] p-2 text-xs font-medium text-gray-400">
             Time
           </div>
           {agentNames.map((agent, idx) => {
@@ -263,7 +263,7 @@ export function SwimlaneView({ data }: { data: ActivityFlowData }) {
             return (
               <div
                 key={agent}
-                className="sticky top-0 z-20 bg-background border-b border-zinc-200 dark:border-zinc-700 p-3 text-center"
+                className="sticky top-0 z-20 bg-background border-b border-white/[0.06] p-3 text-center"
                 style={{ borderBottomColor: color.accent, borderBottomWidth: '2px' }}
               >
                 <div className="flex items-center justify-center gap-2">
@@ -271,11 +271,11 @@ export function SwimlaneView({ data }: { data: ActivityFlowData }) {
                     className="h-2.5 w-2.5 rounded-full"
                     style={{ backgroundColor: color.accent }}
                   />
-                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate" style={{ color: color.text }}>
+                  <span className="text-sm font-semibold text-gray-100 truncate" style={{ color: color.text }}>
                     🤖 {agent}
                   </span>
                 </div>
-                <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                <div className="text-xs text-gray-400 mt-0.5">
                   {data.agents[agent].length} action{data.agents[agent].length !== 1 ? 's' : ''}
                 </div>
               </div>
@@ -291,13 +291,13 @@ export function SwimlaneView({ data }: { data: ActivityFlowData }) {
             return (
               <div key={rowIdx} className="contents">
                 {/* Time cell */}
-                <div className="border-r border-zinc-200 dark:border-zinc-700 p-2 flex flex-col justify-center">
+                <div className="border-r border-white/[0.06] p-2 flex flex-col justify-center">
                   {showDate && (
-                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400/60 font-medium mb-0.5">
+                    <div className="text-[10px] text-gray-400/60 font-medium mb-0.5">
                       {row.date}
                     </div>
                   )}
-                  <div className="text-xs text-zinc-400 dark:text-zinc-500 font-mono">
+                  <div className="text-xs text-gray-500 font-mono">
                     {row.time}
                   </div>
                 </div>
@@ -345,7 +345,7 @@ export function SwimlaneView({ data }: { data: ActivityFlowData }) {
 
         {/* Flow Legend */}
         {data.flows.length > 0 && (
-          <div className="mt-4 flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400 px-2">
+          <div className="mt-4 flex items-center gap-4 text-xs text-gray-400 px-2">
             <span className="flex items-center gap-1.5">
               <svg width="24" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 2" /><polygon points="20,1 24,4 20,7" fill="currentColor" /></svg>
               Information flow
@@ -374,17 +374,17 @@ export function SwimlaneView({ data }: { data: ActivityFlowData }) {
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-3 w-3 rounded-full" style={{ backgroundColor: color.accent }} />
                 <span className="font-semibold text-sm">🤖 {agent}</span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">{activities.length} action{activities.length !== 1 ? 's' : ''}</span>
+                <span className="text-xs text-gray-400">{activities.length} action{activities.length !== 1 ? 's' : ''}</span>
               </div>
               <div className="space-y-2">
                 {activities.map((a) => (
                   <div key={a.id} className="flex items-start gap-2 text-sm">
                     <span className="flex-shrink-0">{actionIcons[a.action] || '📌'}</span>
                     <div className="flex-1 min-w-0">
-                      <span className="text-zinc-500 dark:text-zinc-400">{actionVerbs[a.action] || a.action}</span>{' '}
+                      <span className="text-gray-400">{actionVerbs[a.action] || a.action}</span>{' '}
                       <span className="font-medium truncate">&quot;{a.detail || '...'}&quot;</span>
                     </div>
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400 flex-shrink-0 whitespace-nowrap">
+                    <span className="text-xs text-gray-400 flex-shrink-0 whitespace-nowrap">
                       {formatTime(a.createdAt)}
                     </span>
                   </div>
@@ -400,7 +400,7 @@ export function SwimlaneView({ data }: { data: ActivityFlowData }) {
             <h3 className="text-sm font-semibold mb-2">🔀 Information Flow</h3>
             <div className="space-y-1.5">
               {data.flows.map((flow, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                <div key={i} className="flex items-center gap-2 text-xs text-gray-400">
                   <span className="font-medium text-foreground">{flow.from}</span>
                   <span>→</span>
                   <span className="font-medium text-foreground">{flow.to}</span>

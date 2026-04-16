@@ -116,7 +116,7 @@ function TypeIcon({ type, name, className }: { type: string; name?: string; clas
     md: "text-green-500",
     image: "text-blue-400",
   }
-  const color = (ext && colorByExt[ext]) || colorByType[type] || "text-zinc-500 dark:text-zinc-400"
+  const color = (ext && colorByExt[ext]) || colorByType[type] || "text-gray-400"
   return <FileText className={cn("h-4 w-4 flex-shrink-0", className, color)} />
 }
 
@@ -141,7 +141,7 @@ function DrawerTagSection({ fileId, drawerTags, setDrawerTags }: { fileId: strin
 
   return (
     <div className="rounded-lg border p-3">
-      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">🏷️ Tags</p>
+      <p className="text-xs font-medium text-gray-400 mb-2">🏷️ Tags</p>
       <div className="flex flex-wrap gap-1.5">
         {drawerTags.map((tag: any) => (
           <span key={tag.id} className="group inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>
@@ -151,15 +151,15 @@ function DrawerTagSection({ fileId, drawerTags, setDrawerTags }: { fileId: strin
         ))}
         <Popover open={showPicker} onOpenChange={setShowPicker}>
           <PopoverTrigger asChild>
-            <button className="rounded-full border border-dashed px-2 py-0.5 text-xs text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">+ Add</button>
+            <button className="rounded-full border border-dashed px-2 py-0.5 text-xs text-gray-400 hover:bg-white/[0.05] transition">+ Add</button>
           </PopoverTrigger>
           <PopoverContent className="w-48 p-2" align="start">
             {availableTags.length === 0 ? (
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center py-2">No more tags</p>
+              <p className="text-xs text-gray-400 text-center py-2">No more tags</p>
             ) : (
               <div className="space-y-1 max-h-40 overflow-auto">
                 {availableTags.map((tag: any) => (
-                  <button key={tag.id} onClick={() => handleAdd(tag)} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+                  <button key={tag.id} onClick={() => handleAdd(tag)} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-white/[0.05] transition">
                     <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: tag.color || '#4F5BD5' }} />
                     {tag.name}
                   </button>
@@ -221,7 +221,7 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
 
   if (fileType === "other") {
     return (
-      <div className="rounded-lg border p-4 text-center text-sm text-zinc-500 dark:text-zinc-400 space-y-3">
+      <div className="rounded-lg border p-4 text-center text-sm text-gray-400 space-y-3">
         <p>Preview not supported, please download to view</p>
         <Button
           variant="outline"
@@ -249,15 +249,15 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
 
   if (loading) {
     return (
-      <div className="flex h-32 items-center justify-center rounded-lg border bg-zinc-50/30 dark:bg-zinc-800/30">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-500 dark:text-zinc-400" />
+      <div className="flex h-32 items-center justify-center rounded-lg border bg-white/[0.03]">
+        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="flex h-24 items-center justify-center rounded-lg border text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="flex h-24 items-center justify-center rounded-lg border text-sm text-gray-400">
         Preview failed to load
       </div>
     )
@@ -265,7 +265,7 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
 
   if (fileType === "image" && imgUrl) {
     return (
-      <div className="rounded-lg border bg-zinc-50/30 dark:bg-zinc-800/30 p-2 flex items-center justify-center">
+      <div className="rounded-lg border bg-white/[0.03] p-2 flex items-center justify-center">
         <img src={imgUrl} alt={fileName} className="max-h-[240px] max-w-full object-contain rounded" />
       </div>
     )
@@ -289,7 +289,7 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
 }
 
 function StatusIcon({ status, error, compact }: { status: string; error?: string; compact?: boolean }) {
-  if (status === "uploading") return <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-500 dark:text-zinc-400" />
+  if (status === "uploading") return <Loader2 className="h-3.5 w-3.5 animate-spin text-gray-400" />
   if (status === "parsing") {
     if (compact) return <Loader2 className="h-3 w-3 animate-spin text-yellow-500" />
     return <span className="flex items-center gap-1 text-xs text-yellow-500"><Loader2 className="h-3 w-3 animate-spin" />AI Remembering...</span>
@@ -561,7 +561,7 @@ export function FileList() {
             <div className="rounded-xl bg-background px-8 py-6">
               <Sparkles className="h-8 w-8 text-brand-500 mx-auto mb-3" />
               <h3 className="text-xl font-semibold mb-2">Start building your knowledge library</h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
+              <p className="text-sm text-gray-400 max-w-sm mx-auto">
                 Upload files or create notes. AI automatically understands content and builds connections. Ask anytime, AI answers using your knowledge.
               </p>
             </div>
@@ -575,7 +575,7 @@ export function FileList() {
                 <Upload className="h-5 w-5 text-brand-500" />
               </div>
               <p className="text-sm font-medium">Upload files</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">PDF, Word, PPT etc.</p>
+              <p className="text-xs text-gray-400 mt-0.5">PDF, Word, PPT etc.</p>
             </button>
             <button
               onClick={async () => {
@@ -594,7 +594,7 @@ export function FileList() {
                 <FileText className="h-5 w-5 text-purple-500" />
               </div>
               <p className="text-sm font-medium">Create note</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Quick note</p>
+              <p className="text-xs text-gray-400 mt-0.5">Quick note</p>
             </button>
             <Link
               href="/chat"
@@ -604,7 +604,7 @@ export function FileList() {
                 <MessageSquare className="h-5 w-5 text-green-500" />
               </div>
               <p className="text-sm font-medium">Ask AI</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Based on your knowledge library</p>
+              <p className="text-xs text-gray-400 mt-0.5">Based on your knowledge library</p>
             </Link>
             <Link
               href="/chat?q=Help me see what's in the sample files"
@@ -614,10 +614,10 @@ export function FileList() {
                 <Sparkles className="h-5 w-5 text-amber-500" />
               </div>
               <p className="text-sm font-medium">Try examples</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Try with demo files</p>
+              <p className="text-xs text-gray-400 mt-0.5">Try with demo files</p>
             </Link>
           </div>
-          <p className="mt-6 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-6 text-xs text-gray-400">
             Drag & drop supported · PDF, Word, PPT, Excel, TXT, Markdown
           </p>
         </div>
@@ -629,7 +629,7 @@ export function FileList() {
   return (
     <div className="flex h-full flex-col" onDragOver={(e) => { e.preventDefault() }} onDrop={(e) => { e.preventDefault(); setShowUpload(true) }}>
       {/* Toolbar: filters left, actions right */}
-      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700 px-4 py-2 gap-2">
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-2 gap-2">
         <div className="flex items-center gap-1 overflow-x-auto min-w-0">
           <Checkbox
             checked={filteredFiles.length > 0 && filteredFiles.every(f => selected.has(f.id))}
@@ -646,8 +646,8 @@ export function FileList() {
               className={cn(
                 "rounded-full px-3 py-1 text-xs transition",
                 typeFilter === key
-                  ? "bg-zinc-900 text-white"
-                  : "bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:bg-zinc-700"
+                  ? "bg-white/[0.10] text-white"
+                  : "bg-white/[0.05] text-gray-400 hover:bg-white/[0.08]"
               )}
             >
               {label}
@@ -656,7 +656,7 @@ export function FileList() {
           {userTags.length > 0 && (
             <Popover>
               <PopoverTrigger asChild>
-                <button className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+                <button className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-400 hover:bg-white/[0.05] transition">
                   <Tag className="h-3 w-3" />
                   {activeTagFilter || "Tags"}
                 </button>
@@ -664,7 +664,7 @@ export function FileList() {
               <PopoverContent className="w-48 p-2" align="start">
                 {userTags.map((tag: any) => (
                   <button key={tag.id} onClick={() => setActiveTagFilter(activeTagFilter === tag.name ? null : tag.name)}
-                    className="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+                    className="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm hover:bg-white/[0.05] transition">
                     <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: tag.color || '#6B7280' }} />
                     <span className={activeTagFilter === tag.name ? "font-medium" : ""}>{tag.name}</span>
                   </button>
@@ -675,7 +675,7 @@ export function FileList() {
           {/* Sort dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+              <button className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-400 hover:bg-white/[0.05] transition">
                 <ArrowUpDown className="h-3 w-3" />
                 {{ name: "Name", createdAt: "Time", size: "Size", type: "Type" }[sortKey]}
                 {sortDir === "asc" ? " ↑" : " ↓"}
@@ -705,15 +705,15 @@ export function FileList() {
             </Button>
           <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />New folder</Button>
           <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-brand-500 hover:bg-brand-600 text-white"><Upload className="h-3.5 w-3.5" />Quick Note</Button>
-          <div className="flex items-center rounded-md border border-zinc-200 dark:border-zinc-700 ml-2">
-            <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-r-none", viewMode === "list" && "bg-zinc-100 dark:bg-zinc-800")} onClick={() => setViewMode("list")}><List className="h-3.5 w-3.5" /></Button>
-            <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-l-none", viewMode === "grid" && "bg-zinc-100 dark:bg-zinc-800")} onClick={() => setViewMode("grid")}><LayoutGrid className="h-3.5 w-3.5" /></Button>
+          <div className="flex items-center rounded-md border border-white/[0.06] ml-2">
+            <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-r-none", viewMode === "list" && "bg-white/[0.05]")} onClick={() => setViewMode("list")}><List className="h-3.5 w-3.5" /></Button>
+            <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-l-none", viewMode === "grid" && "bg-white/[0.05]")} onClick={() => setViewMode("grid")}><LayoutGrid className="h-3.5 w-3.5" /></Button>
           </div>
         </div>
       </div>
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} folderId={currentFolderId} />}
       {/* Breadcrumb */}
-      <div className="flex items-center gap-1 px-4 py-2 text-sm text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700">
+      <div className="flex items-center gap-1 px-4 py-2 text-sm text-gray-400 border-b border-white/[0.06]">
         <div className="flex items-center gap-1 flex-1 min-w-0">
           <span className={cn("cursor-pointer hover:text-foreground", !currentFolderId && "text-foreground font-medium")} onClick={() => setCurrentFolder(null)}>All files</span>
           {(() => {
@@ -743,36 +743,36 @@ export function FileList() {
         )}
       </div>
       {viewMode === "grid" && visibleFolders.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4 border-b border-zinc-200 dark:border-zinc-700">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4 border-b border-white/[0.06]">
           {visibleFolders.map((folder: any) => (
-            <div key={folder.id} className={cn("rounded-xl border p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", dragOverFolderId === folder.id && "ring-2 ring-brand-500 bg-brand-500/5")} onClick={() => setCurrentFolder(folder.id)}
+            <div key={folder.id} className={cn("rounded-xl border p-4 hover:bg-white/[0.05] hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-2", dragOverFolderId === folder.id && "ring-2 ring-brand-500 bg-brand-500/5")} onClick={() => setCurrentFolder(folder.id)}
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverFolderId(folder.id) }}
               onDragLeave={() => setDragOverFolderId(null)}
               onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success("Moved to " + folder.name) } }}>
-              <div className="flex h-28 items-center justify-center rounded-lg bg-zinc-50/50 dark:bg-zinc-800/50">
+              <div className="flex h-28 items-center justify-center rounded-lg bg-white/[0.03]">
                 <Folder className="h-14 w-14 text-amber-500" />
               </div>
               <p className="text-sm font-medium truncate">{folder.name}</p>
               {typeof folder.fileCount === "number" && (
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">{folder.fileCount} {folder.fileCount === 1 ? 'file' : 'files'}</p>
+                <p className="text-xs text-gray-400">{folder.fileCount} {folder.fileCount === 1 ? 'file' : 'files'}</p>
               )}
             </div>
           ))}
         </div>
       )}
       {viewMode === "list" && visibleFolders.length > 0 && (
-        <div className="border-b border-zinc-200 dark:border-zinc-700">
+        <div className="border-b border-white/[0.06]">
           {visibleFolders.map((folder: any) => (
-            <div key={folder.id} className={cn("flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors", dragOverFolderId === folder.id && "ring-2 ring-brand-500 bg-brand-500/5")} onClick={() => setCurrentFolder(folder.id)}
+            <div key={folder.id} className={cn("flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-white/[0.05] transition-colors", dragOverFolderId === folder.id && "ring-2 ring-brand-500 bg-brand-500/5")} onClick={() => setCurrentFolder(folder.id)}
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; setDragOverFolderId(folder.id) }}
               onDragLeave={() => setDragOverFolderId(null)}
               onDrop={async (e) => { e.preventDefault(); setDragOverFolderId(null); const fileId = e.dataTransfer.getData("text/plain"); if (fileId) { moveFile.mutate({ fileId, folderId: folder.id }); toast.success("Moved to " + folder.name) } }}>
               <Folder className="h-4 w-4 flex-shrink-0 text-amber-500" />
               <span className="text-sm truncate">{folder.name}</span>
               {typeof folder.fileCount === "number" && (
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">({folder.fileCount})</span>
+                <span className="text-xs text-gray-400">({folder.fileCount})</span>
               )}
-              <ChevronRight className="h-3.5 w-3.5 ml-auto text-zinc-500 dark:text-zinc-400" />
+              <ChevronRight className="h-3.5 w-3.5 ml-auto text-gray-400" />
             </div>
           ))}
         </div>
@@ -790,7 +790,7 @@ export function FileList() {
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                 draggable
                 onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
-                className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-zinc-200/50 dark:border-zinc-700/50 px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors", isSel && "bg-brand-50 dark:bg-brand-500/10")}
+                className={cn("group absolute left-0 top-0 flex w-full cursor-pointer items-center gap-3 border-b border-white/[0.06] px-4 py-3 hover:bg-white/[0.05] transition-colors", isSel && "bg-brand-500/10")}
                 style={{ height: row.size + "px", transform: "translateY(" + row.start + "px)" }}>
                 <Checkbox
                   checked={selected.has(file.id)}
@@ -803,7 +803,7 @@ export function FileList() {
                 <TypeIcon type={file.type} name={file.name} />
                 <span className="truncate text-sm flex-1 min-w-0" title={file.name}>{file.name}</span>
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">Updated</span>}
-                {file.archivedAt && <span className="shrink-0 rounded bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">Archived</span>}
+                {file.archivedAt && <span className="shrink-0 rounded bg-white/[0.05] px-1.5 py-0.5 text-[10px] text-gray-400">Archived</span>}
                 {file.tags?.slice(0, 2).map((tag: any) => (
                   <span key={tag.name} className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
                 ))}
@@ -824,44 +824,44 @@ export function FileList() {
                   </TooltipProvider>
                 )}
                 <StatusIcon status={file.status} error={file.errorMessage} compact />
-                <span className="w-20 text-right text-xs text-zinc-500 dark:text-zinc-400 shrink-0 hidden sm:inline" title={new Date(file.updatedAt || file.createdAt).toLocaleString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })} suppressHydrationWarning>{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
-                <span className="w-16 text-right text-xs text-zinc-500 dark:text-zinc-400 shrink-0 hidden sm:inline">{fmtSize(file.size)}</span>
+                <span className="w-20 text-right text-xs text-gray-400 shrink-0 hidden sm:inline" title={new Date(file.updatedAt || file.createdAt).toLocaleString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })} suppressHydrationWarning>{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
+                <span className="w-16 text-right text-xs text-gray-400 shrink-0 hidden sm:inline">{fmtSize(file.size)}</span>
                 <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDownload(file.id, e) }}
-                    className="h-7 w-7 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center"
+                    className="h-7 w-7 rounded-md hover:bg-white/[0.05] flex items-center justify-center"
                     title="Download"
                   >
-                    <Download className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+                    <Download className="h-3.5 w-3.5 text-gray-400" />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleShare(file.id) }}
-                    className="h-7 w-7 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center"
+                    className="h-7 w-7 rounded-md hover:bg-white/[0.05] flex items-center justify-center"
                     title="Share"
                   >
-                    <Share2 className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+                    <Share2 className="h-3.5 w-3.5 text-gray-400" />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); openDrawer(file.id) }}
-                    className="h-7 w-7 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center"
+                    className="h-7 w-7 rounded-md hover:bg-white/[0.05] flex items-center justify-center"
                     title="File Details"
                   >
-                    <Info className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+                    <Info className="h-3.5 w-3.5 text-gray-400" />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
-                    className="h-7 w-7 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center"
+                    className="h-7 w-7 rounded-md hover:bg-white/[0.05] flex items-center justify-center"
                     title="More"
                   >
-                    <MoreHorizontal className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+                    <MoreHorizontal className="h-3.5 w-3.5 text-gray-400" />
                   </button>
                 </div>
               </div>
               </HoverCardTrigger>
               {file.summary && (
                 <HoverCardContent side="right" className="w-80">
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{file.summary}</p>
-                  <div className="mt-2 flex items-center gap-3 text-xs text-zinc-500/70 dark:text-zinc-400/70">
+                  <p className="text-xs text-gray-400">{file.summary}</p>
+                  <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
                     <span>{fmtSize(file.size)}</span>
                     <span>·</span>
                     <span>{formatRelativeTime(file.createdAt)}</span>
@@ -886,14 +886,14 @@ export function FileList() {
                   onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                   draggable
                   onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
-                  className={cn("rounded-xl border p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-3 overflow-hidden min-w-0", isSel && "bg-brand-50 dark:bg-brand-500/10 ring-2 ring-brand-500")}
+                  className={cn("rounded-xl border p-4 hover:bg-white/[0.05] hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-3 overflow-hidden min-w-0", isSel && "bg-brand-500/10 ring-2 ring-brand-500")}
                 >
-                  <div className="flex h-28 items-center justify-center rounded-lg bg-zinc-50/50 dark:bg-zinc-800/50">
+                  <div className="flex h-28 items-center justify-center rounded-lg bg-white/[0.03]">
                     <TypeIcon type={file.type} name={file.name} className="h-14 w-14" />
                   </div>
                   <p className="text-sm font-medium truncate" title={file.name}>{file.name}</p>
                   {file.summary && (
-                    <TooltipProvider><Tooltip><TooltipTrigger asChild><p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1 cursor-help">{file.summary}</p></TooltipTrigger><TooltipContent side="bottom" className="max-w-xs"><p>{file.summary}</p></TooltipContent></Tooltip></TooltipProvider>
+                    <TooltipProvider><Tooltip><TooltipTrigger asChild><p className="text-xs text-gray-400 line-clamp-1 cursor-help">{file.summary}</p></TooltipTrigger><TooltipContent side="bottom" className="max-w-xs"><p>{file.summary}</p></TooltipContent></Tooltip></TooltipProvider>
                   )}
                   {file.tags && file.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
@@ -907,7 +907,7 @@ export function FileList() {
                   )}
                   <div className="flex items-center justify-between mt-auto">
                     <StatusIcon status={file.status} error={file.errorMessage} />
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{fmtSize(file.size)}</span>
+                    <span className="text-[10px] text-gray-400">{fmtSize(file.size)}</span>
                   </div>
                 </div>
               )
@@ -992,7 +992,7 @@ export function FileList() {
         </DropdownMenu>
       )}
       {selected.size > 0 && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-zinc-900 text-white border border-zinc-700 shadow-lg px-4 py-3 z-50">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-[#1A1D24] text-white border border-white/[0.06] shadow-lg px-4 py-3 z-50">
           <span className="text-sm font-medium">{selected.size} files selected</span>
           <Button variant="destructive" size="sm" onClick={handleBatchDelete}>Delete</Button>
           <Button variant="outline" size="sm" onClick={handleBatchArchive}>Archive</Button>
@@ -1015,8 +1015,8 @@ export function FileList() {
       )}
       <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
       {filteredFiles.length < 5 && filteredFiles.length > 0 && (
-        <div className="border-t border-zinc-200/50 dark:border-zinc-700/50 px-6 py-6">
-          <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">Quick start</h4>
+        <div className="border-t border-white/[0.06] px-6 py-6">
+          <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Quick start</h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <button
               onClick={() => setShowUpload(true)}
@@ -1026,7 +1026,7 @@ export function FileList() {
                 <Upload className="h-4.5 w-4.5 text-brand-500" />
               </div>
               <span className="text-xs font-medium">Upload more files</span>
-              <span className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight">PDF, Word, notes, etc.</span>
+              <span className="text-[11px] text-gray-400 leading-tight">PDF, Word, notes, etc.</span>
             </button>
             <Link
               href="/chat?new=1"
@@ -1036,7 +1036,7 @@ export function FileList() {
                 <MessageSquare className="h-4.5 w-4.5 text-green-500" />
               </div>
               <span className="text-xs font-medium">Try AI chat</span>
-              <span className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight">Ask questions based on your knowledge library</span>
+              <span className="text-[11px] text-gray-400 leading-tight">Ask questions based on your knowledge library</span>
             </Link>
             <Link
               href="/chat"
@@ -1046,7 +1046,7 @@ export function FileList() {
                 <Lightbulb className="h-4.5 w-4.5 text-green-500" />
               </div>
               <span className="text-xs font-medium">Knowledge insights</span>
-              <span className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight">Browse AI discoveries</span>
+              <span className="text-[11px] text-gray-400 leading-tight">Browse AI discoveries</span>
             </Link>
             <Link
               href="/developers"
@@ -1056,7 +1056,7 @@ export function FileList() {
                 <FileText className="h-4.5 w-4.5 text-purple-500" />
               </div>
               <span className="text-xs font-medium">Developer docs</span>
-              <span className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight">API Integrations & Automation</span>
+              <span className="text-[11px] text-gray-400 leading-tight">API Integrations & Automation</span>
             </Link>
           </div>
         </div>
@@ -1090,7 +1090,7 @@ export function FileList() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Confirm delete</DialogTitle></DialogHeader>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Delete this file? This action cannot be undone.</p>
+          <p className="text-sm text-gray-400">Delete this file? This action cannot be undone.</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
             <Button variant="destructive" onClick={() => { if (deleteTarget) { deleteFile.mutate(deleteTarget); setDeleteTarget(null) } }}>Delete</Button>
@@ -1103,11 +1103,11 @@ export function FileList() {
         <DialogContent>
           <DialogHeader><DialogTitle>Move to folder in bulk</DialogTitle></DialogHeader>
           <div className="space-y-2 max-h-60 overflow-y-auto">
-            <button onClick={() => setMoveFolderId("")} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800", moveFolderId === "" && "bg-zinc-100 dark:bg-zinc-800 font-medium")}>
+            <button onClick={() => setMoveFolderId("")} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-white/[0.05]", moveFolderId === "" && "bg-white/[0.05] font-medium")}>
               <FileText className="h-4 w-4" /> Root
             </button>
             {allFolders.map((f: any) => (
-              <button key={f.id} onClick={() => setMoveFolderId(f.id)} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800", moveFolderId === f.id && "bg-zinc-100 dark:bg-zinc-800 font-medium")}>
+              <button key={f.id} onClick={() => setMoveFolderId(f.id)} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-white/[0.05]", moveFolderId === f.id && "bg-white/[0.05] font-medium")}>
                 <Folder className="h-4 w-4 text-amber-500" /> {f.name}
               </button>
             ))}
@@ -1149,7 +1149,7 @@ export function FileList() {
           <div className="fixed inset-y-0 right-0 z-50 w-[400px] border-l bg-background shadow-xl">
             <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="text-sm font-semibold">File Details</h3>
-              <button onClick={() => closeDrawer()} className="h-8 w-8 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center">
+              <button onClick={() => closeDrawer()} className="h-8 w-8 rounded-md hover:bg-white/[0.05] flex items-center justify-center">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -1163,28 +1163,28 @@ export function FileList() {
               </div>
               {drawerFile.summary && (
                 <div className="rounded-lg border p-3">
-                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">🧠 AI Summary</p>
+                  <p className="text-xs font-medium text-gray-400 mb-1">🧠 AI Summary</p>
                   <p className="text-sm">{drawerFile.summary}</p>
                 </div>
               )}
               {/* Tags management */}
               <DrawerTagSection fileId={drawerFile.id} drawerTags={drawerTags} setDrawerTags={setDrawerTags} />
               <div className="rounded-lg border p-3 space-y-2">
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">📋 File info</p>
+                <p className="text-xs font-medium text-gray-400 mb-1">📋 File info</p>
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500 dark:text-zinc-400">Size</span>
+                  <span className="text-gray-400">Size</span>
                   <span>{fmtSize(drawerFile.size)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500 dark:text-zinc-400">Type</span>
+                  <span className="text-gray-400">Type</span>
                   <span>{formatFileType(drawerFile.mimeType, drawerFile.name)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500 dark:text-zinc-400">Upload time</span>
+                  <span className="text-gray-400">Upload time</span>
                   <span>{new Date(drawerFile.createdAt).toLocaleDateString("zh-CN")}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500 dark:text-zinc-400">Status</span>
+                  <span className="text-gray-400">Status</span>
                   <span>{drawerFile.status === "indexed" ? "✅ Indexed" : drawerFile.status}</span>
                 </div>
               </div>
@@ -1198,7 +1198,7 @@ export function FileList() {
               <DrawerInlinePreview fileId={drawerFile.id} fileName={drawerFile.name} mimeType={drawerFile.mimeType} />
               <Link
                 href={`/files/${drawerFile.id}/preview`}
-                className="flex items-center justify-center gap-2 w-full rounded-lg border hover:bg-zinc-100 dark:hover:bg-zinc-800 py-2.5 text-sm transition"
+                className="flex items-center justify-center gap-2 w-full rounded-lg border hover:bg-white/[0.05] py-2.5 text-sm transition"
               >
                 👁️ View full preview
               </Link>
@@ -1212,11 +1212,11 @@ export function FileList() {
         <DialogContent>
           <DialogHeader><DialogTitle>Move to folder</DialogTitle></DialogHeader>
           <div className="space-y-2 max-h-60 overflow-y-auto">
-            <button onClick={() => setMoveFolderId("")} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800", moveFolderId === "" && "bg-zinc-100 dark:bg-zinc-800 font-medium")}>
+            <button onClick={() => setMoveFolderId("")} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-white/[0.05]", moveFolderId === "" && "bg-white/[0.05] font-medium")}>
               <FileText className="h-4 w-4" /> Root
             </button>
             {allFolders.map((f: any) => (
-              <button key={f.id} onClick={() => setMoveFolderId(f.id)} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800", moveFolderId === f.id && "bg-zinc-100 dark:bg-zinc-800 font-medium")}>
+              <button key={f.id} onClick={() => setMoveFolderId(f.id)} className={cn("flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-white/[0.05]", moveFolderId === f.id && "bg-white/[0.05] font-medium")}>
                 <Folder className="h-4 w-4 text-amber-500" /> {f.name}
               </button>
             ))}
@@ -1233,14 +1233,14 @@ export function FileList() {
         <DialogContent>
           <DialogHeader><DialogTitle>📋 Version history</DialogTitle></DialogHeader>
           {versions.length <= 1 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4">No other versions</p>
+            <p className="text-sm text-gray-400 text-center py-4">No other versions</p>
           ) : (
             <div className="space-y-2 max-h-60 overflow-auto">
               {versions.map((v: any) => (
                 <div key={v.id} className={cn("flex items-center justify-between rounded-lg border p-3", v.id === versionFileId && "border-brand-500 bg-brand-500/5")}>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">{v.name}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{new Date(v.createdAt).toLocaleString("zh-CN")} · {fmtSize(v.size)}</p>
+                    <p className="text-xs text-gray-400">{new Date(v.createdAt).toLocaleString("zh-CN")} · {fmtSize(v.size)}</p>
                   </div>
                   <Link href={`/files/${v.id}/preview`} className="text-xs text-brand-500 hover:underline shrink-0 ml-2">Preview</Link>
                 </div>
