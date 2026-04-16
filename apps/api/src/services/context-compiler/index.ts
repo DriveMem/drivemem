@@ -254,7 +254,7 @@ export async function compileContext(
   pruneCache();
   const cacheKey = getCacheKey(userId, request.task);
   const cached = compilationCache.get(cacheKey);
-  if (cached && Date.now() - cached.snapshot.compiledAt < CACHE_TTL_MS) {
+  if (cached && Date.now() - cached.snapshot.compiledAt < CACHE_TTL_MS && !request.since) {
     return cached.response;
   }
 

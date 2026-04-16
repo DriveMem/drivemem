@@ -62,6 +62,17 @@ const config: Config = {
         sm: ['0.875rem', { lineHeight: '1.5' }],
         base: ['1rem', { lineHeight: '1.5' }],
         lg: ['1.25rem', { lineHeight: '1.5' }],
+        'display': ['3rem', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'heading': ['1.5rem', { lineHeight: '1.25', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'title': ['1.125rem', { lineHeight: '1.4', fontWeight: '600' }],
+        'body': ['0.9375rem', { lineHeight: '1.6' }],
+        'caption': ['0.8125rem', { lineHeight: '1.5' }],
+        'micro': ['0.6875rem', { lineHeight: '1.4', letterSpacing: '0.02em' }],
+      },
+      transitionDuration: {
+        'fast': '100ms',
+        'normal': '200ms',
+        'slow': '300ms',
       },
       borderRadius: {
         xl: '16px',

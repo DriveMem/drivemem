@@ -13,7 +13,7 @@ const instrumentSerif = Instrument_Serif({ weight: '400', subsets: ['latin'], va
 export const metadata: Metadata = {
   title: "DriveMem — Memory for your AI agents",
   description: "DriveMem gives every AI agent the context it needs. One knowledge base, seamless continuity.",
-  keywords: ["agent context", "AI context OS", "knowledge base", "MCP", "context compiler", "DriveMem", "RAG"],
+  keywords: ["DriveMem", "AI agent memory", "agent context", "knowledge base", "MCP server", "RAG", "multi-agent collaboration"],
   openGraph: {
     title: "DriveMem — Memory for your AI agents",
     description: "DriveMem gives every AI agent the context it needs. One knowledge base, seamless continuity.",
