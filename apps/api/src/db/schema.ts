@@ -196,6 +196,7 @@ export const apiKeys = pgTable('api_keys', {
   keyHash: text('key_hash').notNull(),
   keyPrefix: text('key_prefix').notNull(),
   scopes: text('scopes').array().notNull().default(['read', 'write']),
+  defaultProjectId: uuid('default_project_id'),
   lastUsedAt: timestamp('last_used_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

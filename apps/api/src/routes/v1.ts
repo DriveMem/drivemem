@@ -469,6 +469,14 @@ export default async function v1Routes(fastify: FastifyInstance) {
     const filename = `note-${timestamp}.md`;
     const mdContent = `# ${title}\n\n${body.content}\n\n---\n_存入时间: ${new Date().toLocaleString('zh-CN')}_`;
     
+    // Auto-detect project
+    const { detectProject } = await import('../services/project-detector.js');
+    const detection = await detectProject(userId, {
+      explicitProjectId: (body as any).projectId,
+      apiKeyId: (request as any).apiKeyId,
+      content: body.content,
+    });
+
     const { randomUUID } = await import('crypto');
     const fileId = randomUUID();
     const s3Key = `users/${userId}/files/${fileId}/${filename}`;
@@ -481,6 +489,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
       id: fileId, name: filename, originalName: filename,
       mimeType: 'text/markdown', size: buffer.length,
       status: 'parsing', userId, s3Key,
+      folderId: detection.projectId,
     });
     
     const { Queue } = await import('bullmq');
@@ -488,7 +497,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
     await queue.add('parse', { fileId, userId, s3Key, mimeType: 'text/markdown' });
     await queue.close();
     
-    logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'store', detail: title });
+    logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'store', detail: title, metadata: { projectDetection: { method: detection.method, project: detection.projectName, confidence: detection.confidence } } });
 
     // Auto-handoff: dispatch webhook with compiled context
     try {
@@ -647,11 +656,22 @@ ${insightsSection}
     const { compileContext } = await import('../services/context-compiler/index.js');
     const body = request.body as any;
     if (!body?.task) return reply.status(400).send({ error: 'task is required' });
+    const hints = body.hints || {};
+    if (!hints.folderId && !hints.project) {
+      const { detectProject } = await import('../services/project-detector.js');
+      const detection = await detectProject(request.user!.id, {
+        content: body.task,
+        apiKeyId: (request as any).apiKeyId,
+      });
+      if (detection.projectId) {
+        hints.folderId = detection.projectId;
+      }
+    }
     const result = await compileContext(request.user!.id, {
       task: body.task,
       model: body.model,
       tokenBudget: body.tokenBudget,
-      hints: body.hints,
+      hints,
       format: body.format,
     });
     const compileFileIds = (result as any).sources?.map((s: any) => s.fileId).filter(Boolean) || [];
