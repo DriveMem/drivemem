@@ -1,29 +1,42 @@
 "use client"
 
-import { FileText, MessageSquare, CalendarDays, Settings, PanelLeftClose, PanelLeft, Code, Tag, Sparkles, Network } from "lucide-react"
+import { Home, BookOpen, MessageCircle, Plug, Settings, PanelLeftClose, PanelLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useLayoutStore } from "@/stores/layout-store"
-import { FolderTree } from "@/components/file/folder-tree"
-import { useTags } from "@/hooks/use-tags"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const navItems = [
-  { href: "/files", icon: FileText, label: "My Files" },
-  { href: "/chat", icon: MessageSquare, label: "AI Chat" },
-  { href: "/compile", icon: Sparkles, label: "Briefing" },
-  { href: "/graph", icon: Network, label: "Graph" },
-  { href: "/timeline", icon: CalendarDays, label: "Timeline" },
-  { href: "/developers", icon: Code, label: "Developers" },
+  { href: "/dashboard", icon: Home, label: "Home" },
+  { href: "/files", icon: BookOpen, label: "Knowledge" },
+  { href: "/developers", icon: Plug, label: "Connect" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ] as const
 
+function isNavActive(pathname: string | null, href: string): boolean {
+  if (!pathname) return false
+  switch (href) {
+    case "/dashboard":
+      return pathname === "/dashboard" || pathname === "/"
+    case "/files":
+      return pathname.startsWith("/files") || pathname.startsWith("/graph")
+    case "/chat":
+      return pathname.startsWith("/chat")
+    case "/developers":
+      return pathname === "/developers" || pathname.startsWith("/developers/")
+    case "/settings":
+      return pathname === "/settings" || pathname.startsWith("/settings/")
+    default:
+      return pathname === href
+  }
+}
+
 export function Sidebar() {
-  const { sidebarCollapsed, toggleSidebar, setMobileSidebarOpen, activeTagFilter, setActiveTagFilter } = useLayoutStore()
+  const { sidebarCollapsed, toggleSidebar, setMobileSidebarOpen } = useLayoutStore()
   const pathname = usePathname()
-  const { data: tags = [] } = useTags()
+
   return (
     <TooltipProvider delayDuration={0}>
       <div className="flex h-full flex-col">
@@ -35,7 +48,7 @@ export function Sidebar() {
         </div>
         <nav className="flex flex-col gap-0.5 p-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(item.href + "/") || (item.href === "/files" && pathname === "/dashboard")
+            const isActive = isNavActive(pathname, item.href)
             const btn = (
               <Button
                 variant="ghost"
@@ -66,53 +79,6 @@ export function Sidebar() {
             return <div key={item.href}>{btn}</div>
           })}
         </nav>
-        {!sidebarCollapsed && !pathname?.startsWith("/chat") && !pathname?.startsWith("/settings") && !pathname?.startsWith("/timeline") && (
-          <div className="flex-1 overflow-auto border-t border-zinc-200 dark:border-zinc-800 p-2">
-            <p className="px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider text-zinc-400">Projects</p>
-            <FolderTree />
-            {tags.length > 0 ? (
-              <div className="mt-3 border-t border-zinc-200 dark:border-zinc-800 pt-2">
-                <p className="px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider text-zinc-400 flex items-center gap-1">
-                  <Tag className="h-3 w-3" /> Tags
-                </p>
-                <div className="flex flex-wrap gap-1 px-2 py-1">
-                  {activeTagFilter && (
-                    <button
-                      onClick={() => setActiveTagFilter(null)}
-                      className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
-                    >
-                      All ×
-                    </button>
-                  )}
-                  {tags.map((tag: any) => (
-                    <button
-                      key={tag.id}
-                      onClick={() => setActiveTagFilter(activeTagFilter === tag.name ? null : tag.name)}
-                      className={cn(
-                        "rounded-full px-2 py-0.5 text-[10px] font-medium transition-all",
-                        activeTagFilter === tag.name
-                          ? "ring-1 ring-offset-1 ring-offset-background shadow-sm"
-                          : "opacity-70 hover:opacity-100"
-                      )}
-                      style={{
-                        backgroundColor: tag.color + "20",
-                        color: tag.color,
-                      }}
-                    >
-                      {tag.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="mt-3 border-t border-zinc-200 dark:border-zinc-800 pt-2 px-2">
-                <p className="py-2 text-xs text-zinc-400 text-center">
-                  Right-click to add tags
-                </p>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </TooltipProvider>
   )

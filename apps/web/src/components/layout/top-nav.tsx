@@ -103,7 +103,7 @@ export function TopNav() {
           )
         }}
       >
-        <span className="mr-auto">Search…</span>
+        <span className="mr-auto">Search knowledge…</span>
         <kbd className="rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 px-1.5 py-0.5 text-[11px] text-zinc-400">⌘K</kbd>
       </button>
 
