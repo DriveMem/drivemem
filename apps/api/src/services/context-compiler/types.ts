@@ -2,6 +2,7 @@ export interface CompileContextRequest {
   task: string;
   model?: { name?: string; contextWindow?: number };
   tokenBudget?: number; // default 8000
+  role?: string; // agent role for content routing
   hints?: {
     project?: string;
     tags?: string[];
@@ -49,4 +50,5 @@ export interface AgentProfile {
   preferredFormat: 'markdown';
   maxFragments: number;
   priorityRules: string[]; // e.g. ["recency", "relevance"]
+  role?: string; // 'coder' | 'writer' | 'researcher' | 'strategist' | 'general'
 }

@@ -7,6 +7,7 @@ import { chat } from '../services/llm.service.js';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { eq, desc, and, inArray } from 'drizzle-orm';
+import { inferRole } from '../services/context-compiler/agent-profiles.js';
 
 export function createMcpServer(userId: string, agentName: string = ''): Server {
   // Track detected project across the session
@@ -652,6 +653,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             task,
             tokenBudget: (args as any).tokenBudget as number | undefined,
             model: (args as any).model ? { name: (args as any).model as string } : undefined,
+            role: inferRole(agentName),
             hints: {
               project: (args as any).project as string | undefined,
               tags: (args as any).tags ? ((args as any).tags as string).split(',').map((t: string) => t.trim()) : undefined,

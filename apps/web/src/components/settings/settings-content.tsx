@@ -299,6 +299,7 @@ function AgentProfilesSection() {
   const [newName, setNewName] = useState('')
   const [newModelHint, setNewModelHint] = useState('')
   const [newBudget, setNewBudget] = useState(8000)
+  const [newRole, setNewRole] = useState('general')
 
   useEffect(() => {
     (async () => {
@@ -316,11 +317,12 @@ function AgentProfilesSection() {
       const { apiFetch } = await import("@/lib/api")
       const res = await apiFetch("/api/files/agent-profiles", {
         method: "POST",
-        body: JSON.stringify({ name: newName, modelHint: newModelHint || undefined, contextBudget: newBudget }),
+        body: JSON.stringify({ name: newName, modelHint: newModelHint || undefined, contextBudget: newBudget, role: newRole }),
       })
       setProfiles(prev => [res.profile, ...prev])
       setNewName('')
       setNewModelHint('')
+      setNewRole('general')
       setShowCreate(false)
       toast.success("Profile created")
     } catch { toast.error("Failed to create profile") }
@@ -354,6 +356,16 @@ function AgentProfilesSection() {
             <Input placeholder="Profile name (e.g. My Cursor, Writing Agent)" value={newName} onChange={e => setNewName(e.target.value)} />
             <Input placeholder="Model hint (e.g. claude-opus, gpt-4o)" value={newModelHint} onChange={e => setNewModelHint(e.target.value)} />
             <div className="flex items-center gap-2">
+              <span className="text-xs text-zinc-500">Role:</span>
+              <select className="rounded-md border px-2 py-1 text-sm bg-background" value={newRole} onChange={e => setNewRole(e.target.value)}>
+                <option value="general">General</option>
+                <option value="coder">Coder</option>
+                <option value="writer">Writer</option>
+                <option value="researcher">Researcher</option>
+                <option value="strategist">Strategist</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
               <span className="text-xs text-zinc-500">Token budget:</span>
               <Input type="number" className="w-24" value={newBudget} onChange={e => setNewBudget(Number(e.target.value))} />
             </div>
@@ -368,7 +380,7 @@ function AgentProfilesSection() {
             <div>
               <p className="text-sm font-medium">{p.name}</p>
               <p className="text-xs text-zinc-500">
-                {p.modelHint || "Any model"} · {p.contextBudget || 8000} tokens
+                {p.modelHint || "Any model"} · {p.contextBudget || 8000} tokens{p.role && p.role !== 'general' ? ` · ${p.role}` : ''}
               </p>
             </div>
             <Button size="sm" variant="ghost" onClick={() => handleDelete(p.id)}>Delete</Button>

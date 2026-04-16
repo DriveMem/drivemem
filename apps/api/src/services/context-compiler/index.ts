@@ -5,6 +5,7 @@ import { estimateTokens } from './token-estimator.js';
 import { resolveProfile } from './agent-profiles.js';
 
 export { resolveProfile, registerProfile, listProfiles } from './agent-profiles.js';
+export { ROLE_BOOSTS, inferRole } from './agent-profiles.js';
 export { estimateTokens } from './token-estimator.js';
 export type { CompileContextRequest, CompileContextResponse, KnowledgeFragment, AgentProfile } from './types.js';
 
@@ -209,6 +210,10 @@ export async function compileContext(
 ): Promise<CompileContextResponse> {
   const startTime = Date.now();
   const profile = resolveProfile(request.model?.name);
+  // Apply role override from request
+  if (request.role) {
+    profile.role = request.role;
+  }
   const tokenBudget = request.tokenBudget || Math.min(8000, Math.floor(profile.contextWindow * 0.3));
 
   // Step 1: Query Expansion
@@ -264,6 +269,52 @@ export async function compileContext(
   const weightedAsScore = rawFragments.map(f => ({ ...f, fileId: f.fileId, score: f.relevanceScore }));
   const reweighted = await applyFeedbackWeights(userId, weightedAsScore);
   const fragments = reweighted.map(f => ({ ...f, relevanceScore: f.score }));
+
+  // Step 2.7: Role-based content routing
+  let roleBoostApplied = false;
+  if (profile.role && profile.role !== 'general') {
+    const { ROLE_BOOSTS } = await import('./agent-profiles.js');
+    const boosts = ROLE_BOOSTS[profile.role] || {};
+    if (Object.keys(boosts).length > 0) {
+      // Get file names for tag inference
+      const fileIds = [...new Set(fragments.map(f => f.fileId))];
+      const { db } = await import('../../db/index.js');
+      const { files } = await import('../../db/schema.js');
+      const { inArray } = await import('drizzle-orm');
+      const fileRecords = fileIds.length > 0
+        ? await db.select({ id: files.id, name: files.name }).from(files).where(inArray(files.id, fileIds))
+        : [];
+      const fileNameMap: Record<string, string> = {};
+      fileRecords.forEach(f => { fileNameMap[f.id] = f.name; });
+
+      for (const f of fragments) {
+        let maxBoost = 1.0;
+        const fileName = (fileNameMap[f.fileId] || f.fileName || '').toLowerCase();
+
+        // Check auto-capture type from filename
+        if (fileName.includes('auto-capture')) {
+          const typeMatch = fileName.match(/auto-capture-[\d-T]+-(\w+)/);
+          if (typeMatch && boosts[typeMatch[1]]) {
+            maxBoost = Math.max(maxBoost, boosts[typeMatch[1]]);
+          }
+        }
+
+        // Check content keywords for boost
+        const text = f.text.toLowerCase();
+        for (const [tag, boost] of Object.entries(boosts)) {
+          if (text.includes(tag)) {
+            maxBoost = Math.max(maxBoost, boost);
+            break;
+          }
+        }
+
+        f.relevanceScore *= maxBoost;
+      }
+
+      fragments.sort((a, b) => b.relevanceScore - a.relevanceScore);
+      roleBoostApplied = true;
+    }
+  }
 
   // Step 3: Score and rank
   const scored = scoreFragments(fragments, request.task);

@@ -296,5 +296,6 @@ export const agentProfiles = pgTable('agent_profiles', {
   excludeTypes: jsonb('exclude_types'),
   projectId: uuid('project_id'),
   notes: text('notes'),
+  role: text('role'), // 'coder' | 'writer' | 'researcher' | 'strategist' | 'general'
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });

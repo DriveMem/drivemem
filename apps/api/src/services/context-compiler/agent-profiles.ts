@@ -1,5 +1,24 @@
 import type { AgentProfile } from './types.js';
 
+// Role-based content routing boosts
+export const ROLE_BOOSTS: Record<string, Record<string, number>> = {
+  coder: { engineering: 1.5, decision: 1.3, fact: 1.2, analysis: 1.0, preference: 0.8, 'action-item': 1.0 },
+  writer: { preference: 1.5, analysis: 1.3, decision: 1.2, fact: 1.0, engineering: 0.7, 'action-item': 0.8 },
+  researcher: { analysis: 1.5, fact: 1.4, engineering: 1.2, decision: 1.1, preference: 0.9, 'action-item': 0.8 },
+  strategist: { decision: 1.5, analysis: 1.4, fact: 1.2, 'action-item': 1.3, engineering: 0.9, preference: 1.0 },
+  general: {}, // no boosts, use base scores
+};
+
+export function inferRole(agentName?: string): string {
+  if (!agentName) return 'general';
+  const name = agentName.toLowerCase();
+  if (name.includes('code') || name.includes('cursor') || name.includes('coder') || name.includes('dev')) return 'coder';
+  if (name.includes('write') || name.includes('writer') || name.includes('content')) return 'writer';
+  if (name.includes('research') || name.includes('analyst')) return 'researcher';
+  if (name.includes('strateg') || name.includes('manager') || name.includes('plan')) return 'strategist';
+  return 'general';
+}
+
 // Agent Profile Registry — modular, pluggable
 const profiles: Map<string, AgentProfile> = new Map();
 

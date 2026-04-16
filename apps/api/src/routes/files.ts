@@ -703,6 +703,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       excludeTypes: body.excludeTypes || null,
       projectId: body.projectId || null,
       notes: body.notes || null,
+      role: body.role || null,
     }).returning();
 
     return reply.status(201).send({ profile });
@@ -723,6 +724,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
         ...(body.excludeTypes !== undefined && { excludeTypes: body.excludeTypes }),
         ...(body.projectId !== undefined && { projectId: body.projectId }),
         ...(body.notes !== undefined && { notes: body.notes }),
+        ...(body.role !== undefined && { role: body.role }),
       })
       .where(and(eq(schema.agentProfiles.id, id), eq(schema.agentProfiles.userId, userId)));
 
