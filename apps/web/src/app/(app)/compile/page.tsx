@@ -5,6 +5,7 @@ import { Sparkles, Copy, Check, FileText, Upload, AlertCircle, Loader2, SearchX 
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { apiFetch } from "@/lib/api"
+import { KnowledgeFeedback } from "@/components/feedback/knowledge-feedback"
 import { useFolders } from "@/hooks/use-folders"
 import { useFiles } from "@/hooks/use-files"
 import { useTags } from "@/hooks/use-tags"
@@ -348,9 +349,12 @@ function CompileContent() {
                         <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="truncate">{source.fileName}</span>
                       </div>
-                      <span className="text-xs text-muted-foreground font-mono shrink-0 ml-2">
-                        {source.relevanceScore.toFixed(2)}
-                      </span>
+                      <div className="flex items-center gap-2 shrink-0 ml-2">
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {source.relevanceScore.toFixed(2)}
+                        </span>
+                        <KnowledgeFeedback fileId={source.fileId} />
+                      </div>
                     </div>
                   ))}
                 </div>

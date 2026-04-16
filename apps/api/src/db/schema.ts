@@ -225,6 +225,16 @@ export const webhookDeliveries = pgTable('webhook_deliveries', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// --- Webhook Subscriptions (event filters) ---
+export const webhookSubscriptions = pgTable('webhook_subscriptions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  webhookId: uuid('webhook_id').notNull().references(() => webhooks.id, { onDelete: 'cascade' }),
+  eventType: text('event_type').notNull(), // 'knowledge.stored' | 'knowledge.updated' | 'insight.discovered' | 'conflict.detected' | '*'
+  projectId: uuid('project_id'),
+  tags: jsonb('tags'), // e.g. ["decision", "engineering"]
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 // --- API Activity Logs ---
 export const apiActivityLogs = pgTable('api_activity_logs', {
   id: uuid('id').defaultRandom().primaryKey(),

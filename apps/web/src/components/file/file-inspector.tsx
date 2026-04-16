@@ -1,6 +1,7 @@
 "use client"
 
 import { FileText, Loader2, AlertCircle, Info, Tag } from "lucide-react"
+import { KnowledgeFeedback } from "@/components/feedback/knowledge-feedback"
 import { Button } from "@/components/ui/button"
 import { useFile } from "@/hooks/use-files"
 import { useFileTags } from "@/hooks/use-tags"
@@ -43,10 +44,11 @@ export function FileInspector({ fileId }: { fileId: string }) {
     <div className="p-4 space-y-3">
       <div className="flex items-center gap-3">
         <FileText className="h-6 w-6 text-muted-foreground flex-shrink-0" />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="font-medium text-sm truncate" title={file.name}>{file.name}</p>
           <p className="text-xs text-muted-foreground">{formatSize(file.size)}</p>
         </div>
+        <KnowledgeFeedback fileId={fileId} />
       </div>
       {file.summary && (
         <p className="text-xs text-muted-foreground leading-relaxed">

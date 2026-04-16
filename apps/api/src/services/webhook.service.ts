@@ -97,6 +97,24 @@ export async function dispatchWebhook(userId: string, event: string, payload: Re
   for (const hook of hooks) {
     if (!hook.active || !hook.events.includes(event)) continue;
 
+    // Check subscriptions — if hook has subscriptions, only dispatch if event matches a filter
+    const subscriptions = await db.select()
+      .from(schema.webhookSubscriptions)
+      .where(eq(schema.webhookSubscriptions.webhookId, hook.id));
+
+    if (subscriptions.length > 0) {
+      const matches = subscriptions.some(sub => {
+        if (sub.eventType !== '*' && sub.eventType !== event) return false;
+        if (sub.projectId && payload.projectId && sub.projectId !== payload.projectId) return false;
+        if (sub.tags && Array.isArray(sub.tags) && (sub.tags as string[]).length > 0) {
+          const payloadTags = (payload.tags as string[]) || [];
+          if (!(sub.tags as string[]).some((t: string) => payloadTags.includes(t))) return false;
+        }
+        return true;
+      });
+      if (!matches) continue;
+    }
+
     const body = JSON.stringify({ event, data: payload, timestamp: new Date().toISOString() });
     const signature = createHmac('sha256', hook.secret).update(body).digest('hex');
 

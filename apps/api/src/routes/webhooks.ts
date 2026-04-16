@@ -120,6 +120,59 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // --- Subscription CRUD ---
+
+  // GET /:id/subscriptions — list subscriptions for a webhook
+  fastify.get('/:id/subscriptions', { preHandler: [requireAnyAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    // Verify ownership
+    const [hook] = await db.select().from(schema.webhooks)
+      .where(and(eq(schema.webhooks.id, id), eq(schema.webhooks.userId, request.user!.id)));
+    if (!hook) return reply.status(404).send({ error: 'Webhook not found' });
+
+    const subs = await db.select().from(schema.webhookSubscriptions)
+      .where(eq(schema.webhookSubscriptions.webhookId, id))
+      .orderBy(desc(schema.webhookSubscriptions.createdAt));
+    return reply.send({ subscriptions: subs });
+  });
+
+  // POST /:id/subscriptions — add subscription filter
+  fastify.post('/:id/subscriptions', { preHandler: [requireAnyAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as { eventType: string; projectId?: string; tags?: string[] };
+
+    if (!body.eventType) {
+      return reply.status(400).send({ error: 'eventType is required' });
+    }
+
+    // Verify ownership
+    const [hook] = await db.select().from(schema.webhooks)
+      .where(and(eq(schema.webhooks.id, id), eq(schema.webhooks.userId, request.user!.id)));
+    if (!hook) return reply.status(404).send({ error: 'Webhook not found' });
+
+    const [sub] = await db.insert(schema.webhookSubscriptions).values({
+      webhookId: id,
+      eventType: body.eventType,
+      projectId: body.projectId ?? null,
+      tags: body.tags ?? null,
+    }).returning();
+
+    return reply.status(201).send(sub);
+  });
+
+  // DELETE /:id/subscriptions/:subId — remove subscription
+  fastify.delete('/:id/subscriptions/:subId', { preHandler: [requireAnyAuth] }, async (request, reply) => {
+    const { id, subId } = request.params as { id: string; subId: string };
+    // Verify webhook ownership
+    const [hook] = await db.select().from(schema.webhooks)
+      .where(and(eq(schema.webhooks.id, id), eq(schema.webhooks.userId, request.user!.id)));
+    if (!hook) return reply.status(404).send({ error: 'Webhook not found' });
+
+    await db.delete(schema.webhookSubscriptions)
+      .where(and(eq(schema.webhookSubscriptions.id, subId), eq(schema.webhookSubscriptions.webhookId, id)));
+    return reply.status(204).send();
+  });
+
   // GET /deliveries — recent delivery logs
   fastify.get('/deliveries', { preHandler: [requireAnyAuth] }, async (request, reply) => {
     const userId = request.user!.id;

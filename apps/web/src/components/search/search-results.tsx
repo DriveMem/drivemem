@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { apiFetch } from "@/lib/api"
 import { FileText, Search } from "lucide-react"
+import { KnowledgeFeedback } from "@/components/feedback/knowledge-feedback"
 
 interface SearchResult {
   type: "file" | "chunk"
@@ -180,6 +181,7 @@ export function SearchResults({ query }: { query: string }) {
                     {Math.round(r.score * 100)}%
                   </span>
                 )}
+                <KnowledgeFeedback fileId={r.fileId} />
               </div>
               {r.text && r.text !== r.fileName && (
                 <p className="mt-2 text-sm text-muted-foreground line-clamp-3">

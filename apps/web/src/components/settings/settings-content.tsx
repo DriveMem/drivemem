@@ -637,6 +637,114 @@ function WebhookCard() {
   )
 }
 
+function WebhookSubscriptions({ webhookId }: { webhookId: string }) {
+  const [subs, setSubs] = useState<any[]>([])
+  const [open, setOpen] = useState(false)
+  const [eventType, setEventType] = useState('*')
+  const [tags, setTags] = useState('')
+  const [adding, setAdding] = useState(false)
+
+  const fetchSubs = async () => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const data = await apiFetch(`/api/webhooks/${webhookId}/subscriptions`)
+      setSubs(data?.subscriptions || [])
+    } catch { /* ignore */ }
+  }
+
+  useEffect(() => { if (open) fetchSubs() }, [open])
+
+  const addSub = async () => {
+    setAdding(true)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const body: Record<string, unknown> = { eventType }
+      const tagArr = tags.split(',').map(t => t.trim()).filter(Boolean)
+      if (tagArr.length > 0) body.tags = tagArr
+      await apiFetch(`/api/webhooks/${webhookId}/subscriptions`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      })
+      setTags('')
+      toast.success("Filter added")
+      fetchSubs()
+    } catch {
+      toast.error("Failed to add filter")
+    } finally {
+      setAdding(false)
+    }
+  }
+
+  const deleteSub = async (subId: string) => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/webhooks/${webhookId}/subscriptions/${subId}`, { method: "DELETE" })
+      setSubs(prev => prev.filter(s => s.id !== subId))
+      toast.success("Filter removed")
+    } catch {
+      toast.error("Failed to remove filter")
+    }
+  }
+
+  const formatSub = (sub: any) => {
+    const parts: string[] = [sub.eventType === '*' ? 'all events' : sub.eventType]
+    if (sub.tags && Array.isArray(sub.tags) && sub.tags.length > 0) {
+      parts.push(`tags: ${sub.tags.join(', ')}`)
+    }
+    return parts.join(' · ')
+  }
+
+  return (
+    <div className="mt-1">
+      <button
+        onClick={() => setOpen(!open)}
+        className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition"
+      >
+        {open ? '▾' : '▸'} Filters ({subs.length || '—'})
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2 pl-2 border-l-2 border-zinc-200 dark:border-zinc-700">
+          {subs.map(s => (
+            <div key={s.id} className="flex items-center justify-between text-xs">
+              <span className="text-zinc-600 dark:text-zinc-300">{formatSub(s)}</span>
+              <button onClick={() => deleteSub(s.id)} className="text-red-500 hover:text-red-600 ml-2">✕</button>
+            </div>
+          ))}
+          <div className="flex items-center gap-2 mt-1">
+            <select
+              value={eventType}
+              onChange={e => setEventType(e.target.value)}
+              className="rounded border px-2 py-1 text-xs bg-white dark:bg-zinc-800"
+            >
+              <option value="*">All events</option>
+              <option value="knowledge.stored">knowledge.stored</option>
+              <option value="knowledge.updated">knowledge.updated</option>
+              <option value="insight.discovered">insight.discovered</option>
+              <option value="conflict.detected">conflict.detected</option>
+            </select>
+            <input
+              placeholder="tags (comma sep)"
+              value={tags}
+              onChange={e => setTags(e.target.value)}
+              className="rounded border px-2 py-1 text-xs w-32 bg-white dark:bg-zinc-800"
+            />
+            <button
+              onClick={addSub}
+              disabled={adding}
+              className="rounded-full px-2 py-0.5 text-xs bg-brand-500/10 text-brand-600 hover:bg-brand-500/20 transition"
+            >
+              {adding ? '...' : '+ Filter'}
+            </button>
+          </div>
+          {subs.length === 0 && (
+            <p className="text-[10px] text-zinc-400">No filters — all events will be delivered</p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function WebhookDeliveryLog() {
   const [deliveries, setDeliveries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
