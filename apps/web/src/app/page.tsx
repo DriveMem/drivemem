@@ -276,69 +276,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===== Product Preview ===== */}
-      <section className="relative py-20 px-6">
-        <FadeIn>
-          <div className="max-w-5xl mx-auto">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-              {/* 产品界面预览 - 用 CSS 模拟 Dashboard */}
-              <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 aspect-[16/10] relative">
-                {/* 模拟顶部导航 */}
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-400/60" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-400/60" />
-                    <div className="w-3 h-3 rounded-full bg-green-400/60" />
-                  </div>
-                  <div className="flex-1 text-center">
-                    <span className="text-xs text-zinc-500">drive.verrrnm.cloud</span>
-                  </div>
-                </div>
-                {/* 模拟侧边栏 + 主内容 */}
-                <div className="flex h-full">
-                  <div className="w-48 border-r border-white/5 p-4 space-y-3">
-                    <div className="h-3 bg-white/10 rounded w-20" />
-                    <div className="h-3 bg-white/5 rounded w-24" />
-                    <div className="h-3 bg-white/5 rounded w-16" />
-                    <div className="h-3 bg-white/5 rounded w-28" />
-                  </div>
-                  <div className="flex-1 p-6 space-y-4">
-                    <div className="h-4 bg-white/10 rounded w-40" />
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="bg-white/5 rounded-xl p-4 space-y-2">
-                        <div className="h-3 bg-indigo-400/20 rounded w-16" />
-                        <div className="h-8 bg-white/5 rounded" />
-                        <div className="h-2 bg-white/5 rounded w-20" />
-                      </div>
-                      <div className="bg-white/5 rounded-xl p-4 space-y-2">
-                        <div className="h-3 bg-emerald-400/20 rounded w-20" />
-                        <div className="h-8 bg-white/5 rounded" />
-                        <div className="h-2 bg-white/5 rounded w-16" />
-                      </div>
-                      <div className="bg-white/5 rounded-xl p-4 space-y-2">
-                        <div className="h-3 bg-amber-400/20 rounded w-14" />
-                        <div className="h-8 bg-white/5 rounded" />
-                        <div className="h-2 bg-white/5 rounded w-24" />
-                      </div>
-                    </div>
-                    <div className="bg-white/5 rounded-xl p-4 space-y-2">
-                      <div className="h-3 bg-white/10 rounded w-32" />
-                      <div className="h-2 bg-white/5 rounded w-full" />
-                      <div className="h-2 bg-white/5 rounded w-3/4" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* 光晕效果 */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#050506] via-transparent to-transparent pointer-events-none" />
-            </div>
-            <p className="text-center mt-6 text-zinc-400 text-sm">
-              Your knowledge, structured and ready for any AI agent
-            </p>
-          </div>
-        </FadeIn>
-      </section>
-
       {/* ===== Features ===== */}
       <section id="features" className="py-24 md:py-32 bg-white">
         <div className="max-w-6xl mx-auto px-6">
