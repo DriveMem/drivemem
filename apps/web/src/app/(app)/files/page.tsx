@@ -23,12 +23,12 @@ export default function KnowledgePage() {
       {/* Left panel — Projects + Tags */}
       <aside className="hidden md:flex w-60 flex-col border-r border-border shrink-0 overflow-y-auto">
         <div className="p-3">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium mb-2">Projects</p>
+          <p className="text-micro uppercase tracking-wider text-muted-foreground font-medium mb-2">Projects</p>
           <FolderTree />
         </div>
         {tags.length > 0 && (
           <div className="border-t border-border p-3">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium mb-2">Tags</p>
+            <p className="text-micro uppercase tracking-wider text-muted-foreground font-medium mb-2">Tags</p>
             <div className="flex flex-wrap gap-1">
               {activeTagFilter && (
                 <button onClick={() => setActiveTagFilter(null)} className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-muted text-muted-foreground hover:bg-muted/80">

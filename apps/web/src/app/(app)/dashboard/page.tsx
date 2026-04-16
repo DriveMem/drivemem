@@ -44,14 +44,14 @@ function ActivityItem({ activity }: { activity: any }) {
   const detail = activity.message || activity.detail || ""
 
   return (
-    <div className="flex items-center gap-3 py-2.5 text-sm border-b border-zinc-100 dark:border-zinc-800 last:border-0">
+    <div className="flex items-center gap-3 py-2.5 text-body border-b border-zinc-100 dark:border-zinc-800 last:border-0">
       <Icon className="h-4 w-4 text-zinc-400 flex-shrink-0" />
       <span className="text-zinc-500 dark:text-zinc-400 flex-shrink-0">{agentName}</span>
       <span className="text-zinc-900 dark:text-zinc-100 truncate">
         {action}
         {detail && <span className="text-zinc-500 dark:text-zinc-400"> — {detail}</span>}
       </span>
-      <span className="ml-auto text-xs text-zinc-400 dark:text-zinc-500 flex-shrink-0 whitespace-nowrap">
+      <span className="ml-auto text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
         {relativeTime(activity.createdAt)}
       </span>
     </div>
@@ -63,7 +63,7 @@ function ProjectChip({ project }: { project: any }) {
   return (
     <Link
       href={`/files?folderId=${project.id}`}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition whitespace-nowrap flex-shrink-0"
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-body text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition whitespace-nowrap flex-shrink-0"
     >
       <Folder className="h-3.5 w-3.5" />
       {project.name}
@@ -247,7 +247,7 @@ export default function HomePage() {
         </div>
 
         {/* Knowledge Stats — compact row */}
-        <div className="flex items-center gap-6 mb-8 text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-6 mb-8 text-caption text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <FileText className="h-3.5 w-3.5" />
             {fileCount} {fileCount === 1 ? "file" : "files"}
@@ -270,7 +270,7 @@ export default function HomePage() {
             ))}
             <button
               onClick={() => router.push("/files?newFolder=1")}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-dashed border-zinc-300 dark:border-zinc-600 text-sm text-zinc-500 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500 transition whitespace-nowrap flex-shrink-0"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-dashed border-zinc-300 dark:border-zinc-600 text-body text-zinc-500 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500 transition whitespace-nowrap flex-shrink-0"
             >
               <Plus className="h-3.5 w-3.5" />
               New
@@ -280,7 +280,7 @@ export default function HomePage() {
 
         {/* Activity Feed */}
         <div>
-          <h2 className="text-xs font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-4">
+          <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider mb-4">
             Recent Activity
           </h2>
           {activities.length === 0 ? (

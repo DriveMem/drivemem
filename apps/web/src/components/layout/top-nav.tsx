@@ -96,7 +96,7 @@ export function TopNav() {
 
       {/* Search trigger */}
       <button
-        className="hidden sm:flex items-center gap-2 w-64 rounded-xl bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all duration-200 focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/20"
+        className="hidden sm:flex items-center gap-2 w-64 rounded-xl bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-body text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all duration-normal focus-within:shadow-md focus-within:ring-1 focus-within:ring-primary/20"
         onClick={() => {
           document.dispatchEvent(
             new KeyboardEvent("keydown", { key: "k", metaKey: true })
@@ -104,7 +104,7 @@ export function TopNav() {
         }}
       >
         <span className="mr-auto">Search knowledge…</span>
-        <kbd className="rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 px-1.5 py-0.5 text-[11px] text-zinc-400">⌘K</kbd>
+        <kbd className="rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 px-1.5 py-0.5 text-micro text-zinc-400">⌘K</kbd>
       </button>
 
       {/* Right actions */}
