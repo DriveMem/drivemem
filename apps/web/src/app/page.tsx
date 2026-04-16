@@ -100,7 +100,7 @@ function Nav() {
 
 function ProductPreview() {
   return (
-    <div className="relative mx-auto max-w-4xl px-6" style={{ perspective: "1200px" }}>
+    <div className="relative mx-auto max-w-5xl px-6" style={{ perspective: "1200px" }}>
       <div
         className="rounded-2xl shadow-soft-lg border border-gray-200/50 overflow-hidden"
         style={{ transform: "rotateX(2deg)" }}
@@ -112,33 +112,13 @@ function ProductPreview() {
           <div className="w-3 h-3 rounded-full bg-green-400" />
           <span className="ml-3 text-xs text-gray-400 font-mono">drivemem.cloud</span>
         </div>
-        {/* Fake dashboard UI */}
-        <div className="bg-white p-6 space-y-4">
-          <div className="flex gap-4">
-            {/* Fake sidebar */}
-            <div className="w-48 space-y-2 hidden sm:block">
-              <div className="h-3 w-20 bg-gray-200 rounded" />
-              <div className="h-8 w-full bg-brand-50 rounded-lg border border-brand-100/50" />
-              <div className="h-8 w-full bg-gray-50 rounded-lg" />
-              <div className="h-8 w-full bg-gray-50 rounded-lg" />
-              <div className="h-8 w-full bg-gray-50 rounded-lg" />
-            </div>
-            {/* Fake content */}
-            <div className="flex-1 space-y-3">
-              <div className="h-4 w-32 bg-gray-200 rounded" />
-              <div className="grid grid-cols-3 gap-3">
-                <div className="h-20 bg-brand-50/50 rounded-xl border border-brand-100/30" />
-                <div className="h-20 bg-gray-50 rounded-xl" />
-                <div className="h-20 bg-gray-50 rounded-xl" />
-              </div>
-              <div className="space-y-2 pt-2">
-                <div className="h-3 w-full bg-gray-100 rounded" />
-                <div className="h-3 w-4/5 bg-gray-100 rounded" />
-                <div className="h-3 w-3/5 bg-gray-100 rounded" />
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Real product screenshot */}
+        <img
+          src="/screenshots/dashboard.png"
+          alt="DriveMem Dashboard — manage your AI knowledge base"
+          className="w-full block"
+          loading="lazy"
+        />
       </div>
     </div>
   )
@@ -248,24 +228,6 @@ export default function LandingPage() {
             </div>
           </FadeIn>
 
-          <FadeIn delay={300}>
-            <div className="mt-8 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-50 border border-gray-200">
-              <span className="text-gray-400 text-xs font-mono">$</span>
-              <code className="text-[13px] font-mono text-gray-700">
-                npm install @drivemem/sdk
-              </code>
-              <button
-                onClick={() => navigator.clipboard?.writeText("npm install @drivemem/sdk")}
-                className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
-                title="Copy"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                </svg>
-              </button>
-            </div>
-          </FadeIn>
         </div>
 
         {/* Product Preview */}

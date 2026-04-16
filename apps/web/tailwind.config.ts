@@ -28,6 +28,10 @@ const config: Config = {
         accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
         popover: { DEFAULT: 'hsl(var(--popover))', foreground: 'hsl(var(--popover-foreground))' },
         card: { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
+        success: { DEFAULT: 'var(--success)', light: 'color-mix(in srgb, var(--success) 15%, transparent)' },
+        warning: { DEFAULT: 'var(--warning)', light: 'color-mix(in srgb, var(--warning) 15%, transparent)' },
+        error: { DEFAULT: 'var(--error)', light: 'color-mix(in srgb, var(--error) 15%, transparent)' },
+        info: { DEFAULT: 'var(--info)', light: 'color-mix(in srgb, var(--info) 15%, transparent)' },
         brand: {
           50: '#eef0ff',
           100: '#d9ddff',
@@ -42,6 +46,9 @@ const config: Config = {
         },
       },
       boxShadow: {
+        'subtle': '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03)',
+        'medium': '0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)',
+        'strong': '0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06)',
         'brand-sm': '0 1px 3px rgba(79, 91, 213, 0.08)',
         'brand-md': '0 4px 12px rgba(79, 91, 213, 0.1)',
         'brand-lg': '0 8px 24px rgba(79, 91, 213, 0.12)',
@@ -50,10 +57,17 @@ const config: Config = {
         'soft-md': '0 4px 16px -4px rgba(0, 0, 0, 0.08), 0 2px 6px -2px rgba(0, 0, 0, 0.05)',
         'soft-lg': '0 10px 40px -10px rgba(0, 0, 0, 0.1), 0 4px 12px -2px rgba(0, 0, 0, 0.06)',
       },
+      fontSize: {
+        xs: ['0.75rem', { lineHeight: '1.5' }],
+        sm: ['0.875rem', { lineHeight: '1.5' }],
+        base: ['1rem', { lineHeight: '1.5' }],
+        lg: ['1.25rem', { lineHeight: '1.5' }],
+      },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        xl: '16px',
+        lg: '12px',
+        md: '8px',
+        sm: '6px',
       },
       keyframes: {
         'accordion-down': { from: { height: '0' }, to: { height: 'var(--radix-accordion-content-height)' } },
