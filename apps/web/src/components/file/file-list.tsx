@@ -753,7 +753,7 @@ export function FileList() {
               </div>
               <p className="text-sm font-medium truncate">{folder.name}</p>
               {typeof folder.fileCount === "number" && (
-                <p className="text-xs text-muted-foreground">{folder.fileCount}  files</p>
+                <p className="text-xs text-muted-foreground">{folder.fileCount} {folder.fileCount === 1 ? 'file' : 'files'}</p>
               )}
             </div>
           ))}

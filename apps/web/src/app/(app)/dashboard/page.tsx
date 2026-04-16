@@ -87,7 +87,7 @@ function ActivitySummary({ activities }: { activities: any[] }) {
     <div className="mx-3 mb-3">
       <h4 className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-2.5">Recent activity</h4>
       <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2.5">
-        Indexed {fileCount} files · {insightCount} insights · {linkCount} links
+        Indexed {fileCount} {fileCount === 1 ? 'file' : 'files'} · {insightCount} {insightCount === 1 ? 'insight' : 'insights'} · {linkCount} {linkCount === 1 ? 'link' : 'links'}
       </div>
       <div className="space-y-0 divide-y divide-zinc-100 dark:divide-zinc-800">
         {shown.map((a: any) => {
