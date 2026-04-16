@@ -19,6 +19,8 @@ export const users = pgTable('users', {
   notificationPreferences: jsonb('notification_preferences'),
   profile: jsonb('profile').default({}),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
+  onboardingStep: integer('onboarding_step').notNull().default(0),
   lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
 });
 

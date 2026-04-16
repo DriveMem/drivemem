@@ -19,11 +19,32 @@ export default async function v1Routes(fastify: FastifyInstance) {
   // GET /users/me/profile
   fastify.get('/users/me/profile', async (request, reply) => {
     const userId = request.user!.id;
-    const [user] = await db.select({ profile: schema.users.profile, name: schema.users.name, email: schema.users.email })
+    const [user] = await db.select({ profile: schema.users.profile, name: schema.users.name, email: schema.users.email, onboardingCompleted: schema.users.onboardingCompleted, onboardingStep: schema.users.onboardingStep })
       .from(schema.users).where(eq(schema.users.id, userId));
     if (!user) return reply.status(404).send({ error: 'User not found' });
     const profile = (user.profile as Record<string, any>) || {};
-    return reply.send({ ...profile, name: user.name, email: user.email });
+    return reply.send({ ...profile, name: user.name, email: user.email, onboardingCompleted: user.onboardingCompleted, onboardingStep: user.onboardingStep });
+  });
+
+  // PATCH /users/me/onboarding
+  fastify.patch('/users/me/onboarding', async (request, reply) => {
+    const user = (request as any).user;
+    const body = request.body as { step?: number; completed?: boolean };
+
+    const updates: Record<string, any> = {};
+    if (typeof body.step === 'number') updates.onboardingStep = body.step;
+    if (typeof body.completed === 'boolean') updates.onboardingCompleted = body.completed;
+
+    if (Object.keys(updates).length === 0) {
+      return reply.code(400).send({ error: 'No valid fields to update' });
+    }
+
+    const [updated] = await db.update(schema.users).set(updates).where(eq(schema.users.id, user.id)).returning({
+      onboardingStep: schema.users.onboardingStep,
+      onboardingCompleted: schema.users.onboardingCompleted
+    });
+
+    return { onboarding: updated };
   });
 
   // PATCH /users/me/profile

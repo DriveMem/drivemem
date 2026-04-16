@@ -18,15 +18,15 @@ export const metadata: Metadata = {
     title: "DriveMem — Memory for your AI agents",
     description: "DriveMem gives every AI agent the context it needs. One knowledge base, seamless continuity.",
     type: "website",
-    url: "https://drivemem.cloud",
+    url: "https://drivemem.com",
     siteName: "DriveMem",
-    images: [{ url: "https://drivemem.cloud/og-image.png", width: 1200, height: 630, alt: "DriveMem — Memory for your AI agents" }],
+    images: [{ url: "https://drivemem.com/og-image.png", width: 1200, height: 630, alt: "DriveMem — Memory for your AI agents" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "DriveMem — Memory for your AI agents",
     description: "DriveMem gives every AI agent the context it needs. One knowledge base, seamless continuity.",
-    images: ["https://drivemem.cloud/og-image.png"],
+    images: ["https://drivemem.com/og-image.png"],
   },
   icons: { icon: "/favicon.svg" },
 }
