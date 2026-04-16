@@ -94,7 +94,7 @@ export function ConversationList() {
             <MessageCircle className="h-7 w-7 text-brand-500/50" />
           </div>
           <p className="text-sm text-muted-foreground/50">No conversations yet</p>
-          <p className="text-xs text-muted-foreground/40">Clickbutton above to start your first AI conversation</p>
+          <p className="text-xs text-muted-foreground/40">Click the button above to start your first AI conversation</p>
         </div>
       ) : (
         <ul className="flex-1 overflow-y-auto">

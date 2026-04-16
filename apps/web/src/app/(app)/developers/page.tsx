@@ -20,8 +20,10 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
       { threshold: 0.05 }
     )
     obs.observe(el)
+  useEffect(() => { document.title = "Connect — DriveMem" }, [])
     return () => { obs.disconnect(); clearTimeout(timer) }
   }, [])
+  useEffect(() => { document.title = "Connect — DriveMem" }, [])
   return (
     <div
       ref={ref}
@@ -185,6 +187,7 @@ function WebhookDeliveryLog() {
   }, [isLoggedIn, fetchDeliveries])
 
   if (!isLoggedIn) {
+  useEffect(() => { document.title = "Connect — DriveMem" }, [])
     return (
       <div className="mt-8 rounded-xl border border-[#E5E4E1] bg-white p-6 text-center">
         <p className="text-sm text-[#6B6966]">Sign in to view webhook logs</p>
@@ -192,6 +195,7 @@ function WebhookDeliveryLog() {
     )
   }
 
+  useEffect(() => { document.title = "Connect — DriveMem" }, [])
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
@@ -308,6 +312,7 @@ export default function DevelopersPage() {
   const [copiedClient, setCopiedClient] = useState<string | null>(null)
   // title set via layout.tsx metadata
 
+  useEffect(() => { document.title = "Connect — DriveMem" }, [])
   return (
     <div className="flex-1 overflow-auto">
 

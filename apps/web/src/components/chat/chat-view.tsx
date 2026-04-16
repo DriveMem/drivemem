@@ -43,9 +43,9 @@ const DEFAULT_SUGGESTIONS = [
 ]
 
 const FEATURE_CARDS = [
-  { icon: "📄", title: "FilesQ&A", desc: "Answer questions based on your file content" },
-  { icon: "🔗", title: "Correlation found", desc: "Automatically discover connections between files" },
-  { icon: "📝", title: "ContentSummary", desc: "Quickly extract key information from files" },
+  { icon: "📄", title: "Files Q&A", desc: "Answer questions based on your file content" },
+  { icon: "🔗", title: "Connections", desc: "Automatically discover connections between files" },
+  { icon: "📝", title: "Content Summary", desc: "Quickly extract key information from files" },
 ]
 
 function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (msg: string) => void }) {
