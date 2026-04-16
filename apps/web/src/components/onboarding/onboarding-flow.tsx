@@ -144,7 +144,7 @@ function StepUpload({ onNext }: { onNext: () => void }) {
       <div
         {...getRootProps()}
         className={cn(
-          "border-2 border-dashed rounded-2xl p-12 cursor-pointer transition-all duration-200",
+          "border-2 border-dashed rounded-2xl p-8 sm:p-12 cursor-pointer transition-all duration-200",
           isDragActive
             ? "border-primary bg-primary/5 scale-[1.02]"
             : "border-muted-foreground/20 hover:border-primary/50 hover:bg-muted/30",
@@ -168,7 +168,7 @@ function StepUpload({ onNext }: { onNext: () => void }) {
       </div>
 
       <button
-        onClick={onNext}
+        onClick={(e) => { e.stopPropagation(); onNext(); }}
         className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors relative z-10"
       >
         Skip for now
