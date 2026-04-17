@@ -139,12 +139,12 @@ function MessageActions({ content }: { content: string }) {
         method: "POST",
         body: JSON.stringify({
           content,
-          title: `AINote-${timestamp}`,
+          title: `AI Note - ${timestamp}`,
         }),
       })
       toast.success("Saved as note")
     } catch {
-      toast.error("SaveFailed")
+      toast.error("Save failed")
     } finally {
       setSaving(false)
     }

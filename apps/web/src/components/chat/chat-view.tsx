@@ -350,7 +350,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
           <div className="text-center">
             <Upload className="h-10 w-10 text-brand-500 mx-auto mb-2" />
             <p className="text-sm font-medium text-brand-500">Drag files here to upload</p>
-            <p className="text-xs text-muted-foreground mt-1">Uploadand AI will automatically understand the file content</p>
+            <p className="text-xs text-muted-foreground mt-1">Upload and AI will automatically understand the file content</p>
           </div>
         </div>
       )}
@@ -373,7 +373,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
             {foldersList.length === 0 ? (
-              <DropdownMenuItem disabled>NoneFiles</DropdownMenuItem>
+              <DropdownMenuItem disabled>No files</DropdownMenuItem>
             ) : foldersList.map((f: any) => (
               <DropdownMenuItem key={f.id} onClick={() => { setScope("folder"); setScopeId(f.id); setScopeLabel(f.name); toast(`Memory scope: ${f.name}`, { duration: 1500 }) }}>
                 <Folder className="h-3 w-3 mr-2" />{f.name}
@@ -390,7 +390,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
             {indexedFiles.length === 0 ? (
-              <DropdownMenuItem disabled>NoneIndexed files</DropdownMenuItem>
+              <DropdownMenuItem disabled>No indexed files</DropdownMenuItem>
             ) : indexedFiles.map((f: any) => (
               <DropdownMenuItem key={f.id} onClick={() => { setScope("file"); setScopeId(f.id); setScopeLabel(f.name); toast(`Memory scope: ${f.name}`, { duration: 1500 }) }}>
                 <FileText className="h-3 w-3 mr-2" />{f.name}

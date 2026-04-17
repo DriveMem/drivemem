@@ -211,7 +211,7 @@ export function ConversationList() {
       <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Deleteconversations</DialogTitle>
+            <DialogTitle>Delete conversation</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">Are you sure you want to delete this conversation? This action cannot be undone.</p>
           <div className="flex justify-end gap-3">
