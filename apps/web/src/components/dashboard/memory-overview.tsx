@@ -135,7 +135,7 @@ export function MemoryOverview() {
 
           <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <FileText className="h-3.5 w-3.5" /> {profile?.totalFiles ?? totalFiles}  files
+              <FileText className="h-3.5 w-3.5" /> {indexedFiles.length}  files
             </span>
             <span className="flex items-center gap-1">
               <MessageSquare className="h-3.5 w-3.5" /> {totalConvs}  conversations
