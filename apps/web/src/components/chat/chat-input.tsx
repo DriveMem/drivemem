@@ -7,6 +7,26 @@ import { cn } from "@/lib/utils"
 export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, fileCount = 0, hasConversations = false }: { onSend: (message: string) => void; disabled?: boolean; dailyLimitReached?: boolean; scopeHint?: string; fileCount?: number; hasConversations?: boolean }) {
   const [value, setValue] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // S4: Mobile keyboard adaptation — shift input above virtual keyboard
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) return
+    const vv = window.visualViewport
+    const onResize = () => {
+      const el = containerRef.current
+      if (!el) return
+      // When viewport height shrinks (keyboard open), offset the container
+      const offset = window.innerHeight - vv.height
+      el.style.transform = offset > 50 ? `translateY(-${offset}px)` : ""
+    }
+    vv.addEventListener("resize", onResize)
+    vv.addEventListener("scroll", onResize)
+    return () => {
+      vv.removeEventListener("resize", onResize)
+      vv.removeEventListener("scroll", onResize)
+    }
+  }, [])
 
   const getPlaceholders = () => {
     if (fileCount === 0 && !hasConversations) {
@@ -73,7 +93,7 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
   }
 
   return (
-    <div className="max-w-3xl mx-auto w-full px-4 pb-4">
+    <div ref={containerRef} className="max-w-3xl mx-auto w-full px-4 pb-4 transition-transform duration-150" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
       {scopeHint && (
         <p className="text-xs text-muted-foreground/70 text-center mb-2">🔍 {scopeHint}</p>
       )}

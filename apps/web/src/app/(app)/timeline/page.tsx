@@ -162,7 +162,7 @@ function ListView() {
                   return (
                     <div key={`${event.type}-${event.id}`} className="relative">
                       <div className={`absolute -left-[1.625rem] top-1 h-3 w-3 rounded-full ${config.dotColor} ring-4 ring-background`} />
-                      <Link href={getEventLink(event)} className="block cursor-pointer rounded-lg border border-zinc-200 dark:border-zinc-700 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:shadow-sm hover:border-zinc-200 dark:border-zinc-700/80 transition-all duration-200">
+                      <Link href={getEventLink(event)} className="block cursor-pointer rounded-lg border border-zinc-200 dark:border-zinc-700 p-2 md:p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:shadow-sm hover:border-zinc-200 dark:border-zinc-700/80 transition-all duration-200">
                         <div className="flex items-center gap-2">
                           <Icon className={`h-4 w-4 ${config.iconColor}`} />
                           <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{config.label}</span>

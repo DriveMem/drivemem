@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { useLayoutStore } from "@/stores/layout-store"
 import { Sidebar } from "./sidebar"
+import { MobileBottomNav } from "./mobile-bottom-nav"
 import { InspectorPanel } from "./inspector-panel"
 import { TopNav } from "./top-nav"
 import { CommandPalette } from "./command-palette"
@@ -34,7 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopNav />
         <motion.main
-          className="flex-1 overflow-auto"
+          className="flex-1 overflow-auto pb-16 md:pb-0"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
@@ -55,6 +56,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </motion.aside>
         )}
       </AnimatePresence>
+      {/* S2: Mobile bottom tab bar — visible only ≤768px */}
+      <MobileBottomNav />
       <CommandPalette />
       <FeedbackButton />
       <OfflineBanner />

@@ -6,6 +6,7 @@ import {
   FileText, Sparkles, Upload, X, Lightbulb, AlertTriangle,
   MessageCircle, Folder, Plus, ChevronRight, FolderPlus, Terminal
 } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { MobileUploadFab } from "@/components/file/mobile-upload-fab"
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow"
 import { useFiles } from "@/hooks/use-files"
@@ -31,6 +32,19 @@ function relativeTime(dateStr: string): string {
     const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
     return `${dayName} ${fmt(date)}`
   }
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+// S3: Abbreviated time for mobile
+function shortTime(dateStr: string): string {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  if (diff < 60000) return "now"
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`
+  const days = Math.floor(diff / 86400000)
+  if (days < 7) return `${days}d`
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
@@ -66,15 +80,16 @@ function ActivityItem({ activity }: { activity: any }) {
   const detail = activity.message || activity.detail || ""
 
   return (
-    <div className="flex items-center gap-3 py-2.5 text-body border-b border-zinc-100 dark:border-zinc-800 last:border-0">
+    <div className="flex items-center gap-3 py-1.5 md:py-2.5 text-xs md:text-body border-b border-zinc-100 dark:border-zinc-800 last:border-0">
       <Icon className="h-4 w-4 text-zinc-400 flex-shrink-0" />
       <span className="text-zinc-500 dark:text-zinc-400 flex-shrink-0">{agentName}</span>
       <span className="text-zinc-900 dark:text-zinc-100 truncate">
         {action}
         {detail && <span className="text-zinc-500 dark:text-zinc-400"> — {detail}</span>}
       </span>
-      <span className="ml-auto text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
-        {relativeTime(activity.createdAt)}
+      <span className="ml-auto text-[10px] md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
+        <span className="hidden md:inline">{relativeTime(activity.createdAt)}</span>
+        <span className="md:hidden">{shortTime(activity.createdAt)}</span>
       </span>
     </div>
   )
@@ -235,38 +250,55 @@ export default function HomePage() {
         {/* Conflict Warning — conditional */}
         {conflicts.length > 0 && <ConflictBanner count={conflicts.length} />}
 
-        {/* Quick Actions */}
-        <div className="flex gap-3 mb-8">
-          <Button
-            variant="default"
-            size="sm"
-            className="gap-2"
-            onClick={() => router.push("/chat?new=1")}
-          >
-            <MessageCircle className="h-4 w-4" />
-            Ask AI
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => setShowUpload(true)}
-          >
-            <Upload className="h-4 w-4" />
-            Upload
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            asChild
-          >
-            <Link href="/files">
-              <Folder className="h-4 w-4" />
-              Browse Knowledge
-            </Link>
-          </Button>
-        </div>
+        {/* Quick Actions — S1: icon-only on mobile with tooltips */}
+        <TooltipProvider delayDuration={0}>
+          <div className="flex gap-3 mb-8">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => router.push("/chat?new=1")}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="hidden md:inline">Ask AI</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="md:hidden">Ask AI</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => setShowUpload(true)}
+                >
+                  <Upload className="h-4 w-4" />
+                  <span className="hidden md:inline">Upload</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="md:hidden">Upload</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  asChild
+                >
+                  <Link href="/files">
+                    <Folder className="h-4 w-4" />
+                    <span className="hidden md:inline">Browse Knowledge</span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="md:hidden">Browse Knowledge</TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
 
         {/* Knowledge Stats — compact row */}
         <div className="flex items-center gap-6 mb-8 text-caption text-muted-foreground">
