@@ -383,16 +383,27 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : userFileCount > 0 
       // Generate title on first message
       if (isFirstUserMessage) {
         try {
-          const titleResponse = await chat([
-            { role: 'system', content: '你是标题生成器。根据用户消息生成一个10字以内的中文短标题。规则：只输出标题本身，禁止输出解释、引号、标点、前缀。' },
-            { role: 'user', content: body.content },
-          ]);
-          const title = titleResponse.slice(0, 50).trim().replace(/^["'「」《》]+|["'「」《》]+$/g, '') || body.content.slice(0, 30);
-          await db.update(conversations).set({ title }).where(eq(conversations.id, id));
-          reply.raw.write(`event: title\ndata: ${JSON.stringify({ title })}\n\n`);
+          const userContent = (body.content || '').trim();
+          if (!userContent) {
+            const title = 'New conversation';
+            await db.update(conversations).set({ title }).where(eq(conversations.id, id));
+            reply.raw.write(`event: title\ndata: ${JSON.stringify({ title })}\n\n`);
+          } else {
+            const titleResponse = await chat([
+              { role: 'system', content: '你是标题生成器。根据用户消息生成一个10字以内的中文短标题。规则：只输出标题本身，禁止输出解释、引号、标点、前缀。如果用户消息内容不明确，直接用消息前几个字作为标题。' },
+              { role: 'user', content: userContent },
+            ]);
+            const cleaned = titleResponse.slice(0, 50).trim().replace(/^["'「」《》]+|["'「」《》]+$/g, '');
+            // Reject LLM responses that look like meta-instructions rather than actual titles
+            const isMetaResponse = /^(请提供|请输入|请给出|I need|Please provide)/i.test(cleaned);
+            const title = (!cleaned || isMetaResponse) ? userContent.slice(0, 30) + (userContent.length > 30 ? '...' : '') : cleaned;
+            await db.update(conversations).set({ title }).where(eq(conversations.id, id));
+            reply.raw.write(`event: title\ndata: ${JSON.stringify({ title })}\n\n`);
+          }
         } catch {
           // Fallback: use first message content as title
-          const title = body.content.slice(0, 30) + (body.content.length > 30 ? '...' : '');
+          const fallbackContent = (body.content || '').trim();
+          const title = fallbackContent ? fallbackContent.slice(0, 30) + (fallbackContent.length > 30 ? '...' : '') : 'New conversation';
           await db.update(conversations).set({ title }).where(eq(conversations.id, id));
           reply.raw.write(`event: title\ndata: ${JSON.stringify({ title })}\n\n`);
         }

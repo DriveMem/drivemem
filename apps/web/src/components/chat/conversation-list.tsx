@@ -78,7 +78,7 @@ export function ConversationList() {
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Searchconversations..."
+            placeholder="Search conversations..."
             className="w-full bg-transparent text-xs outline-none placeholder-muted-foreground"
           />
         </div>
