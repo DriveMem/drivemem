@@ -9,6 +9,7 @@ import * as schema from '../db/schema.js';
 import { eq, desc, and, inArray, sql, gt } from 'drizzle-orm';
 import { inferRole } from '../services/context-compiler/agent-profiles.js';
 import type { DetectedCapabilities } from '../services/capability-detector.js';
+import { maybeAccumulate } from '../services/auto-accumulate.js';
 
 
 // Proactive Context Enrichment — append related knowledge to tool responses
@@ -880,6 +881,15 @@ ${insightsSection}
           // Silent failure — log but return normal response
           console.error('[MCP Layer 2] Context enrichment failed:', (enrichErr as Error).message);
         }
+      }
+
+      // Layer 3: Auto-accumulate valuable insights from search/ask (fire-and-forget)
+      if ((name === 'aidrive_search' || name === 'aidrive_ask') && !toolResult.isError) {
+        const queryText = name === 'aidrive_search'
+          ? (args as any).query as string
+          : (args as any).question as string;
+        const resultText = toolResult.content?.[0]?.type === 'text' ? (toolResult.content[0] as any).text : '';
+        maybeAccumulate(userId, name, queryText, resultText);
       }
 
       // Prepend welcome brief to the first successful tool response
