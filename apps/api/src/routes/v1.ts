@@ -12,6 +12,7 @@ import { config } from '../lib/config.js';
 import crypto from 'crypto';
 import { Queue } from 'bullmq';
 import { logActivity } from '../services/activity-logger.js';
+import { recordSearchResults, resolveImplicitFeedback } from '../services/implicit-feedback.js';
 
 export default async function v1Routes(fastify: FastifyInstance) {
   fastify.addHook('preHandler', requireApiKey);
@@ -361,6 +362,8 @@ export default async function v1Routes(fastify: FastifyInstance) {
         .catch(() => {});
     }
     logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'search', detail: query.q, metadata: { resultCount: searchResults.length, format }, relatedFileIds: searchFileIdSet });
+    // Agent Loop 1: record search results for implicit feedback tracking
+    recordSearchResults(userId, (request as any).apiKeyId, searchFileIdSet);
     return reply.send({
       results: searchResults.map(c => ({
         fileId: c.fileId,
@@ -512,6 +515,9 @@ export default async function v1Routes(fastify: FastifyInstance) {
       { role: 'user', content: body.question },
     ]);
 
+    // Agent Loop 1: resolve implicit feedback for files referenced in ask
+    const askFileIds = [...new Set(finalChunks.map(c => c.fileId))];
+    resolveImplicitFeedback(userId, (request as any).apiKeyId, askFileIds);
     logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'ask', detail: body.question, metadata: { sourceCount: finalChunks.length } });
     return reply.send({
       answer,
@@ -564,6 +570,8 @@ export default async function v1Routes(fastify: FastifyInstance) {
     await queue.add('parse', { fileId, userId, s3Key, mimeType: 'text/markdown' });
     await queue.close();
     
+    // Agent Loop 1: store action implies the agent is actively working — resolve any pending feedback for this user
+    resolveImplicitFeedback(userId, (request as any).apiKeyId, [fileId]);
     logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'store', detail: title, metadata: { projectDetection: { method: detection.method, project: detection.projectName, confidence: detection.confidence } } });
 
     // Auto-handoff: dispatch webhook with compiled context
@@ -785,6 +793,8 @@ ${insightsSection}
       format: body.format,
     });
     const compileFileIds = (result as any).sources?.map((s: any) => s.fileId).filter(Boolean) || [];
+    // Agent Loop 1: resolve implicit feedback for files referenced in compile
+    resolveImplicitFeedback(request.user!.id, (request as any).apiKeyId, [...new Set(compileFileIds)] as string[]);
     logActivity({ userId: request.user!.id, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'compile', detail: body.task, relatedFileIds: [...new Set(compileFileIds)] as string[] });
     return reply.send(result);
   });
