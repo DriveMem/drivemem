@@ -104,6 +104,7 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
   ]);
 
   // Fetch agent activity logs
+  // Exclude 'store' activities — they already appear as file_uploaded entries
   const activitiesQuery = db.select({
     id: schema.apiActivityLogs.id,
     agentName: schema.apiActivityLogs.agentName,
@@ -113,8 +114,8 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
     createdAt: schema.apiActivityLogs.createdAt,
   }).from(schema.apiActivityLogs)
     .where(cursorDate
-      ? and(eq(schema.apiActivityLogs.userId, userId), sql`${schema.apiActivityLogs.createdAt} < ${cursorDate.toISOString()}`)
-      : eq(schema.apiActivityLogs.userId, userId))
+      ? and(eq(schema.apiActivityLogs.userId, userId), sql`${schema.apiActivityLogs.action} != 'store'`, sql`${schema.apiActivityLogs.createdAt} < ${cursorDate.toISOString()}`)
+      : and(eq(schema.apiActivityLogs.userId, userId), sql`${schema.apiActivityLogs.action} != 'store'`))
     .orderBy(desc(schema.apiActivityLogs.createdAt))
     .limit(fetchLimit);
 

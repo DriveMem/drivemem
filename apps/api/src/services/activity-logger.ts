@@ -1,5 +1,5 @@
 import { db } from '../db/index.js';
-import { eq, and, gte } from 'drizzle-orm';
+import { eq, and, gte, sql } from 'drizzle-orm';
 import * as schema from '../db/schema.js';
 
 /** Dedup window: skip insert if same actor+action+detail exists within this period */
@@ -28,6 +28,15 @@ export async function logActivity(params: {
     // Match detail (nullable) — treat null/undefined detail as matching other null details
     if (params.detail) {
       conditions.push(eq(schema.apiActivityLogs.detail, params.detail));
+    } else {
+      conditions.push(sql`${schema.apiActivityLogs.detail} IS NULL`);
+    }
+
+    // Match agentName for accurate dedup across different agents
+    if (params.agentName) {
+      conditions.push(eq(schema.apiActivityLogs.agentName, params.agentName));
+    } else {
+      conditions.push(sql`${schema.apiActivityLogs.agentName} IS NULL`);
     }
 
     const [existing] = await db
