@@ -6,7 +6,7 @@ import { searchSimilar, preprocessQuery } from '../services/vector.service.js';
 import { chat } from '../services/llm.service.js';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, desc, and, inArray } from 'drizzle-orm';
+import { eq, desc, and, inArray, sql } from 'drizzle-orm';
 import { inferRole } from '../services/context-compiler/agent-profiles.js';
 import type { DetectedCapabilities } from '../services/capability-detector.js';
 
@@ -252,40 +252,52 @@ You are not just a chat assistant — you are part of the user's knowledge syste
     if (!contextInjected && name !== 'aidrive_compile_context') {
       contextInjected = true;
       try {
-        // Build a brief context header from Identity + recent activity
+        // Build a RICH welcome brief — make the user feel DriveMem is working
         const [user] = await db.select({ name: schema.users.name, profile: schema.users.profile })
           .from(schema.users).where(eq(schema.users.id, userId));
         const profile = (user?.profile as Record<string, any>) || {};
-        const parts: string[] = [];
-        if (user?.name) parts.push(`User: ${user.name}`);
-        if (profile.role) parts.push(`Role: ${profile.role}`);
-        if (profile.currentGoal) parts.push(`Goal: ${profile.currentGoal}`);
+        const lines: string[] = ['📋 **DriveMem Knowledge Brief**'];
 
-        // Get recent activity (last 3 items)
+        // Identity
+        if (user?.name) lines.push(`👤 User: ${user.name}`);
+        if (profile.role) lines.push(`🎯 Role: ${profile.role}`);
+        if (profile.currentGoal) lines.push(`📌 Current Goal: ${profile.currentGoal}`);
+
+        // Knowledge stats
+        const [fileStats] = await db.select({ count: sql`count(*)` }).from(schema.files).where(eq(schema.files.userId, userId));
+        const totalFiles = Number(fileStats?.count || 0);
+        lines.push(`📚 Knowledge base: \${totalFiles} files indexed`);
+
+        // Recent files with summaries (top 5)
         const recentFiles = await db.select({ name: schema.files.name, summary: schema.files.summary })
           .from(schema.files).where(eq(schema.files.userId, userId))
-          .orderBy(desc(schema.files.createdAt)).limit(3);
+          .orderBy(desc(schema.files.createdAt)).limit(5);
         if (recentFiles.length > 0) {
-          parts.push(`Recent files: ${recentFiles.map(f => f.name).join(', ')}`);
+          lines.push('\n**Recent Knowledge:**');
+          for (const f of recentFiles) {
+            const summary = f.summary ? f.summary.slice(0, 100) : 'Processing...';
+            lines.push(`- **\${f.name}**: \${summary}`);
+          }
         }
 
-        // Include detected project info
+        // Active project
         if (detectedProjectId && detectedProjectName) {
-          parts.push(`Active project: ${detectedProjectName}`);
+          lines.push(`\n🏗️ Active project: **\${detectedProjectName}**`);
         }
 
-        // Check for conflicts
+        // Conflicts
         try {
           const { getConflicts } = await import('../services/knowledge-graph.js');
           const conflicts = await getConflicts(userId);
           if (conflicts.length > 0) {
-            parts.push(`⚠️ ${conflicts.length} knowledge conflict(s) detected`);
+            lines.push(`\n⚠️ \${conflicts.length} knowledge conflict(s) need attention`);
           }
-        } catch { /* don't block */ }
+        } catch {}
 
-        if (parts.length > 0) {
-          contextPrefix = `[AI Drive Context] ${parts.join(' | ')}\n\n`;
-        }
+        lines.push('\n---');
+        lines.push('*This context was automatically loaded from your DriveMem knowledge base. Use aidrive_search to find specific knowledge, aidrive_store to save new insights.*');
+
+        contextPrefix = lines.join('\n') + '\n\n';
       } catch { /* don't break tool calls if context injection fails */ }
     }
 
