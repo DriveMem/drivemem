@@ -652,7 +652,8 @@ export default async function fileRoutes(fastify: FastifyInstance) {
 
     const title = body.title || body.content.slice(0, 30).replace(/\n/g, ' ');
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const filename = `note-${timestamp}.md`;
+    const slug = title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'note';
+    const filename = `${slug}-${timestamp.slice(0, 10)}.md`;
     const mdContent = `# ${title}\n\n${body.content}`;
 
     const { randomUUID } = await import('crypto');

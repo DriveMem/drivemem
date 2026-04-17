@@ -590,7 +590,8 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           const title = ((args as any).title as string) || content.slice(0, 30).replace(/\n/g, ' ');
           const tagStr = (args as any).tags as string || '';
           const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-          const filename = `note-${timestamp}.md`;
+          const slug = title.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'note';
+          const filename = `${slug}-${timestamp.slice(0, 10)}.md`;
 
           const mdContent = `# ${title}\n\n${content}\n\n---\n_存入时间: ${new Date().toLocaleString('zh-CN')}_`;
 

@@ -106,7 +106,9 @@ function ActivityItem({ activity }: { activity: any }) {
   }
 
   const action = activity.title || ACTION_LABELS[activity.type] || activity.action || activity.type?.replace(/_/g, " ") || "activity"
-  const detail = activity.message || activity.detail || ""
+  const rawDetail = activity.message || activity.detail || ""
+  // Friendlify note-YYYY-MM-DDTHH-MM-SS.md filenames to "AI Note"
+  const detail = rawDetail.replace(/\bnote-\d{4}-\d{2}-\d{2}T[\d-]+\.md\b/g, 'AI Note')
 
   return (
     <div className="flex items-center gap-3 py-1.5 md:py-2.5 text-xs md:text-body border-b border-zinc-100 dark:border-zinc-800 last:border-0">
