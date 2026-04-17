@@ -204,8 +204,14 @@ function AgentConfigTabs({ apiKey }: { apiKey: string }) {
     },
     openclaw: {
       label: "OpenClaw",
-      lang: "yaml",
-      content: `plugins:\n  entries:\n    drivemem:\n      enabled: true\n      config:\n        apiKey: "${apiKey}"\n        baseUrl: "https://api.drivemem.cloud"`,
+      lang: "bash",
+      content: `# Run this command to connect OpenClaw to DriveMem:
+openclaw config set plugins.entries.drivemem.enabled true
+openclaw config set plugins.entries.drivemem.config.apiKey "${apiKey}"
+openclaw config set plugins.entries.drivemem.config.baseUrl "https://api.drivemem.cloud"
+
+# Or add to MCP servers:
+openclaw config set mcp.servers.drivemem.url "https://api.drivemem.cloud/mcp?apiKey=${apiKey}"`,
     },
   }
 
