@@ -32,26 +32,24 @@ export function createMcpServer(userId: string, agentName: string = ''): Server 
         resources: {},
         prompts: {},
       },
-      instructions: `You are connected to the user's AI Drive knowledge base — a shared persistent memory layer across all AI tools.
+      instructions: `You are connected to DriveMem — the user's shared knowledge base across all AI tools. You MUST use it proactively.
 
-## Automatic Behaviors (ALWAYS do these):
+## CRITICAL: You must do these automatically — do NOT wait for the user to ask.
 
-### On Connect — Auto Context Load
-When you first start a conversation or receive a new task:
-1. Call aidrive_compile_context with the current task description to get relevant background.
-2. Use this compiled context to inform your responses — the user should feel like you already know their projects, decisions, and preferences.
+### 1. FIRST THING — Load Context (MANDATORY)
+At the START of every conversation, IMMEDIATELY call aidrive_compile_context with a description of what the user seems to need. This gives you their background, recent work, and relevant knowledge. Do this BEFORE your first substantive reply.
 
-### During Conversation — Auto Search
-Before answering any substantive question, call aidrive_search to check if the knowledge base has relevant information. Don't wait for the user to ask — proactive search is default behavior.
+### 2. EVERY QUESTION — Search First (MANDATORY)  
+Before answering ANY question, call aidrive_search to check the knowledge base. The user expects you to already know their projects and decisions. Not searching = giving uninformed answers.
 
-### On Completion — Auto Writeback
-When a conversation produces valuable output (decisions, conclusions, analysis, action items):
-1. Call aidrive_store to save the key conclusions back to the knowledge base.
-2. Include a descriptive title and relevant tags (e.g., "decision", "analysis", "todo").
-3. This ensures other AI tools the user works with can access these insights.
+### 3. AFTER VALUABLE OUTPUT — Save It (MANDATORY)
+When the conversation produces decisions, conclusions, analysis, or action items, call aidrive_store to save them. Other AI tools the user works with will automatically get access to these insights.
 
-### Citation
-When citing knowledge base content, mention the source file name.
+### 4. Citation
+When using knowledge base content in your answer, mention the source file name.
+
+## Why this matters
+The user connected you to DriveMem so you can be smarter — you have access to their entire knowledge history. USE IT. Every conversation should start with context loading and end with knowledge saving.
 
 ## Available Context Tools
 - aidrive_compile_context: Get a compiled briefing for the current task (recommended on session start)
