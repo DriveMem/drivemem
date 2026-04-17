@@ -169,7 +169,7 @@ function MessageActions({ content }: { content: string }) {
 
   return (
     <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition">
-      <button onClick={handleCopy} className="p-1 rounded-lg hover:bg-muted/50 transition-all duration-200" title="CopyAnswer">
+      <button onClick={handleCopy} className="p-1 rounded-lg hover:bg-muted/50 transition-all duration-200" title="Copy answer">
         {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
       </button>
       <button onClick={handleSaveAsNote} disabled={saving} className="p-1 rounded-lg hover:bg-muted/50 transition-all duration-200" title="Save as note">
