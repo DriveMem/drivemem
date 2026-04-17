@@ -1,4 +1,5 @@
 import { Worker, Job, UnrecoverableError, Queue } from 'bullmq';
+import { createNotificationDeduped } from '../services/notification.service.js';
 import { eq, and, sql } from 'drizzle-orm';
 import { config } from '../lib/config.js';
 import { AppError } from '../lib/errors.js';
@@ -200,7 +201,7 @@ const worker = new Worker<ParseJobData>(
           const diffPrompt = `对比以下两个版本的变化，50字以内：\n旧版本摘要：${oldFile.summary.substring(0, 200)}\n新版本摘要：${currentSummary.substring(0, 200)}`;
           const diff = await chat([{ role: 'user', content: diffPrompt }]);
 
-          await db.insert(schema.notifications).values({
+          await createNotificationDeduped({
             userId,
             type: 'file_updated',
             title: '📄 文件已更新',
@@ -288,7 +289,7 @@ const worker = new Worker<ParseJobData>(
 
         // Notification: knowledge links found (one per file)
         if (lines.length > 0) {
-          await db.insert(schema.notifications).values({
+          await createNotificationDeduped({
             userId,
             type: 'knowledge_link_found',
             title: '🔗 发现知识关联',

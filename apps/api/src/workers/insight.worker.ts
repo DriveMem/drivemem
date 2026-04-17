@@ -2,6 +2,7 @@ import { Worker, Queue } from 'bullmq';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { eq, and, sql } from 'drizzle-orm';
+import { createNotificationDeduped } from '../services/notification.service.js';
 import { embedTexts } from '../services/embedding.service.js';
 import { searchSimilar } from '../services/vector.service.js';
 
@@ -84,7 +85,7 @@ const worker = new Worker('insight-generate', async (job) => {
       });
       
       // Also write notification
-      await db.insert(schema.notifications).values({
+      await createNotificationDeduped({
         userId,
         type: 'insight_generated',
         title: '💡 新洞察',
