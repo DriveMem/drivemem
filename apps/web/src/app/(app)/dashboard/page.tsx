@@ -17,15 +17,21 @@ import Link from "next/link"
 
 // --- helpers ---
 function relativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return "just now"
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 30) return `${days}d ago`
-  return new Date(dateStr).toLocaleDateString()
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  if (diff < 60000) return "just now"
+  const fmt = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  if (date.toDateString() === now.toDateString()) return fmt(date)
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (date.toDateString() === yesterday.toDateString()) return `Yesterday ${fmt(date)}`
+  const days = Math.floor(diff / 86400000)
+  if (days < 7) {
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
+    return `${dayName} ${fmt(date)}`
+  }
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 const activityIcons: Record<string, typeof FileText> = {
@@ -39,8 +45,10 @@ const activityIcons: Record<string, typeof FileText> = {
 // --- Activity Item ---
 function ActivityItem({ activity }: { activity: any }) {
   const Icon = activityIcons[activity.type] || Lightbulb
-  const agentName = activity.agentName && activity.agentName !== "You"
-    ? activity.agentName.replace(/^agent[-_]?[a-z][-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'AI Agent'
+  const isAgentActivity = activity.type === 'agent_activity'
+  const rawAgent = activity.metadata?.agentName || activity.agentName
+  const agentName = isAgentActivity && rawAgent && rawAgent !== "You"
+    ? rawAgent.replace(/^agent[-_]?[a-z][-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'AI Agent'
     : "You"
   const ACTION_LABELS: Record<string, string> = {
     file_indexed: "indexed a file",

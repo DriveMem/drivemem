@@ -179,7 +179,7 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
       metadata: {},
     })),
     ...activities.map(a => {
-      const verbMap: Record<string, string> = { search: 'searched for', store: 'saved', ask: 'asked', compile: 'compiled briefing for' };
+      const verbMap: Record<string, string> = { search: 'searched for', store: 'saved', ask: 'asked', compile: 'compiled a briefing' };
       const iconMap: Record<string, string> = { search: '🔍', store: '📥', ask: '💬', compile: '📋' };
       const verb = verbMap[a.action] || a.action;
       const icon = iconMap[a.action] || '🤖';
