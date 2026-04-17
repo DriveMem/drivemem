@@ -306,7 +306,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
     }
 
     try {
-      const toolResult = await (async () => {
+      let toolResult = await (async () => {
       switch (name) {
         case 'aidrive_search': {
           const query = (args as any).query as string;
@@ -792,6 +792,48 @@ ${insightsSection}
           return { content: [{ type: 'text' as const, text: `Unknown tool: ${name}` }], isError: true };
       }
       })();
+
+      // Layer 2: Proactive Context Enrichment for search/ask
+      const enrichableTools = ['aidrive_search', 'aidrive_ask'];
+      if (enrichableTools.includes(name) && !toolResult.isError && toolResult.content?.length > 0) {
+        try {
+          const firstText = toolResult.content[0];
+          // Skip if response already contains compiled context (avoid duplication)
+          if (firstText.type === 'text' && !firstText.text.includes('_Compilation:')) {
+            const queryText = name === 'aidrive_search'
+              ? (args as any).query as string
+              : (args as any).question as string;
+            const { compileContext } = await import('../services/context-compiler/index.js');
+            const enrichResult = await compileContext(userId, {
+              task: queryText,
+              tokenBudget: 600,
+              role: detectedCaps?.role || inferRole(agentName),
+              hints: detectedProjectId ? { project: detectedProjectName || undefined } : undefined,
+            });
+            // Extract up to 3 snippets, each ≤200 tokens (~800 chars)
+            if (enrichResult.compiledContext && enrichResult.metadata.fragmentCount > 0) {
+              const snippets = enrichResult.compiledContext
+                .split(/\n(?=##?\s)/)
+                .filter(s => s.trim().length > 20)
+                .slice(0, 3)
+                .map(s => s.slice(0, 800).trim());
+              if (snippets.length > 0) {
+                const enrichmentBlock = `\n\n## Related from your knowledge base\n\n${snippets.join('\n\n---\n\n')}`;
+                toolResult = {
+                  ...toolResult,
+                  content: [
+                    { type: 'text' as const, text: firstText.text + enrichmentBlock },
+                    ...toolResult.content.slice(1),
+                  ],
+                };
+              }
+            }
+          }
+        } catch (enrichErr) {
+          // Silent failure — log but return normal response
+          console.error('[MCP Layer 2] Context enrichment failed:', (enrichErr as Error).message);
+        }
+      }
 
       // Prepend welcome brief to the first successful tool response
       if (welcomeBrief && !toolResult.isError && toolResult.content?.length > 0) {
