@@ -5,7 +5,7 @@ import type { CompileContextRequest, CompileContextResponse, KnowledgeFragment, 
 import { estimateTokens } from './token-estimator.js';
 import { resolveProfile } from './agent-profiles.js';
 import { LAYER_BUDGETS, DEPTH_LEVELS } from './types.js';
-import { createHash } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 
 // --- Compilation cache for dedup (10-min TTL) ---
 const CACHE_TTL_MS = 10 * 60 * 1000;
@@ -541,8 +541,11 @@ export async function compileContext(
   const domain = isValidDomain(rawDomain) ? rawDomain : 'general';
   const schema = domain !== 'general' ? extractSchema(domain, selected) : undefined;
 
+  const compilationId = randomUUID();
+
   const response: CompileContextResponse = {
     compiledContext,
+    compilationId,
     metadata: {
       fragmentCount: selected.length,
       totalTokens,
@@ -561,6 +564,12 @@ export async function compileContext(
 
   compilationCache.set(cacheKey, { response, snapshot });
 
+  // --- Fire-and-forget: log compilation metrics ---
+  logCompilation(userId, request.apiKeyId, compilationId, request, response).catch(() => {});
+
+  // --- Track implicit negative feedback for compilations ---
+  trackCompilationForFeedback(userId, compilationId, request.task);
+
   // --- Track file access for freshness decay ---
   try {
     const accessedFileIds = [...new Set(selected.map(f => f.fileId))];
@@ -575,4 +584,117 @@ export async function compileContext(
   } catch { /* best-effort access tracking */ }
 
   return response;
+}
+
+// --- Compilation quality logging (fire-and-forget) ---
+
+async function logCompilation(
+  userId: string,
+  apiKeyId: string | undefined,
+  compilationId: string,
+  request: CompileContextRequest,
+  response: CompileContextResponse,
+): Promise<void> {
+  const { db } = await import('../../db/index.js');
+  const { compilationLogs } = await import('../../db/schema.js');
+
+  const sources = response.metadata.sources || [];
+  const totalFiles = await getUserFileCount(userId);
+  const coverageScore = totalFiles > 0 ? sources.length / totalFiles : 0;
+
+  await db.insert(compilationLogs).values({
+    userId,
+    apiKeyId: apiKeyId || null,
+    compilationId,
+    task: request.task,
+    snippetsReturned: response.metadata.fragmentCount,
+    totalTokens: response.metadata.totalTokens,
+    latencyMs: response.metadata.compilationTimeMs,
+    coverageScore,
+    sourceFileIds: sources.map(s => s.fileId),
+    depth: response.metadata.depth || null,
+    role: request.role || null,
+    domain: response.domain || null,
+  });
+}
+
+async function getUserFileCount(userId: string): Promise<number> {
+  const { db } = await import('../../db/index.js');
+  const { files } = await import('../../db/schema.js');
+  const { eq, sql, isNull } = await import('drizzle-orm');
+  const [result] = await db.select({ count: sql<number>`count(*)` })
+    .from(files)
+    .where(eq(files.userId, userId));
+  return Number(result?.count || 0);
+}
+
+// --- Implicit negative feedback tracking for compilations ---
+
+interface PendingCompilation {
+  compilationId: string;
+  task: string;
+  timestamp: number;
+  timer: ReturnType<typeof setTimeout>;
+}
+
+// Key: userId
+const pendingCompilations = new Map<string, PendingCompilation[]>();
+
+const NEGATIVE_FEEDBACK_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
+function trackCompilationForFeedback(userId: string, compilationId: string, task: string): void {
+  const entry: PendingCompilation = {
+    compilationId,
+    task,
+    timestamp: Date.now(),
+    timer: setTimeout(() => {
+      // Clean up expired entry
+      const entries = pendingCompilations.get(userId);
+      if (entries) {
+        const idx = entries.findIndex(e => e.compilationId === compilationId);
+        if (idx !== -1) entries.splice(idx, 1);
+        if (entries.length === 0) pendingCompilations.delete(userId);
+      }
+    }, NEGATIVE_FEEDBACK_WINDOW_MS),
+  };
+  if (entry.timer.unref) entry.timer.unref();
+
+  // Check if this is a retry (same task within window) → mark previous as negative
+  const existing = pendingCompilations.get(userId) || [];
+  for (const prev of existing) {
+    if (prev.task === task && prev.compilationId !== compilationId) {
+      markNegativeFeedback(prev.compilationId).catch(() => {});
+      clearTimeout(prev.timer);
+      const idx = existing.indexOf(prev);
+      if (idx !== -1) existing.splice(idx, 1);
+    }
+  }
+
+  existing.push(entry);
+  pendingCompilations.set(userId, existing);
+}
+
+/**
+ * Called from search/ask routes when a user action after compile suggests dissatisfaction.
+ */
+export function checkCompilationFeedback(userId: string, action: 'search' | 'ask'): void {
+  const entries = pendingCompilations.get(userId);
+  if (!entries || entries.length === 0) return;
+
+  const now = Date.now();
+  for (const entry of entries) {
+    if (now - entry.timestamp < NEGATIVE_FEEDBACK_WINDOW_MS) {
+      // User searched/asked after compile within 10 min → negative signal
+      markNegativeFeedback(entry.compilationId).catch(() => {});
+    }
+  }
+}
+
+async function markNegativeFeedback(compilationId: string): Promise<void> {
+  const { db } = await import('../../db/index.js');
+  const { compilationLogs } = await import('../../db/schema.js');
+  const { eq } = await import('drizzle-orm');
+  await db.update(compilationLogs)
+    .set({ negativeFeedback: true })
+    .where(eq(compilationLogs.compilationId, compilationId));
 }

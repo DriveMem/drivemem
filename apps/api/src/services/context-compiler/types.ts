@@ -18,6 +18,7 @@ export interface CompileContextRequest {
 
 export interface CompileContextResponse {
   compiledContext: string;
+  compilationId: string;
   metadata: CompilationMetadata;
   domain?: string;
   schema?: Record<string, any>;

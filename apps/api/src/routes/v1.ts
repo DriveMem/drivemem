@@ -13,6 +13,7 @@ import crypto from 'crypto';
 import { Queue } from 'bullmq';
 import { logActivity } from '../services/activity-logger.js';
 import { recordSearchResults, resolveImplicitFeedback } from '../services/implicit-feedback.js';
+import { checkCompilationFeedback } from '../services/context-compiler/index.js';
 
 export default async function v1Routes(fastify: FastifyInstance) {
   fastify.addHook('preHandler', requireApiKey);
@@ -364,6 +365,8 @@ export default async function v1Routes(fastify: FastifyInstance) {
     logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'search', detail: query.q, metadata: { resultCount: searchResults.length, format }, relatedFileIds: searchFileIdSet });
     // Agent Loop 1: record search results for implicit feedback tracking
     recordSearchResults(userId, (request as any).apiKeyId, searchFileIdSet);
+    // Agent Loop 4: check if search after compile → negative feedback signal
+    checkCompilationFeedback(userId, 'search');
     return reply.send({
       results: searchResults.map(c => ({
         fileId: c.fileId,
@@ -518,6 +521,8 @@ export default async function v1Routes(fastify: FastifyInstance) {
     // Agent Loop 1: resolve implicit feedback for files referenced in ask
     const askFileIds = [...new Set(finalChunks.map(c => c.fileId))];
     resolveImplicitFeedback(userId, (request as any).apiKeyId, askFileIds);
+    // Agent Loop 4: check if ask after compile → negative feedback signal
+    checkCompilationFeedback(userId, 'ask');
     logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'ask', detail: body.question, metadata: { sourceCount: finalChunks.length } });
     return reply.send({
       answer,
@@ -798,6 +803,38 @@ ${insightsSection}
     resolveImplicitFeedback(request.user!.id, (request as any).apiKeyId, [...new Set(compileFileIds)] as string[]);
     logActivity({ userId: request.user!.id, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'compile', detail: body.task, relatedFileIds: [...new Set(compileFileIds)] as string[] });
     return reply.send(result);
+  });
+
+  // GET /compilations/stats — compilation quality dashboard data
+  fastify.get('/compilations/stats', { preHandler: [requireApiKey] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const rows = await db.select({
+      latencyMs: schema.compilationLogs.latencyMs,
+      totalTokens: schema.compilationLogs.totalTokens,
+      negativeFeedback: schema.compilationLogs.negativeFeedback,
+    })
+      .from(schema.compilationLogs)
+      .where(and(
+        eq(schema.compilationLogs.userId, userId),
+        sql`${schema.compilationLogs.createdAt} >= ${sevenDaysAgo}`,
+      ));
+
+    const total = rows.length;
+    const avgLatency = total > 0 ? Math.round(rows.reduce((s, r) => s + (r.latencyMs || 0), 0) / total) : 0;
+    const avgTokens = total > 0 ? Math.round(rows.reduce((s, r) => s + (r.totalTokens || 0), 0) / total) : 0;
+    const negativeCount = rows.filter(r => r.negativeFeedback).length;
+    const negativeFeedbackRate = total > 0 ? +(negativeCount / total).toFixed(4) : 0;
+
+    return reply.send({
+      period: '7d',
+      totalCompilations: total,
+      avgLatencyMs: avgLatency,
+      avgTokens,
+      negativeFeedbackCount: negativeCount,
+      negativeFeedbackRate,
+    });
   });
 
   // GET /activity-flow — activities grouped by agent with flow detection

@@ -287,6 +287,25 @@ export const knowledgeEdges = pgTable('knowledge_edges', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+// --- Compilation Logs ---
+export const compilationLogs = pgTable('compilation_logs', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  apiKeyId: uuid('api_key_id').references(() => apiKeys.id, { onDelete: 'set null' }),
+  compilationId: uuid('compilation_id').notNull().unique(),
+  task: text('task').notNull(),
+  snippetsReturned: integer('snippets_returned'),
+  totalTokens: integer('total_tokens'),
+  latencyMs: integer('latency_ms'),
+  coverageScore: real('coverage_score'),
+  sourceFileIds: jsonb('source_file_ids'),
+  depth: varchar('depth', { length: 10 }),
+  role: varchar('role', { length: 50 }),
+  domain: varchar('domain', { length: 50 }),
+  negativeFeedback: boolean('negative_feedback').default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 // --- Agent Profiles ---
 export const agentProfiles = pgTable('agent_profiles', {
   id: uuid('id').defaultRandom().primaryKey(),
