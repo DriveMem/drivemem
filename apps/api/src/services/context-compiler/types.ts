@@ -3,6 +3,7 @@ export interface CompileContextRequest {
   model?: { name?: string; contextWindow?: number };
   tokenBudget?: number; // default 8000
   role?: string; // agent role for content routing
+  apiKeyId?: string; // for behavior-based boost learning
   since?: string; // ISO timestamp for incremental diff
   hints?: {
     project?: string;

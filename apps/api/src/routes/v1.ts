@@ -789,6 +789,7 @@ ${insightsSection}
       since: body.since,
       depth: body.depth,
       role,
+      apiKeyId: (request as any).apiKeyId,
       hints,
       format: body.format,
     });

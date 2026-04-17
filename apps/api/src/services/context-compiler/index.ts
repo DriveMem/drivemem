@@ -25,6 +25,7 @@ function pruneCache(): void {
   }
 }
 
+export { getBehaviorBoosts } from '../behavior-learner.js';
 export { resolveProfile, registerProfile, listProfiles } from './agent-profiles.js';
 export { ROLE_BOOSTS, inferRole } from './agent-profiles.js';
 export { estimateTokens } from './token-estimator.js';
@@ -394,6 +395,25 @@ export async function compileContext(
       roleBoostApplied = true;
     }
   }
+
+  // Step 2.7b: Behavior-based dynamic boost (multiplies on top of static role boosts)
+  try {
+    const { getBehaviorBoosts } = await import('../behavior-learner.js');
+    const behaviorBoosts = await getBehaviorBoosts(userId, request.apiKeyId);
+    if (Object.keys(behaviorBoosts).length > 0) {
+      for (const f of fragments) {
+        const text = f.text.toLowerCase();
+        let maxBoost = 1.0;
+        for (const [category, boost] of Object.entries(behaviorBoosts)) {
+          if (text.includes(category)) {
+            maxBoost = Math.max(maxBoost, boost);
+          }
+        }
+        f.relevanceScore *= maxBoost;
+      }
+      fragments.sort((a, b) => b.relevanceScore - a.relevanceScore);
+    }
+  } catch { /* behavior boost is best-effort */ }
 
   // Step 2.8: Freshness Decay — boost recently-accessed files
   {
