@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import {
   FileText, Sparkles, Upload, X, Lightbulb, AlertTriangle,
-  MessageCircle, Folder, Plus, ChevronRight
+  MessageCircle, Folder, Plus, ChevronRight, FolderPlus, Terminal
 } from "lucide-react"
 import { MobileUploadFab } from "@/components/file/mobile-upload-fab"
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow"
@@ -300,32 +300,67 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* Onboarding Guide Cards — show when no projects AND no files */}
+        {projectCount === 0 && fileCount === 0 && (
+          <div className="mb-8">
+            <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider mb-4">
+              开始使用
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={() => router.push("/files?newFolder=1")}
+                className="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition text-left"
+              >
+                <FolderPlus className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">创建你的第一个项目</div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">用项目组织你的知识文件</div>
+                </div>
+              </button>
+              <button
+                onClick={() => setShowUpload(true)}
+                className="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition text-left"
+              >
+                <Upload className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">上传第一份文件</div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">支持文档、PDF、图片等格式</div>
+                </div>
+              </button>
+              <button
+                onClick={() => router.push("/chat?new=1")}
+                className="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition text-left"
+              >
+                <MessageCircle className="h-5 w-5 text-violet-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">试试 AI 对话</div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">基于你的知识库智能问答</div>
+                </div>
+              </button>
+              <Link
+                href="/developers"
+                className="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition text-left"
+              >
+                <Terminal className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">用 CLI / MCP 连接</div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">通过命令行或 API 接入知识库</div>
+                </div>
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Activity Feed */}
         <div>
           <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider mb-4">
             Recent Activity
           </h2>
           {activities.length === 0 ? (
-            fileCount === 0 ? (
-              <div className="text-center py-16">
-                <Upload className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Your knowledge base is empty</h3>
-                <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                  Upload your first file to start building your AI memory
-                </p>
-                <Button
-                  onClick={() => setShowUpload(true)}
-                  className="rounded-xl shadow-soft active:scale-[0.98] transition-transform"
-                >
-                  Upload your first file
-                </Button>
-              </div>
-            ) : (
-              <div className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">
-                <p>No recent activity yet.</p>
-                <p className="mt-1">Upload files or start a conversation to get started.</p>
-              </div>
-            )
+            <div className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">
+              <p>暂无最近活动</p>
+              <p className="mt-1">上传文件或开始对话后，活动会显示在这里。</p>
+            </div>
           ) : (
             <div>
               {activities.map((a: any, i: number) => (
