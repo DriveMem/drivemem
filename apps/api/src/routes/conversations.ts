@@ -390,7 +390,7 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : userFileCount > 0 
             reply.raw.write(`event: title\ndata: ${JSON.stringify({ title })}\n\n`);
           } else {
             const titleResponse = await chat([
-              { role: 'system', content: '你是标题生成器。根据用户消息生成一个10字以内的中文短标题。规则：只输出标题本身，禁止输出解释、引号、标点、前缀。如果用户消息内容不明确，直接用消息前几个字作为标题。' },
+              { role: 'system', content: 'Generate a short title (max 6 words) for this conversation based on the user message. Output only the title, no quotes, no explanation. If the message is unclear, use the first few words.' },
               { role: 'user', content: userContent },
             ]);
             const cleaned = titleResponse.slice(0, 50).trim().replace(/^["'「」《》]+|["'「」《》]+$/g, '');

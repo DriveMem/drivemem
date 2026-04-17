@@ -16,7 +16,7 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
     }
     if (hasConversations) {
       return [
-        "ContinueAsk a question...",
+        "Ask a follow-up question...",
         "Ask more...",
       ]
     }
