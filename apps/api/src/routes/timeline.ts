@@ -179,16 +179,36 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
       metadata: {},
     })),
     ...activities.map(a => {
-      const verbMap: Record<string, string> = { search: 'searched for', store: 'saved', ask: 'asked', compile: 'compiled a briefing' };
       const iconMap: Record<string, string> = { search: '🔍', store: '📥', ask: '💬', compile: '📋' };
-      const verb = verbMap[a.action] || a.action;
       const icon = iconMap[a.action] || '🤖';
       const agent = formatAgentName(a.agentName) || 'API';
+      const fullDetail = getFullDetail(a.detail, a.metadata as Record<string, unknown>);
+      const shortDetail = fullDetail ? (fullDetail.length > 60 ? fullDetail.slice(0, 57) + '...' : fullDetail) : null;
+
+      // Build complete title with action context
+      let title: string;
+      switch (a.action) {
+        case 'search':
+          title = shortDetail ? `${agent} searched for "${shortDetail}"` : `${agent} performed a search`;
+          break;
+        case 'store':
+          title = shortDetail ? `${agent} saved "${shortDetail}"` : `${agent} saved a note`;
+          break;
+        case 'ask':
+          title = shortDetail ? `${agent} asked "${shortDetail}"` : `${agent} asked a question`;
+          break;
+        case 'compile':
+          title = shortDetail ? `${agent} compiled briefing for "${shortDetail}"` : `${agent} compiled a briefing`;
+          break;
+        default:
+          title = shortDetail ? `${agent} ${a.action}: ${shortDetail}` : `${agent} ${a.action}`;
+      }
+
       return {
         id: a.id,
         type: 'agent_activity' as const,
-        title: `${agent} ${verb}`,
-        description: getFullDetail(a.detail, a.metadata as Record<string, unknown>) || undefined,
+        title,
+        description: fullDetail && fullDetail.length > 60 ? fullDetail : undefined,
         icon,
         createdAt: a.createdAt,
         metadata: { action: a.action, agentName: a.agentName, ...(a.metadata as Record<string, unknown> || {}) },
