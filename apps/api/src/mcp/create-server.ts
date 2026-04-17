@@ -10,6 +10,24 @@ import { eq, desc, and, inArray, sql } from 'drizzle-orm';
 import { inferRole } from '../services/context-compiler/agent-profiles.js';
 import type { DetectedCapabilities } from '../services/capability-detector.js';
 
+
+// Proactive Context Enrichment — append related knowledge to tool responses
+async function enrichResponse(userId: string, query: string, excludeFileIds: string[]): Promise<string> {
+  try {
+    const [vec] = await embedTexts([query]);
+    const related = await searchSimilar({ userId, query: vec, scopeType: 'all', limit: 5 });
+    // Filter out already-shown results and limit to 3
+    const novel = related.filter(r => !excludeFileIds.includes(r.fileId)).slice(0, 3);
+    if (novel.length === 0) return '';
+    const lines = ['\n---\n## 💡 Related from your knowledge base'];
+    for (const r of novel) {
+      lines.push(`- **${r.fileName}**: ${r.text.slice(0, 200).replace(/\n/g, ' ')}`);
+    }
+    lines.push('\n*Use aidrive_search or aidrive_ask to explore further.*');
+    return lines.join('\n');
+  } catch { return ''; }
+}
+
 export function createMcpServer(userId: string, agentName: string = ''): Server {
   // Track detected project across the session
   let detectedProjectId: string | null = null;
@@ -367,7 +385,8 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           const text = results.map((r, i) =>
             `${i + 1}. [${r.fileName}] (score: ${r.score.toFixed(2)}, ${fileDates[r.fileId] || '?'})\n${r.text.slice(0, charsPerResult)}`
           ).join('\n\n');
-          return { content: [{ type: 'text' as const, text: text || 'No results found.' }] };
+          const searchEnrich = await enrichResponse(userId, query, fileIds);
+          return { content: [{ type: 'text' as const, text: (text || 'No results found.') + searchEnrich }] };
         }
 
         case 'aidrive_ask': {
@@ -417,7 +436,9 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           const formatHint = format === 'summary' ? '\n用要点列表（bullet points）回答，每点一行。' : format === 'structured' ? '\n用 JSON 格式回答：{"answer":"...","keyPoints":["..."],"confidence":"high/medium/low"}' : '';
           const systemPrompt = `你是 AI Drive AI，用户的个人知识助手。严格基于文档内容回答。用上标¹²³引用来源。${lengthHint}${formatHint}\n\n[文档片段]\n${citations || '(未找到相关文档)'}`;
           const answer = await chat([{ role: 'system', content: systemPrompt }, { role: 'user', content: question }]);
-          return { content: [{ type: 'text' as const, text: answer }] };
+          const askFileIds = [...new Set(chunks.map(c => c.fileId))];
+          const askEnrich = await enrichResponse(userId, question, askFileIds);
+          return { content: [{ type: 'text' as const, text: answer + askEnrich }] };
         }
 
         case 'aidrive_list_files': {
