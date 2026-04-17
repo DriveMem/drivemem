@@ -60,7 +60,8 @@ const activityIcons: Record<string, typeof FileText> = {
 
 // --- Activity Item ---
 function ActivityItem({ activity }: { activity: any }) {
-  const Icon = activityIcons[activity.type] || Lightbulb
+  const isRelay = activity.type === 'agent_activity' && activity.metadata?.action === 'relay'
+  const Icon = isRelay ? ArrowLeftRight : (activityIcons[activity.type] || Lightbulb)
   const isAgentActivity = activity.type === 'agent_activity'
   const rawAgent = activity.metadata?.agentName || activity.agentName
   const agentName = isAgentActivity && rawAgent && rawAgent !== "You"
@@ -77,7 +78,33 @@ function ActivityItem({ activity }: { activity: any }) {
     search: "searched knowledge",
     store: "stored a note",
     ask: "asked a question",
+    relay: "used knowledge from another agent",
   }
+
+  // Special relay formatting
+  if (isRelay) {
+    const meta = activity.metadata || {}
+    const fromAgent = meta.fromAgent
+      ? String(meta.fromAgent).replace(/^agent[-_]?[a-z][-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'AI Agent'
+      : 'another agent'
+    const fileName = meta.fileName || activity.detail || ''
+
+    return (
+      <div className="flex items-center gap-3 py-1.5 md:py-2.5 text-xs md:text-body border-b border-zinc-100 dark:border-zinc-800 last:border-0 border-l-2 border-l-indigo-400 dark:border-l-indigo-500 pl-2">
+        <ArrowLeftRight className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+        <span className="text-indigo-600 dark:text-indigo-400 flex-shrink-0 font-medium">{agentName}</span>
+        <span className="text-zinc-900 dark:text-zinc-100 truncate">
+          used knowledge from <span className="text-indigo-600 dark:text-indigo-400">{fromAgent}</span>
+          {fileName && <span className="text-zinc-500 dark:text-zinc-400">: &ldquo;{fileName}&rdquo;</span>}
+        </span>
+        <span className="ml-auto text-[10px] md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
+          <span className="hidden md:inline">{relativeTime(activity.createdAt)}</span>
+          <span className="md:hidden">{shortTime(activity.createdAt)}</span>
+        </span>
+      </div>
+    )
+  }
+
   const action = activity.title || ACTION_LABELS[activity.type] || activity.action || activity.type?.replace(/_/g, " ") || "activity"
   const detail = activity.message || activity.detail || ""
 
