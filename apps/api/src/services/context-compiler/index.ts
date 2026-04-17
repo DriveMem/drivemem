@@ -395,6 +395,35 @@ export async function compileContext(
     }
   }
 
+  // Step 2.8: Freshness Decay — boost recently-accessed files
+  {
+    const { getFreshnessBoost } = await import('../freshness-decay.js');
+    const { db } = await import('../../db/index.js');
+    const { files: filesTable } = await import('../../db/schema.js');
+    const { inArray } = await import('drizzle-orm');
+
+    const freshnessFileIds = [...new Set(fragments.map(f => f.fileId))];
+    if (freshnessFileIds.length > 0) {
+      const fileRows = await db.select({
+        id: filesTable.id,
+        updatedAt: filesTable.updatedAt,
+        lastAccessedAt: filesTable.lastAccessedAt,
+      }).from(filesTable).where(inArray(filesTable.id, freshnessFileIds));
+
+      const freshnessMap: Record<string, number> = {};
+      for (const row of fileRows) {
+        freshnessMap[row.id] = getFreshnessBoost(row.lastAccessedAt, row.updatedAt);
+      }
+
+      for (const f of fragments) {
+        const boost = freshnessMap[f.fileId] ?? 1.0;
+        f.relevanceScore *= boost;
+      }
+
+      fragments.sort((a, b) => b.relevanceScore - a.relevanceScore);
+    }
+  }
+
   // Step 3: Score and rank
   const scored = scoreFragments(fragments, request.task);
 
@@ -511,6 +540,19 @@ export async function compileContext(
   };
 
   compilationCache.set(cacheKey, { response, snapshot });
+
+  // --- Track file access for freshness decay ---
+  try {
+    const accessedFileIds = [...new Set(selected.map(f => f.fileId))];
+    if (accessedFileIds.length > 0) {
+      const { db } = await import('../../db/index.js');
+      const { files: filesTable } = await import('../../db/schema.js');
+      const { inArray } = await import('drizzle-orm');
+      await db.update(filesTable)
+        .set({ lastAccessedAt: new Date() })
+        .where(inArray(filesTable.id, accessedFileIds));
+    }
+  } catch { /* best-effort access tracking */ }
 
   return response;
 }

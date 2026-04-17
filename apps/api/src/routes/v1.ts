@@ -353,6 +353,13 @@ export default async function v1Routes(fastify: FastifyInstance) {
     }
 
     const searchFileIdSet = [...new Set(searchResults.map(c => c.fileId))];
+    // Track file access for freshness decay
+    if (searchFileIdSet.length > 0) {
+      db.update(schema.files)
+        .set({ lastAccessedAt: new Date() })
+        .where(inArray(schema.files.id, searchFileIdSet))
+        .catch(() => {});
+    }
     logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'search', detail: query.q, metadata: { resultCount: searchResults.length, format }, relatedFileIds: searchFileIdSet });
     return reply.send({
       results: searchResults.map(c => ({
