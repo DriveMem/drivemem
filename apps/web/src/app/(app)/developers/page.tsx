@@ -472,17 +472,17 @@ export default function DevelopersPage() {
           {/* Quick links to configuration */}
           <FadeIn className="mt-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <Link href="/settings?tab=developer" className="rounded-xl border border-[#E5E4E1] p-4 hover:shadow-sm transition">
+              <Link href="/settings?tab=developer&section=api-keys" className="rounded-xl border border-[#E5E4E1] p-4 hover:shadow-sm transition">
                 <Key className="h-5 w-5 text-[#6B6966] mb-2" />
                 <h3 className="font-medium text-sm text-[#1C1B18]">API Keys</h3>
                 <p className="text-xs text-[#6B6966] mt-1">Create and manage API keys for your agents</p>
               </Link>
-              <Link href="/settings?tab=developer" className="rounded-xl border border-[#E5E4E1] p-4 hover:shadow-sm transition">
+              <Link href="/settings?tab=ai-profile" className="rounded-xl border border-[#E5E4E1] p-4 hover:shadow-sm transition">
                 <Users className="h-5 w-5 text-[#6B6966] mb-2" />
                 <h3 className="font-medium text-sm text-[#1C1B18]">Agent Profiles</h3>
                 <p className="text-xs text-[#6B6966] mt-1">Configure role-based context delivery</p>
               </Link>
-              <Link href="/settings?tab=developer" className="rounded-xl border border-[#E5E4E1] p-4 hover:shadow-sm transition">
+              <Link href="/settings?tab=developer&section=webhooks" className="rounded-xl border border-[#E5E4E1] p-4 hover:shadow-sm transition">
                 <Bell className="h-5 w-5 text-[#6B6966] mb-2" />
                 <h3 className="font-medium text-sm text-[#1C1B18]">Webhooks</h3>
                 <p className="text-xs text-[#6B6966] mt-1">Subscribe to knowledge change events</p>
