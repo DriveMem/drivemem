@@ -107,13 +107,13 @@ const worker = new Worker<ParseJobData>(
         await dispatchWebhook(userId, 'file.indexed', { fileId, fileName: file?.name });
       } catch { /* non-blocking */ }
 
-      // Notification: file indexed
-      await db.insert(schema.notifications).values({
-        userId,
-        type: 'file_indexed',
-        title: '📄 文件已索引',
-        message: `「${file?.name}」已完成 AI 解析，可以开始提问了`,
-      });
+      // Notification: file_indexed — silenced (UX #240 F2: noise reduction)
+      // await db.insert(schema.notifications).values({
+      //   userId,
+      //   type: 'file_indexed',
+      //   title: '📄 文件已索引',
+      //   message: `「${file?.name}」已完成 AI 解析，可以开始提问了`,
+      // });
 
       // Clear insight cache so it regenerates with new file data
       await db.update(schema.users).set({ insight: null }).where(eq(schema.users.id, userId));
@@ -173,13 +173,13 @@ const worker = new Worker<ParseJobData>(
           await dispatchWebhook(userId, 'summary.generated', { fileId, fileName: file?.name, summary });
         } catch { /* non-blocking */ }
 
-        // Notification: summary generated
-        await db.insert(schema.notifications).values({
-          userId,
-          type: 'summary_generated',
-          title: '📝 AI 摘要已生成',
-          message: `「${file?.name}」的 AI 摘要已自动生成`,
-        });
+        // Notification: summary_generated — silenced (UX #240 F2: noise reduction)
+        // await db.insert(schema.notifications).values({
+        //   userId,
+        //   type: 'summary_generated',
+        //   title: '📝 AI 摘要已生成',
+        //   message: `「${file?.name}」的 AI 摘要已自动生成`,
+        // });
       }
     } catch (summaryErr) {
       console.warn('[file-parse] Summary generation failed (non-blocking):', (summaryErr as Error).message);

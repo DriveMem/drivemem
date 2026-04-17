@@ -10,6 +10,7 @@ const DEFAULT_PREFERENCES = {
   aiAnalysis: true,
   storageWarning: true,
   systemAnnouncements: true,
+  agentOperations: false, // UX #240 F2: silent by default, for future Settings UI
 };
 
 const preferencesSchema = z.object({
@@ -17,6 +18,7 @@ const preferencesSchema = z.object({
   aiAnalysis: z.boolean(),
   storageWarning: z.boolean(),
   systemAnnouncements: z.boolean(),
+  agentOperations: z.boolean().optional(),
 });
 
 export default async function notificationRoutes(fastify: FastifyInstance) {
