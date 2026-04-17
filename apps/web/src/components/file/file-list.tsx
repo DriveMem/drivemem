@@ -228,13 +228,25 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
           size="sm"
           onClick={async () => {
             try {
-              const res = await apiFetch(`/api/files/${fileId}/preview-url`) as { previewUrl: string }
-              if (res.previewUrl) {
+              const res = await apiFetch(`/api/files/${fileId}/preview-url`) as any
+              if (res.content) {
+                // Store-created note — download text content
+                const blob = new Blob([res.content], { type: "text/markdown" })
+                const url = URL.createObjectURL(blob)
                 const a = document.createElement("a")
-                a.href = res.previewUrl
+                a.href = url
                 a.download = fileName
-                a.target = "_blank"
                 a.click()
+                URL.revokeObjectURL(url)
+              } else if (res.previewUrl) {
+                // Uploaded file — fetch blob to force download
+                const blob = await fetch(res.previewUrl).then(r => r.blob())
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement("a")
+                a.href = url
+                a.download = fileName
+                a.click()
+                URL.revokeObjectURL(url)
               }
             } catch {
               toast.error("Failed to get download link")

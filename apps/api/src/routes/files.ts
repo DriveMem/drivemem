@@ -328,6 +328,10 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     const file = await getOwnedFile(id, request.user!.id);
     // Update lastAccessedAt (updatedAt) for recent files sorting
     await db.update(schema.files).set({ updatedAt: new Date() }).where(eq(schema.files.id, id));
+    if (!file.s3Key) {
+      // Store-created notes have no S3 file — return summary as downloadable content
+      return reply.send({ content: file.summary || 'No content available', mimeType: 'text/markdown', isNote: true });
+    }
     const previewUrl = await generatePreviewUrl(file.s3Key);
     const publicPreviewUrl = previewUrl.replace('http://localhost:9000', 'https://api.drivemem.cloud/s3');
     return reply.send({ previewUrl: publicPreviewUrl, mimeType: file.mimeType });
