@@ -15,7 +15,7 @@ export interface TimelineEvent {
 }
 
 function formatAgentName(raw: string | null | undefined): string {
-  if (!raw) return 'You';
+  if (!raw) return 'AI Agent';
   const cleaned = raw
     .replace(/^agent[-_]?[a-z][-_]?/i, '')
     .replace(/[-_]/g, ' ')
@@ -211,7 +211,7 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
         description: fullDetail && fullDetail.length > 60 ? fullDetail : undefined,
         icon,
         createdAt: a.createdAt,
-        metadata: { action: a.action, agentName: a.agentName, ...(a.metadata as Record<string, unknown> || {}) },
+        metadata: { action: a.action, agentName: a.agentName, actorType: 'agent', actorLabel: agent, ...(a.metadata as Record<string, unknown> || {}) },
       };
     }),
   ];

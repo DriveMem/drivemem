@@ -166,6 +166,12 @@ function ListView() {
                         <div className="flex items-center gap-2">
                           <Icon className={`h-4 w-4 ${config.iconColor}`} />
                           <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{config.label}</span>
+                          {event.type === 'agent_activity' && event.metadata?.actorLabel && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-cyan-50 dark:bg-cyan-950 px-2 py-0.5 text-[10px] font-medium text-cyan-700 dark:text-cyan-300 ring-1 ring-cyan-200 dark:ring-cyan-800">
+                              <Bot className="h-2.5 w-2.5" />
+                              {event.metadata.actorLabel}
+                            </span>
+                          )}
                         </div>
                         <p className="mt-1 font-medium text-sm">{event.title}</p>
                         {(event.description || event.subtitle) && (
