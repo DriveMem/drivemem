@@ -387,20 +387,23 @@ export default function HomePage() {
           </div>
         </TooltipProvider>
 
-        {/* Knowledge Stats — compact row */}
-        <div className="flex items-center gap-6 mb-8 text-caption text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <FileText className="h-3.5 w-3.5" />
-            {fileCount} {fileCount === 1 ? "file" : "files"}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Lightbulb className="h-3.5 w-3.5" />
-            {insightCount} {insightCount === 1 ? "insight" : "insights"}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Folder className="h-3.5 w-3.5" />
-            {projectCount} {projectCount === 1 ? "project" : "projects"}
-          </span>
+        {/* Value Summary */}
+        <div className="rounded-2xl border shadow-soft p-6 mb-8">
+          <h3 className="text-sm font-medium text-muted-foreground mb-4">DriveMem is working for you</h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold">{fileCount}</p>
+              <p className="text-xs text-muted-foreground mt-1">{fileCount === 1 ? "file" : "files"} indexed</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold">{insightCount}</p>
+              <p className="text-xs text-muted-foreground mt-1">{insightCount === 1 ? "insight" : "insights"} discovered</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold">{projectCount}</p>
+              <p className="text-xs text-muted-foreground mt-1">{projectCount === 1 ? "project" : "projects"}</p>
+            </div>
+          </div>
         </div>
 
         {/* Active Projects — horizontal scroll chips */}
