@@ -6,7 +6,7 @@ import { searchSimilar, preprocessQuery } from '../services/vector.service.js';
 import { chat } from '../services/llm.service.js';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, desc, and, inArray, sql } from 'drizzle-orm';
+import { eq, desc, and, inArray, sql, gt } from 'drizzle-orm';
 import { inferRole } from '../services/context-compiler/agent-profiles.js';
 import type { DetectedCapabilities } from '../services/capability-detector.js';
 
@@ -283,6 +283,25 @@ You are not just a chat assistant — you are part of the user's knowledge syste
         const [fileStats] = await db.select({ count: sql`count(*)` }).from(schema.files).where(eq(schema.files.userId, userId));
         const totalFiles = Number(fileStats?.count || 0);
         lines.push(`Total files: ${totalFiles}`);
+
+        // Resume Brief — tell agent what happened while user was away
+        try {
+          const [user] = await db.select({ lastActiveAt: schema.users.lastActiveAt })
+            .from(schema.users).where(eq(schema.users.id, userId));
+          const since = user?.lastActiveAt || new Date(Date.now() - 24 * 60 * 60 * 1000);
+          const hoursSince = Math.floor((Date.now() - new Date(since).getTime()) / (1000 * 60 * 60));
+          if (hoursSince >= 4) {
+            const newFiles = await db.select({ count: sql`count(*)` }).from(schema.files)
+              .where(and(eq(schema.files.userId, userId), gt(schema.files.createdAt, new Date(since))));
+            const newFileCount = Number(newFiles[0]?.count || 0);
+            if (newFileCount > 0 || hoursSince >= 8) {
+              lines.push(`\n⏰ **Welcome back** — you were away for ${hoursSince}h`);
+              if (newFileCount > 0) lines.push(`📄 ${newFileCount} new file(s) added while you were away`);
+            }
+          }
+          // Update lastActiveAt
+          db.update(schema.users).set({ lastActiveAt: new Date() }).where(eq(schema.users.id, userId)).catch(() => {});
+        } catch {}
 
         const recentFiles = await db.select({ name: schema.files.name, summary: schema.files.summary })
           .from(schema.files).where(eq(schema.files.userId, userId))

@@ -847,6 +847,13 @@ export function FileList() {
                     <Download className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
                   </button>
                   <button
+                    onClick={(e) => { e.stopPropagation(); router.push(`/chat?fileIds=${file.id}&q=Tell me about ${encodeURIComponent(file.name)}`) }}
+                    className="h-7 w-7 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center"
+                    title="Ask AI about this file"
+                  >
+                    <BotMessageSquare className="h-3.5 w-3.5 text-brand-500" />
+                  </button>
+                  <button
                     onClick={(e) => { e.stopPropagation(); handleShare(file.id) }}
                     className="h-7 w-7 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center"
                     title="Share"
@@ -903,7 +910,16 @@ export function FileList() {
                   <div className="flex h-28 items-center justify-center rounded-lg bg-zinc-50/50 dark:bg-zinc-800/50">
                     <TypeIcon type={file.type} name={file.name} className="h-14 w-14" />
                   </div>
-                  <p className="text-sm font-medium truncate" title={file.name}>{file.name}</p>
+                  <div className="flex items-center gap-1">
+                    <p className="text-sm font-medium truncate flex-1" title={file.name}>{file.name}</p>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); router.push(`/chat?fileIds=${file.id}&q=Tell me about ${encodeURIComponent(file.name)}`) }}
+                      className="shrink-0 h-6 w-6 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                      title="Ask AI about this file"
+                    >
+                      <BotMessageSquare className="h-3.5 w-3.5 text-brand-500" />
+                    </button>
+                  </div>
                   {file.summary && (
                     <TooltipProvider><Tooltip><TooltipTrigger asChild><p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1 cursor-help">{file.summary}</p></TooltipTrigger><TooltipContent side="bottom" className="max-w-xs"><p>{file.summary}</p></TooltipContent></Tooltip></TooltipProvider>
                   )}
