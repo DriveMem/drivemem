@@ -303,164 +303,77 @@ function WebhookDeliveryLog() {
 }
 
 /* ---------- CopyBlock ---------- */
-function CopyBlock({ code, lang = "" }: { code: string; lang?: string }) {
-  const [copied, setCopied] = useState(false)
-  return (
-    <div className="relative group">
-      <pre className="overflow-x-auto rounded-lg bg-[#1C1B18] p-4 pr-14 font-mono text-sm text-[#E5E4E1]">
-        <code>{code}</code>
-      </pre>
-      <button
-        onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-        className="absolute top-2.5 right-2.5 flex items-center gap-1 rounded-md border border-white/20 bg-white/10 px-2 py-1 text-xs text-white hover:bg-white/20 transition"
-      >
-        {copied ? <><Check className="h-3 w-3" /> Copied</> : <><Copy className="h-3 w-3" /> Copy</>}
-      </button>
-    </div>
-  )
-}
-
-/* ---------- Tutorial Step ---------- */
-function TutorialStep({ number, title, children }: { number: number; title: string; children: ReactNode }) {
-  return (
-    <div className="flex gap-4">
-      <div className="flex flex-col items-center">
-        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">{number}</span>
-        <div className="mt-2 flex-1 w-px bg-[#E5E4E1]" />
-      </div>
-      <div className="pb-8 flex-1">
-        <h4 className="font-semibold text-[#1C1B18] mb-3">{title}</h4>
-        {children}
-      </div>
-    </div>
-  )
-}
-
-/* ---------- MCP Client Tabs ---------- */
-const MCP_CLIENTS = ["Cursor", "Claude Desktop", "OpenClaw"] as const
-
-function McpTutorialTabs({ apiKey }: { apiKey: string }) {
-  const [client, setClient] = useState(0)
+function ConnectCards({ apiKey }: { apiKey: string }) {
   const key = apiKey || "YOUR_API_KEY"
+  const [copied, setCopied] = useState<string | null>(null)
+  
+  const copy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text)
+    setCopied(id)
+    setTimeout(() => setCopied(null), 1500)
+  }
+
+  const cards = [
+    {
+      id: "cursor",
+      title: "Cursor / Windsurf",
+      subtitle: "Easiest — just paste a URL",
+      btnLabel: "Copy Connection URL",
+      copyText: `https://api.drivemem.cloud/mcp?apiKey=${key}`,
+      steps: ["Open Cursor → Settings → MCP", "Click \"Add Server\"", "Paste the URL — done!"],
+      bg: "bg-emerald-50 dark:bg-emerald-900/20",
+      border: "border-emerald-200 dark:border-emerald-800",
+      btn: "bg-emerald-600 hover:bg-emerald-700",
+    },
+    {
+      id: "claude",
+      title: "Claude Desktop",
+      subtitle: "Copy config to your settings file",
+      btnLabel: "Copy Config",
+      copyText: JSON.stringify({ mcpServers: { drivemem: { url: `https://api.drivemem.cloud/mcp?apiKey=${key}` } } }, null, 2),
+      steps: ["Open ~/Library/Application Support/Claude/claude_desktop_config.json", "Paste this config", "Restart Claude Desktop"],
+      bg: "bg-blue-50 dark:bg-blue-900/20",
+      border: "border-blue-200 dark:border-blue-800",
+      btn: "bg-blue-600 hover:bg-blue-700",
+    },
+    {
+      id: "openclaw",
+      title: "OpenClaw",
+      subtitle: "One command in your terminal",
+      btnLabel: "Copy Command",
+      copyText: `openclaw config set mcp.servers.drivemem.url "https://api.drivemem.cloud/mcp/sse?apiKey=${key}"`,
+      steps: ["Run this command in your terminal"],
+      bg: "bg-brand-50 dark:bg-brand-500/10",
+      border: "border-brand-200 dark:border-brand-800",
+      btn: "bg-brand-600 hover:bg-brand-700",
+    },
+  ]
 
   return (
-    <div className="mt-6">
-      {/* Client sub-tabs */}
-      <div className="flex gap-1 rounded-lg bg-[#F0EFED] p-1 mb-6">
-        {MCP_CLIENTS.map((name, i) => (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
+      {cards.map((c) => (
+        <div key={c.id} className={`rounded-2xl border ${c.border} ${c.bg} p-8 flex flex-col`}>
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{c.title}</h3>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 mb-6">{c.subtitle}</p>
           <button
-            key={name}
-            onClick={() => setClient(i)}
-            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
-              client === i ? "bg-white text-[#1C1B18] shadow-sm" : "text-[#6B6966] hover:text-[#1C1B18]"
-            }`}
+            onClick={() => copy(c.copyText, c.id)}
+            className={`${c.btn} text-white rounded-xl px-6 py-3 text-sm font-medium transition-all active:scale-[0.98] shadow-soft hover:shadow-soft-md w-full`}
           >
-            {name}
+            {copied === c.id ? "✓ Copied!" : c.btnLabel}
           </button>
-        ))}
-      </div>
-
-      {/* Cursor tutorial */}
-      {client === 0 && (
-        <div>
-          <TutorialStep number={1} title="Open Cursor Settings">
-            <p className="text-sm text-[#6B6966]">
-              Go to <strong className="text-[#1C1B18]">Cursor → Settings → MCP</strong> (or press <kbd className="rounded border border-[#E5E4E1] bg-white px-1.5 py-0.5 text-xs font-mono">Cmd+,</kbd>)
-            </p>
-          </TutorialStep>
-
-          <TutorialStep number={2} title="Add MCP Server">
-            <p className="text-sm text-[#6B6966] mb-3">
-              Click <strong className="text-[#1C1B18]">&quot;Add new MCP server&quot;</strong> and paste this URL:
-            </p>
-            <CopyBlock code={`https://api.drivemem.cloud/mcp?apiKey=${key}`} />
-          </TutorialStep>
-
-          <TutorialStep number={3} title="Verify Connection">
-            <p className="text-sm text-[#6B6966]">
-              You should see a green status indicator ✅<br />
-              DriveMem tools (<code className="text-xs font-mono bg-[#F8F7F5] px-1 rounded">search</code>, <code className="text-xs font-mono bg-[#F8F7F5] px-1 rounded">store</code>, <code className="text-xs font-mono bg-[#F8F7F5] px-1 rounded">compile</code>) will appear in your tool list.
-            </p>
-          </TutorialStep>
-
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            🎉 That&apos;s it! Cursor will now automatically use your knowledge base.
-          </div>
+          <ol className="mt-4 space-y-1">
+            {c.steps.map((s, i) => (
+              <li key={i} className="text-xs text-zinc-500 dark:text-zinc-400">
+                {c.steps.length > 1 ? `${i + 1}. ` : ""}{s}
+              </li>
+            ))}
+          </ol>
         </div>
-      )}
-
-      {/* Claude Desktop tutorial */}
-      {client === 1 && (
-        <div>
-          <TutorialStep number={1} title="Open Config File">
-            <div className="space-y-2 text-sm text-[#6B6966]">
-              <div className="flex items-start gap-2">
-                <span className="font-medium text-[#1C1B18] shrink-0">macOS:</span>
-                <code className="text-xs font-mono bg-[#F8F7F5] px-2 py-1 rounded break-all">~/Library/Application Support/Claude/claude_desktop_config.json</code>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="font-medium text-[#1C1B18] shrink-0">Windows:</span>
-                <code className="text-xs font-mono bg-[#F8F7F5] px-2 py-1 rounded break-all">%APPDATA%\Claude\claude_desktop_config.json</code>
-              </div>
-            </div>
-          </TutorialStep>
-
-          <TutorialStep number={2} title="Add DriveMem">
-            <p className="text-sm text-[#6B6966] mb-3">Paste this into the file:</p>
-            <CopyBlock code={`{
-  "mcpServers": {
-    "drivemem": {
-      "url": "https://api.drivemem.cloud/mcp",
-      "headers": {
-        "Authorization": "Bearer ${key}"
-      }
-    }
-  }
-}`} />
-          </TutorialStep>
-
-          <TutorialStep number={3} title="Restart Claude Desktop">
-            <p className="text-sm text-[#6B6966]">
-              Quit and reopen Claude Desktop. You should see DriveMem in the MCP tools list.
-            </p>
-          </TutorialStep>
-
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            🎉 Claude will now have access to your knowledge base.
-          </div>
-        </div>
-      )}
-
-      {/* OpenClaw tutorial */}
-      {client === 2 && (
-        <div>
-          <TutorialStep number={1} title="Run this command">
-            <CopyBlock code={`openclaw config set mcp.servers.drivemem.url "https://api.drivemem.cloud/mcp/sse?apiKey=${key}"`} />
-          </TutorialStep>
-
-          <TutorialStep number={2} title="Restart OpenClaw">
-            <p className="text-sm text-[#6B6966]">
-              The agent will automatically connect to your knowledge base.
-            </p>
-          </TutorialStep>
-
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            🎉 OpenClaw will now use DriveMem as its memory layer.
-          </div>
-        </div>
-      )}
-
-      {/* Help link */}
-      <div className="mt-6 text-center">
-        <a href="https://docs.drivemem.cloud" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-[#6B6966] hover:text-brand-500 transition">
-          Need help? Check our docs <ExternalLink className="h-3.5 w-3.5" />
-        </a>
-      </div>
+      ))}
     </div>
   )
 }
 
-/* ---------- Page ---------- */
 export default function DevelopersPage() {
   const [activeTab, setActiveTab] = useState(0)
   const [copiedClient, setCopiedClient] = useState<string | null>(null)
@@ -595,7 +508,7 @@ export default function DevelopersPage() {
             </div>
 
             {/* MCP Config — Step-by-step tutorials */}
-            {activeTab === 1 && <McpTutorialTabs apiKey={apiKey} />}
+            {activeTab === 1 && <ConnectCards apiKey={apiKey} />}
 
             {/* Code block for non-MCP tabs */}
             {activeTab !== 1 && activeTab !== 3 && (
