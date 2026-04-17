@@ -10,11 +10,16 @@ function hashKey(key: string): string {
 
 export async function requireApiKey(request: FastifyRequest, reply: FastifyReply) {
   const auth = request.headers.authorization;
-  if (!auth?.startsWith('Bearer ak_')) {
-    return reply.status(401).send({ error: 'API Key required. Use Authorization: Bearer ak_xxxxx' });
+  const queryKey = (request.query as any)?.apiKey;
+  
+  let rawKey: string;
+  if (auth?.startsWith('Bearer ak_')) {
+    rawKey = auth.replace('Bearer ', '');
+  } else if (queryKey?.startsWith('ak_')) {
+    rawKey = queryKey;
+  } else {
+    return reply.status(401).send({ error: 'API Key required. Use Authorization: Bearer ak_xxxxx or ?apiKey=ak_xxxxx' });
   }
-
-  const rawKey = auth.replace('Bearer ', '');
   const keyHash = hashKey(rawKey);
 
   const [apiKey] = await db.select()
