@@ -28,7 +28,11 @@ async function enrichResponse(userId: string, query: string, excludeFileIds: str
   } catch { return ''; }
 }
 
-export function createMcpServer(userId: string, agentName: string = ''): Server {
+export interface McpServerOptions {
+  onToolCall?: (toolName: string) => void;
+}
+
+export function createMcpServer(userId: string, agentName: string = '', options?: McpServerOptions): Server {
   // Track detected project across the session
   let detectedProjectId: string | null = null;
   let detectedProjectName: string | null = null;
@@ -264,6 +268,9 @@ You are not just a chat assistant — you are part of the user's knowledge syste
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
+
+    // Notify session activity tracker
+    options?.onToolCall?.(name);
 
     // Build welcome brief on first tool call (any tool except compile_context)
     let welcomeBrief = '';

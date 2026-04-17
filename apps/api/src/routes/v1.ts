@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, and, desc, sql, inArray } from 'drizzle-orm';
+import { eq, and, desc, sql, inArray, gte } from 'drizzle-orm';
 import { requireApiKey, requireScope } from '../plugins/api-key-auth.js';
 import { fetchTimeline } from './timeline.js';
 import { embedTexts } from '../services/embedding.service.js';
@@ -14,6 +14,30 @@ import { Queue } from 'bullmq';
 import { logActivity } from '../services/activity-logger.js';
 import { recordSearchResults, resolveImplicitFeedback } from '../services/implicit-feedback.js';
 import { checkCompilationFeedback } from '../services/context-compiler/index.js';
+
+// --- Levenshtein similarity for auto-store dedup ---
+function levenshteinDistance(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+function levenshteinSimilarity(a: string, b: string): number {
+  const maxLen = Math.max(a.length, b.length);
+  if (maxLen === 0) return 1;
+  return 1 - levenshteinDistance(a, b) / maxLen;
+}
 
 export default async function v1Routes(fastify: FastifyInstance) {
   fastify.addHook('preHandler', requireApiKey);
@@ -911,5 +935,133 @@ ${insightsSection}
     });
 
     return reply.send(result);
+  });
+
+  // POST /auto-store — auto-store with dedup (Layer 3)
+  fastify.post('/auto-store', { preHandler: [requireScope('write')] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const body = request.body as { content: string; title?: string; tags?: string; sessionId?: string };
+    if (!body?.content) return reply.status(400).send({ error: 'content is required' });
+
+    const title = body.title || body.content.slice(0, 40).replace(/\n/g, ' ');
+
+    // Dedup: check for similar title from same user within 24h
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentFiles = await db.select({ id: schema.files.id, name: schema.files.name })
+      .from(schema.files)
+      .where(and(
+        eq(schema.files.userId, userId),
+        gte(schema.files.createdAt, twentyFourHoursAgo),
+        sql`${schema.files.name} LIKE 'auto-capture-%' OR ${schema.files.name} LIKE 'auto-store-%'`,
+      ));
+
+    // Check Levenshtein similarity against recent auto-stored titles
+    for (const f of recentFiles) {
+      // Extract title from filename pattern: auto-capture-TIMESTAMP-type.md or auto-store-TIMESTAMP.md
+      // For better matching, compare against the file name
+      const existingTitle = f.name.replace(/^(auto-capture|auto-store)-[\dT-]+\.md$/, '').trim() || f.name;
+      if (levenshteinSimilarity(title.toLowerCase(), existingTitle.toLowerCase()) > 0.8) {
+        return reply.send({ deduplicated: true, existingFileId: f.id, message: 'Similar content was already auto-stored within 24h' });
+      }
+    }
+
+    // Also do semantic dedup against content itself
+    // Use existing autoCapture pipeline for extraction and storage
+    const { autoCapture } = await import('../services/auto-capture.js');
+    const result = await autoCapture(userId, body.content, {
+      sessionId: body.sessionId,
+    });
+
+    // Log as auto_store activity
+    if (result.captured > 0) {
+      logActivity({
+        userId,
+        agentName: (request as any).apiKeyName || undefined,
+        action: 'auto_store',
+        detail: title,
+        metadata: {
+          source: 'auto_store',
+          captured: result.captured,
+          items: result.items,
+          tags: body.tags || 'decision,analysis,engineering,product',
+        },
+      });
+
+      // Auto-tag captured items
+      const defaultTags = (body.tags || 'decision,analysis,engineering,product').split(',').map(t => t.trim()).filter(Boolean);
+      const tagColors: Record<string, string> = {
+        decision: '#F59E0B', analysis: '#8B5CF6', engineering: '#3B82F6', product: '#10B981',
+      };
+      for (const item of result.items) {
+        for (const tagName of defaultTags.slice(0, 4)) {
+          try {
+            let [existingTag] = await db.select().from(schema.tags)
+              .where(and(eq(schema.tags.userId, userId), eq(schema.tags.name, tagName)));
+            if (!existingTag) {
+              [existingTag] = await db.insert(schema.tags).values({
+                name: tagName, color: tagColors[tagName] || '#6B7280', userId,
+              }).returning();
+            }
+            if (existingTag) {
+              await db.insert(schema.fileTags).values({ fileId: item.fileId, tagId: existingTag.id });
+            }
+          } catch { /* skip duplicate tag */ }
+        }
+      }
+    }
+
+    return reply.send({
+      ...result,
+      source: 'auto_store',
+    });
+  });
+
+  // GET /recent-auto-saved — return recently auto-saved entries
+  fastify.get('/recent-auto-saved', async (request, reply) => {
+    const userId = request.user!.id;
+    const query = request.query as { since?: string; limit?: string };
+    const since = query.since ? new Date(query.since) : new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const limit = Math.min(parseInt(query.limit || '50'), 100);
+
+    // Get auto-captured files
+    const files = await db.select({
+      id: schema.files.id,
+      name: schema.files.name,
+      summary: schema.files.summary,
+      status: schema.files.status,
+      createdAt: schema.files.createdAt,
+    })
+      .from(schema.files)
+      .where(and(
+        eq(schema.files.userId, userId),
+        gte(schema.files.createdAt, since),
+        sql`${schema.files.name} LIKE 'auto-capture-%'`,
+      ))
+      .orderBy(desc(schema.files.createdAt))
+      .limit(limit);
+
+    // Get auto_store activities for richer metadata
+    const activities = await db.select({
+      id: schema.apiActivityLogs.id,
+      action: schema.apiActivityLogs.action,
+      detail: schema.apiActivityLogs.detail,
+      metadata: schema.apiActivityLogs.metadata,
+      agentName: schema.apiActivityLogs.agentName,
+      createdAt: schema.apiActivityLogs.createdAt,
+    })
+      .from(schema.apiActivityLogs)
+      .where(and(
+        eq(schema.apiActivityLogs.userId, userId),
+        eq(schema.apiActivityLogs.action, 'auto_store'),
+        gte(schema.apiActivityLogs.createdAt, since),
+      ))
+      .orderBy(desc(schema.apiActivityLogs.createdAt))
+      .limit(limit);
+
+    return reply.send({
+      files,
+      activities,
+      since: since.toISOString(),
+    });
   });
 }
