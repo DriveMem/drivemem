@@ -600,7 +600,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
     await uploadObject(s3Key, buffer, 'text/markdown');
     
     await db.insert(schema.files).values({
-      id: fileId, name: displayName, originalName: filename,
+      id: fileId, name: title, originalName: filename,
       mimeType: 'text/markdown', size: buffer.length,
       status: 'parsing', userId, s3Key,
       folderId: detection.projectId,
