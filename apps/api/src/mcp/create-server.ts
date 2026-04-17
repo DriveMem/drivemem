@@ -241,67 +241,72 @@ You are not just a chat assistant — you are part of the user's knowledge syste
   }));
 
   // Handle tool calls
-  // Track if we've already injected context for this session
-  let contextInjected = false;
+  // Track if we've already injected the welcome brief for this session
+  let welcomeBriefInjected = false;
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
 
-    // Auto-inject: on first tool call, prepend user context to the response
-    let contextPrefix = '';
-    if (!contextInjected && name !== 'aidrive_compile_context') {
-      contextInjected = true;
+    // Build welcome brief on first tool call (any tool except compile_context)
+    let welcomeBrief = '';
+    if (!welcomeBriefInjected && name !== 'aidrive_compile_context') {
+      welcomeBriefInjected = true;
       try {
-        // Build a RICH welcome brief — make the user feel DriveMem is working
-        const [user] = await db.select({ name: schema.users.name, profile: schema.users.profile })
-          .from(schema.users).where(eq(schema.users.id, userId));
-        const profile = (user?.profile as Record<string, any>) || {};
-        const lines: string[] = ['📋 **DriveMem Knowledge Brief**'];
+        const lines: string[] = ['📚 **DriveMem Knowledge Overview**'];
 
-        // Identity
-        if (user?.name) lines.push(`👤 User: ${user.name}`);
-        if (profile.role) lines.push(`🎯 Role: ${profile.role}`);
-        if (profile.currentGoal) lines.push(`📌 Current Goal: ${profile.currentGoal}`);
-
-        // Knowledge stats
+        // File count + recent files (top 3)
         const [fileStats] = await db.select({ count: sql`count(*)` }).from(schema.files).where(eq(schema.files.userId, userId));
         const totalFiles = Number(fileStats?.count || 0);
-        lines.push(`📚 Knowledge base: \${totalFiles} files indexed`);
+        lines.push(`Total files: ${totalFiles}`);
 
-        // Recent files with summaries (top 5)
         const recentFiles = await db.select({ name: schema.files.name, summary: schema.files.summary })
           .from(schema.files).where(eq(schema.files.userId, userId))
-          .orderBy(desc(schema.files.createdAt)).limit(5);
+          .orderBy(desc(schema.files.createdAt)).limit(3);
         if (recentFiles.length > 0) {
-          lines.push('\n**Recent Knowledge:**');
+          lines.push('\n**Recent uploads:**');
           for (const f of recentFiles) {
-            const summary = f.summary ? f.summary.slice(0, 100) : 'Processing...';
-            lines.push(`- **\${f.name}**: \${summary}`);
+            const summary = f.summary ? ` — ${f.summary.slice(0, 80)}` : '';
+            lines.push(`- ${f.name}${summary}`);
           }
         }
 
-        // Active project
-        if (detectedProjectId && detectedProjectName) {
-          lines.push(`\n🏗️ Active project: **\${detectedProjectName}**`);
-        }
-
-        // Conflicts
+        // Recent activity (top 2)
         try {
-          const { getConflicts } = await import('../services/knowledge-graph.js');
-          const conflicts = await getConflicts(userId);
-          if (conflicts.length > 0) {
-            lines.push(`\n⚠️ \${conflicts.length} knowledge conflict(s) need attention`);
+          const { fetchTimeline } = await import('../routes/timeline.js');
+          const timeline = await fetchTimeline(userId, 2);
+          if (timeline.events.length > 0) {
+            lines.push('\n**Recent activity:**');
+            for (const e of timeline.events) {
+              const date = new Date(e.createdAt).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+              lines.push(`- ${e.icon} [${date}] ${e.title}`);
+            }
           }
         } catch {}
 
-        lines.push('\n---');
-        lines.push('*This context was automatically loaded from your DriveMem knowledge base. Use aidrive_search to find specific knowledge, aidrive_store to save new insights.*');
+        // Suggested questions based on recent file content
+        if (recentFiles.length > 0) {
+          const fileNames = recentFiles.map(f => f.name);
+          const summaries = recentFiles.map(f => f.summary).filter(Boolean);
+          const suggestions: string[] = [];
+          if (summaries.length > 0) {
+            suggestions.push(`Search your knowledge: try aidrive_search with topics from "${fileNames[0]}"`);
+          }
+          if (totalFiles > 1) {
+            suggestions.push(`Ask across files: try aidrive_ask "What are the key decisions documented in my knowledge base?"`);
+          }
+          if (suggestions.length > 0) {
+            lines.push('\n**💡 Suggested actions:**');
+            suggestions.forEach(s => lines.push(`- ${s}`));
+          }
+        }
 
-        contextPrefix = lines.join('\n') + '\n\n';
-      } catch { /* don't break tool calls if context injection fails */ }
+        lines.push('\n---');
+        welcomeBrief = lines.join('\n');
+      } catch { /* don't break tool calls if welcome brief fails */ }
     }
 
     try {
+      const toolResult = await (async () => {
       switch (name) {
         case 'aidrive_search': {
           const query = (args as any).query as string;
@@ -362,7 +367,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           const text = results.map((r, i) =>
             `${i + 1}. [${r.fileName}] (score: ${r.score.toFixed(2)}, ${fileDates[r.fileId] || '?'})\n${r.text.slice(0, charsPerResult)}`
           ).join('\n\n');
-          return { content: [{ type: 'text' as const, text: contextPrefix + (text || 'No results found.') }] };
+          return { content: [{ type: 'text' as const, text: text || 'No results found.' }] };
         }
 
         case 'aidrive_ask': {
@@ -786,6 +791,22 @@ ${insightsSection}
                 default:
           return { content: [{ type: 'text' as const, text: `Unknown tool: ${name}` }], isError: true };
       }
+      })();
+
+      // Prepend welcome brief to the first successful tool response
+      if (welcomeBrief && !toolResult.isError && toolResult.content?.length > 0) {
+        const firstContent = toolResult.content[0];
+        if (firstContent.type === 'text') {
+          return {
+            ...toolResult,
+            content: [
+              { type: 'text' as const, text: welcomeBrief + '\n\n' + firstContent.text },
+              ...toolResult.content.slice(1),
+            ],
+          };
+        }
+      }
+      return toolResult;
     } catch (err) {
       return { content: [{ type: 'text' as const, text: `Error: ${(err as Error).message}` }], isError: true };
     }
