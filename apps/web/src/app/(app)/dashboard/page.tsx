@@ -218,7 +218,7 @@ export default function HomePage() {
         {/* Quick Actions */}
         <div className="flex gap-3 mb-8">
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             className="gap-2"
             onClick={() => router.push("/chat?new=1")}
