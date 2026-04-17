@@ -42,7 +42,19 @@ function ActivityItem({ activity }: { activity: any }) {
   const agentName = activity.agentName && activity.agentName !== "You"
     ? activity.agentName.replace(/^agent[-_]?[a-z][-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'AI Agent'
     : "You"
-  const action = activity.title || activity.action || activity.type?.replace(/_/g, " ") || "activity"
+  const ACTION_LABELS: Record<string, string> = {
+    file_indexed: "indexed a file",
+    file_uploaded: "uploaded a file",
+    insight_generated: "discovered an insight",
+    knowledge_link_found: "found a knowledge connection",
+    conversation: "had a conversation",
+    file_upload: "uploaded",
+    compile: "compiled a briefing",
+    search: "searched knowledge",
+    store: "stored a note",
+    ask: "asked a question",
+  }
+  const action = activity.title || ACTION_LABELS[activity.type] || activity.action || activity.type?.replace(/_/g, " ") || "activity"
   const detail = activity.message || activity.detail || ""
 
   return (
