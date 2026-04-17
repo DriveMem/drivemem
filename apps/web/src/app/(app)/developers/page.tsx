@@ -116,6 +116,7 @@ const MCP_TOOLS = [
   { name: "timeline", desc: "View activity timeline of your knowledge base" },
   { name: "upload", desc: "Upload a file to your knowledge base" },
   { name: "store", desc: "Quickly save a note or knowledge snippet" },
+  { name: "compile_context", desc: "Compile task-relevant context from your knowledge base" },
 ]
 
 /* ---------- Webhook Delivery Log ---------- */
