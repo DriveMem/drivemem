@@ -20,10 +20,8 @@ function FadeIn({ children, className = "" }: { children: ReactNode; className?:
       { threshold: 0.05 }
     )
     obs.observe(el)
-  useEffect(() => { document.title = "Connect — DriveMem" }, [])
     return () => { obs.disconnect(); clearTimeout(timer) }
   }, [])
-  useEffect(() => { document.title = "Connect — DriveMem" }, [])
   return (
     <div
       ref={ref}
