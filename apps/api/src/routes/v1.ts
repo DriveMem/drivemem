@@ -566,7 +566,19 @@ export default async function v1Routes(fastify: FastifyInstance) {
     const body = request.body as { content: string; title?: string; tags?: string };
     if (!body.content) return reply.status(400).send({ error: 'content is required' });
 
-    const title = body.title || body.content.slice(0, 30).replace(/\n/g, ' ');
+    let title = body.title || '';
+    if (!title) {
+      try {
+        const { chat: llmChat } = await import('../services/llm.service.js');
+        const generated = await llmChat([
+          { role: 'system', content: 'Generate a short, descriptive title (max 8 words, English) for this note. Return ONLY the title, no quotes.' },
+          { role: 'user', content: body.content.slice(0, 500) },
+        ]);
+        title = generated.trim().replace(/^["']|["']$/g, '').slice(0, 80) || body.content.slice(0, 30).replace(/\n/g, ' ');
+      } catch {
+        title = body.content.slice(0, 30).replace(/\n/g, ' ');
+      }
+    }
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     const filename = `note-${timestamp}.md`;
     const mdContent = `# ${title}\n\n${body.content}\n\n---\n_存入时间: ${new Date().toLocaleString('zh-CN')}_`;
@@ -588,7 +600,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
     await uploadObject(s3Key, buffer, 'text/markdown');
     
     await db.insert(schema.files).values({
-      id: fileId, name: filename, originalName: filename,
+      id: fileId, name: displayName, originalName: filename,
       mimeType: 'text/markdown', size: buffer.length,
       status: 'parsing', userId, s3Key,
       folderId: detection.projectId,
