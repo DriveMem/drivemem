@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useRef, useEffect, useState, useCallback, type ReactNode } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Search, FileText, Plug, Bell, ArrowRight, ChevronRight, RefreshCw, AlertCircle, ChevronDown, ChevronUp, Key, Users } from "lucide-react"
+import { Search, FileText, Plug, Bell, ArrowRight, ChevronRight, RefreshCw, AlertCircle, ChevronDown, ChevronUp, Key, Users, Copy, Check, ExternalLink } from "lucide-react"
 import ApiPlayground from "./api-playground"
 
 /* ---------- FadeIn ---------- */
@@ -302,10 +302,188 @@ function WebhookDeliveryLog() {
   )
 }
 
+/* ---------- CopyBlock ---------- */
+function CopyBlock({ code, lang = "" }: { code: string; lang?: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <div className="relative group">
+      <pre className="overflow-x-auto rounded-lg bg-[#1C1B18] p-4 pr-14 font-mono text-sm text-[#E5E4E1]">
+        <code>{code}</code>
+      </pre>
+      <button
+        onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+        className="absolute top-2.5 right-2.5 flex items-center gap-1 rounded-md border border-white/20 bg-white/10 px-2 py-1 text-xs text-white hover:bg-white/20 transition"
+      >
+        {copied ? <><Check className="h-3 w-3" /> Copied</> : <><Copy className="h-3 w-3" /> Copy</>}
+      </button>
+    </div>
+  )
+}
+
+/* ---------- Tutorial Step ---------- */
+function TutorialStep({ number, title, children }: { number: number; title: string; children: ReactNode }) {
+  return (
+    <div className="flex gap-4">
+      <div className="flex flex-col items-center">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-500 text-sm font-bold text-white">{number}</span>
+        <div className="mt-2 flex-1 w-px bg-[#E5E4E1]" />
+      </div>
+      <div className="pb-8 flex-1">
+        <h4 className="font-semibold text-[#1C1B18] mb-3">{title}</h4>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+/* ---------- MCP Client Tabs ---------- */
+const MCP_CLIENTS = ["Cursor", "Claude Desktop", "OpenClaw"] as const
+
+function McpTutorialTabs({ apiKey }: { apiKey: string }) {
+  const [client, setClient] = useState(0)
+  const key = apiKey || "YOUR_API_KEY"
+
+  return (
+    <div className="mt-6">
+      {/* Client sub-tabs */}
+      <div className="flex gap-1 rounded-lg bg-[#F0EFED] p-1 mb-6">
+        {MCP_CLIENTS.map((name, i) => (
+          <button
+            key={name}
+            onClick={() => setClient(i)}
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
+              client === i ? "bg-white text-[#1C1B18] shadow-sm" : "text-[#6B6966] hover:text-[#1C1B18]"
+            }`}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+
+      {/* Cursor tutorial */}
+      {client === 0 && (
+        <div>
+          <TutorialStep number={1} title="Open Cursor Settings">
+            <p className="text-sm text-[#6B6966]">
+              Go to <strong className="text-[#1C1B18]">Cursor → Settings → MCP</strong> (or press <kbd className="rounded border border-[#E5E4E1] bg-white px-1.5 py-0.5 text-xs font-mono">Cmd+,</kbd>)
+            </p>
+          </TutorialStep>
+
+          <TutorialStep number={2} title="Add MCP Server">
+            <p className="text-sm text-[#6B6966] mb-3">
+              Click <strong className="text-[#1C1B18]">&quot;Add new MCP server&quot;</strong> and paste this URL:
+            </p>
+            <CopyBlock code={`https://api.drivemem.cloud/mcp?apiKey=${key}`} />
+          </TutorialStep>
+
+          <TutorialStep number={3} title="Verify Connection">
+            <p className="text-sm text-[#6B6966]">
+              You should see a green status indicator ✅<br />
+              DriveMem tools (<code className="text-xs font-mono bg-[#F8F7F5] px-1 rounded">search</code>, <code className="text-xs font-mono bg-[#F8F7F5] px-1 rounded">store</code>, <code className="text-xs font-mono bg-[#F8F7F5] px-1 rounded">compile</code>) will appear in your tool list.
+            </p>
+          </TutorialStep>
+
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            🎉 That&apos;s it! Cursor will now automatically use your knowledge base.
+          </div>
+        </div>
+      )}
+
+      {/* Claude Desktop tutorial */}
+      {client === 1 && (
+        <div>
+          <TutorialStep number={1} title="Open Config File">
+            <div className="space-y-2 text-sm text-[#6B6966]">
+              <div className="flex items-start gap-2">
+                <span className="font-medium text-[#1C1B18] shrink-0">macOS:</span>
+                <code className="text-xs font-mono bg-[#F8F7F5] px-2 py-1 rounded break-all">~/Library/Application Support/Claude/claude_desktop_config.json</code>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="font-medium text-[#1C1B18] shrink-0">Windows:</span>
+                <code className="text-xs font-mono bg-[#F8F7F5] px-2 py-1 rounded break-all">%APPDATA%\Claude\claude_desktop_config.json</code>
+              </div>
+            </div>
+          </TutorialStep>
+
+          <TutorialStep number={2} title="Add DriveMem">
+            <p className="text-sm text-[#6B6966] mb-3">Paste this into the file:</p>
+            <CopyBlock code={`{
+  "mcpServers": {
+    "drivemem": {
+      "url": "https://api.drivemem.cloud/mcp",
+      "headers": {
+        "Authorization": "Bearer ${key}"
+      }
+    }
+  }
+}`} />
+          </TutorialStep>
+
+          <TutorialStep number={3} title="Restart Claude Desktop">
+            <p className="text-sm text-[#6B6966]">
+              Quit and reopen Claude Desktop. You should see DriveMem in the MCP tools list.
+            </p>
+          </TutorialStep>
+
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            🎉 Claude will now have access to your knowledge base.
+          </div>
+        </div>
+      )}
+
+      {/* OpenClaw tutorial */}
+      {client === 2 && (
+        <div>
+          <TutorialStep number={1} title="Run this command">
+            <CopyBlock code={`openclaw config set mcp.servers.drivemem.url "https://api.drivemem.cloud/mcp/sse?apiKey=${key}"`} />
+          </TutorialStep>
+
+          <TutorialStep number={2} title="Restart OpenClaw">
+            <p className="text-sm text-[#6B6966]">
+              The agent will automatically connect to your knowledge base.
+            </p>
+          </TutorialStep>
+
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            🎉 OpenClaw will now use DriveMem as its memory layer.
+          </div>
+        </div>
+      )}
+
+      {/* Help link */}
+      <div className="mt-6 text-center">
+        <a href="https://docs.drivemem.cloud" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-[#6B6966] hover:text-brand-500 transition">
+          Need help? Check our docs <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      </div>
+    </div>
+  )
+}
+
 /* ---------- Page ---------- */
 export default function DevelopersPage() {
   const [activeTab, setActiveTab] = useState(0)
   const [copiedClient, setCopiedClient] = useState<string | null>(null)
+  const { status } = useSession()
+  const [apiKey, setApiKey] = useState("")
+
+  // Fetch user's first API key for auto-filling tutorials
+  useEffect(() => {
+    if (status !== "authenticated") return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/api-keys")
+        // We only get keyPrefix from list; full key only available on creation
+        // So we keep YOUR_API_KEY as placeholder unless we can get it
+        if (!cancelled && data?.keys?.length > 0 && data.keys[0].key) {
+          setApiKey(data.keys[0].key)
+        }
+      } catch { /* ignore */ }
+    })()
+    return () => { cancelled = true }
+  }, [status])
   // title set via layout.tsx metadata
 
   useEffect(() => { document.title = "Connect — DriveMem" }, [])
@@ -416,118 +594,8 @@ export default function DevelopersPage() {
               ))}
             </div>
 
-            {/* Client-specific MCP templates */}
-            {activeTab === 1 && (
-              <div className="mt-6 space-y-4">
-                {[
-                  {
-                    name: "Claude Desktop",
-                    path: "~/Library/Application Support/Claude/claude_desktop_config.json",
-                    config: `{
-  "mcpServers": {
-    "drivemem": {
-      // Public: https://api.drivemem.cloud/mcp
-      // Local: http://localhost:3000/mcp
-      "url": "https://api.drivemem.cloud/mcp",
-      "headers": {
-        "Authorization": "Bearer YOUR_API_KEY"
-      }
-    }
-  }
-}`,
-                  },
-                  {
-                    name: "Cursor",
-                    path: "~/.cursor/mcp.json",
-                    config: `{
-  "mcpServers": {
-    "drivemem": {
-      // Public: https://api.drivemem.cloud/mcp
-      // Local: http://localhost:3000/mcp
-      "url": "https://api.drivemem.cloud/mcp",
-      "headers": {
-        "Authorization": "Bearer YOUR_API_KEY"
-      }
-    }
-  }
-}`,
-                  },
-                  {
-                    name: "OpenClaw",
-                    path: "openclaw.yaml or TOOLS.md",
-                    config: `# OpenClaw MCP Config（openclaw.yaml）
-plugins:
-  entries:
-    drivemem:
-      kind: mcp
-      transport:
-        type: sse
-        # Public: https://api.drivemem.cloud/mcp
-        # Local: http://localhost:3000/mcp
-        url: "https://api.drivemem.cloud/mcp"
-        headers:
-          Authorization: "Bearer YOUR_API_KEY"`,
-                  },
-                ].map((client) => (
-                  <div key={client.name} className="rounded-xl border border-[#E5E4E1] overflow-hidden">
-                    <div className="flex items-center justify-between bg-white px-4 py-2 border-b border-[#E5E4E1]">
-                      <div>
-                        <span className="text-sm font-medium text-[#1C1B18]">{client.name}</span>
-                        <span className="ml-2 text-xs text-[#6B6966]">{client.path}</span>
-                      </div>
-                      <button
-                        onClick={() => { navigator.clipboard.writeText(client.config); setCopiedClient(client.name) ; setTimeout(() => setCopiedClient(null), 2000) }}
-                        className="rounded-md border border-[#E5E4E1] px-2.5 py-1 text-xs text-[#6B6966] hover:bg-[#F8F7F5] transition"
-                      >
-                        {copiedClient === client.name ? "✓ Copied" : "Copy"}
-                      </button>
-                    </div>
-                    <pre className="overflow-x-auto bg-[#1C1B18] p-4 font-mono text-sm text-[#E5E4E1]">
-                      <code>{client.config}</code>
-                    </pre>
-                  </div>
-                ))}
-                {/* URL options */}
-                <div className="rounded-xl border border-[#E5E4E1] bg-white p-4 space-y-3">
-                  <p className="text-sm font-medium text-[#1C1B18]">🌐 MCP Server</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-lg border border-brand-500/30 bg-brand-500/5 p-3">
-                      <p className="text-xs font-medium text-brand-500 mb-1">☁️ Public URL (recommended)</p>
-                      <code className="text-xs font-mono text-[#1C1B18] break-all">https://api.drivemem.cloud/mcp</code>
-                      <p className="text-[10px] text-[#6B6966] mt-1">Ready to use, no self-hosting</p>
-                    </div>
-                    <div className="rounded-lg border border-[#E5E4E1] bg-[#F8F7F5] p-3">
-                      <p className="text-xs font-medium text-[#6B6966] mb-1">🏠 Local / Self-hosted</p>
-                      <code className="text-xs font-mono text-[#1C1B18] break-all">http://localhost:3000/mcp</code>
-                      <p className="text-[10px] text-[#6B6966] mt-1">For local dev or private deployment</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-[#6B6966]">
-                    💡 Replace <code className="font-mono">YOUR_API_KEY</code> with your API key.
-                    Create one in <a href="/settings?tab=developer" className="text-brand-500 hover:underline">Settings → Developer</a>.
-                  </p>
-                </div>
-
-                {/* Security tips */}
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
-                  <p className="text-sm font-medium text-amber-800">🔒 Security Best Practices</p>
-                  <ul className="space-y-1.5 text-xs text-amber-700">
-                    <li className="flex items-start gap-2">
-                      <span className="shrink-0 mt-0.5">•</span>
-                      <span><strong>Least privilege</strong> — Only grant the scopes your agent needs</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="shrink-0 mt-0.5">•</span>
-                      <span><strong>Use env vars</strong> — Never hardcode API keys. Use <code className="font-mono bg-amber-100 px-1 rounded">$AIDRIVE_API_KEY</code> instead</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="shrink-0 mt-0.5">•</span>
-                      <span><strong>Rotate regularly</strong> — Rotate API keys every 90 days. Revoke unused keys promptly</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            )}
+            {/* MCP Config — Step-by-step tutorials */}
+            {activeTab === 1 && <McpTutorialTabs apiKey={apiKey} />}
 
             {/* Code block for non-MCP tabs */}
             {activeTab !== 1 && activeTab !== 3 && (
