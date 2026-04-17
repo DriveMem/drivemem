@@ -231,7 +231,7 @@ export default function HomePage() {
 
   const files = Array.isArray(filesData) ? filesData : (filesData as any)?.files || []
   const folders = foldersData?.folders || []
-  const fileCount = files.length
+  const fileCount = files.filter((f: any) => f.status === "indexed").length
   const insightCount = insights.length
   const projectCount = folders.length
 
