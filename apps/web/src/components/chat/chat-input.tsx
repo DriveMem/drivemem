@@ -42,9 +42,8 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
     }
     return [
       "Ask anything about your knowledge...",
-      "Summarize my recently uploaded files",
-      "Compare the viewpoints of these two files",
       "What key information is in my files?",
+      "Compare the viewpoints of these two files",
       "Help me find connections between files",
       "What decisions have I made recently?",
     ]

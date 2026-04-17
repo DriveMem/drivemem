@@ -5,6 +5,44 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { requireApiKey } from '../plugins/api-key-auth.js';
 import { createMcpServer } from '../mcp/create-server.js';
+import { db } from '../db/index.js';
+import { agentConnections } from '../db/schema.js';
+import { eq } from 'drizzle-orm';
+
+// --- Agent Connection Tracking (fire-and-forget) ---
+async function trackConnectionOpen(userId: string, apiKeyId: string | undefined, agentName: string, transport: string): Promise<string | null> {
+  try {
+    const [row] = await db.insert(agentConnections).values({
+      userId,
+      apiKeyId: apiKeyId || null,
+      agentName: agentName || 'unknown',
+      transport,
+      status: 'online',
+    }).returning({ id: agentConnections.id });
+    return row?.id ?? null;
+  } catch (e) {
+    console.error('[MCP] trackConnectionOpen failed:', e);
+    return null;
+  }
+}
+
+async function trackConnectionActivity(connectionId: string | null) {
+  if (!connectionId) return;
+  try {
+    await db.update(agentConnections)
+      .set({ lastActiveAt: new Date() })
+      .where(eq(agentConnections.id, connectionId));
+  } catch { /* fire-and-forget */ }
+}
+
+async function trackConnectionClose(connectionId: string | null) {
+  if (!connectionId) return;
+  try {
+    await db.update(agentConnections)
+      .set({ status: 'offline', disconnectedAt: new Date() })
+      .where(eq(agentConnections.id, connectionId));
+  } catch { /* fire-and-forget */ }
+}
 
 // --- Session Idle Detection (Layer 3: Auto Store) ---
 interface SessionActivity {
@@ -157,6 +195,8 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
         },
       });
 
+      let connectionId: string | null = null;
+
       transport.onclose = () => {
         const sid = transport.sessionId;
         if (sid) {
@@ -167,15 +207,18 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
           sessionActivityMap.delete(sid);
           sessions.delete(sid);
         }
+        trackConnectionClose(connectionId);
       };
 
       const mcpServer = createMcpServer(userId, agentName, {
         onToolCall: (toolName) => {
           const sid = transport.sessionId;
           if (sid) trackSessionActivity(sid, userId, agentName, toolName);
+          trackConnectionActivity(connectionId);
         },
       });
       await mcpServer.connect(transport);
+      trackConnectionOpen(userId, (request as any).apiKeyId, agentName, 'streamable-http').then(id => { connectionId = id; });
       await transport.handleRequest(request.raw, reply.raw, request.body);
       reply.hijack();
       return;
@@ -222,9 +265,12 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     const userId = request.user!.id;
     const agentName = (request as any).apiKeyName || '';
 
+    let sseConnectionId: string | null = null;
+
     const mcpServer = createMcpServer(userId, agentName, {
       onToolCall: (toolName) => {
         trackSessionActivity(sessionId, userId, agentName, toolName);
+        trackConnectionActivity(sseConnectionId);
       },
     });
     const transport = new SSEServerTransport('/mcp', reply.raw);
@@ -233,16 +279,17 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     sessions.set(sessionId, { transport, server: mcpServer });
 
     transport.onclose = () => {
-      // Trigger auto-capture on session close if there was activity
       const activity = sessionActivityMap.get(sessionId);
       if (activity && activity.toolCallCount > 0) {
         triggerAutoCapture(sessionId, activity);
       }
       sessionActivityMap.delete(sessionId);
       sessions.delete(sessionId);
+      trackConnectionClose(sseConnectionId);
     };
 
     await mcpServer.connect(transport);
+    trackConnectionOpen(userId, (request as any).apiKeyId, agentName, 'sse').then(id => { sseConnectionId = id; });
     reply.hijack();
   });
 

@@ -306,6 +306,19 @@ export const compilationLogs = pgTable('compilation_logs', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+// --- Agent Connections ---
+export const agentConnections = pgTable('agent_connections', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  apiKeyId: uuid('api_key_id').references(() => apiKeys.id, { onDelete: 'set null' }),
+  agentName: varchar('agent_name', { length: 255 }),
+  transport: varchar('transport', { length: 30 }),
+  connectedAt: timestamp('connected_at', { withTimezone: true }).notNull().defaultNow(),
+  lastActiveAt: timestamp('last_active_at', { withTimezone: true }).notNull().defaultNow(),
+  disconnectedAt: timestamp('disconnected_at', { withTimezone: true }),
+  status: varchar('status', { length: 20 }).notNull().default('online'),
+});
+
 // --- Agent Profiles ---
 export const agentProfiles = pgTable('agent_profiles', {
   id: uuid('id').defaultRandom().primaryKey(),

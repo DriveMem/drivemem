@@ -105,6 +105,74 @@ export default async function userRoutes(fastify: FastifyInstance) {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
 
+    const connections = await db.select({
+      id: schema.agentConnections.id,
+      agentName: schema.agentConnections.agentName,
+      transport: schema.agentConnections.transport,
+      connectedAt: schema.agentConnections.connectedAt,
+      lastActiveAt: schema.agentConnections.lastActiveAt,
+      disconnectedAt: schema.agentConnections.disconnectedAt,
+      status: schema.agentConnections.status,
+    })
+      .from(schema.agentConnections)
+      .where(and(
+        eq(schema.agentConnections.userId, userId),
+        gte(schema.agentConnections.connectedAt, weekAgo),
+      ))
+      .orderBy(desc(schema.agentConnections.lastActiveAt));
+
+    // Group by agentName — pick latest connection per agent
+    const agentMap = new Map<string, typeof connections[0]>();
+    for (const conn of connections) {
+      const name = conn.agentName || 'unknown';
+      if (!agentMap.has(name)) agentMap.set(name, conn);
+    }
+
+    // Count total calls per agent from api_activity_logs
+    const callCounts = new Map<string, number>();
+    if (agentMap.size > 0) {
+      const rows = await db.select({
+        agentName: schema.apiActivityLogs.agentName,
+        count: sql<number>`count(*)`,
+      })
+        .from(schema.apiActivityLogs)
+        .where(and(
+          eq(schema.apiActivityLogs.userId, userId),
+          gte(schema.apiActivityLogs.createdAt, weekAgo),
+        ))
+        .groupBy(schema.apiActivityLogs.agentName);
+      for (const r of rows) {
+        callCounts.set(r.agentName || 'unknown', Number(r.count));
+      }
+    }
+
+    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000);
+    const agents = [...agentMap.entries()].map(([name, conn]) => {
+      const isOnline = conn.status === 'online' && conn.lastActiveAt && new Date(conn.lastActiveAt) > tenMinAgo;
+      return {
+        name,
+        status: isOnline ? 'online' : 'offline',
+        lastActiveAt: conn.lastActiveAt,
+        disconnectedAt: conn.disconnectedAt,
+        transport: conn.transport,
+        totalCalls: callCounts.get(name) || 0,
+      };
+    });
+
+    agents.sort((a, b) => {
+      if (a.status !== b.status) return a.status === 'online' ? -1 : 1;
+      return new Date(b.lastActiveAt!).getTime() - new Date(a.lastActiveAt!).getTime();
+    });
+
+    return reply.send({ agents });
+  });
+
+  // GET /me/connections — Connected agents status
+  fastify.get('/me/connections', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
     // Get connections from last 7 days
     const connections = await db.select({
       id: schema.agentConnections.id,

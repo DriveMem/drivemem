@@ -36,10 +36,10 @@ const isDev = typeof window !== "undefined" && window.location.hostname === "loc
 const API_BASE = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : PRODUCTION_API
 
 const DEFAULT_SUGGESTIONS = [
-  "📄 Summarize my recently uploaded files",
-  "🔍 What are the connections between these files?",
-  "💡 Extract key information from my files",
-  "📊 Help me analyze the file content",
+  "🔍 What are the connections between my files?",
+  "💡 What key information is in my files?",
+  "📊 Help me analyze my recent uploads",
+  "🧠 What decisions have I made recently?",
 ]
 
 const FEATURE_CARDS = [

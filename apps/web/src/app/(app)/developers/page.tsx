@@ -1,10 +1,83 @@
 "use client"
-import { useState } from "react"
-import { useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, Key, Users, Bell } from "lucide-react"
+import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, Key, Users, Bell, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+
+
+/* ---------- Relative Time ---------- */
+function relativeTime(dateStr: string): string {
+  const diff = Math.max(0, Date.now() - new Date(dateStr).getTime())
+  const s = Math.floor(diff / 1000)
+  if (s < 60) return `${s}s ago`
+  const m = Math.floor(s / 60)
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
+}
+
+/* ---------- Connected Agents ---------- */
+function ConnectedAgents() {
+  const { status } = useSession()
+  const isLoggedIn = status === "authenticated"
+  const [agents, setAgents] = useState<{ name: string; status: string; lastActiveAt: string; disconnectedAt: string | null; totalCalls: number }[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const fetchAgents = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const data = await apiFetch("/api/users/me/connections")
+      setAgents(data?.agents || [])
+    } catch { /* ignore */ }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { if (isLoggedIn) fetchAgents() }, [isLoggedIn, fetchAgents])
+
+  if (!isLoggedIn) return null
+
+  return (
+    <div className="mb-10">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold tracking-tight">Connected Agents</h2>
+        {agents.length > 0 && (
+          <button onClick={fetchAgents} disabled={loading}
+            className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/50 transition disabled:opacity-50">
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+          </button>
+        )}
+      </div>
+      {loading && agents.length === 0 ? (
+        <div className="rounded-xl border bg-card p-6 text-center">
+          <RefreshCw className="mx-auto h-4 w-4 animate-spin text-muted-foreground" />
+        </div>
+      ) : agents.length === 0 ? (
+        <div className="rounded-xl border bg-card p-6 text-center">
+          <p className="text-sm text-muted-foreground">No agents connected yet. Use the cards below to connect your first agent.</p>
+        </div>
+      ) : (
+        <div className="rounded-xl border bg-card divide-y">
+          {agents.map((agent) => (
+            <div key={agent.name} className="flex items-center gap-3 px-5 py-3.5">
+              <span className={`inline-block h-2.5 w-2.5 rounded-full shrink-0 ${agent.status === "online" ? "bg-emerald-500" : "bg-zinc-300"}`} />
+              <span className="font-medium text-sm">{agent.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {agent.status === "online"
+                  ? `active ${relativeTime(agent.lastActiveAt)}`
+                  : `offline ${agent.disconnectedAt ? `since ${relativeTime(agent.disconnectedAt)}` : relativeTime(agent.lastActiveAt)}`}
+              </span>
+              <span className="ml-auto text-xs text-muted-foreground tabular-nums">{agent.totalCalls} calls</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function ConnectPage() {
   useEffect(() => { document.title = "Connect — DriveMem" }, [])
@@ -32,6 +105,8 @@ export default function ConnectPage() {
     <div className="max-w-4xl mx-auto px-6 py-8">
       <h1 className="text-2xl font-bold tracking-tight">Connect your agents</h1>
       <p className="text-muted-foreground mt-2 mb-8">Pick your tool and connect in under 2 minutes</p>
+
+      <ConnectedAgents />
 
       <div className="grid md:grid-cols-3 gap-6">
         {/* Cursor Card */}
