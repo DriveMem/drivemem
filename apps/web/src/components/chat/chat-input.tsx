@@ -49,16 +49,12 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
     ]
   }
 
-  const [placeholder, setPlaceholder] = useState(() => {
-    const p = getPlaceholders()
-    return p[Math.floor(Math.random() * p.length)]
-  })
+  const [placeholder] = useState("Ask anything about your knowledge...")
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (value) return // don't rotate while user is typing
-      const p = getPlaceholders()
-      setPlaceholder(p[Math.floor(Math.random() * p.length)])
+      // placeholder is now fixed — no rotation
+      void 0
     }, 12000)
     return () => clearInterval(interval)
   // eslint-disable-next-line react-hooks/exhaustive-deps
