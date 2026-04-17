@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { eq, and, sql, isNotNull, isNull, desc, inArray } from 'drizzle-orm';
+import { eq, and, sql, isNotNull, isNull, desc, inArray, gte } from 'drizzle-orm';
 import * as schema from '../db/schema.js';
 import { db } from '../db/index.js';
 import { users, files, knowledgeLinks } from '../db/schema.js';
