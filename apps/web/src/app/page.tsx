@@ -128,8 +128,8 @@ function ProductPreview() {
 
 const FEATURES = [
   {
-    title: "Your agents remember everything",
-    desc: "Knowledge is captured automatically across sessions, models, and tools. No more cold starts or lost context.",
+    title: "Agents remember everything",
+    desc: "Every decision, every insight, every preference — captured automatically from your conversations.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="3" />
@@ -138,8 +138,8 @@ const FEATURES = [
     ),
   },
   {
-    title: "Connect any AI tool",
-    desc: "One line of code to plug in. Works with Claude, GPT, Gemini, and any MCP-compatible agent.",
+    title: "Knowledge flows between agents",
+    desc: "What Claude learns, Cursor knows. Switch tools without repeating yourself.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
@@ -148,8 +148,8 @@ const FEATURES = [
     ),
   },
   {
-    title: "Knowledge flows between agents",
-    desc: "Information discovered by one agent is instantly available to all others. Cross-agent continuity, automatically.",
+    title: "Gets smarter over time",
+    desc: "DriveMem discovers connections, detects conflicts, and learns what matters to you.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="16 3 21 3 21 8" />
@@ -167,18 +167,18 @@ const FEATURES = [
 const STEPS = [
   {
     num: "1",
-    title: "Upload or capture",
-    desc: "Drop files, save conversations, or let your agent write notes automatically.",
+    title: "Connect your agents",
+    desc: "One URL. Works with Cursor, Claude, ChatGPT, and any MCP-compatible tool.",
   },
   {
     num: "2",
-    title: "AI indexes & connects",
-    desc: "DriveMem parses, summarizes, and discovers relationships across all your knowledge.",
+    title: "Just work normally",
+    desc: "DriveMem captures valuable knowledge automatically. No manual saving.",
   },
   {
     num: "3",
-    title: "Agents remember",
-    desc: "Any agent, any model — instant access to the right context at the right time.",
+    title: "Every agent has full context",
+    desc: "Your next conversation starts where the last one left off.",
   },
 ]
 
@@ -199,15 +199,15 @@ export default function LandingPage() {
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
           <FadeIn>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-[1.08]">
-              Give every AI agent
+              One memory.
               <br />
-              <span className="text-brand-500">the memory it needs</span>
+              <span className="text-brand-500">Every agent.</span>
             </h1>
           </FadeIn>
 
           <FadeIn delay={100}>
             <p className="mt-6 md:mt-8 text-lg md:text-xl text-gray-500 max-w-xl mx-auto leading-relaxed">
-              One knowledge base that gives your agents persistent memory across sessions, models, and tools.
+              Your AI tools forget everything between sessions. DriveMem gives them a shared brain — so they remember what matters.
             </p>
           </FadeIn>
 
@@ -313,10 +313,10 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto px-6 text-center">
           <FadeIn>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-5">
-              Start building with DriveMem
+              Ready to give your agents memory?
             </h2>
             <p className="text-gray-500 text-lg mb-8 max-w-md mx-auto">
-              Free to start. No credit card required.
+              Start free — no credit card required
             </p>
             <Link
               href="/login"

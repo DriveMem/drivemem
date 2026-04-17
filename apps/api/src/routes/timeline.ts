@@ -6,7 +6,7 @@ import { requireAuth } from '../plugins/auth.js';
 
 export interface TimelineEvent {
   id: string;
-  type: 'file_uploaded' | 'conversation' | 'insight' | 'report' | 'agent_activity' | 'auto_capture';
+  type: 'file_uploaded' | 'conversation' | 'insight' | 'report' | 'agent_activity' | 'auto_capture' | 'relay';
   title: string;
   description?: string;
   icon: string;
@@ -180,7 +180,7 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
       metadata: {},
     })),
     ...activities.map(a => {
-      const iconMap: Record<string, string> = { search: '🔍', store: '📥', ask: '💬', compile: '📋' };
+      const iconMap: Record<string, string> = { search: '🔍', store: '📥', ask: '💬', compile: '📋', relay: '🔄' };
       const icon = iconMap[a.action] || '🤖';
       const agent = formatAgentName(a.agentName) || 'API';
       const fullDetail = getFullDetail(a.detail, a.metadata as Record<string, unknown>);
@@ -201,6 +201,13 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
         case 'compile':
           title = shortDetail ? `${agent} compiled briefing for "${shortDetail}"` : `${agent} compiled a briefing`;
           break;
+        case 'relay': {
+          const meta = a.metadata as Record<string, unknown> | null;
+          const fromAgent = formatAgentName(meta?.fromAgent as string);
+          const fileName = (meta?.fileName as string) || shortDetail || 'a file';
+          title = `${agent} used knowledge from ${fromAgent}: "${fileName}"`;
+          break;
+        }
         default:
           title = shortDetail ? `${agent} ${a.action}: ${shortDetail}` : `${agent} ${a.action}`;
       }

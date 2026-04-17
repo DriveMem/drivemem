@@ -14,6 +14,7 @@ import { Queue } from 'bullmq';
 import { logActivity } from '../services/activity-logger.js';
 import { recordSearchResults, resolveImplicitFeedback } from '../services/implicit-feedback.js';
 import { checkCompilationFeedback } from '../services/context-compiler/index.js';
+import { detectAndLogRelay } from '../services/relay-detector.js';
 
 // --- Levenshtein similarity for auto-store dedup ---
 function levenshteinDistance(a: string, b: string): number {
@@ -387,6 +388,8 @@ export default async function v1Routes(fastify: FastifyInstance) {
         .catch(() => {});
     }
     logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'search', detail: query.q, metadata: { resultCount: searchResults.length, format }, relatedFileIds: searchFileIdSet });
+    // Cross-agent relay detection (fire-and-forget)
+    detectAndLogRelay(userId, (request as any).apiKeyName, searchFileIdSet, (request as any).apiKeyId);
     // Agent Loop 1: record search results for implicit feedback tracking
     recordSearchResults(userId, (request as any).apiKeyId, searchFileIdSet);
     // Agent Loop 4: check if search after compile → negative feedback signal
@@ -547,6 +550,8 @@ export default async function v1Routes(fastify: FastifyInstance) {
     resolveImplicitFeedback(userId, (request as any).apiKeyId, askFileIds);
     // Agent Loop 4: check if ask after compile → negative feedback signal
     checkCompilationFeedback(userId, 'ask');
+    // Cross-agent relay detection (fire-and-forget)
+    detectAndLogRelay(userId, (request as any).apiKeyName, askFileIds, (request as any).apiKeyId);
     logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'ask', detail: body.question, metadata: { sourceCount: finalChunks.length } });
     return reply.send({
       answer,

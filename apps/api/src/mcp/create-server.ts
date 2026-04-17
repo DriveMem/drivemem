@@ -10,6 +10,8 @@ import { eq, desc, and, inArray, sql, gt } from 'drizzle-orm';
 import { inferRole } from '../services/context-compiler/agent-profiles.js';
 import type { DetectedCapabilities } from '../services/capability-detector.js';
 import { maybeAccumulate } from '../services/auto-accumulate.js';
+import { detectAndLogRelay } from '../services/relay-detector.js';
+import { logActivity } from '../services/activity-logger.js';
 
 
 // Proactive Context Enrichment — append related knowledge to tool responses
@@ -413,6 +415,9 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             `${i + 1}. [${r.fileName}] (score: ${r.score.toFixed(2)}, ${fileDates[r.fileId] || '?'})\n${r.text.slice(0, charsPerResult)}`
           ).join('\n\n');
           const searchEnrich = await enrichResponse(userId, query, fileIds);
+          // Cross-agent relay detection (fire-and-forget)
+          logActivity({ userId, agentName, action: 'search', detail: query, metadata: { resultCount: results.length }, relatedFileIds: fileIds });
+          detectAndLogRelay(userId, agentName, fileIds);
           return { content: [{ type: 'text' as const, text: (text || 'No results found.') + searchEnrich }] };
         }
 
@@ -465,6 +470,9 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           const answer = await chat([{ role: 'system', content: systemPrompt }, { role: 'user', content: question }]);
           const askFileIds = [...new Set(chunks.map(c => c.fileId))];
           const askEnrich = await enrichResponse(userId, question, askFileIds);
+          // Cross-agent relay detection (fire-and-forget)
+          logActivity({ userId, agentName, action: 'ask', detail: question, metadata: { sourceCount: chunks.length }, relatedFileIds: askFileIds });
+          detectAndLogRelay(userId, agentName, askFileIds);
           return { content: [{ type: 'text' as const, text: answer + askEnrich }] };
         }
 

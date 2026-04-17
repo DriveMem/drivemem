@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import {
   FileText, Sparkles, Upload, X, Lightbulb, AlertTriangle,
-  MessageCircle, Folder, Plus, ChevronRight, FolderPlus, Terminal
+  MessageCircle, Folder, Plus, ChevronRight, FolderPlus, Terminal, ArrowLeftRight
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { MobileUploadFab } from "@/components/file/mobile-upload-fab"
@@ -55,6 +55,7 @@ const activityIcons: Record<string, typeof FileText> = {
   knowledge_link_found: Lightbulb,
   file_upload: Upload,
   conversation: MessageCircle,
+  relay: ArrowLeftRight,
 }
 
 // --- Activity Item ---
@@ -250,16 +251,11 @@ export default function HomePage() {
   const [activityPage, setActivityPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [connectedAgents, setConnectedAgents] = useState<any[]>([])
+  const [connectedAgents] = useState<any[]>([])
 
   useEffect(() => { document.title = "Home — DriveMem" }, [])
 
-  // Fetch connected agents (may 401 from session auth — fallback gracefully)
-  useEffect(() => {
-    apiFetch("/api/users/me/connections")
-      .then((data: any) => setConnectedAgents(data?.agents || []))
-      .catch(() => {})
-  }, [])
+  // connectedAgents removed — banner now uses file/insight counts only
 
   // Fetch resume brief
   useEffect(() => {
@@ -338,25 +334,12 @@ export default function HomePage() {
 
       <div className="max-w-4xl mx-auto w-full px-6 py-8">
         {/* Status Banner */}
-        {(() => {
-          const onlineAgents = connectedAgents.filter(a => a.status === "online")
-          return (
-            <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-primary/5 border border-primary/10 mb-6">
-              <div className={`h-2 w-2 rounded-full ${onlineAgents.length > 0 ? "bg-green-500 animate-pulse" : "bg-muted-foreground/30"}`} />
-              <span className="text-sm text-muted-foreground">
-                {onlineAgents.length > 0
-                  ? `DriveMem is active · ${onlineAgents.length} agent${onlineAgents.length > 1 ? "s" : ""} connected · ${fileCount} files`
-                  : `DriveMem · ${fileCount} files indexed · ${insightCount} insights`
-                }
-              </span>
-              {connectedAgents.length > 0 && (
-                <span className="text-xs text-muted-foreground/60 ml-auto">
-                  Last activity {relativeTime(connectedAgents[0]?.lastActiveAt)}
-                </span>
-              )}
-            </div>
-          )
-        })()}
+        <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-primary/5 border border-primary/10 mb-6">
+          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-sm text-muted-foreground">
+            DriveMem is active · {fileCount} files indexed · {insightCount} insights
+          </span>
+        </div>
 
         {/* Resume Brief — conditional */}
         {resumeBrief && (
