@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { apiFetch } from "@/lib/api"
 import { FileUpload } from "@/components/file/file-upload"
 import Link from "next/link"
+import { AutoSavedBar } from "@/components/dashboard/auto-saved-bar"
 
 // --- helpers ---
 function relativeTime(dateStr: string): string {
@@ -153,6 +154,88 @@ function ConflictBanner({ count }: { count: number }) {
   )
 }
 
+// --- Auto-store grouping ---
+function isAutoStoreActivity(a: any): boolean {
+  return a.type === "auto_capture" || a.action === "auto_store" ||
+    (a.metadata?.source === "auto_store")
+}
+
+function groupAutoStoreActivities(activities: any[]) {
+  const result: any[] = []
+  let currentGroup: any[] = []
+
+  const flushGroup = () => {
+    if (currentGroup.length === 0) return
+    if (currentGroup.length === 1) {
+      result.push(currentGroup[0])
+    } else {
+      result.push({
+        isGroup: true,
+        id: `group-${currentGroup[0].id}`,
+        items: currentGroup,
+        count: currentGroup.length,
+        createdAt: currentGroup[0].createdAt,
+      })
+    }
+    currentGroup = []
+  }
+
+  for (const a of activities) {
+    if (isAutoStoreActivity(a)) {
+      if (currentGroup.length > 0) {
+        const lastTime = new Date(currentGroup[currentGroup.length - 1].createdAt).getTime()
+        const thisTime = new Date(a.createdAt).getTime()
+        if (Math.abs(lastTime - thisTime) > 5 * 60 * 1000) {
+          flushGroup()
+        }
+      }
+      currentGroup.push(a)
+    } else {
+      flushGroup()
+      result.push(a)
+    }
+  }
+  flushGroup()
+  return result
+}
+
+// --- Auto Store Group Component ---
+function AutoStoreGroup({ group }: { group: any }) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div className="border-b border-zinc-100 dark:border-zinc-800 last:border-0">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-3 py-1.5 md:py-2.5 text-xs md:text-body w-full text-left hover:bg-violet-50/50 dark:hover:bg-violet-950/20 rounded transition"
+      >
+        <Sparkles className="h-4 w-4 text-violet-500 flex-shrink-0" />
+        <span className="text-violet-600 dark:text-violet-400 flex-shrink-0">AI</span>
+        <span className="text-violet-700 dark:text-violet-300 truncate">
+          saved {group.count} notes from your session
+        </span>
+        <ChevronRight className={`ml-auto h-3.5 w-3.5 text-violet-400 flex-shrink-0 transition-transform ${expanded ? "rotate-90" : ""}`} />
+        <span className="text-[10px] md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap mr-1">
+          <span className="hidden md:inline">{relativeTime(group.createdAt)}</span>
+          <span className="md:hidden">{shortTime(group.createdAt)}</span>
+        </span>
+      </button>
+      {expanded && (
+        <div className="pl-7 pb-2 space-y-0.5">
+          {group.items.map((a: any, i: number) => (
+            <div key={a.id || i} className="flex items-center gap-2 py-1 text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 flex-shrink-0" />
+              <span className="truncate">{a.title || a.detail || a.message || "Auto-saved note"}</span>
+              <span className="ml-auto text-[10px] text-muted-foreground flex-shrink-0">
+                {new Date(a.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // --- Main Page ---
 export default function HomePage() {
   const router = useRouter()
@@ -235,10 +318,14 @@ export default function HomePage() {
   const insightCount = insights.length
   const projectCount = folders.length
 
+  // Group auto_store activities
+  const groupedActivities = groupAutoStoreActivities(activities)
+
   return (
     <div className="flex flex-col h-full overflow-auto">
       <OnboardingFlow />
       <MobileUploadFab />
+      <AutoSavedBar />
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} />}
 
       <div className="max-w-4xl mx-auto w-full px-6 py-8">
@@ -388,15 +475,17 @@ export default function HomePage() {
           <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider mb-4">
             Recent Activity
           </h2>
-          {activities.length === 0 ? (
+          {groupedActivities.length === 0 ? (
             <div className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">
               <p>暂无最近活动</p>
               <p className="mt-1">上传文件或开始对话后，活动会显示在这里。</p>
             </div>
           ) : (
             <div>
-              {activities.map((a: any, i: number) => (
-                <ActivityItem key={a.id || i} activity={a} />
+              {groupedActivities.map((entry: any, i: number) => (
+                entry.isGroup
+                  ? <AutoStoreGroup key={entry.id} group={entry} />
+                  : <ActivityItem key={entry.id || i} activity={entry} />
               ))}
               {hasMore && (
                 <button
