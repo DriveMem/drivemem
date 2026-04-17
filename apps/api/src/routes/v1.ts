@@ -1175,4 +1175,35 @@ ${insightsSection}
       since: since.toISOString(),
     });
   });
+
+  // GET /agents/connected — connected agents status
+  fastify.get('/agents/connected', async (request, reply) => {
+    const userId = request.user!.id;
+    const now = new Date();
+    const onlineThreshold = new Date(now.getTime() - 5 * 60 * 1000); // 5 min
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    const agents = await db.select({
+      agentName: schema.apiActivityLogs.agentName,
+      calls24h: sql<number>`count(*) filter (where ${schema.apiActivityLogs.createdAt} >= ${twentyFourHoursAgo})::int`,
+      lastActiveAt: sql<string>`max(${schema.apiActivityLogs.createdAt})`,
+    })
+      .from(schema.apiActivityLogs)
+      .where(and(
+        eq(schema.apiActivityLogs.userId, userId),
+        sql`${schema.apiActivityLogs.agentName} is not null`,
+      ))
+      .groupBy(schema.apiActivityLogs.agentName);
+
+    return {
+      agents: agents.map(a => ({
+        name: a.agentName,
+        status: new Date(a.lastActiveAt) >= onlineThreshold ? 'online' : 'offline',
+        calls24h: a.calls24h,
+        lastActiveAt: a.lastActiveAt,
+      })),
+      checkedAt: now.toISOString(),
+    };
+  });
+
 }
