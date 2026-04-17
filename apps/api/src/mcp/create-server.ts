@@ -195,6 +195,11 @@ You are not just a chat assistant — you are part of the user's knowledge syste
         },
       },
       {
+        name: 'aidrive_identity',
+        description: 'Get user identity and profile (name, email, role, goals, preferences)',
+        inputSchema: { type: 'object' as const, properties: {}, required: [] },
+      },
+      {
         name: 'aidrive_compile_context',
         description: 'Compile task-relevant context from knowledge base. Returns structured markdown optimized for the target model.',
         inputSchema: {
