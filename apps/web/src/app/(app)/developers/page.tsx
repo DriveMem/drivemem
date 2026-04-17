@@ -185,7 +185,6 @@ function WebhookDeliveryLog() {
   }, [isLoggedIn, fetchDeliveries])
 
   if (!isLoggedIn) {
-  useEffect(() => { document.title = "Connect — DriveMem" }, [])
     return (
       <div className="mt-8 rounded-xl border border-[#E5E4E1] bg-white p-6 text-center">
         <p className="text-sm text-[#6B6966]">Sign in to view webhook logs</p>
@@ -193,7 +192,6 @@ function WebhookDeliveryLog() {
     )
   }
 
-  useEffect(() => { document.title = "Connect — DriveMem" }, [])
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
