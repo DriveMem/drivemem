@@ -70,7 +70,7 @@ function Nav() {
           <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
             <span className="text-white font-mono text-xs font-bold">D</span>
           </div>
-          <span className="text-gray-900 font-semibold text-[15px] tracking-tight">
+          <span className="text-gray-900 font-semibold text-title tracking-tight">
             DriveMem
           </span>
         </Link>
@@ -209,7 +209,7 @@ export default function LandingPage() {
           </FadeIn>
 
           <FadeIn delay={100}>
-            <p className="mt-6 md:mt-8 text-lg md:text-xl text-gray-500 max-w-xl mx-auto leading-relaxed">
+            <p className="mt-6 md:mt-8 text-body md:text-xl text-gray-500 max-w-xl mx-auto leading-relaxed">
               Your AI tools forget everything between sessions. DriveMem gives them a shared brain — so they remember what matters.
             </p>
           </FadeIn>
@@ -260,8 +260,8 @@ export default function LandingPage() {
                   <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center text-brand-500 mb-6">
                     {f.icon}
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{f.title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">
+                  <h3 className="text-title font-semibold text-gray-900 mb-2">{f.title}</h3>
+                  <p className="text-gray-500 text-body leading-relaxed">
                     {f.desc}
                   </p>
                 </div>
@@ -294,8 +294,8 @@ export default function LandingPage() {
                     <div className="w-20 h-20 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center mx-auto mb-6 relative z-10 shadow-soft">
                       <span className="text-2xl font-bold text-brand-500">{step.num}</span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{step.title}</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">
+                    <h3 className="text-title font-semibold text-gray-900 mb-2">{step.title}</h3>
+                    <p className="text-gray-500 text-body leading-relaxed max-w-xs mx-auto">
                       {step.desc}
                     </p>
                   </div>
@@ -318,7 +318,7 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-5">
               Ready to give your agents memory?
             </h2>
-            <p className="text-gray-500 text-lg mb-8 max-w-md mx-auto">
+            <p className="text-gray-500 text-body mb-8 max-w-md mx-auto">
               Start free — no credit card required
             </p>
             <Link

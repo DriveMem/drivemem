@@ -127,7 +127,7 @@ export function ConversationList() {
 
             return groups.filter(g => g.items.length > 0).map(g => (
               <li key={g.label}>
-                <p className="px-3 pt-3 pb-1 text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">{g.label}</p>
+                <p className="px-3 pt-3 pb-1 text-micro font-medium text-muted-foreground/60 uppercase tracking-wider">{g.label}</p>
                 {g.items.map((c: Conversation) => (
             <li
               key={c.id}
@@ -162,11 +162,11 @@ export function ConversationList() {
                       setEditingId(null)
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full text-sm font-medium bg-transparent border-b border-primary outline-none"
+                    className="w-full text-body font-medium bg-transparent border-b border-primary outline-none"
                   />
                 ) : (
                   <p
-                    className="truncate text-sm font-medium"
+                    className="truncate text-body font-medium"
                     onDoubleClick={(e) => {
                       e.stopPropagation()
                       setEditingId(c.id)
@@ -174,7 +174,7 @@ export function ConversationList() {
                     }}
                   >{c.title || "New conversation"}</p>
                 )}
-                <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">{formatTime(c.updatedAt)}</p>
+                <p className="text-caption text-muted-foreground/70 truncate mt-0.5">{formatTime(c.updatedAt)}</p>
               </div>
               {c.isPinned && <Pin className="h-3 w-3 text-blue-400 shrink-0" />}
               <Button

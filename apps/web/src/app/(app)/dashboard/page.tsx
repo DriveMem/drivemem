@@ -378,7 +378,7 @@ export default function HomePage() {
         {/* Status Banner */}
         <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-primary/5 border border-primary/10 mb-6">
           <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-sm text-muted-foreground">
+          <span className="text-body text-muted-foreground">
             DriveMem is active · {fileCount} files indexed · {insightCount} insights
           </span>
         </div>
@@ -508,16 +508,16 @@ export default function HomePage() {
           <h3 className="text-sm font-medium text-muted-foreground mb-4">DriveMem is working for you</h3>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold">{fileCount}</p>
-              <p className="text-xs text-muted-foreground mt-1">{fileCount === 1 ? "file" : "files"} indexed</p>
+              <p className="text-heading font-bold">{fileCount}</p>
+              <p className="text-caption text-muted-foreground mt-1">{fileCount === 1 ? "file" : "files"} indexed</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold">{insightCount}</p>
-              <p className="text-xs text-muted-foreground mt-1">{insightCount === 1 ? "insight" : "insights"} discovered</p>
+              <p className="text-heading font-bold">{insightCount}</p>
+              <p className="text-caption text-muted-foreground mt-1">{insightCount === 1 ? "insight" : "insights"} discovered</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold">{projectCount}</p>
-              <p className="text-xs text-muted-foreground mt-1">{projectCount === 1 ? "project" : "projects"}</p>
+              <p className="text-heading font-bold">{projectCount}</p>
+              <p className="text-caption text-muted-foreground mt-1">{projectCount === 1 ? "project" : "projects"}</p>
             </div>
           </div>
         </div>
