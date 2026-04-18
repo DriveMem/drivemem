@@ -466,6 +466,76 @@ function ConnectedAgentsCard() {
   )
 }
 
+function InboundSourcesCard() {
+  const [recentItems, setRecentItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [copied, setCopied] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchRecent = async () => {
+      setLoading(true)
+      try {
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/v1/inbound/recent?limit=5")
+        setRecentItems(data?.items || [])
+      } catch { /* ignore */ }
+      finally { setLoading(false) }
+    }
+    fetchRecent()
+  }, [])
+
+  const copyText = (text: string, label: string) => {
+    navigator.clipboard?.writeText(text)
+    setCopied(label)
+    toast.success("Copied!")
+    setTimeout(() => setCopied(null), 2000)
+  }
+
+  const webhookUrl = "https://api.drivemem.cloud/api/v1/inbound/webhook"
+  const emailInfo = "Configure your email provider (SendGrid/Mailgun) to forward to POST /api/v1/inbound/email with your API Key."
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>📥 Inbound Sources</CardTitle>
+        <CardDescription>Let external apps push knowledge into your DriveMem — via webhook or email forwarding</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label>Webhook URL</Label>
+          <div className="flex gap-2">
+            <Input value={webhookUrl} readOnly className="bg-zinc-50 dark:bg-zinc-800 font-mono text-xs" />
+            <Button size="sm" variant="outline" onClick={() => copyText(webhookUrl, "inbound-webhook")}>
+              {copied === "inbound-webhook" ? "✓" : "Copy"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">POST JSON with <code className="bg-muted px-1 py-0.5 rounded">{"{ \"content\": \"...\", \"source\": \"slack\" }"}</code> — requires API Key in Authorization header.</p>
+        </div>
+        <div className="space-y-2">
+          <Label>Email Forward</Label>
+          <p className="text-xs text-muted-foreground">{emailInfo}</p>
+        </div>
+        {recentItems.length > 0 && (
+          <div className="space-y-2">
+            <Label>Recent Inbound</Label>
+            <div className="rounded-lg border divide-y text-sm">
+              {recentItems.map((item: any) => (
+                <div key={item.id} className="px-3 py-2 flex items-center justify-between">
+                  <span className="truncate flex-1">{item.detail || "Untitled"}</span>
+                  <span className="text-xs text-muted-foreground ml-2 shrink-0">
+                    {item.metadata?.source || "webhook"} · {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {loading && recentItems.length === 0 && <p className="text-xs text-muted-foreground">Loading...</p>}
+      </CardContent>
+    </Card>
+  )
+}
+
 function WebhookCard() {
   const [hooks, setHooks] = useState<any[]>([])
   const [url, setUrl] = useState('')
@@ -1006,6 +1076,7 @@ export default function SettingsContent() {
           <p className="text-sm text-zinc-500 dark:text-zinc-400">API Keys let your AI agents access your knowledge base securely. Connect Cursor, Claude Desktop, OpenClaw, or any MCP-compatible tool — create an API key, copy the config, and paste it into your tool.</p>
           <ApiKeysCard />
           <ConnectedAgentsCard />
+          <InboundSourcesCard />
           <WebhookCard />
           <AgentProfilesSection />
         </>

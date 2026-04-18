@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, Key, Users, Bell, RefreshCw } from "lucide-react"
+import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, Key, Users, Bell, RefreshCw, Webhook } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 
@@ -108,7 +108,7 @@ export default function ConnectPage() {
 
       <ConnectedAgents />
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Cursor Card */}
         <div className="rounded-2xl border shadow-soft p-6 flex flex-col">
           <div className="flex items-center gap-3 mb-4">
@@ -179,6 +179,29 @@ export default function ConnectPage() {
             asChild
           >
             <a href="https://chrome.google.com/webstore" target="_blank" rel="noopener">Install Extension</a>
+          </Button>
+        </div>
+        {/* Any App (Webhook) Card */}
+        <div className="rounded-2xl border shadow-soft p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-10 w-10 rounded-xl bg-purple-50 flex items-center justify-center">
+              <Webhook className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Any App</h3>
+              <p className="text-xs text-muted-foreground">Zapier / Make / n8n / custom</p>
+            </div>
+          </div>
+          <ol className="text-sm text-muted-foreground space-y-2 mb-6 flex-1">
+            <li>1. Copy the webhook URL below</li>
+            <li>2. Add it in Zapier, Make, n8n, or any HTTP tool</li>
+            <li>3. POST JSON with <code className="bg-muted px-1 py-0.5 rounded text-xs">content</code> field</li>
+          </ol>
+          <Button
+            onClick={() => copyText("https://api.drivemem.cloud/api/v1/inbound/webhook", "webhook")}
+            className="w-full rounded-xl shadow-soft active:scale-[0.98]"
+          >
+            {copied === "webhook" ? <><Check className="h-4 w-4 mr-2" />Copied!</> : <><Copy className="h-4 w-4 mr-2" />Copy Webhook URL</>}
           </Button>
         </div>
       </div>

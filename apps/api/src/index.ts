@@ -138,6 +138,9 @@ import webhookRoutes from './routes/webhooks.js';
 await app.register(webhookRoutes, { prefix: '/api/webhooks' });
 
 
+import inboundRoutes from './routes/inbound.js';
+await app.register(inboundRoutes, { prefix: '/api/v1/inbound' });
+
 import mcpHttpRoutes from './routes/mcp-http.js';
 await app.register(mcpHttpRoutes, { prefix: '/mcp' });
 
