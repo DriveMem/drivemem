@@ -487,6 +487,100 @@ function AgentProfilesSection() {
   )
 }
 
+function IntegrationsCard() {
+  const [integrations, setIntegrations] = useState<any[]>([])
+  const [syncing, setSyncing] = useState<string | null>(null)
+
+  const fetchIntegrations = async () => {
+    try {
+      const session = await getSession() as any
+      if (!session?.accessToken) return
+      const res = await fetch(`https://api.drivemem.cloud/api/integrations`, {
+        headers: { Authorization: `Bearer ${session.accessToken}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setIntegrations(data?.integrations || [])
+      }
+    } catch { /* ignore */ }
+  }
+
+  useEffect(() => { fetchIntegrations() }, [])
+
+  const connectNotion = () => {
+    window.location.href = `https://api.drivemem.cloud/api/integrations/notion/connect`
+  }
+
+  const disconnect = async (id: string) => {
+    try {
+      const session = await getSession() as any
+      await fetch(`https://api.drivemem.cloud/api/integrations/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session?.accessToken}` },
+      })
+      toast.success("Disconnected")
+      fetchIntegrations()
+    } catch { toast.error("Failed") }
+  }
+
+  const syncNow = async (id: string) => {
+    setSyncing(id)
+    try {
+      const session = await getSession() as any
+      const res = await fetch(`https://api.drivemem.cloud/api/integrations/${id}/sync`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.accessToken}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        toast.success(`Synced ${data?.synced || 0} pages`)
+      } else { toast.error("Sync failed") }
+      fetchIntegrations()
+    } catch { toast.error("Sync failed") }
+    finally { setSyncing(null) }
+  }
+
+  const notion = integrations.find((i: any) => i.provider === "notion")
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Integrations</CardTitle>
+        <CardDescription>Connect external data sources to automatically sync content into your knowledge base.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="rounded-xl border p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg">📝</div>
+            <div>
+              <p className="font-medium text-sm">Notion</p>
+              {notion ? (
+                <p className="text-xs text-muted-foreground">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1" />
+                  Connected{notion.externalAccountName ? ` — ${notion.externalAccountName}` : ""}
+                  {(notion.config as any)?.lastSyncAt && ` · Last sync: ${new Date((notion.config as any).lastSyncAt).toLocaleDateString()}`}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">Not connected</p>
+              )}
+            </div>
+          </div>
+          {notion ? (
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => syncNow(notion.id)} disabled={syncing === notion.id}>
+                {syncing === notion.id ? "Syncing…" : "Sync"}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => disconnect(notion.id)}>Disconnect</Button>
+            </div>
+          ) : (
+            <Button size="sm" onClick={connectNotion}>Connect</Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 function ConnectedAgentsCard() {
   const [keys, setKeys] = useState<any[]>([])
 
@@ -1170,6 +1264,7 @@ export default function SettingsContent() {
         <>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">API Keys let your AI agents access your knowledge base securely. Connect Cursor, Claude Desktop, OpenClaw, or any MCP-compatible tool — create an API key, copy the config, and paste it into your tool.</p>
           <ApiKeysCard />
+          <IntegrationsCard />
           <ConnectedAgentsCard />
           <InboundSourcesCard />
           <WebhookCard />

@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, Key, Users, Bell, RefreshCw, Webhook } from "lucide-react"
+import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, Key, Users, Bell, RefreshCw, Webhook, Database } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 
@@ -75,6 +75,107 @@ function ConnectedAgents() {
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+/* ---------- Data Sources ---------- */
+function DataSources() {
+  const { status } = useSession()
+  const isLoggedIn = status === "authenticated"
+  const [integrations, setIntegrations] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [syncing, setSyncing] = useState<string | null>(null)
+
+  const fetchIntegrations = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const data = await apiFetch("/api/integrations")
+      setIntegrations(data?.integrations || [])
+    } catch { /* ignore */ }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { if (isLoggedIn) fetchIntegrations() }, [isLoggedIn, fetchIntegrations])
+
+  const connectNotion = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/notion/connect`
+  }
+
+  const disconnectIntegration = async (id: string) => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/integrations/${id}`, { method: "DELETE" })
+      toast.success("Disconnected")
+      fetchIntegrations()
+    } catch { toast.error("Failed to disconnect") }
+  }
+
+  const syncNow = async (id: string) => {
+    setSyncing(id)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const result = await apiFetch(`/api/integrations/${id}/sync`, { method: "POST" })
+      toast.success(`Synced ${result?.synced || 0} pages`)
+      fetchIntegrations()
+    } catch { toast.error("Sync failed") }
+    finally { setSyncing(null) }
+  }
+
+  if (!isLoggedIn) return null
+
+  const notionIntegration = integrations.find((i: any) => i.provider === "notion")
+
+  return (
+    <div className="mt-10 mb-10">
+      <h2 className="text-lg font-semibold tracking-tight mb-4">Data Sources</h2>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Notion Card */}
+        <div className="rounded-2xl border shadow-soft p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-10 w-10 rounded-xl bg-zinc-100 flex items-center justify-center">
+              <Database className="h-5 w-5 text-zinc-700" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Notion</h3>
+              <p className="text-xs text-muted-foreground">Sync pages as knowledge</p>
+            </div>
+          </div>
+          {notionIntegration ? (
+            <div className="flex-1 flex flex-col gap-3">
+              <div className="text-sm">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 mr-2" />
+                Connected{notionIntegration.externalAccountName ? ` — ${notionIntegration.externalAccountName}` : ""}
+              </div>
+              {(notionIntegration.config as any)?.lastSyncAt && (
+                <p className="text-xs text-muted-foreground">
+                  Last sync: {new Date((notionIntegration.config as any).lastSyncAt).toLocaleString()}
+                </p>
+              )}
+              <div className="mt-auto flex gap-2">
+                <Button size="sm" onClick={() => syncNow(notionIntegration.id)} disabled={syncing === notionIntegration.id}
+                  className="flex-1 rounded-xl active:scale-[0.98]">
+                  {syncing === notionIntegration.id ? <><RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />Syncing…</> : "Sync Now"}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => disconnectIntegration(notionIntegration.id)}
+                  className="rounded-xl active:scale-[0.98]">
+                  Disconnect
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col">
+              <p className="text-sm text-muted-foreground mb-6 flex-1">
+                Connect your Notion workspace to automatically sync pages into your knowledge base.
+              </p>
+              <Button onClick={connectNotion} className="w-full rounded-xl shadow-soft active:scale-[0.98]">
+                Connect Notion
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
@@ -205,6 +306,9 @@ export default function ConnectPage() {
           </Button>
         </div>
       </div>
+
+      {/* Data Sources */}
+      <DataSources />
 
       {/* API Key note */}
       <p className="text-sm text-muted-foreground mt-6 text-center">

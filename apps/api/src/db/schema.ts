@@ -338,6 +338,23 @@ export const workItems = pgTable('work_items', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// --- Integrations (external data sources) ---
+export const integrationStatusEnum = pgEnum('integration_status', ['active', 'paused', 'error', 'revoked']);
+
+export const integrations = pgTable('integrations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  provider: varchar('provider', { length: 50 }).notNull(), // 'notion' | 'github' | 'gmail'
+  accessToken: text('access_token').notNull(),
+  refreshToken: text('refresh_token'),
+  externalAccountId: varchar('external_account_id', { length: 255 }),
+  externalAccountName: varchar('external_account_name', { length: 255 }),
+  config: jsonb('config').default({ syncEnabled: true, lastSyncAt: null, syncedPageIds: [] }),
+  status: integrationStatusEnum('status').notNull().default('active'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Agent Profiles ---
 export const agentProfiles = pgTable('agent_profiles', {
   id: uuid('id').defaultRandom().primaryKey(),

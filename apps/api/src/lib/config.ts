@@ -31,6 +31,8 @@ const envSchema = z.object({
   CHAT_CONTEXT_ROUNDS: z.coerce.number().default(5),
   DAILY_CHAT_LIMIT: z.coerce.number().default(50),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NOTION_CLIENT_ID: z.string().optional(),
+  NOTION_CLIENT_SECRET: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

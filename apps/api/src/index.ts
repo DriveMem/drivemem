@@ -144,6 +144,9 @@ await app.register(inboundRoutes, { prefix: '/api/v1/inbound' });
 import mcpHttpRoutes from './routes/mcp-http.js';
 await app.register(mcpHttpRoutes, { prefix: '/mcp' });
 
+import integrationRoutes from './routes/integrations.js';
+await app.register(integrationRoutes, { prefix: '/api/integrations' });
+
 import timelineRoutes from './routes/timeline.js';
 await app.register(timelineRoutes, { prefix: '/api/timeline' });
 
