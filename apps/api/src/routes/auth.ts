@@ -9,7 +9,7 @@ import { db } from '../db/index.js';
 import { users, passwordResetTokens } from '../db/schema.js';
 import { AppError, ErrorCodes } from '../lib/errors.js';
 import { config } from '../lib/config.js';
-import { seedFilesForUser } from '../services/seed-files.service.js';
+import { seedDemoProject } from '../services/demo-seed.js';
 
 const loginSchema = z.object({
   email: z.string().email(),

@@ -8,7 +8,6 @@ import {
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { MobileUploadFab } from "@/components/file/mobile-upload-fab"
-import { OnboardingFlow } from "@/components/onboarding/onboarding-flow"
 import { useFiles } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
 import { Button } from "@/components/ui/button"
@@ -367,7 +366,6 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col h-full overflow-auto">
-      <OnboardingFlow />
       <MobileUploadFab />
       <AutoSavedBar />
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} />}
@@ -397,6 +395,57 @@ export default function HomePage() {
             <Link href="/files?filter=stale" className="ml-auto text-xs font-medium underline hover:no-underline">
               Review
             </Link>
+          </div>
+        )}
+
+        {/* Zero-config onboarding cards — show when user has few files */}
+        {fileCount <= 2 && (
+          <div className="space-y-4 mb-8">
+            {/* Try asking */}
+            <div className="rounded-2xl border shadow-soft p-6">
+              <h3 className="font-semibold mb-2">Try asking DriveMem</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Your knowledge base has sample files to explore. Ask a question to see how it works.
+              </p>
+              <Link
+                href="/chat?new=1&q=What%20decisions%20have%20been%20made%3F"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 py-2.5 text-sm font-medium shadow-soft active:scale-[0.98] transition-all"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Ask: &ldquo;What decisions have been made?&rdquo;
+              </Link>
+            </div>
+
+            {/* Upload real files */}
+            <div className="rounded-2xl border shadow-soft p-6">
+              <h3 className="font-semibold mb-2">Add your own knowledge</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Upload your first real document to start building your personal knowledge base.
+              </p>
+              <Button
+                onClick={() => setShowUpload(true)}
+                variant="outline"
+                className="rounded-xl shadow-soft active:scale-[0.98]"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Upload a file
+              </Button>
+            </div>
+
+            {/* Connect agents — subtle */}
+            <div className="rounded-xl border p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Connect your AI tools to start building your real knowledge base
+                </p>
+                <Link
+                  href="/developers"
+                  className="text-sm text-primary hover:underline whitespace-nowrap ml-4"
+                >
+                  Connect →
+                </Link>
+              </div>
+            </div>
           </div>
         )}
 
