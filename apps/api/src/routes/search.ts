@@ -32,6 +32,7 @@ export default async function searchRoutes(app: FastifyInstance) {
     const chunkResults = await searchSimilar({
       userId: user.id,
       query: queryVector,
+      queryText: preprocessQuery(q),
       scopeType: 'all',
       limit: limit + offset + 10,
     });

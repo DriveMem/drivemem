@@ -4,6 +4,7 @@ import { config } from '../lib/config.js';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import { tokenizeBM25 } from './bm25-tokenizer.js';
 
 const COLLECTION_NAME = 'document_chunks';
 const VECTOR_SIZE = 1024; // text-embedding-v3
@@ -20,8 +21,23 @@ export async function ensureCollection(): Promise<void> {
   if (!exists) {
     await qdrant.createCollection(COLLECTION_NAME, {
       vectors: { size: VECTOR_SIZE, distance: 'Cosine' },
+      sparse_vectors: { bm25: {} },
     });
     console.log(`[vector] Created collection: ${COLLECTION_NAME}`);
+  } else {
+    // Ensure sparse vector named 'bm25' exists on existing collection
+    try {
+      await fetch(`${config.QDRANT_URL}/collections/${COLLECTION_NAME}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(config.QDRANT_API_KEY ? { 'api-key': config.QDRANT_API_KEY } : {}),
+        },
+        body: JSON.stringify({ sparse_vectors: { bm25: {} } }),
+      });
+    } catch {
+      // May already exist
+    }
   }
 
   // Ensure payload indexes
@@ -53,18 +69,24 @@ export async function upsertChunks(params: {
 }): Promise<void> {
   const { userId, fileId, folderId, fileName, chunks, embeddings } = params;
 
-  const points = chunks.map((chunk, i) => ({
-    id: crypto.randomUUID(),
-    vector: embeddings[i],
-    payload: {
-      user_id: userId,
-      file_id: fileId,
-      folder_id: folderId ?? '',
-      file_name: fileName,
-      chunk_index: chunk.index,
-      text: chunk.text,
-    },
-  }));
+  const points = chunks.map((chunk, i) => {
+    const sparse = tokenizeBM25(chunk.text);
+    return {
+      id: crypto.randomUUID(),
+      vector: {
+        '': embeddings[i],
+        bm25: sparse,
+      },
+      payload: {
+        user_id: userId,
+        file_id: fileId,
+        folder_id: folderId ?? '',
+        file_name: fileName,
+        chunk_index: chunk.index,
+        text: chunk.text,
+      },
+    };
+  });
 
   // Upsert in batches of 100
   for (let i = 0; i < points.length; i += 100) {
@@ -110,11 +132,12 @@ export function preprocessQuery(query: string): string {
 export async function searchSimilar(params: {
   userId: string;
   query: number[];
+  queryText?: string;
   scopeType: string;
   scopeId?: string;
   limit?: number;
 }): Promise<Array<{ text: string; fileId: string; fileName: string; chunkIndex: number; score: number }>> {
-  const { userId, query, scopeType, scopeId, limit = 10 } = params;
+  const { userId, query, queryText, scopeType, scopeId, limit = 10 } = params;
 
   const must: Array<{ key: string; match: { value: string } }> = [
     { key: 'user_id', match: { value: userId } },
@@ -126,19 +149,36 @@ export async function searchSimilar(params: {
     must.push({ key: 'file_id', match: { value: scopeId } });
   }
 
-  const results = await qdrant.search(COLLECTION_NAME, {
-    vector: query,
+  // Hybrid search: dense + BM25 sparse with RRF fusion
+  const sparseQuery = tokenizeBM25(queryText ?? '');
+  const prefetch = [
+    { query, using: '', limit: limit * 2 },
+  ];
+  // Only add BM25 prefetch if we have actual tokens
+  if (sparseQuery.indices.length > 0) {
+    prefetch.push({
+      query: { indices: sparseQuery.indices, values: sparseQuery.values } as unknown as number[],
+      using: 'bm25',
+      limit: limit * 2,
+    });
+  }
+
+  const results = await qdrant.query(COLLECTION_NAME, {
+    prefetch,
+    query: prefetch.length > 1
+      ? { fusion: 'rrf' as const }
+      : undefined,
     filter: { must },
     limit,
     with_payload: true,
   });
 
-  const rawResults = results.map((r) => ({
+  const rawResults = results.points.map((r) => ({
     text: (r.payload as Record<string, unknown>).text as string,
     fileId: (r.payload as Record<string, unknown>).file_id as string,
     fileName: (r.payload as Record<string, unknown>).file_name as string,
     chunkIndex: (r.payload as Record<string, unknown>).chunk_index as number,
-    score: r.score,
+    score: r.score ?? 0,
   }));
 
   // Deduplicate: if multiple chunks from same file, keep highest scoring

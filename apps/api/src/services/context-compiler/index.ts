@@ -99,6 +99,7 @@ async function retrieveFragments(
     const results = await searchSimilar({
       userId,
       query: queryVec,
+      queryText: processedQuery,
       scopeType,
       scopeId,
       limit: 15,
