@@ -18,7 +18,7 @@ export function RelatedKnowledge({ fileId, onFileClick }: { fileId: string; onFi
 
   useEffect(() => {
     setLoading(true)
-    apiFetch(`/api/files/${fileId}/relationships`)
+    apiFetch(`/api/files/${fileId}/relationships`, { silent: true })
       .then((data: any) => setRelationships(data?.relationships || []))
       .catch(() => setRelationships([]))
       .finally(() => setLoading(false))

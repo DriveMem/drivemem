@@ -22,11 +22,13 @@ export function useFolders() {
   return useQuery({
     queryKey: ['folders'],
     queryFn: async () => {
-      const data = await apiFetch('/api/folders')
+      const data = await apiFetch('/api/folders', { silent: true })
       // Handle both { folders: [...] } and [...] response formats
       const folders = Array.isArray(data) ? data : (data?.folders || [])
       return { folders, tree: buildFolderTree(folders) }
     },
+    retry: 2,
+    retryDelay: 1000,
   })
 }
 

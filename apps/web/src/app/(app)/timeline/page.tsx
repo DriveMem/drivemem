@@ -68,7 +68,7 @@ function ListView() {
     try {
       const params = new URLSearchParams({ limit: '20' })
       if (cursor) params.set('cursor', cursor)
-      const data = await apiFetch(`/api/timeline?${params}`) as any
+      const data = await apiFetch(`/api/timeline?${params}`, { silent: true }) as any
       if (!cursor) {
         setEvents(data.events || [])
       } else {
@@ -227,7 +227,7 @@ export default function TimelinePage() {
 
   useEffect(() => {
     document.title = "Timeline — DriveMem"
-    apiFetch('/api/timeline/activity-flow?limit=100')
+    apiFetch('/api/timeline/activity-flow?limit=100', { silent: true })
       .then((data) => setFlowData(data as ActivityFlowData))
       .catch(() => setFlowError(true))
       .finally(() => setFlowLoading(false))

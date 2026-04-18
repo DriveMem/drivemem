@@ -32,10 +32,10 @@ export function AiHub() {
   const totalConvs = convs.length
 
   useEffect(() => {
-    apiFetch("/api/users/me/insights")
+    apiFetch("/api/users/me/insights", { silent: true })
       .then((data: any) => setInsight(data?.insight || null))
       .catch(() => {})
-    apiFetch("/api/users/me/stats")
+    apiFetch("/api/users/me/stats", { silent: true })
       .then((data: any) => setWeeklyStats(data))
       .catch(() => {})
   }, [])

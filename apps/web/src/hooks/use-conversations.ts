@@ -5,15 +5,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 export function useConversations() {
   return useQuery({
     queryKey: ['conversations'],
-    queryFn: () => apiFetch('/api/conversations'),
+    queryFn: () => apiFetch('/api/conversations', { silent: true }),
+    retry: 2,
+    retryDelay: 1000,
   })
 }
 
 export function useConversation(id: string) {
   return useQuery({
     queryKey: ['conversation', id],
-    queryFn: () => apiFetch(`/api/conversations/${id}`),
+    queryFn: () => apiFetch(`/api/conversations/${id}`, { silent: true }),
     enabled: !!id,
+    retry: 2,
+    retryDelay: 1000,
   })
 }
 

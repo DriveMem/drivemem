@@ -19,7 +19,7 @@ export function AutoSavedBar() {
   const checkRecent = useCallback(async () => {
     try {
       const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-      const data = await apiFetch(`/api/v1/recent-auto-saved?since=${fiveMinAgo}&limit=1`) as any
+      const data = await apiFetch(`/api/v1/recent-auto-saved?since=${fiveMinAgo}&limit=1`, { silent: true }) as any
       const files: AutoSavedItem[] = data?.files || []
       const latest = files[0]
       if (latest && !dismissedIds.has(latest.id)) {

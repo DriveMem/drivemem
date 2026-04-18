@@ -62,10 +62,10 @@ export function MemoryOverview() {
   const totalConvs = convs.length
 
   useEffect(() => {
-    apiFetch("/api/users/me/knowledge-profile")
+    apiFetch("/api/users/me/knowledge-profile", { silent: true })
       .then((data: KnowledgeProfile) => setProfile(data))
       .catch(() => {})
-    apiFetch("/api/users/me/stats")
+    apiFetch("/api/users/me/stats", { silent: true })
       .then((data: any) => setWeeklyStats(data))
       .catch(() => {})
   }, [])

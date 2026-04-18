@@ -25,7 +25,7 @@ export function KnowledgeLinks() {
   const [links, setLinks] = useState<KnowledgeLink[]>([])
 
   useEffect(() => {
-    apiFetch("/api/users/me/knowledge-links")
+    apiFetch("/api/users/me/knowledge-links", { silent: true })
       .then((data: { links: KnowledgeLink[] }) => {
         if (data?.links?.length) setLinks(data.links)
       })

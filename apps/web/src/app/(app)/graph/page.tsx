@@ -54,7 +54,7 @@ export default function GraphPage() {
   const router = useRouter()
 
   useEffect(() => {
-    apiFetch("/api/insights?limit=50")
+    apiFetch("/api/insights?limit=50", { silent: true })
       .then((data: any) => setInsights(data?.insights || []))
       .catch(() => {})
       .finally(() => setLoading(false))

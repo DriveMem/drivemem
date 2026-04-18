@@ -10,7 +10,7 @@ export function AiInsights() {
   const [expanded, setExpanded] = useState(false)
 
   useEffect(() => {
-    apiFetch("/api/users/me/insights")
+    apiFetch("/api/users/me/insights", { silent: true })
       .then((data: any) => setInsight(data?.insight || null))
       .catch(() => {})
   }, [])

@@ -5,15 +5,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 export function useFiles(folderId?: string | null) {
   return useQuery({
     queryKey: ['files', folderId],
-    queryFn: () => apiFetch(`/api/files${folderId ? `?folderId=${folderId}` : ''}`),
+    queryFn: () => apiFetch(`/api/files${folderId ? `?folderId=${folderId}` : ''}`, { silent: true }),
+    retry: 2,
+    retryDelay: 1000,
   })
 }
 
 export function useFile(fileId: string) {
   return useQuery({
     queryKey: ['file', fileId],
-    queryFn: () => apiFetch(`/api/files/${fileId}`),
+    queryFn: () => apiFetch(`/api/files/${fileId}`, { silent: true }),
     enabled: !!fileId,
+    retry: 2,
+    retryDelay: 1000,
   })
 }
 

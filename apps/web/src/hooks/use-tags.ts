@@ -12,7 +12,9 @@ export interface Tag {
 export function useTags() {
   return useQuery<Tag[]>({
     queryKey: ['tags'],
-    queryFn: () => apiFetch('/api/tags'),
+    queryFn: () => apiFetch('/api/tags', { silent: true }),
+    retry: 2,
+    retryDelay: 1000,
   })
 }
 
@@ -20,7 +22,7 @@ export function useTags() {
 export function useFileTags(fileId: string | null) {
   return useQuery<Tag[]>({
     queryKey: ['file-tags', fileId],
-    queryFn: () => apiFetch(`/api/tags/file/${fileId}`),
+    queryFn: () => apiFetch(`/api/tags/file/${fileId}`, { silent: true }),
     enabled: !!fileId,
   })
 }
@@ -30,7 +32,7 @@ export function useMultiFileTags(fileIds: string[]): Tag[][] {
   const results = useQueries({
     queries: fileIds.map((fid) => ({
       queryKey: ['file-tags', fid],
-      queryFn: () => apiFetch(`/api/tags/file/${fid}`) as Promise<Tag[]>,
+      queryFn: () => apiFetch(`/api/tags/file/${fid}`, { silent: true }) as Promise<Tag[]>,
       enabled: !!fid,
     })),
   })

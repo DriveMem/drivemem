@@ -331,7 +331,7 @@ export default function HomePage() {
   // Fetch activity feed (using timeline API)
   const fetchActivities = useCallback(async (page = 1) => {
     try {
-      const data = await apiFetch(`/api/timeline?limit=20&page=${page}`) as any
+      const data = await apiFetch(`/api/timeline?limit=20&page=${page}`, { silent: true }) as any
       const items = data?.events || data?.activities || data?.notifications || []
       if (page === 1) {
         setActivities(items)

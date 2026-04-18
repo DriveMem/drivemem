@@ -73,7 +73,7 @@ export function WorkItemsPanel({ folderId, defaultExpanded = false }: WorkItemsP
       const params = new URLSearchParams()
       if (folderId) params.set("folderId", folderId)
       const qs = params.toString()
-      const res = await apiFetch(`/api/users/me/work-items${qs ? `?${qs}` : ""}`)
+      const res = await apiFetch(`/api/users/me/work-items${qs ? `?${qs}` : ""}`, { silent: true })
       if (res.ok) {
         const data = await res.json()
         setItems(data.items || [])

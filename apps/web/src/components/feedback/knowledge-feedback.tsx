@@ -9,7 +9,7 @@ export function KnowledgeFeedback({ fileId }: { fileId: string }) {
   const [rating, setRating] = useState<string | null>(null)
 
   useEffect(() => {
-    apiFetch(`/api/files/${fileId}/feedback`)
+    apiFetch(`/api/files/${fileId}/feedback`, { silent: true })
       .then((d: any) => setRating(d?.rating ?? null))
       .catch(() => {})
   }, [fileId])
