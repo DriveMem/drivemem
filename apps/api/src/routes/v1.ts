@@ -1264,4 +1264,92 @@ ${insightsSection}
     return reply.status(204).send();
   });
 
+  // ========== Agent Profiles (v1 API key-scoped) ==========
+
+  // GET /agent-profiles — list all profiles for this user
+  fastify.get('/agent-profiles', async (request, reply) => {
+    const userId = request.user!.id;
+    const profiles = await db.select().from(schema.agentProfiles)
+      .where(eq(schema.agentProfiles.userId, userId))
+      .orderBy(desc(schema.agentProfiles.createdAt));
+    return reply.send({ profiles });
+  });
+
+  // GET /agent-profiles/me — get profile bound to current API key
+  fastify.get('/agent-profiles/me', async (request, reply) => {
+    const userId = request.user!.id;
+    const apiKeyId = (request as any).apiKeyId as string | undefined;
+    if (!apiKeyId) return reply.status(400).send({ error: 'No API key context' });
+
+    const [profile] = await db.select().from(schema.agentProfiles)
+      .where(and(
+        eq(schema.agentProfiles.userId, userId),
+        eq(schema.agentProfiles.apiKeyId, apiKeyId),
+        eq(schema.agentProfiles.isActive, true),
+      ))
+      .limit(1);
+
+    if (!profile) return reply.send({ profile: null });
+    return reply.send({ profile });
+  });
+
+  // POST /agent-profiles — create
+  fastify.post('/agent-profiles', async (request, reply) => {
+    const userId = request.user!.id;
+    const body = request.body as any;
+    if (!body?.name) return reply.status(400).send({ error: 'name is required' });
+
+    const [profile] = await db.insert(schema.agentProfiles).values({
+      userId,
+      name: body.name,
+      apiKeyId: body.apiKeyId || null,
+      modelHint: body.modelHint || null,
+      contextBudget: body.contextBudget || 8000,
+      role: body.role || null,
+      domain: body.domain || null,
+      capabilities: body.capabilities || null,
+      preferences: body.preferences || null,
+      contextRules: body.contextRules || null,
+      description: body.description || null,
+      isActive: body.isActive !== undefined ? body.isActive : true,
+      priorityRules: body.priorityRules || null,
+      includeTypes: body.includeTypes || null,
+      excludeTypes: body.excludeTypes || null,
+      projectId: body.projectId || null,
+      notes: body.notes || null,
+    }).returning();
+
+    return reply.status(201).send({ profile });
+  });
+
+  // PATCH /agent-profiles/:id — update
+  fastify.patch('/agent-profiles/:id', async (request, reply) => {
+    const userId = request.user!.id;
+    const id = (request.params as any).id;
+    const body = request.body as any;
+
+    const updates: Record<string, any> = { updatedAt: new Date() };
+    const fields = ['name', 'apiKeyId', 'modelHint', 'contextBudget', 'role', 'domain',
+      'capabilities', 'preferences', 'contextRules', 'description', 'isActive',
+      'priorityRules', 'includeTypes', 'excludeTypes', 'projectId', 'notes'] as const;
+    for (const f of fields) {
+      if (body[f] !== undefined) updates[f] = body[f];
+    }
+
+    await db.update(schema.agentProfiles)
+      .set(updates)
+      .where(and(eq(schema.agentProfiles.id, id), eq(schema.agentProfiles.userId, userId)));
+
+    return reply.send({ success: true });
+  });
+
+  // DELETE /agent-profiles/:id
+  fastify.delete('/agent-profiles/:id', async (request, reply) => {
+    const userId = request.user!.id;
+    const id = (request.params as any).id;
+    await db.delete(schema.agentProfiles)
+      .where(and(eq(schema.agentProfiles.id, id), eq(schema.agentProfiles.userId, userId)));
+    return reply.send({ success: true });
+  });
+
 }

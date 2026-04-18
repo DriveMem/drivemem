@@ -298,9 +298,14 @@ function AgentProfilesSection() {
   const [profiles, setProfiles] = useState<any[]>([])
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
-  const [newModelHint, setNewModelHint] = useState('')
-  const [newBudget, setNewBudget] = useState(8000)
   const [newRole, setNewRole] = useState('general')
+  const [newDomain, setNewDomain] = useState('general')
+  const [newDescription, setNewDescription] = useState('')
+  const [newTagFilter, setNewTagFilter] = useState('')
+  const [newRecencyBias, setNewRecencyBias] = useState('balanced')
+  const [newCaps, setNewCaps] = useState({ canSearch: true, canStore: true, canCompile: true, canAsk: true })
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editData, setEditData] = useState<any>(null)
 
   useEffect(() => {
     (async () => {
@@ -318,12 +323,22 @@ function AgentProfilesSection() {
       const { apiFetch } = await import("@/lib/api")
       const res = await apiFetch("/api/files/agent-profiles", {
         method: "POST",
-        body: JSON.stringify({ name: newName, modelHint: newModelHint || undefined, contextBudget: newBudget, role: newRole }),
+        body: JSON.stringify({
+          name: newName,
+          role: newRole,
+          domain: newDomain,
+          description: newDescription || undefined,
+          capabilities: newCaps,
+          contextRules: {
+            tagFilter: newTagFilter ? newTagFilter.split(',').map(t => t.trim()).filter(Boolean) : [],
+            recencyBias: newRecencyBias,
+          },
+        }),
       })
       setProfiles(prev => [res.profile, ...prev])
-      setNewName('')
-      setNewModelHint('')
-      setNewRole('general')
+      setNewName(''); setNewRole('general'); setNewDomain('general')
+      setNewDescription(''); setNewTagFilter(''); setNewRecencyBias('balanced')
+      setNewCaps({ canSearch: true, canStore: true, canCompile: true, canAsk: true })
       setShowCreate(false)
       toast.success("Profile created")
     } catch { toast.error("Failed to create profile") }
@@ -338,13 +353,87 @@ function AgentProfilesSection() {
     } catch { toast.error("Failed to delete") }
   }
 
+  const handleUpdate = async (id: string) => {
+    if (!editData) return
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/files/agent-profiles/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(editData),
+      })
+      setProfiles(prev => prev.map(p => p.id === id ? { ...p, ...editData } : p))
+      setEditingId(null); setEditData(null)
+      toast.success("Profile updated")
+    } catch { toast.error("Failed to update") }
+  }
+
+  const startEdit = (p: any) => {
+    setEditingId(p.id)
+    setEditData({
+      name: p.name,
+      role: p.role || 'general',
+      domain: p.domain || 'general',
+      description: p.description || '',
+      capabilities: p.capabilities || { canSearch: true, canStore: true, canCompile: true, canAsk: true },
+      contextRules: p.contextRules || { tagFilter: [], recencyBias: 'balanced' },
+    })
+  }
+
+  const roleOptions = ['general', 'coder', 'writer', 'researcher', 'strategist']
+  const domainOptions = ['general', 'coding', 'writing', 'research', 'strategy']
+
+  const ProfileForm = ({ data, onChange, isNew }: { data: any; onChange: (d: any) => void; isNew?: boolean }) => (
+    <div className="space-y-2">
+      {isNew && (
+        <Input placeholder="Profile name (e.g. My Cursor, Writing Agent)" value={data.name || ''} onChange={e => onChange({ ...data, name: e.target.value })} />
+      )}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-zinc-500">Role:</span>
+          <select className="rounded-md border px-2 py-1 text-sm bg-background" value={data.role || 'general'} onChange={e => onChange({ ...data, role: e.target.value })}>
+            {roleOptions.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-zinc-500">Domain:</span>
+          <select className="rounded-md border px-2 py-1 text-sm bg-background" value={data.domain || 'general'} onChange={e => onChange({ ...data, domain: e.target.value })}>
+            {domainOptions.map(d => <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-xs text-zinc-500">Capabilities:</span>
+        {(['canSearch', 'canStore', 'canCompile', 'canAsk'] as const).map(cap => {
+          const caps = data.capabilities || { canSearch: true, canStore: true, canCompile: true, canAsk: true }
+          return (
+            <label key={cap} className="flex items-center gap-1 text-xs">
+              <input type="checkbox" checked={caps[cap] !== false} onChange={e => onChange({ ...data, capabilities: { ...caps, [cap]: e.target.checked } })} />
+              {cap.replace('can', '')}
+            </label>
+          )
+        })}
+      </div>
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-xs text-zinc-500">Recency:</span>
+        {['recent', 'balanced', 'comprehensive'].map(r => (
+          <label key={r} className="flex items-center gap-1 text-xs">
+            <input type="radio" name={`recency-${isNew ? 'new' : data.name}`} checked={(data.contextRules?.recencyBias || 'balanced') === r} onChange={() => onChange({ ...data, contextRules: { ...data.contextRules, recencyBias: r } })} />
+            {r.charAt(0).toUpperCase() + r.slice(1)}
+          </label>
+        ))}
+      </div>
+      <Input placeholder="Tag filter (comma-separated, e.g. engineering,decision)" value={(data.contextRules?.tagFilter || []).join(', ')} onChange={e => onChange({ ...data, contextRules: { ...data.contextRules, tagFilter: e.target.value.split(',').map((t: string) => t.trim()).filter(Boolean) } })} />
+      <textarea className="w-full rounded-md border px-3 py-2 text-sm bg-background resize-none" rows={2} placeholder="Description (agent responsibilities)" value={data.description || ''} onChange={e => onChange({ ...data, description: e.target.value })} />
+    </div>
+  )
+
   return (
     <Card className="mt-4">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>🤖 Agent Profiles</CardTitle>
-            <CardDescription>Customize what context each agent receives</CardDescription>
+            <CardDescription>Customize each agent&apos;s role, capabilities, and context rules</CardDescription>
           </div>
           <Button size="sm" variant="outline" onClick={() => setShowCreate(!showCreate)}>
             {showCreate ? "Cancel" : "+ New Profile"}
@@ -354,37 +443,43 @@ function AgentProfilesSection() {
       <CardContent className="space-y-3">
         {showCreate && (
           <div className="rounded-lg border p-3 space-y-2">
-            <Input placeholder="Profile name (e.g. My Cursor, Writing Agent)" value={newName} onChange={e => setNewName(e.target.value)} />
-            <Input placeholder="Model hint (e.g. claude-opus, gpt-4o)" value={newModelHint} onChange={e => setNewModelHint(e.target.value)} />
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500">Role:</span>
-              <select className="rounded-md border px-2 py-1 text-sm bg-background" value={newRole} onChange={e => setNewRole(e.target.value)}>
-                <option value="general">General</option>
-                <option value="coder">Coder</option>
-                <option value="writer">Writer</option>
-                <option value="researcher">Researcher</option>
-                <option value="strategist">Strategist</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500">Token budget:</span>
-              <Input type="number" className="w-24" value={newBudget} onChange={e => setNewBudget(Number(e.target.value))} />
-            </div>
+            <ProfileForm data={{ name: newName, role: newRole, domain: newDomain, description: newDescription, capabilities: newCaps, contextRules: { tagFilter: newTagFilter ? newTagFilter.split(',').map(t => t.trim()).filter(Boolean) : [], recencyBias: newRecencyBias } }} onChange={d => { setNewName(d.name || ''); setNewRole(d.role); setNewDomain(d.domain); setNewDescription(d.description); setNewCaps(d.capabilities); setNewTagFilter((d.contextRules?.tagFilter || []).join(', ')); setNewRecencyBias(d.contextRules?.recencyBias || 'balanced') }} isNew />
             <Button size="sm" onClick={handleCreate} disabled={!newName.trim()}>Create</Button>
           </div>
         )}
         {profiles.length === 0 && !showCreate && (
-          <p className="text-sm text-zinc-500">No custom profiles. Using default profiles (claude-opus, gpt-4o, etc.)</p>
+          <p className="text-sm text-zinc-500">No custom profiles. Agents use auto-detection by default.</p>
         )}
         {profiles.map(p => (
-          <div key={p.id} className="flex items-center justify-between rounded-lg border p-3">
-            <div>
-              <p className="text-sm font-medium">{p.name}</p>
-              <p className="text-xs text-zinc-500">
-                {p.modelHint || "Any model"} · {p.contextBudget || 8000} tokens{p.role && p.role !== 'general' ? ` · ${p.role}` : ''}
-              </p>
-            </div>
-            <Button size="sm" variant="ghost" onClick={() => handleDelete(p.id)}>Delete</Button>
+          <div key={p.id} className="rounded-lg border p-3">
+            {editingId === p.id ? (
+              <div className="space-y-2">
+                <ProfileForm data={editData} onChange={setEditData} />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => handleUpdate(p.id)}>Save</Button>
+                  <Button size="sm" variant="ghost" onClick={() => { setEditingId(null); setEditData(null) }}>Cancel</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-start justify-between">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">{p.name}</p>
+                  <p className="text-xs text-zinc-500">
+                    {p.role && p.role !== 'general' ? `${p.role}` : 'general'}
+                    {p.domain && p.domain !== 'general' ? ` · ${p.domain}` : ''}
+                    {p.contextRules?.recencyBias && p.contextRules.recencyBias !== 'balanced' ? ` · ${p.contextRules.recencyBias}` : ''}
+                  </p>
+                  {p.capabilities && <p className="text-xs text-zinc-400">
+                    {Object.entries(p.capabilities as Record<string, boolean>).filter(([, v]) => v).map(([k]) => k.replace('can', '')).join(', ')}
+                  </p>}
+                  {p.description && <p className="text-xs text-zinc-400 line-clamp-1">{p.description}</p>}
+                </div>
+                <div className="flex gap-1">
+                  <Button size="sm" variant="ghost" onClick={() => startEdit(p)}>Edit</Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleDelete(p.id)}>Delete</Button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </CardContent>

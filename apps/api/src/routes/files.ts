@@ -731,6 +731,13 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       projectId: body.projectId || null,
       notes: body.notes || null,
       role: body.role || null,
+      domain: body.domain || null,
+      capabilities: body.capabilities || null,
+      preferences: body.preferences || null,
+      contextRules: body.contextRules || null,
+      description: body.description || null,
+      apiKeyId: body.apiKeyId || null,
+      isActive: body.isActive !== undefined ? body.isActive : true,
     }).returning();
 
     return reply.status(201).send({ profile });
@@ -752,6 +759,14 @@ export default async function fileRoutes(fastify: FastifyInstance) {
         ...(body.projectId !== undefined && { projectId: body.projectId }),
         ...(body.notes !== undefined && { notes: body.notes }),
         ...(body.role !== undefined && { role: body.role }),
+        ...(body.domain !== undefined && { domain: body.domain }),
+        ...(body.capabilities !== undefined && { capabilities: body.capabilities }),
+        ...(body.preferences !== undefined && { preferences: body.preferences }),
+        ...(body.contextRules !== undefined && { contextRules: body.contextRules }),
+        ...(body.description !== undefined && { description: body.description }),
+        ...(body.apiKeyId !== undefined && { apiKeyId: body.apiKeyId }),
+        ...(body.isActive !== undefined && { isActive: body.isActive }),
+        updatedAt: new Date(),
       })
       .where(and(eq(schema.agentProfiles.id, id), eq(schema.agentProfiles.userId, userId)));
 

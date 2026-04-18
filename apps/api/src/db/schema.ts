@@ -342,6 +342,7 @@ export const workItems = pgTable('work_items', {
 export const agentProfiles = pgTable('agent_profiles', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  apiKeyId: uuid('api_key_id').references(() => apiKeys.id, { onDelete: 'set null' }),
   name: varchar('name', { length: 255 }).notNull(),
   modelHint: varchar('model_hint', { length: 100 }),
   contextBudget: integer('context_budget').default(8000),
@@ -351,5 +352,12 @@ export const agentProfiles = pgTable('agent_profiles', {
   projectId: uuid('project_id'),
   notes: text('notes'),
   role: text('role'), // 'coder' | 'writer' | 'researcher' | 'strategist' | 'general'
+  domain: text('domain'), // 'coding' | 'writing' | 'research' | 'strategy' | 'general'
+  capabilities: jsonb('capabilities'), // { canSearch, canStore, canCompile, canAsk }
+  preferences: jsonb('preferences'), // { preferredFormat, maxTokenBudget, language }
+  contextRules: jsonb('context_rules'), // { projectFilter, tagFilter, excludeTags, recencyBias }
+  description: text('description'),
+  isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });

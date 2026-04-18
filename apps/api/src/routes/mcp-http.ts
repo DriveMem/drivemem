@@ -135,6 +135,7 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
       };
 
       const mcpServer = createMcpServer(userId, agentName, {
+        apiKeyId: (request as any).apiKeyId,
         onToolCall: (toolName, toolArgs) => {
           const sid = transport.sessionId;
           if (sid) trackToolCall(sid, userId, agentName, toolName, toolArgs);
@@ -192,6 +193,7 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     let sseConnectionId: string | null = null;
 
     const mcpServer = createMcpServer(userId, agentName, {
+      apiKeyId: (request as any).apiKeyId,
       onToolCall: (toolName, toolArgs) => {
         trackToolCall(sessionId, userId, agentName, toolName, toolArgs);
         trackConnectionActivity(sseConnectionId);

@@ -33,6 +33,7 @@ async function enrichResponse(userId: string, query: string, excludeFileIds: str
 
 export interface McpServerOptions {
   onToolCall?: (toolName: string, args?: Record<string, unknown>) => void;
+  apiKeyId?: string;
 }
 
 export function createMcpServer(userId: string, agentName: string = '', options?: McpServerOptions): Server {
@@ -41,8 +42,30 @@ export function createMcpServer(userId: string, agentName: string = '', options?
   let detectedProjectName: string | null = null;
   // Track detected capabilities across the session
   let detectedCaps: DetectedCapabilities | null = null;
+  // Track DB-configured agent profile (overrides detection)
+  let dbAgentProfile: import('../services/context-compiler/agent-profiles.js').DbAgentProfile | null = null;
 
-  // Kick off async capability detection on connect
+  // Kick off async DB profile lookup (overrides detection if configured)
+  if (options?.apiKeyId) {
+    import('../services/context-compiler/agent-profiles.js').then(({ getProfileByApiKeyId }) => {
+      getProfileByApiKeyId(userId, options.apiKeyId!).then(profile => {
+        if (profile) {
+          dbAgentProfile = profile;
+          // Override detected caps with DB profile
+          if (profile.role || profile.domain) {
+            detectedCaps = {
+              role: profile.role || 'general',
+              domain: profile.domain || 'general',
+              confidence: 1.0, // explicit config = max confidence
+              signals: [{ source: 'agent-name', key: 'db-profile', value: profile.name, weight: 1.0 }],
+            };
+          }
+        }
+      }).catch(() => {});
+    }).catch(() => {});
+  }
+
+  // Kick off async capability detection on connect (will be overridden by DB profile if present)
   import('../services/capability-detector.js').then(({ detectCapabilities }) => {
     detectCapabilities(userId, { agentName }).then(caps => {
       detectedCaps = caps;
@@ -762,6 +785,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             tokenBudget: (args as any).tokenBudget as number | undefined,
             model: (args as any).model ? { name: (args as any).model as string } : undefined,
             role: detectedCaps?.role || inferRole(agentName),
+            apiKeyId: options?.apiKeyId,
             hints: {
               project: (args as any).project as string | undefined,
               tags: (args as any).tags ? ((args as any).tags as string).split(',').map((t: string) => t.trim()) : undefined,
@@ -961,6 +985,7 @@ ${insightsSection}
               task: queryText,
               tokenBudget: 600,
               role: detectedCaps?.role || inferRole(agentName),
+              apiKeyId: options?.apiKeyId,
               hints: detectedProjectId ? { project: detectedProjectName || undefined } : undefined,
             });
             // Extract up to 3 snippets, each ≤200 tokens (~800 chars)

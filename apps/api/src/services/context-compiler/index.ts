@@ -26,8 +26,9 @@ function pruneCache(): void {
 }
 
 export { getBehaviorBoosts } from '../behavior-learner.js';
-export { resolveProfile, registerProfile, listProfiles } from './agent-profiles.js';
+export { resolveProfile, registerProfile, listProfiles, getProfileByApiKeyId } from './agent-profiles.js';
 export { ROLE_BOOSTS, inferRole } from './agent-profiles.js';
+export type { DbAgentProfile } from './agent-profiles.js';
 export { estimateTokens } from './token-estimator.js';
 export { inferDomain, extractSchema, isValidDomain } from './domain-schemas.js';
 export type { CompileContextRequest, CompileContextResponse, KnowledgeFragment, AgentProfile, CompilationSnapshot, DepthLevel } from './types.js';
@@ -265,18 +266,59 @@ export async function compileContext(
     profile.role = request.role;
   }
 
-  // Auto-detect role/domain if not specified
-  if (!request.role || !request.outputSchema) {
+  // --- DB Agent Profile: if apiKeyId is present, look up structured profile ---
+  let dbProfile: import('./agent-profiles.js').DbAgentProfile | null = null;
+  if (request.apiKeyId) {
+    const { getProfileByApiKeyId } = await import('./agent-profiles.js');
+    dbProfile = await getProfileByApiKeyId(userId, request.apiKeyId);
+    if (dbProfile) {
+      // Structured profile overrides inferred values
+      if (dbProfile.role) profile.role = dbProfile.role;
+      if (dbProfile.domain) profile.domain = dbProfile.domain;
+      // Apply contextRules to hints
+      if (dbProfile.contextRules) {
+        const rules = dbProfile.contextRules;
+        if (rules.projectFilter?.length && !request.hints?.folderId) {
+          // Use first project as folder hint (best-effort)
+          request.hints = request.hints || {};
+          request.hints.folderId = rules.projectFilter[0];
+        }
+        if (rules.tagFilter?.length) {
+          request.hints = request.hints || {};
+          request.hints.tags = [...(request.hints.tags || []), ...rules.tagFilter];
+        }
+        if (rules.recencyBias === 'recent') {
+          request.hints = request.hints || {};
+          request.hints.recency = request.hints.recency || '7d';
+        } else if (rules.recencyBias === 'comprehensive') {
+          request.hints = request.hints || {};
+          request.hints.recency = request.hints.recency || '365d';
+        }
+      }
+      // Apply preferences
+      if (dbProfile.preferences) {
+        if (dbProfile.preferences.maxTokenBudget && !request.tokenBudget) {
+          request.tokenBudget = dbProfile.preferences.maxTokenBudget;
+        }
+      }
+      if (dbProfile.contextBudget && !request.tokenBudget) {
+        request.tokenBudget = dbProfile.contextBudget;
+      }
+    }
+  }
+
+  // Auto-detect role/domain if not specified (skip if DB profile already set them)
+  if ((!request.role && !dbProfile?.role) || (!request.outputSchema && !dbProfile?.domain)) {
     try {
       const { detectCapabilities } = await import('../capability-detector.js');
       const detected = await detectCapabilities(userId, {
         agentName: request.model?.name,
         taskText: request.task,
       });
-      if (!request.role && detected.role !== 'general' && detected.confidence > 0.3) {
+      if (!request.role && !dbProfile?.role && detected.role !== 'general' && detected.confidence > 0.3) {
         profile.role = detected.role;
       }
-      if (!request.outputSchema && detected.domain !== 'general' && detected.confidence > 0.3) {
+      if (!request.outputSchema && !dbProfile?.domain && detected.domain !== 'general' && detected.confidence > 0.3) {
         request.outputSchema = detected.domain;
       }
     } catch { /* best-effort */ }
