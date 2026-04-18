@@ -90,7 +90,7 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
       </div>
 
       {/* Feature cards */}
-      <div className="grid grid-cols-3 gap-3 w-full max-w-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-lg">
         {FEATURE_CARDS.map((card, i) => (
           <div key={i} className="flex flex-col items-center gap-2 rounded-2xl border border-border/50 bg-muted/30 p-4 text-center shadow-soft hover:shadow-soft-md transition-all duration-200">
             <span className="text-xl">{card.icon}</span>
@@ -354,7 +354,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
           </div>
         </div>
       )}
-      <div className="flex items-center gap-2 border-b border-border px-4 py-2">
+      <div className="flex items-center gap-2 border-b border-border px-3 md:px-4 py-2 overflow-x-auto scrollbar-none">
         <span className="text-xs text-muted-foreground">AI Memory scope: </span>
         <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined); toast("Memory scope: All files", { duration: 1500 }) }} className="gap-1 text-xs rounded-full">
           <Files className="h-3 w-3" />All Files{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}

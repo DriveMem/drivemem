@@ -126,6 +126,11 @@ function DataSources() {
   if (!isLoggedIn) return null
 
   const notionIntegration = integrations.find((i: any) => i.provider === "notion")
+  const googleDriveIntegration = integrations.find((i: any) => i.provider === "google-drive")
+
+  const connectGoogleDrive = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/google-drive/connect`
+  }
 
   return (
     <div className="mt-10 mb-10">
@@ -175,6 +180,49 @@ function DataSources() {
             </div>
           )}
         </div>
+
+        {/* Google Drive Card */}
+        <div className="rounded-2xl border shadow-soft p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-10 w-10 rounded-xl bg-zinc-100 flex items-center justify-center text-lg">📄</div>
+            <div>
+              <h3 className="font-semibold">Google Drive</h3>
+              <p className="text-xs text-muted-foreground">Sync documents as knowledge</p>
+            </div>
+          </div>
+          {googleDriveIntegration ? (
+            <div className="flex-1 flex flex-col gap-3">
+              <div className="text-sm">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 mr-2" />
+                Connected{googleDriveIntegration.externalAccountName ? ` — ${googleDriveIntegration.externalAccountName}` : ""}
+              </div>
+              {(googleDriveIntegration.config as any)?.lastSyncAt && (
+                <p className="text-xs text-muted-foreground">
+                  Last sync: {new Date((googleDriveIntegration.config as any).lastSyncAt).toLocaleString()}
+                </p>
+              )}
+              <div className="mt-auto flex gap-2">
+                <Button size="sm" onClick={() => syncNow(googleDriveIntegration.id)} disabled={syncing === googleDriveIntegration.id}
+                  className="flex-1 rounded-xl active:scale-[0.98]">
+                  {syncing === googleDriveIntegration.id ? <><RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />Syncing…</> : "Sync Now"}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => disconnectIntegration(googleDriveIntegration.id)}
+                  className="rounded-xl active:scale-[0.98]">
+                  Disconnect
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col">
+              <p className="text-sm text-muted-foreground mb-6 flex-1">
+                Connect Google Drive to automatically sync documents, sheets, and PDFs into your knowledge base.
+              </p>
+              <Button onClick={connectGoogleDrive} className="w-full rounded-xl shadow-soft active:scale-[0.98]">
+                Connect Google Drive
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -203,13 +251,13 @@ export default function ConnectPage() {
   }, null, 2)
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
+    <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
       <h1 className="text-2xl font-bold tracking-tight">Connect your agents</h1>
       <p className="text-muted-foreground mt-2 mb-8">Pick your tool and connect in under 2 minutes</p>
 
       <ConnectedAgents />
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {/* Cursor Card */}
         <div className="rounded-2xl border shadow-soft p-6 flex flex-col">
           <div className="flex items-center gap-3 mb-4">
@@ -326,7 +374,7 @@ export default function ConnectPage() {
           Advanced options
         </button>
         {showAdvanced && (
-          <div className="mt-4 grid md:grid-cols-3 gap-4">
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Link href="/settings?tab=developer" className="rounded-xl border p-4 hover:shadow-sm transition-all active:scale-[0.98]">
               <Key className="h-5 w-5 text-muted-foreground mb-2" />
               <h4 className="font-medium text-sm">API Keys</h4>

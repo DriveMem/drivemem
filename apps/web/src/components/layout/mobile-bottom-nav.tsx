@@ -33,7 +33,7 @@ export function MobileBottomNav() {
             key={tab.href}
             href={tab.href}
             className={cn(
-              "flex flex-col items-center gap-0.5 py-2 px-3 text-[10px] font-medium transition-colors",
+              "flex flex-col items-center gap-0.5 py-2.5 px-4 min-h-[44px] text-[10px] font-medium transition-colors",
               active
                 ? "text-brand-500"
                 : "text-zinc-400 dark:text-zinc-500"
