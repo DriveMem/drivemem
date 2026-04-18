@@ -1,34 +1,47 @@
 #!/bin/bash
-# Deploy to both servers after git push
+# Zero-Downtime Deploy to both servers after git push
+# Key: BUILD FIRST, RESTART AFTER. Never rm -rf before build.
 set -e
 
-echo "=== Deploying to OLD server (local) ==="
+log() { echo "[$(date '+%H:%M:%S')] $1"; }
+
+log "=== Deploying to MAIN server (local) ==="
 cd ~/repos/ai-drive
+git pull --ff-only
 
-# Build API
-echo "Building API..."
-cd apps/api && npx tsc 2>&1 | tail -1
-cd ../..
+# Build API (tsc is incremental, no need to clean dist)
+log "Building API..."
+cd apps/api && npx tsc && cd ../..
 
-# Build Web
-echo "Building Web..."
-cd apps/web && pnpm build 2>&1 | tail -2
-cd ../..
+# Build Web (next build overwrites .next in-place, no need to rm)
+log "Building Web..."
+cd apps/web && npx next build && cd ../..
 
-# Restart
-pm2 restart ai-drive-api ai-drive-web --update-env
-echo "✅ Old server deployed"
+# Restart AFTER build completes
+log "Restarting services..."
+pm2 restart ai-drive-api ai-drive-worker ai-drive-web --update-env
+
+# Health check
+sleep 4
+API=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/api/v1/health 2>/dev/null || echo "000")
+WEB=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "000")
+log "Main server — API: $API | Web: $WEB"
+[ "$API" != "200" ] && log "⚠️  API health check failed!"
+[ "$WEB" != "200" ] && log "⚠️  Web health check failed!"
+log "✅ Main server deployed"
 
 echo ""
-echo "=== Deploying to NEW server (43.165.168.72) ==="
+log "=== Deploying to NEW server (43.165.168.72) ==="
 ssh ubuntu@43.165.168.72 "source ~/.nvm/nvm.sh; \
   cd ~/repos/ai-drive && \
   git fetch origin && \
   git reset --hard origin/main && \
   cd apps/api && npx tsc 2>&1 | tail -1 && \
-  cd ../web && rm -rf .next && pnpm build 2>&1 | tail -2 && \
-  pm2 restart ai-drive-api ai-drive-web 2>&1 | grep -E 'online|ERROR'"
-echo "✅ New server deployed"
+  cd ../web && npx next build 2>&1 | tail -2 && \
+  pm2 restart ai-drive-api ai-drive-worker ai-drive-web --update-env 2>&1 | grep -E 'online|ERROR' && \
+  sleep 3 && \
+  echo \"Health: API=\$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/api/v1/health 2>/dev/null) Web=\$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000 2>/dev/null)\""
+log "✅ New server deployed"
 
 echo ""
-echo "=== Both servers deployed ==="
+log "=== Both servers deployed ==="
