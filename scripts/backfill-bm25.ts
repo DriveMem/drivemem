@@ -1,13 +1,8 @@
 /**
  * BM25 Sparse Vector Backfill Script
  *
- * Reads all points from Qdrant that don't have BM25 sparse vectors,
- * generates sparse vectors from their text, and writes them back.
- *
- * Usage: npx tsx scripts/backfill-bm25.ts
+ * Usage: node --experimental-transform-types scripts/backfill-bm25.ts
  */
-
-// --- Inlined from bm25-tokenizer.ts ---
 
 const STOP_WORDS = new Set([
   'the', 'a', 'an', 'is', 'in', 'on', 'at', 'to', 'for', 'of',
@@ -25,7 +20,7 @@ const STOP_WORDS = new Set([
   '你', '会', '着', '没有', '看', '好', '自己', '这',
 ]);
 
-function fnv1aHash(str: string): number {
+function fnv1aHash(str) {
   let hash = 0x811c9dc5;
   for (let i = 0; i < str.length; i++) {
     hash ^= str.charCodeAt(i);
@@ -34,14 +29,14 @@ function fnv1aHash(str: string): number {
   return hash;
 }
 
-function tokenizeBM25(text: string): { indices: number[]; values: number[] } {
+function tokenizeBM25(text) {
   const cleaned = text
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\s]/gu, ' ')
     .split(/\s+/)
     .filter((t) => t.length > 0 && !STOP_WORDS.has(t));
 
-  const tf = new Map<number, number>();
+  const tf = new Map();
   for (const token of cleaned) {
     const idx = fnv1aHash(token);
     tf.set(idx, (tf.get(idx) ?? 0) + 1);
@@ -54,13 +49,11 @@ function tokenizeBM25(text: string): { indices: number[]; values: number[] } {
   };
 }
 
-// --- Script logic ---
-
 const QDRANT_URL = 'http://localhost:6333';
 const COLLECTION = 'document_chunks';
 const BATCH_SIZE = 50;
 
-async function qdrantFetch(path: string, options?: RequestInit) {
+async function qdrantFetch(path, options) {
   const res = await fetch(`${QDRANT_URL}${path}`, {
     ...options,
     headers: { 'Content-Type': 'application/json', ...options?.headers },
@@ -70,19 +63,17 @@ async function qdrantFetch(path: string, options?: RequestInit) {
 }
 
 async function main() {
-  // 1. Get collection info
   const info = await qdrantFetch(`/collections/${COLLECTION}`);
   const totalPoints = info.result.points_count;
   console.log(`Collection: ${COLLECTION}, Total points: ${totalPoints}`);
 
-  // 2. Scroll through all points
-  let offset: string | number | null = null;
+  let offset = null;
   let processed = 0;
   let updated = 0;
   let skipped = 0;
 
   while (true) {
-    const scrollBody: any = {
+    const scrollBody = {
       limit: BATCH_SIZE,
       with_payload: ['text'],
       with_vector: false,
@@ -97,8 +88,7 @@ async function main() {
     const points = scrollRes.result.points;
     if (!points || points.length === 0) break;
 
-    // 3. For each point, generate BM25 and update
-    const updatePoints: any[] = [];
+    const updatePoints = [];
     for (const point of points) {
       const text = point.payload?.text;
       if (!text || typeof text !== 'string') {
@@ -114,13 +104,10 @@ async function main() {
 
       updatePoints.push({
         id: point.id,
-        vector: {
-          bm25: sparse,
-        },
+        vector: { bm25: sparse },
       });
     }
 
-    // 4. Batch upsert sparse vectors
     if (updatePoints.length > 0) {
       await qdrantFetch(`/collections/${COLLECTION}/points/vectors`, {
         method: 'PUT',
