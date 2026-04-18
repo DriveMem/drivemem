@@ -694,7 +694,7 @@ function ConnectedAgentsCard() {
                     </div>
                     <div className="flex gap-1">
                       {k.scopes?.map((s: string) => (
-                        <span key={s} className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        <span key={s} className={`rounded-full px-2 py-0.5 text-micro font-medium ${
                           s === 'admin' ? 'bg-red-500/10 text-red-600' :
                           s === 'write' ? 'bg-blue-500/10 text-blue-600' :
                           'bg-green-500/10 text-green-600'
@@ -931,7 +931,7 @@ function WebhookCard() {
                   <p className="text-sm font-medium truncate">{h.url}</p>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {h.events?.map((e: string) => (
-                      <span key={e} className="rounded-full bg-zinc-50 dark:bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">{e}</span>
+                      <span key={e} className="rounded-full bg-zinc-50 dark:bg-zinc-800 px-2 py-0.5 text-micro text-zinc-500 dark:text-zinc-400">{e}</span>
                     ))}
                   </div>
                 </div>
@@ -1081,7 +1081,7 @@ function WebhookSubscriptions({ webhookId }: { webhookId: string }) {
             </button>
           </div>
           {subs.length === 0 && (
-            <p className="text-[10px] text-zinc-400">No filters — all events will be delivered</p>
+            <p className="text-micro text-zinc-400">No filters — all events will be delivered</p>
           )}
         </div>
       )}
@@ -1317,13 +1317,13 @@ export default function SettingsContent() {
       <div className="flex gap-1 rounded-lg bg-zinc-50 dark:bg-zinc-800 p-1">
         <button
           onClick={() => setSettingsTab("general")}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "general" ? "bg-background shadow-sm" : "text-zinc-500 dark:text-zinc-400 hover:text-foreground"}`}
+          className={`flex-1 rounded-md px-4 py-2 text-body font-medium transition ${settingsTab === "general" ? "bg-background shadow-sm" : "text-zinc-500 dark:text-zinc-400 hover:text-foreground"}`}
         >
           ⚙️ General
         </button>
         <button
           onClick={() => setSettingsTab("developer")}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${settingsTab === "developer" ? "bg-background shadow-sm" : "text-zinc-500 dark:text-zinc-400 hover:text-foreground"}`}
+          className={`flex-1 rounded-md px-4 py-2 text-body font-medium transition ${settingsTab === "developer" ? "bg-background shadow-sm" : "text-zinc-500 dark:text-zinc-400 hover:text-foreground"}`}
         >
           🔧 Developer
         </button>

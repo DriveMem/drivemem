@@ -98,7 +98,7 @@ function ActivityItem({ activity }: { activity: any }) {
           used knowledge from <span className="text-indigo-600 dark:text-indigo-400">{fromAgent}</span>
           {fileName && <span className="text-zinc-500 dark:text-zinc-400">: &ldquo;{fileName}&rdquo;</span>}
         </span>
-        <span className="ml-auto text-[10px] md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
+        <span className="ml-auto text-micro md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
           <span className="hidden md:inline">{relativeTime(activity.createdAt)}</span>
           <span className="md:hidden">{shortTime(activity.createdAt)}</span>
         </span>
@@ -119,7 +119,7 @@ function ActivityItem({ activity }: { activity: any }) {
         {action}
         {detail && <span className="text-zinc-500 dark:text-zinc-400"> — {detail}</span>}
       </span>
-      <span className="ml-auto text-[10px] md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
+      <span className="ml-auto text-micro md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
         <span className="hidden md:inline">{relativeTime(activity.createdAt)}</span>
         <span className="md:hidden">{shortTime(activity.createdAt)}</span>
       </span>
@@ -245,7 +245,7 @@ function AutoStoreGroup({ group }: { group: any }) {
           saved {group.count} notes from your session
         </span>
         <ChevronRight className={`ml-auto h-3.5 w-3.5 text-violet-400 flex-shrink-0 transition-transform ${expanded ? "rotate-90" : ""}`} />
-        <span className="text-[10px] md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap mr-1">
+        <span className="text-micro md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap mr-1">
           <span className="hidden md:inline">{relativeTime(group.createdAt)}</span>
           <span className="md:hidden">{shortTime(group.createdAt)}</span>
         </span>
@@ -256,7 +256,7 @@ function AutoStoreGroup({ group }: { group: any }) {
             <div key={a.id || i} className="flex items-center gap-2 py-1 text-xs text-zinc-500 dark:text-zinc-400">
               <span className="w-1.5 h-1.5 rounded-full bg-violet-400 flex-shrink-0" />
               <span className="truncate">{a.title || a.detail || a.message || "Auto-saved note"}</span>
-              <span className="ml-auto text-[10px] text-muted-foreground flex-shrink-0">
+              <span className="ml-auto text-micro text-muted-foreground flex-shrink-0">
                 {new Date(a.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
               </span>
             </div>
