@@ -51,14 +51,14 @@ export function TopNav() {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const data = await apiFetch("/api/notifications")
+      const data = await apiFetch("/api/notifications", { silent: true })
       setNotifications(data?.notifications ?? [])
     } catch {}
   }, [])
 
   const fetchUnreadCount = useCallback(async () => {
     try {
-      const data = await apiFetch("/api/notifications/unread-count")
+      const data = await apiFetch("/api/notifications/unread-count", { silent: true })
       setUnreadCount(data?.count ?? 0)
     } catch {}
   }, [])
