@@ -109,7 +109,9 @@ export async function autoCapture(
 
     // Store the knowledge
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const filename = `auto-capture-${timestamp}-${item.type}.md`;
+    const slug = (item.title || 'note').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'note';
+    const filename = `${slug}-${timestamp.slice(0, 10)}.md`;
+    const displayName = item.title || filename;
 
     const mdContent = `# ${item.title}\n\n${item.content}\n\n---\n_Auto-captured | Type: ${item.type} | ${new Date().toLocaleString()}_`;
 
@@ -121,7 +123,7 @@ export async function autoCapture(
 
     await db.insert(schema.files).values({
       id: fileId,
-      name: filename,
+      name: displayName,
       originalName: filename,
       mimeType: 'text/markdown',
       size: buffer.length,
