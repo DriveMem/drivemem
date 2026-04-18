@@ -1,3 +1,22 @@
+// --- Context menu registration ---
+
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: 'save-to-drivemem',
+    title: 'Save to DriveMem',
+    contexts: ['page', 'selection']
+  });
+});
+
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  if (info.menuItemId === 'save-to-drivemem') {
+    chrome.tabs.sendMessage(tab.id, {
+      type: 'TRIGGER_SAVE_PAGE',
+      selectionText: info.selectionText
+    });
+  }
+});
+
 // --- Centralized API call with error handling ---
 
 async function apiCall(endpoint, apiKey, path, options = {}) {
@@ -45,6 +64,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     handleStats(message).then(sendResponse);
     return true;
   }
+  if (message.type === 'SAVE_PAGE') {
+    handleSavePage(message).then(sendResponse);
+    return true;
+  }
 });
 
 async function handleVerify({ endpoint, apiKey }) {
@@ -87,6 +110,23 @@ async function handleStats({ endpoint, apiKey }) {
     const data = await apiCall(endpoint, apiKey, '/api/v1/files');
     const fileCount = Array.isArray(data) ? data.length : (data.files?.length ?? 0);
     return { success: true, fileCount };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+async function handleSavePage({ endpoint, apiKey, content, title, url, tags }) {
+  try {
+    const data = await apiCall(endpoint, apiKey, '/api/v1/store', {
+      method: 'POST',
+      body: JSON.stringify({
+        content: `# ${title}\n\nSource: ${url}\n\n${content}`,
+        title: title || 'Web Clip',
+        tags: tags || 'web-clip,auto-capture'
+      }),
+    });
+    await chrome.storage.local.set({ lastSyncTime: Date.now() });
+    return { success: true, data };
   } catch (err) {
     return { success: false, error: err.message };
   }

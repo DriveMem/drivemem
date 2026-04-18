@@ -1,4 +1,11 @@
 (() => {
+  // --- Platform detection ---
+  const host = window.location.hostname;
+  const isChatGPT = host.includes('chatgpt.com') || host.includes('chat.openai.com');
+  const isClaude = host.includes('claude.ai');
+  const isGemini = host.includes('gemini.google.com');
+  const isChatPlatform = isChatGPT || isClaude || isGemini;
+
   // Shadow DOM container
   const container = document.createElement('div');
   container.id = 'drivemem-fab-container';
@@ -155,7 +162,7 @@
   fab.className = 'drivemem-fab';
   fab.innerHTML = `
     <div class="drivemem-fab-actions">
-      <button class="drivemem-fab-action" data-action="save">📥 Save Conversation</button>
+      <button class="drivemem-fab-action" data-action="save">${isChatPlatform ? '📥 Save Conversation' : '📥 Save to DriveMem'}</button>
       <button class="drivemem-fab-action" data-action="brief">📤 Get Briefing</button>
     </div>
     <button class="drivemem-fab-main">
@@ -202,13 +209,17 @@
     isOpen = false;
     actions.classList.remove('open');
 
-    if (action === 'save') captureConversation();
+    if (action === 'save') {
+      if (isChatPlatform) {
+        captureConversation();
+      } else {
+        saveCurrentPage();
+      }
+    }
     if (action === 'brief') getBriefing();
   });
 
-  // --- Conversation Extraction (multi-strategy) ---
-
-  function extractConversation() {
+  function extractChatGPTConversation() {
     const messages = [];
 
     // Strategy 1: data-message-author-role attribute (most reliable)
@@ -242,13 +253,38 @@
       });
     }
 
+    return messages;
+  }
+
+  // --- Conversation Extraction (multi-platform) ---
+
+  function extractConversation() {
+    let messages = [];
+    let titleSuffix = '';
+
+    if (isChatGPT) {
+      messages = extractChatGPTConversation();
+      titleSuffix = ' | ChatGPT';
+    } else if (isClaude) {
+      const els = document.querySelectorAll('[class*="Message"], .font-claude-message, [data-testid*="message"]');
+      const texts = Array.from(els).map(m => m.innerText.trim()).filter(Boolean);
+      texts.forEach((text, i) => messages.push({ role: i % 2 === 0 ? 'user' : 'assistant', text }));
+      titleSuffix = ' | Claude';
+    } else if (isGemini) {
+      const els = document.querySelectorAll('.conversation-container message-content, [class*="response-container"], [class*="query-content"]');
+      const texts = Array.from(els).map(m => m.innerText.trim()).filter(Boolean);
+      texts.forEach((text, i) => messages.push({ role: i % 2 === 0 ? 'user' : 'assistant', text }));
+      titleSuffix = ' | Gemini';
+    }
+
     if (messages.length === 0) return null;
 
-    // Format as markdown
     const title = document.title
-      .replace(' | ChatGPT', '')
-      .replace(' - ChatGPT', '')
-      .trim() || 'ChatGPT Conversation';
+      .replace(/ \| ChatGPT$/, '')
+      .replace(/ - ChatGPT$/, '')
+      .replace(/ - Claude$/, '')
+      .replace(/ - Gemini$/, '')
+      .trim() || `AI Conversation${titleSuffix}`;
 
     let markdown = `# ${title}\n\n`;
     messages.forEach(m => {
@@ -362,7 +398,9 @@
         if (!currentText.trim()) return;
         if (currentText.includes('[DriveMem Context]')) return;
 
-        const messageCount = document.querySelectorAll('[data-message-author-role]').length;
+        const messageCount = document.querySelectorAll('[data-message-author-role]').length
+          + document.querySelectorAll('[class*="Message"], .font-claude-message').length
+          + document.querySelectorAll('[class*="response-container"], [class*="query-content"]').length;
         if (messageCount > 0) return;
 
         e.preventDefault();
@@ -539,4 +577,62 @@
     clearTimeout(toast._timer);
     toast._timer = setTimeout(() => toast.classList.remove('visible'), 3500);
   }
+
+  // --- Generic page content extraction ---
+
+  function extractPageContent() {
+    const article = document.querySelector('article, [role="main"], main, .post-content, .article-content, .entry-content');
+    if (article) return article.innerText.trim().substring(0, 10000);
+
+    const body = document.body.cloneNode(true);
+    body.querySelectorAll('script, style, nav, footer, header, aside, [role="navigation"], [role="banner"]').forEach(el => el.remove());
+    return body.innerText.trim().substring(0, 10000);
+  }
+
+  // --- Save current page ---
+
+  function saveCurrentPage(content, title, url) {
+    const pageContent = content || extractPageContent();
+    const pageTitle = title || document.title;
+    const pageUrl = url || window.location.href;
+
+    chrome.storage.local.get(['endpoint', 'apiKey'], (data) => {
+      if (!data.endpoint || !data.apiKey) {
+        showToast('⚙️ Please configure DriveMem in the extension popup first');
+        return;
+      }
+
+      setLoading(true);
+      showToast('⏳ Saving page...');
+
+      chrome.runtime.sendMessage({
+        type: 'SAVE_PAGE',
+        endpoint: data.endpoint,
+        apiKey: data.apiKey,
+        content: pageContent,
+        title: pageTitle,
+        url: pageUrl,
+      }, (response) => {
+        setLoading(false);
+        if (response && response.success) {
+          captureCount++;
+          updateBadge();
+          showToast('✅ Page saved to DriveMem!');
+        } else {
+          showToast('❌ ' + (response?.error || 'Save failed'));
+        }
+      });
+    });
+  }
+
+  // --- Context menu trigger listener ---
+
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'TRIGGER_SAVE_PAGE') {
+      const content = message.selectionText || extractPageContent();
+      const title = document.title;
+      const url = window.location.href;
+      saveCurrentPage(content, title, url);
+    }
+  });
 })();
