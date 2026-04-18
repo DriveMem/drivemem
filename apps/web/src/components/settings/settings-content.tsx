@@ -511,6 +511,10 @@ function IntegrationsCard() {
     window.location.href = `https://api.drivemem.cloud/api/integrations/notion/connect`
   }
 
+  const connectGitHub = () => {
+    window.location.href = `https://api.drivemem.cloud/api/integrations/github/connect`
+  }
+
   const disconnect = async (id: string) => {
     try {
       const session = await getSession() as any
@@ -541,6 +545,7 @@ function IntegrationsCard() {
   }
 
   const notion = integrations.find((i: any) => i.provider === "notion")
+  const github = integrations.find((i: any) => i.provider === "github")
 
   return (
     <Card>
@@ -548,7 +553,8 @@ function IntegrationsCard() {
         <CardTitle>Integrations</CardTitle>
         <CardDescription>Connect external data sources to automatically sync content into your knowledge base.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-3">
+        {/* Notion */}
         <div className="rounded-xl border p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg">📝</div>
@@ -574,6 +580,35 @@ function IntegrationsCard() {
             </div>
           ) : (
             <Button size="sm" onClick={connectNotion}>Connect</Button>
+          )}
+        </div>
+
+        {/* GitHub */}
+        <div className="rounded-xl border p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg">🐙</div>
+            <div>
+              <p className="font-medium text-sm">GitHub</p>
+              {github ? (
+                <p className="text-xs text-muted-foreground">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1" />
+                  Connected{github.externalAccountName ? ` — @${github.externalAccountName}` : ""}
+                  {(github.config as any)?.lastSyncAt && ` · Last sync: ${new Date((github.config as any).lastSyncAt).toLocaleDateString()}`}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">Not connected</p>
+              )}
+            </div>
+          </div>
+          {github ? (
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => syncNow(github.id)} disabled={syncing === github.id}>
+                {syncing === github.id ? "Syncing…" : "Sync"}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => disconnect(github.id)}>Disconnect</Button>
+            </div>
+          ) : (
+            <Button size="sm" onClick={connectGitHub}>Connect</Button>
           )}
         </div>
       </CardContent>

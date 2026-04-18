@@ -115,6 +115,98 @@ export default async function integrationRoutes(fastify: FastifyInstance) {
     return reply.send({ ok: true });
   });
 
+  // --- GitHub OAuth Connect ---
+  fastify.get('/github/connect', async (request, reply) => {
+    await requireAuth(request, reply);
+    if (!config.GITHUB_INTEGRATION_CLIENT_ID || !config.GITHUB_INTEGRATION_CLIENT_SECRET) {
+      return reply.status(501).send({ error: { message: 'GitHub integration not configured' } });
+    }
+    const state = request.user!.id;
+    const redirectUri = `https://api.drivemem.cloud/api/integrations/github/callback`;
+    const url = `https://github.com/login/oauth/authorize?client_id=${config.GITHUB_INTEGRATION_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=repo,read:user&state=${state}`;
+    return reply.redirect(url);
+  });
+
+  // --- GitHub OAuth Callback ---
+  fastify.get('/github/callback', async (request, reply) => {
+    if (!config.GITHUB_INTEGRATION_CLIENT_ID || !config.GITHUB_INTEGRATION_CLIENT_SECRET) {
+      return reply.status(501).send({ error: { message: 'GitHub integration not configured' } });
+    }
+    const { code, state } = request.query as { code?: string; state?: string };
+    if (!code || !state) {
+      return reply.status(400).send({ error: { message: 'Missing code or state' } });
+    }
+
+    const userId = state;
+
+    // Exchange code for access token
+    const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: config.GITHUB_INTEGRATION_CLIENT_ID,
+        client_secret: config.GITHUB_INTEGRATION_CLIENT_SECRET,
+        code,
+      }),
+    });
+
+    if (!tokenRes.ok) {
+      fastify.log.error({ status: tokenRes.status, body: await tokenRes.text() }, 'GitHub OAuth token exchange failed');
+      return reply.redirect(`${config.FRONTEND_URL}/settings?tab=developer&github=error`);
+    }
+
+    const tokenData = await tokenRes.json() as { access_token?: string; error?: string };
+    if (!tokenData.access_token) {
+      fastify.log.error({ tokenData }, 'GitHub OAuth: no access_token');
+      return reply.redirect(`${config.FRONTEND_URL}/settings?tab=developer&github=error`);
+    }
+
+    // Get GitHub username
+    let username = '';
+    let githubId = '';
+    try {
+      const userRes = await fetch('https://api.github.com/user', {
+        headers: { Authorization: `Bearer ${tokenData.access_token}`, Accept: 'application/vnd.github+json' },
+      });
+      if (userRes.ok) {
+        const userData = await userRes.json() as { login: string; id: number };
+        username = userData.login;
+        githubId = String(userData.id);
+      }
+    } catch { /* proceed without username */ }
+
+    // Upsert integration record
+    const existing = await db.select().from(schema.integrations)
+      .where(and(eq(schema.integrations.userId, userId), eq(schema.integrations.provider, 'github')))
+      .limit(1);
+
+    if (existing.length > 0) {
+      await db.update(schema.integrations)
+        .set({
+          accessToken: tokenData.access_token,
+          externalAccountId: githubId || null,
+          externalAccountName: username || null,
+          status: 'active',
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.integrations.id, existing[0].id));
+    } else {
+      await db.insert(schema.integrations).values({
+        userId,
+        provider: 'github',
+        accessToken: tokenData.access_token,
+        externalAccountId: githubId || null,
+        externalAccountName: username || null,
+        config: { syncEnabled: true, lastSyncAt: null, syncedIssueUrls: [] },
+      });
+    }
+
+    return reply.redirect(`${config.FRONTEND_URL}/settings?tab=developer&github=connected`);
+  });
+
   // --- Manual sync trigger ---
   fastify.post('/:id/sync', async (request, reply) => {
     await requireAuth(request, reply);
@@ -126,16 +218,21 @@ export default async function integrationRoutes(fastify: FastifyInstance) {
       return reply.status(404).send({ error: { message: 'Integration not found' } });
     }
     const integration = rows[0];
-    if (integration.provider !== 'notion') {
-      return reply.status(400).send({ error: { message: 'Only Notion sync is supported' } });
-    }
 
     try {
-      const { syncNotionPages } = await import('../services/notion-sync.js');
-      const result = await syncNotionPages(integration);
-      return reply.send(result);
+      if (integration.provider === 'notion') {
+        const { syncNotionPages } = await import('../services/notion-sync.js');
+        const result = await syncNotionPages(integration);
+        return reply.send(result);
+      } else if (integration.provider === 'github') {
+        const { syncGitHubRepos } = await import('../services/github-sync.js');
+        const result = await syncGitHubRepos(integration);
+        return reply.send(result);
+      } else {
+        return reply.status(400).send({ error: { message: `Sync not supported for provider: ${integration.provider}` } });
+      }
     } catch (err: any) {
-      fastify.log.error(err, 'Notion sync failed');
+      fastify.log.error(err, `${integration.provider} sync failed`);
       return reply.status(500).send({ error: { message: err.message || 'Sync failed' } });
     }
   });
