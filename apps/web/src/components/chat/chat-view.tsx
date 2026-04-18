@@ -52,7 +52,7 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
   const [suggestions, setSuggestions] = useState<string[]>([])
 
   useEffect(() => {
-    apiFetch("/api/conversations/suggestions")
+    apiFetch("/api/conversations/suggestions", { silent: true })
       .then((data: any) => {
         if (data?.suggestions?.length) setSuggestions(data.suggestions.slice(0, 4))
       })

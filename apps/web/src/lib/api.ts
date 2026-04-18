@@ -26,7 +26,13 @@ async function showNetworkToast(msg: string) {
   toast.error(msg)
 }
 
-export async function apiFetch(path: string, options?: RequestInit) {
+export interface ApiFetchOptions extends RequestInit {
+  /** Suppress error toasts (useful for non-critical background requests) */
+  silent?: boolean
+}
+
+export async function apiFetch(path: string, options?: ApiFetchOptions) {
+  const { silent, ...fetchOptions } = options || {}
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options?.headers as Record<string, string>),
@@ -44,7 +50,7 @@ export async function apiFetch(path: string, options?: RequestInit) {
   let res: Response
   try {
     res = await fetch(url, {
-      ...options,
+      ...fetchOptions,
       headers,
       credentials: "include",
     })
@@ -52,10 +58,10 @@ export async function apiFetch(path: string, options?: RequestInit) {
     // 网络错误（Failed to fetch / TypeError）或超时（AbortError）
     const isTimeout = err instanceof DOMException && err.name === "AbortError"
     if (isTimeout) {
-      showNetworkToast("Request timeout — please check your network")
+      if (!silent) showNetworkToast("Request timeout — please check your network")
       throw new ApiError("Request timeout", 0)
     }
-    showNetworkToast("Network error — please check your connection")
+    if (!silent) showNetworkToast("Network error — please check your connection")
     throw err
   }
 
@@ -68,8 +74,8 @@ export async function apiFetch(path: string, options?: RequestInit) {
       toast.error("Demo account is read-only. Sign up for full access.")
     }
 
-    // 5xx 服务端错误 → toast
-    if (res.status >= 500) {
+    // 5xx 服务端错误 → toast (unless silent)
+    if (res.status >= 500 && !silent) {
       showNetworkToast("Service temporarily unavailable")
     }
 
