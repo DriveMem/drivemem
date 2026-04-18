@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { FileList } from "@/components/file/file-list"
 import { FolderTree } from "@/components/file/folder-tree"
+import { WorkItemsPanel } from "@/components/dashboard/work-items-panel"
 import { useTags } from "@/hooks/use-tags"
 import { useLayoutStore } from "@/stores/layout-store"
 import { List, Network } from "lucide-react"
@@ -13,7 +14,7 @@ const GraphEmbed = dynamic(() => import("@/app/(app)/graph/page"), { ssr: false 
 
 export default function KnowledgePage() {
   const [view, setView] = useState<"list" | "graph">("list")
-  const { activeTagFilter, setActiveTagFilter } = useLayoutStore()
+  const { activeTagFilter, setActiveTagFilter, currentFolderId } = useLayoutStore()
   const { data: tags = [] } = useTags()
 
   useEffect(() => { document.title = "Knowledge — DriveMem" }, [])
@@ -76,7 +77,13 @@ export default function KnowledgePage() {
 
         {/* Content */}
         {view === "list" ? (
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            {/* Work Items for selected project */}
+            {currentFolderId && (
+              <div className="px-4 pt-4">
+                <WorkItemsPanel folderId={currentFolderId} defaultExpanded />
+              </div>
+            )}
             <FileList />
           </div>
         ) : (

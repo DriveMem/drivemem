@@ -22,13 +22,15 @@ export default async function workItemRoutes(fastify: FastifyInstance) {
       .orderBy(desc(schema.workItems.createdAt))
       .limit(200);
 
-    // Summary counts
+    // Summary counts (respect folderId filter)
+    const countConditions = [eq(schema.workItems.userId, userId)];
+    if (query.folderId) countConditions.push(eq(schema.workItems.folderId, query.folderId));
     const allItems = await db.select({
       type: schema.workItems.type,
       status: schema.workItems.status,
     })
       .from(schema.workItems)
-      .where(eq(schema.workItems.userId, userId));
+      .where(and(...countConditions));
 
     const counts = {
       decision: 0, todo: 0, blocker: 0, milestone: 0, insight: 0,
@@ -40,6 +42,39 @@ export default async function workItemRoutes(fastify: FastifyInstance) {
     }
 
     return reply.send({ items, counts });
+  });
+
+  // POST /api/users/me/work-items
+  fastify.post('/', async (request, reply) => {
+    const userId = (request as any).user?.id;
+    if (!userId) return reply.status(401).send({ error: 'Unauthorized' });
+
+    const body = request.body as {
+      type?: string; title?: string; status?: string;
+      folderId?: string; priority?: string; description?: string;
+    };
+
+    if (!body.title || !body.type) {
+      return reply.status(400).send({ error: 'title and type are required' });
+    }
+
+    const validTypes = ['decision', 'todo', 'blocker', 'milestone', 'insight'];
+    if (!validTypes.includes(body.type)) {
+      return reply.status(400).send({ error: `type must be one of: ${validTypes.join(', ')}` });
+    }
+
+    const [item] = await db.insert(schema.workItems).values({
+      userId,
+      type: body.type,
+      title: body.title.slice(0, 255),
+      status: body.status || 'active',
+      folderId: body.folderId || null,
+      priority: body.priority || null,
+      description: body.description || null,
+      sourceAgent: 'user',
+    }).returning();
+
+    return reply.status(201).send({ item });
   });
 
   // PATCH /api/users/me/work-items/:id
