@@ -283,10 +283,18 @@ export default function HomePage() {
   const [hasMore, setHasMore] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [connectedAgents] = useState<any[]>([])
+  const [weeklyStats, setWeeklyStats] = useState<any>(null)
 
   useEffect(() => { document.title = "Home — DriveMem" }, [])
 
   // connectedAgents removed — banner now uses file/insight counts only
+
+  // Fetch weekly digest (silent — OK to fail)
+  useEffect(() => {
+    apiFetch("/api/v1/digest/weekly", { silent: true })
+      .then((data: any) => setWeeklyStats(data))
+      .catch(() => {})
+  }, [])
 
   // Fetch resume brief
   useEffect(() => {
@@ -520,6 +528,34 @@ export default function HomePage() {
               <p className="text-caption text-muted-foreground mt-1">{projectCount === 1 ? "project" : "projects"}</p>
             </div>
           </div>
+        </div>
+
+        {/* Getting Smarter card */}
+        <div className="rounded-2xl border shadow-soft p-6 mb-8">
+          <h3 className="text-title font-semibold mb-1">Your knowledge base is getting smarter</h3>
+          <p className="text-caption text-muted-foreground mb-4">DriveMem learns from every interaction</p>
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div className="rounded-xl bg-muted/30 p-4">
+              <p className="text-heading font-bold text-primary">{weeklyStats?.filesIndexed ?? fileCount}</p>
+              <p className="text-micro text-muted-foreground mt-1">knowledge items indexed</p>
+            </div>
+            <div className="rounded-xl bg-muted/30 p-4">
+              <p className="text-heading font-bold text-primary">{weeklyStats?.connectionsFound ?? insightCount}</p>
+              <p className="text-micro text-muted-foreground mt-1">connections discovered</p>
+            </div>
+            <div className="rounded-xl bg-muted/30 p-4">
+              <p className="text-heading font-bold text-primary">{weeklyStats?.agentInteractions ?? activities.length}</p>
+              <p className="text-micro text-muted-foreground mt-1">agent interactions this week</p>
+            </div>
+          </div>
+          
+          {insightCount > 0 && (
+            <p className="text-caption text-muted-foreground mt-4 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              AI has found {insightCount} connection{insightCount > 1 ? 's' : ''} between your files
+            </p>
+          )}
         </div>
 
         {/* Active Projects — horizontal scroll chips */}
