@@ -16,6 +16,7 @@ import { FileUpload } from "@/components/file/file-upload"
 import Link from "next/link"
 import { AutoSavedBar } from "@/components/dashboard/auto-saved-bar"
 import { WorkItemsPanel } from "@/components/dashboard/work-items-panel"
+import { WelcomeCard } from "@/components/onboarding/welcome-card"
 
 // --- helpers ---
 function relativeTime(dateStr: string): string {
@@ -371,6 +372,9 @@ export default function HomePage() {
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} />}
 
       <div className="max-w-4xl mx-auto w-full px-4 md:px-6 py-6 md:py-8">
+        {/* Welcome Card for new users */}
+        <WelcomeCard onUpload={() => setShowUpload(true)} />
+
         {/* Status Banner */}
         <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-primary/5 border border-primary/10 mb-6">
           <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />

@@ -104,7 +104,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
       .returning({ id: users.id, email: users.email, name: users.name });
 
     // Fire-and-forget: seed sample files for the new user
-    seedFilesForUser(user.id).catch(() => {});
+    seedDemoProject(user.id).catch(() => {});
 
     return reply.status(201).send(user);
   });
