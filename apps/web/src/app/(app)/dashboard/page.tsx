@@ -290,14 +290,14 @@ export default function HomePage() {
 
   // Fetch resume brief
   useEffect(() => {
-    apiFetch("/api/resume-brief")
+    apiFetch("/api/resume-brief", { silent: true })
       .then((data: any) => { if (data?.show && data?.changes?.total > 0) setResumeBrief(data) })
       .catch(() => {})
   }, [])
 
   // Fetch conflicts
   useEffect(() => {
-    apiFetch("/api/files/conflicts")
+    apiFetch("/api/files/conflicts", { silent: true })
       .then((data: any) => {
         if (data?.conflicts?.length > 0) setConflicts(data.conflicts)
       })
@@ -306,7 +306,7 @@ export default function HomePage() {
 
   // Fetch stale content count
   useEffect(() => {
-    apiFetch("/api/files/stale")
+    apiFetch("/api/files/stale", { silent: true })
       .then((data: any) => {
         if (data?.count > 0) setStaleCount(data.count)
       })
@@ -315,7 +315,7 @@ export default function HomePage() {
 
   // Fetch insights count
   useEffect(() => {
-    apiFetch("/api/insights?limit=5")
+    apiFetch("/api/insights?limit=5", { silent: true })
       .then((data: any) => setInsights(data?.insights || []))
       .catch(() => {})
   }, [])
@@ -335,7 +335,7 @@ export default function HomePage() {
       // Fallback to notifications API
       if (page === 1) {
         try {
-          const data = await apiFetch("/api/notifications") as any
+          const data = await apiFetch("/api/notifications", { silent: true }) as any
           const list = Array.isArray(data) ? data : data?.notifications || []
           setActivities(list.slice(0, 20))
           setHasMore(false)
