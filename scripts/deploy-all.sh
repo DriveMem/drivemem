@@ -28,6 +28,14 @@ WEB=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null |
 log "Main server — API: $API | Web: $WEB"
 [ "$API" != "200" ] && log "⚠️  API health check failed!"
 [ "$WEB" != "200" ] && log "⚠️  Web health check failed!"
+# Auto BM25 backfill check
+MISSING=$(curl -s -X POST "http://localhost:6333/collections/document_chunks/points/scroll" \
+  -H "Content-Type: application/json" -d '{"limit":1,"with_vector":["bm25"]}' 2>/dev/null | \
+  node -e "try{const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));const p=d.result?.points?.[0];console.log(p&&(!p.vector?.bm25||p.vector.bm25.indices?.length===0)?'yes':'no')}catch{console.log('skip')}" 2>/dev/null || echo "skip")
+if [ "$MISSING" = "yes" ]; then
+  log "BM25 sparse vectors missing — running backfill..."
+  node scripts/backfill-bm25.ts 2>&1 | tail -3
+fi
 log "✅ Main server deployed"
 
 echo ""
@@ -40,7 +48,8 @@ ssh ubuntu@43.165.168.72 "source ~/.nvm/nvm.sh; \
   cd ../web && npx next build 2>&1 | tail -2 && \
   pm2 restart ai-drive-api ai-drive-worker ai-drive-web --update-env 2>&1 | grep -E 'online|ERROR' && \
   sleep 3 && \
-  echo \"Health: API=\$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/api/v1/health 2>/dev/null) Web=\$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000 2>/dev/null)\""
+  echo \"Health: API=\$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/api/v1/health 2>/dev/null) Web=\$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000 2>/dev/null)\ && \
+  node scripts/backfill-bm25.ts 2>&1 | tail -2"
 log "✅ New server deployed"
 
 echo ""
