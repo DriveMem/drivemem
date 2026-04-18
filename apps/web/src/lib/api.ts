@@ -52,10 +52,10 @@ export async function apiFetch(path: string, options?: RequestInit) {
     // 网络错误（Failed to fetch / TypeError）或超时（AbortError）
     const isTimeout = err instanceof DOMException && err.name === "AbortError"
     if (isTimeout) {
-      showNetworkToast("请求超时，请检查网络后重试")
+      showNetworkToast("Request timeout — please check your network")
       throw new ApiError("Request timeout", 0)
     }
-    showNetworkToast("网络连接失败，请检查网络后重试")
+    showNetworkToast("Network error — please check your connection")
     throw err
   }
 
@@ -65,12 +65,12 @@ export async function apiFetch(path: string, options?: RequestInit) {
 
     if (res.status === 403 && errBody?.error?.code === "DEMO_READONLY") {
       const { toast } = await import("sonner")
-      toast.error("Demo 账号为只读模式，注册后可使用完整功能")
+      toast.error("Demo account is read-only. Sign up for full access.")
     }
 
     // 5xx 服务端错误 → toast
     if (res.status >= 500) {
-      showNetworkToast("服务暂时不可用，请稍后重试")
+      showNetworkToast("Service temporarily unavailable")
     }
 
     throw new ApiError(errMsg, res.status)
