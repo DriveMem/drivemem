@@ -476,7 +476,7 @@ export default function HomePage() {
               <ProjectChip key={p.id} project={p} />
             ))}
             <button
-              onClick={() => router.push("/files?newFolder=1")}
+              onClick={() => { const name = prompt("Project name:"); if (name) { apiFetch("/api/folders", { method: "POST", body: JSON.stringify({ name }) }).then(() => { router.refresh(); window.location.reload(); }).catch(() => {}); } }}
               className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-dashed border-zinc-300 dark:border-zinc-600 text-body text-zinc-500 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500 transition whitespace-nowrap flex-shrink-0"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -493,7 +493,7 @@ export default function HomePage() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
-                onClick={() => router.push("/files?newFolder=1")}
+                onClick={() => { const name = prompt("Project name:"); if (name) { apiFetch("/api/folders", { method: "POST", body: JSON.stringify({ name }) }).then(() => { router.refresh(); window.location.reload(); }).catch(() => {}); } }}
                 className="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition text-left"
               >
                 <FolderPlus className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />

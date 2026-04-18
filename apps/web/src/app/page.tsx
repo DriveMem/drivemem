@@ -84,8 +84,11 @@ function Nav() {
           <Link href="/developers" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Docs
           </Link>
+          <Link href="/login" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
+            Sign in
+          </Link>
           <Link
-            href="/login"
+            href="/signup"
             className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-4 py-2 rounded-lg font-medium transition-colors"
           >
             Get started free
