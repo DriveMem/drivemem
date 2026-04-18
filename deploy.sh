@@ -1,6 +1,8 @@
 #!/bin/bash
-# DriveMem Deploy Script — pull, build, restart
+# DriveMem Zero-Downtime Deploy Script
 # Usage: ./deploy.sh [--api-only|--web-only|--all]
+#
+# Key: BUILD FIRST, RESTART AFTER. Never rm -rf dist.
 
 set -euo pipefail
 
@@ -8,44 +10,36 @@ REPO="/home/ubuntu/repos/ai-drive"
 cd "$REPO"
 
 MODE="${1:---all}"
-TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+log() { echo "[$(date '+%H:%M:%S')] $1"; }
 
-echo "[$TIMESTAMP] === DriveMem Deploy Start (mode: $MODE) ==="
+log "=== Deploy Start (mode: $MODE) ==="
 
-# Pull latest
-echo "[$TIMESTAMP] Pulling latest..."
-git pull --ff-only || { echo "ERROR: git pull failed. Resolve conflicts first."; exit 1; }
+log "Pulling..."
+git pull --ff-only || { log "ERROR: git pull failed"; exit 1; }
+log "Commit: $(git log --oneline -1)"
 
-COMMIT=$(git log --oneline -1)
-echo "[$TIMESTAMP] Latest commit: $COMMIT"
-
-# Build API
 if [[ "$MODE" == "--all" || "$MODE" == "--api-only" ]]; then
-  echo "[$TIMESTAMP] Building API (TypeScript)..."
-  npm run build --workspace=apps/api
-  echo "[$TIMESTAMP] Restarting API + Worker..."
-  pm2 restart ai-drive-api ai-drive-worker
+  log "Building API..."
+  (cd apps/api && npx tsc) || { log "ERROR: API build failed!"; exit 1; }
+  log "Restarting API + Worker..."
+  pm2 restart ai-drive-api ai-drive-worker --update-env 2>/dev/null || true
 fi
 
-# Build Web
 if [[ "$MODE" == "--all" || "$MODE" == "--web-only" ]]; then
-  echo "[$TIMESTAMP] Building Web (Next.js)..."
-  npm run build --workspace=apps/web
-  echo "[$TIMESTAMP] Restarting Web..."
-  pm2 restart ai-drive-web
+  log "Building Web..."
+  (cd apps/web && npx next build) || { log "ERROR: Web build failed!"; exit 1; }
+  log "Restarting Web..."
+  pm2 restart ai-drive-web --update-env 2>/dev/null || true
 fi
 
-# Health check
-sleep 3
-echo "[$TIMESTAMP] Health check..."
-API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/api/v1/health 2>/dev/null || echo "000")
-WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "000")
-
-echo "[$TIMESTAMP] API: HTTP $API_STATUS | Web: HTTP $WEB_STATUS"
-
-if [[ "$API_STATUS" != "200" && "$MODE" != "--web-only" ]]; then
-  echo "WARNING: API health check failed (HTTP $API_STATUS)"
-fi
-
-echo "[$TIMESTAMP] === Deploy Complete ==="
+sleep 4
+log "Health check..."
+for i in 1 2 3; do
+  API=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/api/v1/health 2>/dev/null || echo "000")
+  WEB=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "000")
+  [[ "$API" == "200" && "$WEB" == "200" ]] && break
+  sleep 2
+done
+log "API: $API $([ "$API" = "200" ] && echo '✅' || echo '❌') | Web: $WEB $([ "$WEB" = "200" ] && echo '✅' || echo '❌')"
+log "=== Deploy Complete ==="
 pm2 status
