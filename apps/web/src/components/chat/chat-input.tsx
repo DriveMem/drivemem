@@ -101,7 +101,7 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
           placeholder={placeholder}
           disabled={disabled}
           rows={1}
-          className="flex-1 bg-transparent resize-none outline-none text-[15px] min-h-[48px] placeholder-muted-foreground/60 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex-1 bg-transparent resize-none outline-none text-body min-h-[48px] placeholder-muted-foreground/60 disabled:cursor-not-allowed disabled:opacity-50"
         />
         <button onClick={handleSend} disabled={disabled || !value.trim()} className="rounded-xl w-10 h-10 bg-brand-500 hover:bg-brand-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 active:scale-[0.95] transition-all duration-200 shadow-soft flex items-center justify-center">
           <Send className="h-4 w-4" />

@@ -168,7 +168,7 @@ function CompileContent() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
           <Upload className="h-8 w-8 text-muted-foreground" />
         </div>
-        <h2 className="text-xl font-semibold mb-2">Upload files first to compile context</h2>
+        <h2 className="text-heading font-semibold mb-2">Upload files first to compile context</h2>
         <p className="text-sm text-muted-foreground mb-6">
           Context Compiler needs files in your knowledge base to work with. Upload some documents to get started.
         </p>
@@ -186,9 +186,9 @@ function CompileContent() {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <Sparkles className="h-5 w-5 text-brand-500" />
-          <h1 className="text-2xl font-bold">Prepare a briefing for your AI</h1>
+          <h1 className="text-heading font-bold">Prepare a briefing for your AI</h1>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           Describe your task — DriveMem finds the right knowledge for any AI
         </p>
       </div>
@@ -259,8 +259,8 @@ function CompileContent() {
               className="rounded-xl border border-border bg-card p-4 text-left hover:border-brand-500/50 hover:shadow-sm transition"
             >
               <span className="text-2xl mb-2 block">{ex.icon}</span>
-              <span className="text-sm font-medium block">{ex.title}</span>
-              <span className="text-xs text-muted-foreground">{ex.desc}</span>
+              <span className="text-title font-medium block">{ex.title}</span>
+              <span className="text-caption text-muted-foreground">{ex.desc}</span>
             </button>
           ))}
         </div>
