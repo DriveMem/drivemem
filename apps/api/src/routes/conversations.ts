@@ -34,18 +34,18 @@ export default async function conversationRoutes(app: FastifyInstance) {
       .limit(3);
 
     if (recentFiles.length === 0) {
-      return reply.send({ suggestions: ['上传一个文件，让 AI 记住它', '试试拖拽文件到页面上传', '支持 PDF, Word, TXT, Markdown 格式'] });
+      return reply.send({ suggestions: ['Upload a file to get started', 'Try dragging files onto the page', 'Supports PDF, Word, TXT, Markdown'] });
     }
 
     const fileInfo = recentFiles.map(f => `${f.name}: ${f.summary?.substring(0, 100)}`).join('\n');
-    const prompt = `用户有以下文件：\n${fileInfo}\n\n生成3个用户可能想问的问题。要求：每个问题不超过15字，用日常口语，不要学术句。每行一个，不要编号。`;
+    const prompt = `The user has these files:\n${fileInfo}\n\nGenerate 3 questions the user might want to ask about their files. Requirements: each question under 60 characters, use casual everyday language, one per line, no numbering.`;
 
     try {
       const result = await chat([{ role: 'user', content: prompt }]);
       const suggestions = result.split('\n').filter((s: string) => s.trim()).slice(0, 3);
       return reply.send({ suggestions });
     } catch {
-      return reply.send({ suggestions: recentFiles.map(f => `总结一下 ${f.name} 的主要内容`) });
+      return reply.send({ suggestions: recentFiles.map(f => `Summarize the key points of ${f.name}`) });
     }
   });
 
