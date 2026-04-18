@@ -38,7 +38,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
     }
 
     const fileInfo = recentFiles.map(f => `${f.name}: ${f.summary?.substring(0, 100)}`).join('\n');
-    const prompt = `The user has these files:\n${fileInfo}\n\nGenerate 3 questions the user might want to ask about their files. Requirements: each question under 60 characters, use casual everyday language, one per line, no numbering.`;
+    const prompt = `The user has these files:\n${fileInfo}\n\nGenerate 3 questions IN ENGLISH the user might want to ask about their files. Requirements: each question under 60 characters, casual language, one per line, no numbering, MUST be in English.`;
 
     try {
       const result = await chat([{ role: 'user', content: prompt }]);
@@ -411,9 +411,9 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : userFileCount > 0 
 
       // Generate follow-up suggestions (non-blocking)
       try {
-        const suggestPrompt = `基于以下AI回答，生成3个追问问题。要求：每个不超过15字，日常口语，不要学术句。只返回JSON数组：["问题1","问题2","问题3"]
+        const suggestPrompt = `Based on this AI response, generate 3 follow-up questions in English. Requirements: each under 60 chars, casual language. Return ONLY a JSON array: ["q1","q2","q3"]
 
-AI回答：${fullContent.substring(0, 300)}`;
+Response: ${fullContent.substring(0, 300)}`;
         const suggestResult = await chat([{ role: 'user', content: suggestPrompt }]);
         // Extract JSON array from response
         const jsonMatch = suggestResult.match(/\[[\s\S]*?\]/);
