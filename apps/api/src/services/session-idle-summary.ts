@@ -179,6 +179,11 @@ ${historyLines.join('\n')}`;
       detail: `Session idle summary: ${state.toolCalls.length} tool calls`,
       metadata: { trigger, toolCallCount: state.toolCalls.length, fileId },
     });
+
+    // Work Graph: extract work items from session summary
+    import('./work-item-extractor.js').then(({ extractWorkItems }) => {
+      extractWorkItems(state!.userId, result, fileId, state!.agentName).catch(() => {});
+    }).catch(() => {});
   } catch (e) {
     console.error('[session-idle-summary] Failed:', (e as Error).message);
   }

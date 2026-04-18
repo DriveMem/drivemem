@@ -16,6 +16,7 @@ import { apiFetch } from "@/lib/api"
 import { FileUpload } from "@/components/file/file-upload"
 import Link from "next/link"
 import { AutoSavedBar } from "@/components/dashboard/auto-saved-bar"
+import { WorkItemsPanel } from "@/components/dashboard/work-items-panel"
 
 // --- helpers ---
 function relativeTime(dateStr: string): string {
@@ -534,6 +535,9 @@ export default function HomePage() {
             </div>
           </div>
         )}
+
+        {/* Work Items */}
+        <WorkItemsPanel />
 
         {/* Activity Feed */}
         <div>

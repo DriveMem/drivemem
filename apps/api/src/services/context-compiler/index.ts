@@ -594,6 +594,29 @@ export async function compileContext(
     }
   } catch { /* best-effort access tracking */ }
 
+  // --- Work Graph: append active work items to compiled context ---
+  try {
+    const { db: workDb } = await import('../../db/index.js');
+    const { workItems } = await import('../../db/schema.js');
+    const { eq: workEq, and: workAnd, desc: workDesc } = await import('drizzle-orm');
+    const conditions = [workEq(workItems.userId, userId), workEq(workItems.status, 'active')];
+    if (request.hints?.folderId) {
+      conditions.push(workEq(workItems.folderId, request.hints.folderId));
+    }
+    const activeItems = await workDb.select()
+      .from(workItems)
+      .where(workAnd(...conditions))
+      .orderBy(workDesc(workItems.createdAt))
+      .limit(15);
+    if (activeItems.length > 0) {
+      const typeEmoji: Record<string, string> = { decision: '🎯', todo: '📌', blocker: '🔴', milestone: '🏁', insight: '💡' };
+      const itemLines = activeItems.map(i =>
+        `- ${typeEmoji[i.type] || '📋'} [${i.type}] ${i.title}${i.priority ? ` (${i.priority})` : ''}`
+      );
+      response.compiledContext += `\n\n## Active Work Items\n\n${itemLines.join('\n')}`;
+    }
+  } catch { /* best-effort work items injection */ }
+
   return response;
 }
 

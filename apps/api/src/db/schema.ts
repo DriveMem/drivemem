@@ -320,6 +320,24 @@ export const agentConnections = pgTable('agent_connections', {
   status: varchar('status', { length: 20 }).notNull().default('online'),
 });
 
+// --- Work Items (Work Graph State Engine) ---
+export const workItems = pgTable('work_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  folderId: uuid('folder_id').references(() => folders.id, { onDelete: 'set null' }),
+  type: varchar('type', { length: 30 }).notNull(), // decision | todo | blocker | milestone | insight
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  status: varchar('status', { length: 20 }).notNull().default('active'), // active | done | blocked | archived
+  sourceFileId: uuid('source_file_id').references(() => files.id, { onDelete: 'set null' }),
+  sourceAgent: varchar('source_agent', { length: 255 }),
+  priority: varchar('priority', { length: 10 }), // high | medium | low
+  dueDate: timestamp('due_date', { withTimezone: true }),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Agent Profiles ---
 export const agentProfiles = pgTable('agent_profiles', {
   id: uuid('id').defaultRandom().primaryKey(),

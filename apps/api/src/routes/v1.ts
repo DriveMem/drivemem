@@ -1212,4 +1212,56 @@ ${insightsSection}
     };
   });
 
+  // --- Work Items (Work Graph) ---
+  // GET /work-items
+  fastify.get('/work-items', async (request, reply) => {
+    const userId = request.user!.id;
+    const query = request.query as { type?: string; status?: string; folderId?: string; limit?: string };
+    const conditions = [eq(schema.workItems.userId, userId)];
+    if (query.type) conditions.push(eq(schema.workItems.type, query.type));
+    if (query.status) conditions.push(eq(schema.workItems.status, query.status));
+    if (query.folderId) conditions.push(eq(schema.workItems.folderId, query.folderId));
+    const limit = Math.min(parseInt(query.limit || '100'), 200);
+
+    const items = await db.select()
+      .from(schema.workItems)
+      .where(and(...conditions))
+      .orderBy(desc(schema.workItems.createdAt))
+      .limit(limit);
+
+    return reply.send({ items });
+  });
+
+  // PATCH /work-items/:id
+  fastify.patch('/work-items/:id', { preHandler: [requireScope('write')] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const { id } = request.params as { id: string };
+    const body = request.body as { status?: string; title?: string; priority?: string };
+
+    const [existing] = await db.select().from(schema.workItems)
+      .where(and(eq(schema.workItems.id, id), eq(schema.workItems.userId, userId)));
+    if (!existing) return reply.status(404).send({ error: 'Work item not found' });
+
+    const updates: Record<string, any> = { updatedAt: new Date() };
+    if (body.status && ['active', 'done', 'blocked', 'archived'].includes(body.status)) {
+      updates.status = body.status;
+      if (body.status === 'done') updates.completedAt = new Date();
+    }
+    if (body.title) updates.title = body.title.slice(0, 255);
+    if (body.priority) updates.priority = body.priority;
+
+    const [updated] = await db.update(schema.workItems).set(updates)
+      .where(eq(schema.workItems.id, id)).returning();
+    return reply.send({ item: updated });
+  });
+
+  // DELETE /work-items/:id
+  fastify.delete('/work-items/:id', { preHandler: [requireScope('write')] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const { id } = request.params as { id: string };
+    await db.delete(schema.workItems)
+      .where(and(eq(schema.workItems.id, id), eq(schema.workItems.userId, userId)));
+    return reply.status(204).send();
+  });
+
 }

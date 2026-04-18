@@ -158,6 +158,11 @@ export function maybeAccumulate(
       await storeInsight(userId, insight);
       incrementCounter(userId);
 
+      // Work Graph: extract work items from accumulated insight
+      import('./work-item-extractor.js').then(({ extractWorkItems }) => {
+        extractWorkItems(userId, insight).catch(() => {});
+      }).catch(() => {});
+
       console.log(`[auto-accumulate] Stored insight for user ${userId}: ${insight.slice(0, 60)}...`);
     } catch (err) {
       console.error('[auto-accumulate] Error:', (err as Error).message);

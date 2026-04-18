@@ -131,6 +131,9 @@ await app.register(v1Routes, { prefix: '/api/v1' });
 import staleContentRoutes from './routes/stale-content.js';
 await app.register(staleContentRoutes, { prefix: '/api/v1' });
 
+import workItemRoutes from './routes/work-items.js';
+await app.register(workItemRoutes, { prefix: '/api/users/me/work-items' });
+
 import webhookRoutes from './routes/webhooks.js';
 await app.register(webhookRoutes, { prefix: '/api/webhooks' });
 

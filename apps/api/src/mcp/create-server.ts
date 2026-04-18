@@ -262,6 +262,22 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           required: ['content'],
         },
       },
+      {
+        name: 'aidrive_work_items',
+        description: 'Query and manage work items (decisions, TODOs, blockers, milestones) extracted from knowledge. Use to check project status, find blockers, or mark items done.',
+        inputSchema: {
+          type: 'object' as const,
+          properties: {
+            action: { type: 'string', description: 'Action: list (default), update, delete', enum: ['list', 'update', 'delete'] },
+            type: { type: 'string', description: 'Filter by type: decision, todo, blocker, milestone, insight' },
+            status: { type: 'string', description: 'Filter by status: active, done, blocked, archived' },
+            folderId: { type: 'string', description: 'Filter by project folder ID' },
+            itemId: { type: 'string', description: 'Work item ID (for update/delete)' },
+            newStatus: { type: 'string', description: 'New status (for update action)' },
+          },
+          required: [],
+        },
+      },
     ],
   }));
 
@@ -636,6 +652,11 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             }
           }
 
+                    // Work Graph: extract work items from stored content (fire-and-forget)
+          import('../services/work-item-extractor.js').then(({ extractWorkItems }) => {
+            extractWorkItems(userId, content, fileId, agentName || undefined, detectedProjectId || undefined).catch(() => {});
+          }).catch(() => {});
+
           return { content: [{ type: 'text' as const, text: `✅ 已存入「${title}」到知识库。AI 正在理解内容，稍后可搜索和问答。` }] };
         }
 
@@ -864,6 +885,60 @@ ${insightsSection}
             ? `Auto-captured ${result.captured} knowledge items:\n${result.items.map(i => `- ${i.title}`).join('\n')}`
             : 'No valuable knowledge found to capture.';
           return { content: [{ type: 'text' as const, text }] };
+        }
+
+        case 'aidrive_work_items': {
+          const action = ((args as any).action as string) || 'list';
+
+          if (action === 'list') {
+            const conditions = [eq(schema.workItems.userId, userId)];
+            if ((args as any).type) conditions.push(eq(schema.workItems.type, (args as any).type));
+            if ((args as any).status) conditions.push(eq(schema.workItems.status, (args as any).status));
+            if ((args as any).folderId) conditions.push(eq(schema.workItems.folderId, (args as any).folderId));
+
+            const items = await db.select()
+              .from(schema.workItems)
+              .where(and(...conditions))
+              .orderBy(desc(schema.workItems.createdAt))
+              .limit(50);
+
+            if (items.length === 0) {
+              return { content: [{ type: 'text' as const, text: 'No work items found.' }] };
+            }
+
+            const typeEmoji: Record<string, string> = { decision: '🎯', todo: '📌', blocker: '🔴', milestone: '🏁', insight: '💡' };
+            const statusEmoji: Record<string, string> = { active: '⬜', done: '✅', blocked: '🔴', archived: '📦' };
+            const lines = items.map(i =>
+              `${statusEmoji[i.status] || '⬜'} ${typeEmoji[i.type] || '📋'} [${i.type}] ${i.title}${i.priority ? ` (${i.priority})` : ''}${i.sourceAgent ? ` — by ${i.sourceAgent}` : ''} | id:${i.id}`
+            );
+            return { content: [{ type: 'text' as const, text: `Work Items (${items.length}):\n${lines.join('\n')}` }] };
+          }
+
+          if (action === 'update') {
+            const itemId = (args as any).itemId as string;
+            const newStatus = (args as any).newStatus as string;
+            if (!itemId) return { content: [{ type: 'text' as const, text: 'itemId required for update.' }], isError: true };
+            if (!newStatus || !['active', 'done', 'blocked', 'archived'].includes(newStatus)) {
+              return { content: [{ type: 'text' as const, text: 'newStatus must be active/done/blocked/archived.' }], isError: true };
+            }
+            const updates: Record<string, any> = { status: newStatus, updatedAt: new Date() };
+            if (newStatus === 'done') updates.completedAt = new Date();
+            const [updated] = await db.update(schema.workItems).set(updates)
+              .where(and(eq(schema.workItems.id, itemId), eq(schema.workItems.userId, userId)))
+              .returning();
+            if (!updated) return { content: [{ type: 'text' as const, text: 'Work item not found.' }], isError: true };
+            return { content: [{ type: 'text' as const, text: `✅ Updated "${updated.title}" → ${newStatus}` }] };
+          }
+
+          if (action === 'delete') {
+            const itemId = (args as any).itemId as string;
+            if (!itemId) return { content: [{ type: 'text' as const, text: 'itemId required for delete.' }], isError: true };
+            await db.delete(schema.workItems)
+              .where(and(eq(schema.workItems.id, itemId), eq(schema.workItems.userId, userId)));
+            return { content: [{ type: 'text' as const, text: '🗑️ Work item deleted.' }] };
+          }
+
+          return { content: [{ type: 'text' as const, text: `Unknown action: ${action}` }], isError: true };
         }
 
                 default:
