@@ -515,6 +515,10 @@ function IntegrationsCard() {
     window.location.href = `https://api.drivemem.cloud/api/integrations/github/connect`
   }
 
+  const connectGoogleDrive = () => {
+    window.location.href = `https://api.drivemem.cloud/api/integrations/google-drive/connect`
+  }
+
   const disconnect = async (id: string) => {
     try {
       const session = await getSession() as any
@@ -546,6 +550,7 @@ function IntegrationsCard() {
 
   const notion = integrations.find((i: any) => i.provider === "notion")
   const github = integrations.find((i: any) => i.provider === "github")
+  const googleDrive = integrations.find((i: any) => i.provider === "google-drive")
 
   return (
     <Card>
@@ -609,6 +614,35 @@ function IntegrationsCard() {
             </div>
           ) : (
             <Button size="sm" onClick={connectGitHub}>Connect</Button>
+          )}
+        </div>
+
+        {/* Google Drive */}
+        <div className="rounded-xl border p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg">📄</div>
+            <div>
+              <p className="font-medium text-sm">Google Drive</p>
+              {googleDrive ? (
+                <p className="text-xs text-muted-foreground">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1" />
+                  Connected{googleDrive.externalAccountName ? ` — ${googleDrive.externalAccountName}` : ""}
+                  {(googleDrive.config as any)?.lastSyncAt && ` · Last sync: ${new Date((googleDrive.config as any).lastSyncAt).toLocaleDateString()}`}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">Not connected</p>
+              )}
+            </div>
+          </div>
+          {googleDrive ? (
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => syncNow(googleDrive.id)} disabled={syncing === googleDrive.id}>
+                {syncing === googleDrive.id ? "Syncing…" : "Sync"}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => disconnect(googleDrive.id)}>Disconnect</Button>
+            </div>
+          ) : (
+            <Button size="sm" onClick={connectGoogleDrive}>Connect</Button>
           )}
         </div>
       </CardContent>

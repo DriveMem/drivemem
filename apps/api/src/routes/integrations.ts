@@ -207,6 +207,99 @@ export default async function integrationRoutes(fastify: FastifyInstance) {
     return reply.redirect(`${config.FRONTEND_URL}/settings?tab=developer&github=connected`);
   });
 
+  // --- Google Drive OAuth Connect ---
+  fastify.get('/google-drive/connect', async (request, reply) => {
+    await requireAuth(request, reply);
+    if (!config.GOOGLE_CLIENT_ID || !config.GOOGLE_CLIENT_SECRET) {
+      return reply.status(501).send({ error: { message: 'Google Drive integration not configured' } });
+    }
+    const state = request.user!.id;
+    const redirectUri = `https://api.drivemem.cloud/api/integrations/google-drive/callback`;
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(config.GOOGLE_CLIENT_ID)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent('https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/userinfo.email')}&access_type=offline&prompt=consent&state=${state}`;
+    return reply.redirect(url);
+  });
+
+  // --- Google Drive OAuth Callback ---
+  fastify.get('/google-drive/callback', async (request, reply) => {
+    if (!config.GOOGLE_CLIENT_ID || !config.GOOGLE_CLIENT_SECRET) {
+      return reply.status(501).send({ error: { message: 'Google Drive integration not configured' } });
+    }
+    const { code, state } = request.query as { code?: string; state?: string };
+    if (!code || !state) {
+      return reply.status(400).send({ error: { message: 'Missing code or state' } });
+    }
+
+    const userId = state;
+    const redirectUri = `https://api.drivemem.cloud/api/integrations/google-drive/callback`;
+
+    // Exchange code for tokens
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: config.GOOGLE_CLIENT_ID,
+        client_secret: config.GOOGLE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    if (!tokenRes.ok) {
+      fastify.log.error({ status: tokenRes.status, body: await tokenRes.text() }, 'Google OAuth token exchange failed');
+      return reply.redirect(`${config.FRONTEND_URL}/settings?tab=developer&google-drive=error`);
+    }
+
+    const tokenData = await tokenRes.json() as {
+      access_token: string;
+      refresh_token?: string;
+      expires_in: number;
+    };
+
+    // Get user email
+    let email = '';
+    try {
+      const userRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      });
+      if (userRes.ok) {
+        const userData = await userRes.json() as { email: string; id: string };
+        email = userData.email;
+      }
+    } catch { /* proceed without email */ }
+
+    // Upsert integration record
+    const existing = await db.select().from(schema.integrations)
+      .where(and(eq(schema.integrations.userId, userId), eq(schema.integrations.provider, 'google-drive')))
+      .limit(1);
+
+    if (existing.length > 0) {
+      const updateData: Record<string, any> = {
+        accessToken: tokenData.access_token,
+        externalAccountName: email || null,
+        status: 'active' as const,
+        updatedAt: new Date(),
+      };
+      if (tokenData.refresh_token) {
+        updateData.refreshToken = tokenData.refresh_token;
+      }
+      await db.update(schema.integrations)
+        .set(updateData)
+        .where(eq(schema.integrations.id, existing[0].id));
+    } else {
+      await db.insert(schema.integrations).values({
+        userId,
+        provider: 'google-drive',
+        accessToken: tokenData.access_token,
+        refreshToken: tokenData.refresh_token || null,
+        externalAccountName: email || null,
+        config: { syncEnabled: true, lastSyncAt: null, syncedFileIds: [] },
+      });
+    }
+
+    return reply.redirect(`${config.FRONTEND_URL}/settings?tab=developer&google-drive=connected`);
+  });
+
   // --- Manual sync trigger ---
   fastify.post('/:id/sync', async (request, reply) => {
     await requireAuth(request, reply);
@@ -227,6 +320,10 @@ export default async function integrationRoutes(fastify: FastifyInstance) {
       } else if (integration.provider === 'github') {
         const { syncGitHubRepos } = await import('../services/github-sync.js');
         const result = await syncGitHubRepos(integration);
+        return reply.send(result);
+      } else if (integration.provider === 'google-drive') {
+        const { syncGoogleDrive } = await import('../services/google-drive-sync.js');
+        const result = await syncGoogleDrive(integration);
         return reply.send(result);
       } else {
         return reply.status(400).send({ error: { message: `Sync not supported for provider: ${integration.provider}` } });

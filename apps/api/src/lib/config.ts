@@ -35,6 +35,8 @@ const envSchema = z.object({
   NOTION_CLIENT_SECRET: z.string().optional(),
   GITHUB_INTEGRATION_CLIENT_ID: z.string().optional(),
   GITHUB_INTEGRATION_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
