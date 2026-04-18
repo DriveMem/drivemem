@@ -428,16 +428,27 @@ export async function compileContext(
         id: filesTable.id,
         updatedAt: filesTable.updatedAt,
         lastAccessedAt: filesTable.lastAccessedAt,
+        staleScore: filesTable.staleScore,
       }).from(filesTable).where(inArray(filesTable.id, freshnessFileIds));
 
       const freshnessMap: Record<string, number> = {};
+      const staleMap: Record<string, number> = {};
       for (const row of fileRows) {
         freshnessMap[row.id] = getFreshnessBoost(row.lastAccessedAt, row.updatedAt);
+        staleMap[row.id] = row.staleScore ?? 0;
       }
 
       for (const f of fragments) {
         const boost = freshnessMap[f.fileId] ?? 1.0;
         f.relevanceScore *= boost;
+
+        // Stale content penalty
+        const stale = staleMap[f.fileId] ?? 0;
+        if (stale > 0.8) {
+          f.relevanceScore *= 0.2;
+        } else if (stale > 0.5) {
+          f.relevanceScore *= 0.5;
+        }
       }
 
       fragments.sort((a, b) => b.relevanceScore - a.relevanceScore);

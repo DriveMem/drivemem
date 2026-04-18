@@ -277,6 +277,7 @@ export default function HomePage() {
   const [insights, setInsights] = useState<any[]>([])
   const [resumeBrief, setResumeBrief] = useState<any>(null)
   const [conflicts, setConflicts] = useState<any[]>([])
+  const [staleCount, setStaleCount] = useState(0)
   const [activityPage, setActivityPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -298,6 +299,15 @@ export default function HomePage() {
     apiFetch("/api/files/conflicts")
       .then((data: any) => {
         if (data?.conflicts?.length > 0) setConflicts(data.conflicts)
+      })
+      .catch(() => {})
+  }, [])
+
+  // Fetch stale content count
+  useEffect(() => {
+    apiFetch("/api/files/stale")
+      .then((data: any) => {
+        if (data?.count > 0) setStaleCount(data.count)
       })
       .catch(() => {})
   }, [])
@@ -377,6 +387,17 @@ export default function HomePage() {
 
         {/* Conflict Warning — conditional */}
         {conflicts.length > 0 && <ConflictBanner count={conflicts.length} />}
+
+        {/* Stale Content Warning — conditional */}
+        {staleCount > 0 && (
+          <div className="mb-6 flex items-center gap-2 rounded-lg border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20 px-4 py-3 text-sm text-orange-800 dark:text-orange-200">
+            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+            <span>⚠️ {staleCount} {staleCount === 1 ? "file" : "files"} may be outdated</span>
+            <Link href="/files?filter=stale" className="ml-auto text-xs font-medium underline hover:no-underline">
+              Review
+            </Link>
+          </div>
+        )}
 
         {/* Quick Actions — S1: icon-only on mobile with tooltips */}
         <TooltipProvider delayDuration={0}>

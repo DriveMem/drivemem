@@ -202,6 +202,28 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     return reply.send({ conflicts, count: conflicts.length });
   });
 
+  // GET /stale — stale content for dashboard
+  fastify.get('/stale', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const { detectStaleContent } = await import('../services/stale-detector.js');
+    const staleFiles = await detectStaleContent(userId);
+    return reply.send({ staleFiles, count: staleFiles.length });
+  });
+
+  // POST /stale/:fileId/dismiss — dismiss stale warning
+  fastify.post('/stale/:fileId/dismiss', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const { fileId } = request.params as { fileId: string };
+    const [file] = await db.select({ id: schema.files.id })
+      .from(schema.files)
+      .where(and(eq(schema.files.id, fileId), eq(schema.files.userId, userId)));
+    if (!file) return reply.status(404).send({ error: 'File not found' });
+    await db.update(schema.files)
+      .set({ staleScore: 0, lastAccessedAt: new Date() })
+      .where(eq(schema.files.id, fileId));
+    return reply.send({ success: true });
+  });
+
   // GET / — file list
   fastify.get('/', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;

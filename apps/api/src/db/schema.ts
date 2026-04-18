@@ -63,6 +63,7 @@ export const files = pgTable('files', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
   lastAccessedAt: timestamp('last_accessed_at', { withTimezone: true }),
+  staleScore: real('stale_score').notNull().default(0),
 });
 
 // --- Conversation scope enum ---

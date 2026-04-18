@@ -747,7 +747,28 @@ You are not just a chat assistant — you are part of the user's knowledge syste
               recency: (args as any).recency as string | undefined,
             },
           });
-          const summary = `${result.compiledContext}\n\n---\n_Compilation: ${result.metadata.fragmentCount} fragments, ${result.metadata.totalTokens}/${result.metadata.tokenBudget} tokens, ${result.metadata.compilationTimeMs}ms, coverage: ${result.metadata.coverage}_`;
+
+          // Check for stale sources and add warning
+          let staleWarning = '';
+          try {
+            const sourceFileIds = result.metadata.sources?.map(s => s.fileId) || [];
+            if (sourceFileIds.length > 0) {
+              const { files: filesTable } = await import('../db/schema.js');
+              const staleSources = await db.select({ id: filesTable.id, name: filesTable.name, staleScore: filesTable.staleScore, lastAccessedAt: filesTable.lastAccessedAt })
+                .from(filesTable)
+                .where(and(inArray(filesTable.id, sourceFileIds), gt(filesTable.staleScore, 0.5)));
+              if (staleSources.length > 0) {
+                const DAY_MS = 24 * 60 * 60 * 1000;
+                const details = staleSources.map(f => {
+                  const daysAgo = f.lastAccessedAt ? Math.floor((Date.now() - f.lastAccessedAt.getTime()) / DAY_MS) : '?';
+                  return `${f.name} (last accessed ${daysAgo} days ago)`;
+                }).join(', ');
+                staleWarning = `\n\n⚠️ Note: some sources may be outdated: ${details}`;
+              }
+            }
+          } catch { /* best-effort */ }
+
+          const summary = `${result.compiledContext}${staleWarning}\n\n---\n_Compilation: ${result.metadata.fragmentCount} fragments, ${result.metadata.totalTokens}/${result.metadata.tokenBudget} tokens, ${result.metadata.compilationTimeMs}ms, coverage: ${result.metadata.coverage}_`;
           return { content: [{ type: 'text' as const, text: summary }] };
         }
 

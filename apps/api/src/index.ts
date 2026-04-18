@@ -128,6 +128,9 @@ await app.register(apiKeyRoutes, { prefix: '/api/api-keys' });
 import v1Routes from './routes/v1.js';
 await app.register(v1Routes, { prefix: '/api/v1' });
 
+import staleContentRoutes from './routes/stale-content.js';
+await app.register(staleContentRoutes, { prefix: '/api/v1' });
+
 import webhookRoutes from './routes/webhooks.js';
 await app.register(webhookRoutes, { prefix: '/api/webhooks' });
 
