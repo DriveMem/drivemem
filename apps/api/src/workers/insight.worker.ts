@@ -103,7 +103,7 @@ const worker = new Worker('insight-generate', async (job) => {
   } catch (err) {
     console.warn('[insight] Failed:', (err as Error).message);
   }
-}, { connection, concurrency: 1 });
+}, { connection, concurrency: 1, lockDuration: 2 * 60 * 1000 });
 
 worker.on('error', (err) => console.error('[insight-worker] Error:', err.message));
 console.log('[insight-worker] Started');
