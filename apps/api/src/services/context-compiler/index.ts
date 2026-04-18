@@ -498,6 +498,25 @@ export async function compileContext(
     }
   }
 
+  // Step 2.9: LLM Re-ranking (only when enough fragments to justify it)
+  if (fragments.length > 5) {
+    try {
+      const { rerankResults } = await import('../reranker.js');
+      const asReranked = fragments.map(f => ({ ...f, fileId: f.fileId, fileName: f.fileName, text: f.text, score: f.relevanceScore }));
+      const reranked = await rerankResults(request.task, asReranked, 5);
+      // Apply reranked order back to fragments
+      for (let i = 0; i < reranked.length && i < fragments.length; i++) {
+        const src = reranked[i];
+        const frag = fragments.find(f => f.text === src.text && f.fileId === src.fileId);
+        if (frag) {
+          // Boost top-ranked items slightly to preserve LLM ordering through subsequent sort
+          frag.relevanceScore = Math.max(frag.relevanceScore, 1.0 - i * 0.02);
+        }
+      }
+      fragments.sort((a, b) => b.relevanceScore - a.relevanceScore);
+    } catch { /* re-ranking is best-effort */ }
+  }
+
   // Step 3: Score and rank
   const scored = scoreFragments(fragments, request.task);
 

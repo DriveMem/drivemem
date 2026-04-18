@@ -361,6 +361,14 @@ export default async function v1Routes(fastify: FastifyInstance) {
     const { applyFeedbackWeights } = await import('../services/feedback-weights.js');
     searchResults = await applyFeedbackWeights(userId, searchResults);
 
+    // LLM Re-ranking (only when enough results)
+    if (searchResults.length > 5) {
+      try {
+        const { rerankResults } = await import('../services/reranker.js');
+        searchResults = await rerankResults(query.q, searchResults);
+      } catch { /* re-ranking is best-effort */ }
+    }
+
     // Get file dates
     const searchFileIds = [...new Set(searchResults.map(c => c.fileId))];
     const fileDates: Record<string, Date> = {};

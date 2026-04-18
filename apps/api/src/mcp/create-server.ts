@@ -433,6 +433,14 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           const { applyFeedbackWeights } = await import('../services/feedback-weights.js');
           results = await applyFeedbackWeights(userId, results);
 
+          // LLM Re-ranking (only when enough results)
+          if (results.length > 5) {
+            try {
+              const { rerankResults } = await import('../services/reranker.js');
+              results = await rerankResults(query, results);
+            } catch { /* re-ranking is best-effort */ }
+          }
+
           const fileIds = [...new Set(results.map(r => r.fileId))];
           const fileDates: Record<string, string> = {};
           for (const fid of fileIds) {
