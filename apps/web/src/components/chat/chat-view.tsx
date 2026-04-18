@@ -407,7 +407,11 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
             onClick={() => {
               const md = messages.map(m => {
                 const role = m.role === "user" ? "## 👤 User" : "## 🤖 AI"
-                return `${role}\n\n${m.content}\n`
+                let text = `${role}\n\n${m.content}\n`
+                if (m.citations && m.citations.length > 0) {
+                  text += "\n**Sources:**\n" + m.citations.map((c: any, i: number) => `${i+1}. ${c.fileName}${c.text ? ' — "' + c.text.slice(0,100) + '..."' : ''}`).join("\n") + "\n"
+                }
+                return text
               }).join("\n---\n\n")
               const blob = new Blob([md], { type: "text/markdown" })
               const url = URL.createObjectURL(blob)
