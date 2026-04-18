@@ -8,6 +8,7 @@ import { createMcpServer } from '../mcp/create-server.js';
 import { db } from '../db/index.js';
 import { agentConnections } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import { trackToolCall, onSessionDisconnect } from '../services/session-idle-summary.js';
 
 // --- Agent Connection Tracking (fire-and-forget) ---
 async function trackConnectionOpen(userId: string, apiKeyId: string | undefined, agentName: string, transport: string): Promise<string | null> {
@@ -44,84 +45,11 @@ async function trackConnectionClose(connectionId: string | null) {
   } catch { /* fire-and-forget */ }
 }
 
-// --- Session Idle Detection (Layer 3: Auto Store) ---
-interface SessionActivity {
-  userId: string;
-  agentName: string;
-  lastActivity: number; // Date.now()
-  toolCallCount: number;
-  toolCallHistory: string[]; // last N tool names called
-}
-
-const sessionActivityMap = new Map<string, SessionActivity>();
-const IDLE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
-const IDLE_CHECK_INTERVAL_MS = 60 * 1000; // 1 minute
-let idleCheckTimer: ReturnType<typeof setInterval> | null = null;
-
-async function triggerAutoCapture(sessionId: string, activity: SessionActivity) {
-  try {
-    const { autoCapture } = await import('../services/auto-capture.js');
-    const summary = `MCP session idle auto-capture. Agent: ${activity.agentName || 'unknown'}. Tools used: ${activity.toolCallHistory.join(', ')}. Total calls: ${activity.toolCallCount}.`;
-    const result = await autoCapture(activity.userId, summary, { sessionId });
-    if (result.captured > 0) {
-      const { logActivity } = await import('../services/activity-logger.js');
-      await logActivity({
-        userId: activity.userId,
-        agentName: activity.agentName || undefined,
-        action: 'auto_store',
-        detail: `Session idle auto-capture: ${result.captured} items`,
-        metadata: { source: 'auto_store', sessionId, captured: result.captured, items: result.items },
-      });
-    }
-  } catch (e) {
-    console.error('[MCP idle] auto-capture failed:', e);
-  }
-}
-
-function startIdleChecker() {
-  if (idleCheckTimer) return;
-  idleCheckTimer = setInterval(() => {
-    const now = Date.now();
-    for (const [sessionId, activity] of sessionActivityMap.entries()) {
-      const idleMs = now - activity.lastActivity;
-      if (idleMs >= IDLE_THRESHOLD_MS && activity.toolCallCount > 0) {
-        // Trigger auto-capture and remove from tracking
-        triggerAutoCapture(sessionId, activity);
-        sessionActivityMap.delete(sessionId);
-      }
-    }
-  }, IDLE_CHECK_INTERVAL_MS);
-}
-
-function trackSessionActivity(sessionId: string, userId: string, agentName: string, toolName?: string) {
-  const existing = sessionActivityMap.get(sessionId);
-  if (existing) {
-    existing.lastActivity = Date.now();
-    if (toolName) {
-      existing.toolCallCount++;
-      existing.toolCallHistory.push(toolName);
-      if (existing.toolCallHistory.length > 20) existing.toolCallHistory.shift();
-    }
-  } else {
-    sessionActivityMap.set(sessionId, {
-      userId,
-      agentName,
-      lastActivity: Date.now(),
-      toolCallCount: toolName ? 1 : 0,
-      toolCallHistory: toolName ? [toolName] : [],
-    });
-  }
-}
-
 export default async function mcpHttpRoutes(fastify: FastifyInstance) {
   // Active sessions: sessionId -> { transport, server }
   const sessions = new Map<string, { transport: SSEServerTransport | StreamableHTTPServerTransport; server: any }>();
 
-  // Start the idle session checker
-  startIdleChecker();
-  fastify.addHook('onClose', () => {
-    if (idleCheckTimer) { clearInterval(idleCheckTimer); idleCheckTimer = null; }
-  });
+  // Session idle summary is handled per-session via session-idle-summary service
 
   // =========================================================================
   // Streamable HTTP transport (Protocol version 2025-11-25)
@@ -200,20 +128,16 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
       transport.onclose = () => {
         const sid = transport.sessionId;
         if (sid) {
-          const activity = sessionActivityMap.get(sid);
-          if (activity && activity.toolCallCount > 0) {
-            triggerAutoCapture(sid, activity);
-          }
-          sessionActivityMap.delete(sid);
+          onSessionDisconnect(sid);
           sessions.delete(sid);
         }
         trackConnectionClose(connectionId);
       };
 
       const mcpServer = createMcpServer(userId, agentName, {
-        onToolCall: (toolName) => {
+        onToolCall: (toolName, toolArgs) => {
           const sid = transport.sessionId;
-          if (sid) trackSessionActivity(sid, userId, agentName, toolName);
+          if (sid) trackToolCall(sid, userId, agentName, toolName, toolArgs);
           trackConnectionActivity(connectionId);
         },
       });
@@ -268,8 +192,8 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     let sseConnectionId: string | null = null;
 
     const mcpServer = createMcpServer(userId, agentName, {
-      onToolCall: (toolName) => {
-        trackSessionActivity(sessionId, userId, agentName, toolName);
+      onToolCall: (toolName, toolArgs) => {
+        trackToolCall(sessionId, userId, agentName, toolName, toolArgs);
         trackConnectionActivity(sseConnectionId);
       },
     });
@@ -279,11 +203,7 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     sessions.set(sessionId, { transport, server: mcpServer });
 
     transport.onclose = () => {
-      const activity = sessionActivityMap.get(sessionId);
-      if (activity && activity.toolCallCount > 0) {
-        triggerAutoCapture(sessionId, activity);
-      }
-      sessionActivityMap.delete(sessionId);
+      onSessionDisconnect(sessionId);
       sessions.delete(sessionId);
       trackConnectionClose(sseConnectionId);
     };

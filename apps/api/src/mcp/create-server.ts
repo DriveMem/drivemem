@@ -32,7 +32,7 @@ async function enrichResponse(userId: string, query: string, excludeFileIds: str
 }
 
 export interface McpServerOptions {
-  onToolCall?: (toolName: string) => void;
+  onToolCall?: (toolName: string, args?: Record<string, unknown>) => void;
 }
 
 export function createMcpServer(userId: string, agentName: string = '', options?: McpServerOptions): Server {
@@ -273,7 +273,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
     const { name, arguments: args } = request.params;
 
     // Notify session activity tracker
-    options?.onToolCall?.(name);
+    options?.onToolCall?.(name, args as Record<string, unknown> | undefined);
 
     // Build welcome brief on first tool call (any tool except compile_context)
     let welcomeBrief = '';
