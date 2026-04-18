@@ -46,6 +46,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     // }),
   ],
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.drivemem.cloud' : undefined,
+      },
+    },
+  },
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
