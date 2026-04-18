@@ -19,7 +19,7 @@ function FadeIn({
   delay?: number
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(true)
   useEffect(() => {
     const el = ref.current
     if (!el) return
