@@ -393,6 +393,8 @@ export default function HomePage() {
           <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
           <span className="text-body text-muted-foreground">
             DriveMem is active
+            {fileCount > 0 && <> · {fileCount} {fileCount === 1 ? "file" : "files"}</>}
+            {insightCount > 0 ? <> · {insightCount} {insightCount === 1 ? "insight" : "insights"}</> : fileCount > 0 ? <> · Upload more files to discover insights</> : null}
           </span>
         </div>
 
@@ -516,58 +518,20 @@ export default function HomePage() {
           </div>
         </TooltipProvider>
 
-        {/* Value Summary */}
-        <div className="rounded-2xl border shadow-soft p-6 mb-8">
-          <h3 className="text-sm font-medium text-muted-foreground mb-4">Your knowledge base</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="text-center">
-              {fileCount > 0 ? (
-                <>
-                  <p className="text-heading font-bold">{fileCount}</p>
-                  <p className="text-caption text-muted-foreground mt-1">{fileCount === 1 ? "file" : "files"}</p>
-                </>
-              ) : (
-                <button onClick={() => setShowUpload(true)} className="text-caption text-primary hover:underline">
-                  Upload files to get started
-                </button>
-              )}
-            </div>
-            <div className="text-center">
-              {insightCount > 0 ? (
-                <>
-                  <p className="text-heading font-bold">{insightCount}</p>
-                  <p className="text-caption text-muted-foreground mt-1">{insightCount === 1 ? "insight" : "insights"}</p>
-                </>
-              ) : (
-                <p className="text-caption text-muted-foreground">Insights appear as you add files</p>
-              )}
-            </div>
-            <div className="text-center">
-              {projectCount > 0 ? (
-                <>
-                  <p className="text-heading font-bold">{projectCount}</p>
-                  <p className="text-caption text-muted-foreground mt-1">{projectCount === 1 ? "project" : "projects"}</p>
-                </>
-              ) : (
-                <p className="text-caption text-muted-foreground">Create a project to organize files</p>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* Value Summary removed — file/insight counts now in Status Banner */}
 
-        {/* Weekly Stats — only show when meaningful weekly data exists */}
-        {weeklyStats && (weeklyStats.agentInteractions > 0 || weeklyStats.filesIndexed > 0 || weeklyStats.connectionsFound > 0) && (
+        {/* Weekly Stats — connections + interactions only (files shown in banner) */}
+        {weeklyStats && (weeklyStats.agentInteractions > 0 || weeklyStats.connectionsFound > 0) && (
           <div className="rounded-2xl border shadow-soft p-6 mb-8">
-            <h3 className="text-title font-semibold mb-1">This week</h3>
+            <h3 className="text-title font-semibold mb-1">Getting smarter</h3>
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mt-2">
+              {weeklyStats.connectionsFound > 0 ? (
+                <span>{weeklyStats.connectionsFound} {weeklyStats.connectionsFound === 1 ? 'connection' : 'connections'} found</span>
+              ) : (
+                <span className="text-muted-foreground/60">Connections will appear as your knowledge grows</span>
+              )}
               {weeklyStats.agentInteractions > 0 && (
-                <span>{weeklyStats.agentInteractions} agent {weeklyStats.agentInteractions === 1 ? 'interaction' : 'interactions'}</span>
-              )}
-              {weeklyStats.filesIndexed > 0 && (
-                <span>{weeklyStats.filesIndexed} {weeklyStats.filesIndexed === 1 ? 'file' : 'files'} added</span>
-              )}
-              {weeklyStats.connectionsFound > 0 && (
-                <span>{weeklyStats.connectionsFound} {weeklyStats.connectionsFound === 1 ? 'insight' : 'insights'} found</span>
+                <span>{weeklyStats.agentInteractions} {weeklyStats.agentInteractions === 1 ? 'interaction' : 'interactions'}</span>
               )}
             </div>
           </div>
