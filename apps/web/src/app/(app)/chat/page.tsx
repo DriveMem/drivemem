@@ -3,6 +3,7 @@ import { Suspense, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { ChatView } from "@/components/chat/chat-view"
 import { useConversations } from "@/hooks/use-conversations"
+import { ChatSkeleton } from "@/components/ui/skeleton-loader"
 
 function ChatPageInner() {
   useEffect(() => { document.title = "Chat — DriveMem" }, [])
@@ -32,7 +33,7 @@ function ChatPageInner() {
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div className="flex h-full items-center justify-center text-muted-foreground">Loading...</div>}>
+    <Suspense fallback={<ChatSkeleton />}>
       <ChatPageInner />
     </Suspense>
   )

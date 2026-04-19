@@ -9,15 +9,22 @@ import { useTags } from "@/hooks/use-tags"
 import { useLayoutStore } from "@/stores/layout-store"
 import { List, Network } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { KnowledgeSkeleton } from "@/components/ui/skeleton-loader"
+import { useFiles } from "@/hooks/use-files"
 
 const GraphEmbed = dynamic(() => import("@/app/(app)/graph/page"), { ssr: false })
 
 export default function KnowledgePage() {
   const [view, setView] = useState<"list" | "graph">("list")
   const { activeTagFilter, setActiveTagFilter, currentFolderId } = useLayoutStore()
-  const { data: tags = [] } = useTags()
+  const { data: tags = [], isLoading: tagsLoading } = useTags()
+  const { isLoading: filesLoading } = useFiles(currentFolderId)
 
   useEffect(() => { document.title = "Knowledge — DriveMem" }, [])
+
+  if (filesLoading && tagsLoading) {
+    return <KnowledgeSkeleton />
+  }
 
   return (
     <div className="flex h-full">

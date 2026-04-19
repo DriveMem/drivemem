@@ -17,6 +17,7 @@ import Link from "next/link"
 import { AutoSavedBar } from "@/components/dashboard/auto-saved-bar"
 import { WorkItemsPanel } from "@/components/dashboard/work-items-panel"
 import { WelcomeCard } from "@/components/onboarding/welcome-card"
+import { DashboardSkeleton } from "@/components/ui/skeleton-loader"
 
 // --- helpers ---
 function relativeTime(dateStr: string): string {
@@ -271,8 +272,8 @@ function AutoStoreGroup({ group }: { group: any }) {
 export default function HomePage() {
   const router = useRouter()
   const [showUpload, setShowUpload] = useState(false)
-  const { data: filesData } = useFiles()
-  const { data: foldersData } = useFolders()
+  const { data: filesData, isLoading: filesLoading } = useFiles()
+  const { data: foldersData, isLoading: foldersLoading } = useFolders()
 
   const [activities, setActivities] = useState<any[]>([])
   const [insights, setInsights] = useState<any[]>([])
@@ -372,6 +373,10 @@ export default function HomePage() {
 
   // Group auto_store activities
   const groupedActivities = groupAutoStoreActivities(activities)
+
+  if (filesLoading && foldersLoading) {
+    return <DashboardSkeleton />
+  }
 
   return (
     <div className="flex flex-col h-full overflow-auto">
