@@ -123,7 +123,7 @@ const worker = new Worker<ParseJobData>(
     try {
       const { chat } = await import('../services/llm.service.js');
       const chunkTexts = truncateAtBoundary(chunks.map((c: { text: string }) => c.text).join('\n\n'), 3000);
-      const summaryPrompt = '请用中文为以下文档内容生成一段简洁的摘要（不超过200字），概括文档的主要内容和关键信息：\n\n' + chunkTexts;
+      const summaryPrompt = 'Generate a concise summary (max 200 words) of this document, covering the main content and key information:\n\n' + chunkTexts;
       const summary = await chat([{ role: 'user', content: summaryPrompt }]);
       if (summary) {
         await db.update(files).set({ summary }).where(eq(files.id, fileId));
@@ -131,7 +131,7 @@ const worker = new Worker<ParseJobData>(
 
         // Auto-tag: generate 2-3 tags based on summary
         try {
-          const tagPrompt = `基于以下文件摘要，生成2-3个分类标签。只从以下选项中选择：spec、decision、report、meeting、research、tutorial、analysis、test、config、note。只返回逗号分隔的标签，不要其他文字。\n\n摘要：${summary.substring(0, 200)}`;
+          const tagPrompt = `Based on this file summary, generate 2-3 classification tags. Choose ONLY from: spec, decision, report, meeting, research, tutorial, analysis, test, config, note. Return comma-separated tags only, no other text.\n\nSummary: ${summary.substring(0, 200)}`;
           const tagResult = await chat([{ role: 'user', content: tagPrompt }]);
           const tagNames = tagResult.split(',').map((t: string) => t.trim().toLowerCase()).filter((t: string) => t.length > 0 && t.length < 20).slice(0, 3);
           
@@ -226,7 +226,7 @@ const worker = new Worker<ParseJobData>(
       if (userFolders.length > 0 && fileSummary) {
         const { chat } = await import('../services/llm.service.js');
         const folderNames = userFolders.map(f => f.name).join('、');
-        const classifyPrompt = `文件摘要：${fileSummary}\n\n用户的文件夹列表：${folderNames}\n\n这个文件最适合放入哪个文件夹？规则：只输出文件夹名称本身，禁止输出任何解释、括号、推理过程。如果都不合适，只输出"无"。`;
+        const classifyPrompt = `File summary: ${fileSummary}\n\nUser folders: ${folderNames}\n\nWhich folder fits this file best? Output ONLY the folder name. If none fit, output 'none'.`;
         const suggested = await chat([{ role: 'user', content: classifyPrompt }]);
         const trimmed = suggested?.trim().replace(/["""]/g, '');
 

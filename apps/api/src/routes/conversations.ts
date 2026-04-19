@@ -436,13 +436,14 @@ Response: ${fullContent.substring(0, 300)}`;
 
       // Extract user memory from conversation (non-blocking)
       try {
-        const memoryPrompt = `从以下对话中提取用户的关键偏好、关注点或记忆点。只提取真正有价值的信息（如用户的专业领域、关注的话题、偏好的回答风格等）。
-如果没有值得记忆的信息，返回空数组。
-返回JSON数组格式：[{"key":"简短标签","value":"具体描述"}]
-只返回JSON，不要其他文本。
+        const memoryPrompt = `Extract key user preferences, interests, or memorable facts from this conversation. Only extract genuinely valuable information (e.g. professional domain, topics of interest, preferred response style).
+If nothing worth remembering, return an empty array.
+Return JSON array: [{"key":"Short Label in English","value":"Brief description in English"}]
+Use natural language for keys (e.g. "Professional Domain", "Preferred Style"), not underscores or Chinese.
+Return only JSON, no other text.
 
-用户问：${body.content}
-AI答：${fullContent.substring(0, 300)}`;
+User: ${body.content}
+AI: ${fullContent.substring(0, 300)}`;
 
         const memoryResult = await chat([{ role: 'user', content: memoryPrompt }]);
         const memJsonMatch = memoryResult.match(/\[[\s\S]*?\]/);

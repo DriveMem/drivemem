@@ -12,6 +12,10 @@ import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { cn } from "@/lib/utils"
+
+function displayFileName(name: string): string {
+  return name.replace(/\.md$/i, "").replace(/^note-\d{4}-\d{2}-\d{2}T[\d-]+$/, "AI Note")
+}
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { apiFetch } from "@/lib/api"
