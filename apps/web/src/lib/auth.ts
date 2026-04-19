@@ -37,7 +37,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           image: user.avatarUrl,
-          accessToken: user.token, // plain JWT from backend (方案 C)
+          accessToken: user.token, // plain JWT from backend (approach C)
         }
       },
     }),
@@ -66,7 +66,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        // Store the plain JWT from backend (方案 C)
+        // Store the plain JWT from backend (approach C)
         if ((user as any).accessToken) {
           token.accessToken = (user as any).accessToken
         }
@@ -77,7 +77,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string
       }
-      // Expose accessToken to client for API calls (方案 C)
+      // Expose accessToken to client for API calls (approach C)
       ;(session as any).accessToken = token.accessToken as string | undefined
       return session
     },

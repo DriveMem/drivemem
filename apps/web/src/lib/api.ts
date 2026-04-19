@@ -4,7 +4,7 @@ const PRODUCTION_API = "https://api.drivemem.cloud"
 const isDev = typeof window !== "undefined" && window.location.hostname === "localhost"
 const API_BASE = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : PRODUCTION_API
 
-/** 带 status 字段的 API 错误，方便下游 classifyError 识别 */
+/** API error with status field for downstream classifyError */
 export class ApiError extends Error {
   status: number
   constructor(message: string, status: number) {
@@ -14,12 +14,12 @@ export class ApiError extends Error {
   }
 }
 
-/** 去重：同一条网络错误 toast 短时间内只弹一次 */
+/** Dedupe: only show one network error toast within a short window */
 let lastNetworkToastAt = 0
 
 async function showNetworkToast(msg: string) {
   const now = Date.now()
-  if (now - lastNetworkToastAt < 3000) return // 3 秒内不重复弹
+  if (now - lastNetworkToastAt < 3000) return // no repeat within 3s
   lastNetworkToastAt = now
   if (typeof window === "undefined") return
   const { toast } = await import("sonner")
@@ -55,7 +55,7 @@ export async function apiFetch(path: string, options?: ApiFetchOptions) {
       credentials: "include",
     })
   } catch (err) {
-    // 网络错误（Failed to fetch / TypeError）或超时（AbortError）
+    // Network error (Failed to fetch / TypeError) or timeout (AbortError)
     const isTimeout = err instanceof DOMException && err.name === "AbortError"
     if (isTimeout) {
       if (!silent) showNetworkToast("Request timeout — please check your network")
@@ -74,7 +74,7 @@ export async function apiFetch(path: string, options?: ApiFetchOptions) {
       toast.error("Demo account is read-only. Sign up for full access.")
     }
 
-    // 5xx 服务端错误 → toast (unless silent)
+    // 5xx server error → toast (unless silent)
     if (res.status >= 500 && !silent) {
       showNetworkToast("Service temporarily unavailable")
     }

@@ -97,7 +97,7 @@ function ActivityItem({ activity }: { activity: any }) {
         <span className="text-indigo-600 dark:text-indigo-400 flex-shrink-0 font-medium">{agentName}</span>
         <span className="text-zinc-900 dark:text-zinc-100 truncate">
           used knowledge from <span className="text-indigo-600 dark:text-indigo-400">{fromAgent}</span>
-          {fileName && <span className="text-zinc-500 dark:text-zinc-400">: &ldquo;{fileName}&rdquo;</span>}
+          {fileName && <span className="text-zinc-500 dark:text-zinc-400">: &ldquo;{fileName.replace(/\.(md|txt|pdf|docx?)$/i, '')}&rdquo;</span>}
         </span>
         <span className="ml-auto text-micro md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
           <span className="hidden md:inline">{relativeTime(activity.createdAt)}</span>
@@ -593,7 +593,7 @@ export default function HomePage() {
         {projectCount === 0 && fileCount === 0 && (
           <div className="mb-8">
             <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider mb-4">
-              开始使用
+              Get Started
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
@@ -602,8 +602,8 @@ export default function HomePage() {
               >
                 <FolderPlus className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">创建你的第一个项目</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">用项目组织你的知识文件</div>
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Create your first project</div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Organize your knowledge files with projects</div>
                 </div>
               </button>
               <button
@@ -612,8 +612,8 @@ export default function HomePage() {
               >
                 <Upload className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">上传第一份文件</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">支持文档、PDF、图片等格式</div>
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Upload your first file</div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Supports documents, PDFs, images and more</div>
                 </div>
               </button>
               <button
@@ -622,8 +622,8 @@ export default function HomePage() {
               >
                 <MessageCircle className="h-5 w-5 text-violet-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">试试 AI 对话</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">基于你的知识库智能问答</div>
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Try AI Chat</div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Smart Q&A based on your knowledge base</div>
                 </div>
               </button>
               <Link
@@ -632,8 +632,8 @@ export default function HomePage() {
               >
                 <Terminal className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">用 CLI / MCP 连接</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">通过命令行或 API 接入知识库</div>
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Connect via CLI / MCP</div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Access your knowledge base through CLI or API</div>
                 </div>
               </Link>
             </div>
@@ -650,8 +650,8 @@ export default function HomePage() {
           </h2>
           {groupedActivities.length === 0 ? (
             <div className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">
-              <p>暂无最近活动</p>
-              <p className="mt-1">上传文件或开始对话后，活动会显示在这里。</p>
+              <p>No recent activity</p>
+              <p className="mt-1">Upload files or start a conversation to see activity here.</p>
             </div>
           ) : (
             <div>

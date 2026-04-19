@@ -33,7 +33,7 @@ export function useChat(conversationId: string) {
       })
 
       if (res.status === 429) {
-        setError('今天的对话次数已用完，明天再来')
+        setError('Daily conversation limit reached. Please try again tomorrow')
         setMessages(prev => prev.filter(m => m.id !== assistantId))
         setIsStreaming(false)
         return
@@ -78,13 +78,13 @@ export function useChat(conversationId: string) {
               )
             } else if (data.code) {
               // error event
-              setError(data.message || '生成失败')
+              setError(data.message || 'Generation failed')
             }
           }
         }
       }
     } catch (err: any) {
-      setError(err.message || '网络错误')
+      setError(err.message || 'Network error')
     } finally {
       setIsStreaming(false)
     }

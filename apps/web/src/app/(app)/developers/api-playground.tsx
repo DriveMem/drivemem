@@ -49,56 +49,56 @@ const ENDPOINTS: EndpointDef[] = [
     id: "search",
     method: "GET",
     path: "/api/v1/search",
-    label: "语义搜索",
-    description: "自然语言检索知识库，返回最相关的文件片段和相似度分数",
+    label: "Semantic Search",
+    description: "Search your knowledge base with natural language, returns most relevant file snippets",
     category: "read",
     params: [
-      { name: "q", label: "搜索关键词", type: "text", dataType: "string", placeholder: "项目最新进展", required: true },
-      { name: "contextBudget", label: "Token 预算", type: "text", dataType: "number", placeholder: "50000" },
-      { name: "preferFormat", label: "返回格式", type: "select", dataType: "string", options: ["text", "structured", "summary"] },
+      { name: "q", label: "Search query", type: "text", dataType: "string", placeholder: "Latest project progress", required: true },
+      { name: "contextBudget", label: "Token budget", type: "text", dataType: "number", placeholder: "50000" },
+      { name: "preferFormat", label: "Response format", type: "select", dataType: "string", options: ["text", "structured", "summary"] },
     ],
   },
   {
     id: "files",
     method: "GET",
     path: "/api/v1/files",
-    label: "列出文件",
-    description: "获取知识库中的所有文件列表",
+    label: "List Files",
+    description: "Get all files in your knowledge base",
     category: "read",
     params: [
-      { name: "detail", label: "详情级别", type: "select", dataType: "string", options: ["full", "brief"], defaultValue: "full" },
+      { name: "detail", label: "Detail level", type: "select", dataType: "string", options: ["full", "brief"], defaultValue: "full" },
     ],
   },
   {
     id: "ask",
     method: "POST",
     path: "/api/v1/ask",
-    label: "RAG 问答",
-    description: "基于知识库的 AI 问答，自动引用来源",
+    label: "RAG Q&A",
+    description: "AI Q&A based on your knowledge base with source citations",
     category: "read",
     params: [
-      { name: "question", label: "问题", type: "textarea", dataType: "string", placeholder: "基于文件总结本周工作进展", required: true },
-      { name: "contextBudget", label: "Token 预算", type: "text", dataType: "number", placeholder: "5000" },
+      { name: "question", label: "Question", type: "textarea", dataType: "string", placeholder: "Summarize this week's progress based on files", required: true },
+      { name: "contextBudget", label: "Token budget", type: "text", dataType: "number", placeholder: "5000" },
     ],
   },
   {
     id: "file-detail",
     method: "GET",
     path: "/api/v1/files/:id",
-    label: "文件详情",
-    description: "获取单个文件的详细信息和 AI 摘要",
+    label: "File Detail",
+    description: "Get detailed info and AI summary for a single file",
     category: "read",
     params: [
-      { name: "id", label: "文件 ID", type: "text", dataType: "string", placeholder: "abc-123-def-456", required: true },
-      { name: "detail", label: "详情级别", type: "select", dataType: "string", options: ["brief", "full"] },
+      { name: "id", label: "File ID", type: "text", dataType: "string", placeholder: "abc-123-def-456", required: true },
+      { name: "detail", label: "Detail level", type: "select", dataType: "string", options: ["brief", "full"] },
     ],
   },
   {
     id: "insights",
     method: "GET",
     path: "/api/v1/insights",
-    label: "获取洞察",
-    description: "AI 主动发现的文件关联、矛盾观点和共同趋势",
+    label: "Get Insights",
+    description: "AI-discovered file connections, contradictions, and trends",
     category: "read",
     params: [],
   },
@@ -106,11 +106,11 @@ const ENDPOINTS: EndpointDef[] = [
     id: "timeline",
     method: "GET",
     path: "/api/v1/timeline",
-    label: "时间线",
-    description: "知识库活动时间线（上传、对话、洞察等）",
+    label: "Timeline",
+    description: "Knowledge base activity timeline (uploads, chats, insights)",
     category: "read",
     params: [
-      { name: "limit", label: "返回条数", type: "text", dataType: "number", placeholder: "20" },
+      { name: "limit", label: "Limit", type: "text", dataType: "number", placeholder: "20" },
     ],
   },
   // --- Write operations ---
@@ -118,66 +118,66 @@ const ENDPOINTS: EndpointDef[] = [
     id: "store",
     method: "POST",
     path: "/api/v1/store",
-    label: "存入知识",
-    description: "快速存入一段知识笔记",
+    label: "Store Knowledge",
+    description: "Quickly store a knowledge note",
     category: "write",
     isWrite: true,
     params: [
-      { name: "content", label: "内容", type: "textarea", dataType: "string", placeholder: "今天决定采用方案 A，原因是…", required: true },
-      { name: "title", label: "标题", type: "text", dataType: "string", placeholder: "决策记录" },
-      { name: "tags", label: "标签（逗号分隔）", type: "text", dataType: "string", placeholder: "decision,meeting" },
+      { name: "content", label: "Content", type: "textarea", dataType: "string", placeholder: "Decided to go with plan A because...", required: true },
+      { name: "title", label: "Title", type: "text", dataType: "string", placeholder: "Decision record" },
+      { name: "tags", label: "Tags (comma-separated)", type: "text", dataType: "string", placeholder: "decision,meeting" },
     ],
   },
   {
     id: "upload",
     method: "POST",
     path: "/api/v1/files/upload",
-    label: "上传文件",
-    description: "上传文件到知识库（multipart/form-data）",
+    label: "Upload File",
+    description: "Upload file to knowledge base (multipart/form-data)",
     category: "write",
     isWrite: true,
     params: [
-      { name: "filename", label: "文件名", type: "text", dataType: "string", placeholder: "report.md", required: true },
-      { name: "content", label: "文件内容", type: "textarea", dataType: "string", placeholder: "# 报告标题\n\n正文内容…", required: true },
+      { name: "filename", label: "Filename", type: "text", dataType: "string", placeholder: "report.md", required: true },
+      { name: "content", label: "File content", type: "textarea", dataType: "string", placeholder: "# Report title\n\nContent...", required: true },
     ],
   },
   {
     id: "update-file",
     method: "PATCH",
     path: "/api/v1/files/:id",
-    label: "更新文件属性",
-    description: "重命名文件或修改标签",
+    label: "Update File",
+    description: "Rename file or update tags",
     category: "write",
     isWrite: true,
     params: [
-      { name: "id", label: "文件 ID", type: "text", dataType: "string", placeholder: "abc-123-def-456", required: true },
-      { name: "name", label: "新文件名", type: "text", dataType: "string", placeholder: "renamed-file.md" },
-      { name: "tags", label: "标签（逗号分隔）", type: "text", dataType: "string", placeholder: "important,project-a" },
+      { name: "id", label: "File ID", type: "text", dataType: "string", placeholder: "abc-123-def-456", required: true },
+      { name: "name", label: "New filename", type: "text", dataType: "string", placeholder: "renamed-file.md" },
+      { name: "tags", label: "Tags (comma-separated)", type: "text", dataType: "string", placeholder: "important,project-a" },
     ],
   },
   {
     id: "delete-file",
     method: "DELETE",
     path: "/api/v1/files/:id",
-    label: "删除文件",
-    description: "删除知识库中的文件",
+    label: "Delete File",
+    description: "Delete a file from your knowledge base",
     category: "write",
     isWrite: true,
     params: [
-      { name: "id", label: "文件 ID", type: "text", dataType: "string", placeholder: "abc-123-def-456", required: true },
+      { name: "id", label: "File ID", type: "text", dataType: "string", placeholder: "abc-123-def-456", required: true },
     ],
   },
   {
     id: "batch",
     method: "POST",
     path: "/api/v1/files/batch",
-    label: "批量操作",
-    description: "批量 delete / archive / unarchive 文件",
+    label: "Batch Operations",
+    description: "Batch delete / archive / unarchive files",
     category: "write",
     isWrite: true,
     params: [
-      { name: "action", label: "操作", type: "select", dataType: "string", options: ["delete", "archive", "unarchive"], required: true },
-      { name: "fileIds", label: "文件 ID（逗号分隔）", type: "text", dataType: "string", placeholder: "id1,id2,id3", required: true },
+      { name: "action", label: "Action", type: "select", dataType: "string", options: ["delete", "archive", "unarchive"], required: true },
+      { name: "fileIds", label: "File IDs (comma-separated)", type: "text", dataType: "string", placeholder: "id1,id2,id3", required: true },
     ],
   },
   // --- Webhook operations ---
@@ -185,8 +185,8 @@ const ENDPOINTS: EndpointDef[] = [
     id: "webhooks-list",
     method: "GET",
     path: "/api/webhooks",
-    label: "列出 Webhooks",
-    description: "获取已注册的所有 Webhook",
+    label: "List Webhooks",
+    description: "Get all registered webhooks",
     category: "webhook",
     params: [],
   },
@@ -194,21 +194,21 @@ const ENDPOINTS: EndpointDef[] = [
     id: "webhooks-create",
     method: "POST",
     path: "/api/webhooks",
-    label: "创建 Webhook",
-    description: "注册新的 Webhook 接收事件推送",
+    label: "Create Webhook",
+    description: "Register a new webhook to receive event notifications",
     category: "webhook",
     isWrite: true,
     params: [
-      { name: "url", label: "回调 URL", type: "text", dataType: "string", placeholder: "https://your-app.com/hook", required: true },
-      { name: "events", label: "事件类型（逗号分隔）", type: "text", dataType: "string", placeholder: "file.indexed,insight.discovered", required: true },
+      { name: "url", label: "Callback URL", type: "text", dataType: "string", placeholder: "https://your-app.com/hook", required: true },
+      { name: "events", label: "Event types (comma-separated)", type: "text", dataType: "string", placeholder: "file.indexed,insight.discovered", required: true },
     ],
   },
   {
     id: "webhooks-delete",
     method: "DELETE",
     path: "/api/webhooks/:id",
-    label: "删除 Webhook",
-    description: "移除已注册的 Webhook",
+    label: "Delete Webhook",
+    description: "Remove a registered webhook",
     category: "webhook",
     isWrite: true,
     params: [
@@ -219,12 +219,12 @@ const ENDPOINTS: EndpointDef[] = [
     id: "webhooks-deliveries",
     method: "GET",
     path: "/api/webhooks/:id/deliveries",
-    label: "投递日志",
-    description: "查看某个 Webhook 的投递记录",
+    label: "Delivery Log",
+    description: "View delivery history for a webhook",
     category: "webhook",
     params: [
       { name: "id", label: "Webhook ID", type: "text", dataType: "string", placeholder: "wh_xxx", required: true },
-      { name: "limit", label: "返回条数", type: "text", dataType: "number", placeholder: "20" },
+      { name: "limit", label: "Limit", type: "text", dataType: "number", placeholder: "20" },
     ],
   },
 ]
@@ -238,8 +238,8 @@ const METHOD_COLORS: Record<string, string> = {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  read: "📖 读取操作",
-  write: "✏️ 写入操作",
+  read: "📖 Read Operations",
+  write: "✏️ Write Operations",
   webhook: "🔔 Webhook",
 }
 
@@ -253,7 +253,7 @@ function ConfirmDialog({ endpoint, onConfirm, onCancel }: { endpoint: EndpointDe
             <AlertTriangle className="h-5 w-5 text-amber-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-[#1C1B18]">确认写入操作</h3>
+            <h3 className="font-semibold text-[#1C1B18]">Confirm Write Operation</h3>
             <p className="text-sm text-[#6B6966]">
               <span className={`inline-block rounded border px-1.5 py-0.5 text-xs font-mono font-semibold ${METHOD_COLORS[endpoint.method]}`}>
                 {endpoint.method}
@@ -263,20 +263,20 @@ function ConfirmDialog({ endpoint, onConfirm, onCancel }: { endpoint: EndpointDe
           </div>
         </div>
         <p className="mt-4 text-sm text-[#6B6966]">
-          此操作将修改你的知识库数据，确定要继续吗？
+          This will modify your knowledge base. Are you sure you want to continue?
         </p>
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={onCancel}
             className="rounded-lg border border-[#E5E4E1] px-4 py-2 text-sm font-medium text-[#6B6966] hover:bg-[#F8F7F5] transition"
           >
-            取消
+            Cancel
           </button>
           <button
             onClick={onConfirm}
             className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 transition"
           >
-            确认执行
+            Confirm
           </button>
         </div>
       </div>
@@ -357,7 +357,7 @@ function ResponseViewer({
               className="flex items-center gap-1.5 rounded-md border border-[#E5E4E1] px-2.5 py-1 text-xs font-medium text-[#6B6966] hover:bg-[#F8F7F5] transition"
             >
               {copiedCurl ? <Check className="h-3 w-3 text-emerald-600" /> : <Terminal className="h-3 w-3" />}
-              {copiedCurl ? "已复制" : "Copy as curl"}
+              {copiedCurl ? "Copied" : "Copy as curl"}
             </button>
           )}
           <button
@@ -365,7 +365,7 @@ function ResponseViewer({
             className="flex items-center gap-1.5 rounded-md border border-[#E5E4E1] px-2.5 py-1 text-xs font-medium text-[#6B6966] hover:bg-[#F8F7F5] transition"
           >
             {copied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-            {copied ? "已复制" : "Copy JSON"}
+            {copied ? "Copied" : "Copy JSON"}
           </button>
         </div>
       </div>
@@ -516,8 +516,8 @@ export default function ApiPlayground() {
         <div className="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
           <LogIn className="h-4 w-4 shrink-0 text-amber-600" />
           <div className="text-sm text-amber-800">
-            <span className="font-medium">请先登录或在下方填入 API Key</span> —{" "}
-            <a href="/login" className="underline hover:no-underline">登录</a> 后自动携带 session。
+            <span className="font-medium">Please log in or enter your API Key below</span> —{" "}
+            <a href="/login" className="underline hover:no-underline">Log in</a> to use automatic session auth.
           </div>
         </div>
       )}
@@ -584,7 +584,7 @@ export default function ApiPlayground() {
               <code className="text-sm font-mono text-[#1C1B18]">{endpoint.path}</code>
               {endpoint.isWrite && (
                 <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
-                  写入操作
+                  Write operations
                 </span>
               )}
             </div>
@@ -615,7 +615,7 @@ export default function ApiPlayground() {
                       onChange={e => setParam(p.name, e.target.value)}
                       className="w-full rounded-lg border border-[#E5E4E1] bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/30"
                     >
-                      <option value="">— 选择 —</option>
+                      <option value="">— Select —</option>
                       {p.options?.map(o => <option key={o} value={o}>{o}</option>)}
                     </select>
                   ) : (
@@ -631,7 +631,7 @@ export default function ApiPlayground() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-[#6B6966] italic mb-2">此端点无需参数</p>
+            <p className="text-sm text-[#6B6966] italic mb-2">This endpoint requires no parameters</p>
           )}
 
           {/* Send button */}
@@ -641,7 +641,7 @@ export default function ApiPlayground() {
             className="mt-4 flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            {loading ? "请求中…" : "Send"}
+            {loading ? "Sending..." : "Send"}
           </button>
 
           {/* Response */}
