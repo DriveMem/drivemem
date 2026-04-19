@@ -51,6 +51,7 @@ function FadeIn({
 
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener("scroll", onScroll, { passive: true })
@@ -60,7 +61,7 @@ function Nav() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        scrolled
+        scrolled || mobileMenuOpen
           ? "bg-white/80 backdrop-blur-xl border-b border-gray-200/60 shadow-sm"
           : "bg-transparent"
       }`}
@@ -78,6 +79,19 @@ function Nav() {
         <div className="md:hidden flex items-center gap-3">
           <Link href="/login" className="text-gray-500 hover:text-gray-900 text-sm">Sign in</Link>
           <Link href="/signup" className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-3 py-1.5 rounded-lg font-medium transition-colors">Start free</Link>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {mobileMenuOpen ? (
+                <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>
+              ) : (
+                <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>
+              )}
+            </svg>
+          </button>
         </div>
         <div className="hidden md:flex items-center gap-8">
           <a href="#features" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
@@ -100,6 +114,19 @@ function Nav() {
           </Link>
         </div>
       </div>
+      {/* Mobile dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white border-t border-gray-200/60 shadow-sm">
+          <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col gap-3">
+            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Features</a>
+            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">How it works</a>
+            <Link href="/developers" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Docs</Link>
+            <hr className="border-gray-100" />
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Sign in</Link>
+            <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-4 py-2.5 rounded-lg font-medium transition-colors text-center">Get started free</Link>
+          </div>
+        </div>
+      )}
     </nav>
   )
 }
