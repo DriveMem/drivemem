@@ -13,6 +13,11 @@ const nextConfig = {
         destination: '/',
         permanent: true,
       },
+      {
+        source: '/connect',
+        destination: '/developers',
+        permanent: false,
+      },
     ]
   },
   async headers() {
