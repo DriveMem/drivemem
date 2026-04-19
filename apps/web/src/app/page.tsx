@@ -100,6 +100,12 @@ function Nav() {
           <a href="#how-it-works" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             How it works
           </a>
+          <a href="#use-cases" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
+            Use Cases
+          </a>
+          <Link href="/docs/quickstart" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
+            Quick Start
+          </Link>
           <Link href="/developers" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Docs
           </Link>
@@ -120,6 +126,8 @@ function Nav() {
           <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col gap-3">
             <a href="#features" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Features</a>
             <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">How it works</a>
+            <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Use Cases</a>
+            <Link href="/docs/quickstart" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Quick Start</Link>
             <Link href="/developers" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Docs</Link>
             <hr className="border-gray-100" />
             <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Sign in</Link>
@@ -338,6 +346,106 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ===== Use Cases ===== */}
+      <section id="use-cases" className="py-24 md:py-32 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <FadeIn>
+            <div className="text-center mb-16">
+              <p className="text-sm font-medium text-brand-500 mb-3">Use Cases</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                See DriveMem in Action
+              </h2>
+              <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+                From scattered notes to unified AI memory
+              </p>
+            </div>
+          </FadeIn>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Card 1 — Personal Knowledge */}
+            <FadeIn delay={0}>
+              <div className="bg-white border border-gray-100 rounded-xl p-8 h-full flex flex-col">
+                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center text-2xl mb-5">
+                  🧠
+                </div>
+                <h3 className="font-semibold text-lg text-gray-900 mb-1">Personal Knowledge Management</h3>
+                <p className="text-sm text-gray-500 mb-5">Let AI truly remember you</p>
+                <div className="border-l-2 border-orange-200 pl-4 mb-4">
+                  <p className="text-sm text-gray-500 italic leading-relaxed">
+                    Notes scattered across Notion, Google Docs, and local files. Every AI conversation starts from scratch.
+                  </p>
+                </div>
+                <div className="border-l-2 border-brand-300 pl-4 mb-6">
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Connect your sources → DriveMem auto-indexes → Ask anything in Chat with precise citations.
+                  </p>
+                </div>
+                <div className="mt-auto">
+                  <Link href="/login" className="text-sm font-medium text-brand-500 hover:text-brand-600 transition-colors">
+                    Start organizing →
+                  </Link>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Card 2 — Agent Memory */}
+            <FadeIn delay={100}>
+              <div className="bg-white border border-gray-100 rounded-xl p-8 h-full flex flex-col">
+                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center text-2xl mb-5">
+                  🤖
+                </div>
+                <h3 className="font-semibold text-lg text-gray-900 mb-1">AI Agent Memory Layer</h3>
+                <p className="text-sm text-gray-500 mb-5">Agents that never forget</p>
+                <div className="border-l-2 border-orange-200 pl-4 mb-4">
+                  <p className="text-sm text-gray-500 italic leading-relaxed">
+                    Your AI agents lose all context when sessions end. Decisions, discoveries, project state — gone.
+                  </p>
+                </div>
+                <div className="border-l-2 border-brand-300 pl-4 mb-6">
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Agents store knowledge via MCP → New sessions auto-resume with full context → Multi-agent shared memory.
+                  </p>
+                </div>
+                <div className="mt-auto">
+                  <Link href="/login" className="text-sm font-medium text-brand-500 hover:text-brand-600 transition-colors">
+                    Connect your agent →
+                  </Link>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Card 3 — Team Knowledge */}
+            <FadeIn delay={200}>
+              <div className="relative bg-white border border-gray-100 rounded-xl p-8 h-full flex flex-col">
+                <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-wider text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                  Coming Soon
+                </span>
+                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center text-2xl mb-5">
+                  👥
+                </div>
+                <h3 className="font-semibold text-lg text-gray-900 mb-1">Team Knowledge Hub</h3>
+                <p className="text-sm text-gray-500 mb-5">One question, instant answers</p>
+                <div className="border-l-2 border-orange-200 pl-4 mb-4">
+                  <p className="text-sm text-gray-500 italic leading-relaxed">
+                    Team knowledge scattered across 5+ platforms. Finding &ldquo;who decided what&rdquo; takes 30 minutes.
+                  </p>
+                </div>
+                <div className="border-l-2 border-brand-300 pl-4 mb-6">
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Connect Notion + Google Drive + GitHub → Anyone can ask in Chat → AI spots contradictions and stale docs.
+                  </p>
+                </div>
+                <div className="mt-auto">
+                  <span className="text-sm font-medium text-gray-300 cursor-default">
+                    Coming soon
+                  </span>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
       {/* ===== Final CTA ===== */}
       <section
         className="py-24 md:py-32"
@@ -368,6 +476,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
           <span>© {new Date().getFullYear()} DriveMem</span>
           <div className="flex gap-6">
+            <Link href="/docs/quickstart" className="hover:text-gray-600 transition-colors">Quick Start</Link>
             <Link href="/developers" className="hover:text-gray-600 transition-colors">Docs</Link>
             <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms</Link>
