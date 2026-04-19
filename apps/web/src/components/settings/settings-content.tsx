@@ -1310,7 +1310,7 @@ export default function SettingsContent() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6">
+    <div className="mx-auto max-w-2xl space-y-6 p-6 page-enter">
       <h1 className="text-2xl font-bold">Settings</h1>
 
       {/* Tab switcher */}

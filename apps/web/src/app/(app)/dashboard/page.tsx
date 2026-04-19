@@ -384,7 +384,7 @@ export default function HomePage() {
       <AutoSavedBar />
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} />}
 
-      <div className="max-w-4xl mx-auto w-full px-4 md:px-6 py-6 md:py-8">
+      <div className="max-w-4xl mx-auto w-full px-4 md:px-6 py-6 md:py-8 page-enter">
         {/* Welcome Card for new users */}
         <WelcomeCard onUpload={() => setShowUpload(true)} />
 
@@ -468,7 +468,7 @@ export default function HomePage() {
 
         {/* Quick Actions — S1: icon-only on mobile with tooltips */}
         <TooltipProvider delayDuration={0}>
-          <div className="flex gap-3 mb-8">
+          <div className="flex flex-wrap gap-3 mb-8">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -519,7 +519,7 @@ export default function HomePage() {
         {/* Value Summary */}
         <div className="rounded-2xl border shadow-soft p-6 mb-8">
           <h3 className="text-sm font-medium text-muted-foreground mb-4">DriveMem is working for you</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="text-center">
               <p className="text-heading font-bold">{fileCount}</p>
               <p className="text-caption text-muted-foreground mt-1">{fileCount === 1 ? "file" : "files"} indexed</p>
@@ -540,7 +540,7 @@ export default function HomePage() {
           <h3 className="text-title font-semibold mb-1">Your knowledge base is getting smarter</h3>
           <p className="text-caption text-muted-foreground mb-4">DriveMem learns from every interaction</p>
           
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="rounded-xl bg-muted/30 p-4">
               <p className="text-heading font-bold text-primary">{weeklyStats?.filesIndexed ?? fileCount}</p>
               <p className="text-micro text-muted-foreground mt-1">knowledge items indexed</p>

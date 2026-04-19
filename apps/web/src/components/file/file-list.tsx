@@ -702,7 +702,7 @@ export function FileList() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 flex-wrap">
           <Button size="sm" onClick={async () => {
             try {
               const { toast } = await import("sonner")

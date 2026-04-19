@@ -314,7 +314,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
   }
 
   return (
-    <div className="relative flex h-full flex-col"
+    <div className="relative flex h-full flex-col page-enter"
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
       onDragLeave={(e) => { if (e.currentTarget === e.target) setIsDragging(false) }}
       onDrop={async (e) => {

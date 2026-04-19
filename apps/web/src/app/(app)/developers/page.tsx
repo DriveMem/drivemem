@@ -251,7 +251,7 @@ export default function ConnectPage() {
   }, null, 2)
 
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
+    <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 page-enter">
       <h1 className="text-2xl font-bold tracking-tight">Connect your agents</h1>
       <p className="text-muted-foreground mt-2 mb-8">Pick your tool and connect in under 2 minutes</p>
 

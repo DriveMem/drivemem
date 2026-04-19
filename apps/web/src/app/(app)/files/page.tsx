@@ -27,7 +27,7 @@ export default function KnowledgePage() {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full page-enter">
       {/* Left panel — Projects + Tags */}
       <aside className="hidden md:flex w-60 flex-col border-r border-border shrink-0 overflow-y-auto">
         <div className="p-3">

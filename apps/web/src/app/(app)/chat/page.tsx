@@ -33,8 +33,10 @@ function ChatPageInner() {
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<ChatSkeleton />}>
-      <ChatPageInner />
-    </Suspense>
+    <div className="h-full page-enter">
+      <Suspense fallback={<ChatSkeleton />}>
+        <ChatPageInner />
+      </Suspense>
+    </div>
   )
 }
