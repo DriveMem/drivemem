@@ -74,6 +74,11 @@ function Nav() {
             DriveMem
           </span>
         </Link>
+        {/* Mobile menu button */}
+        <div className="md:hidden flex items-center gap-3">
+          <Link href="/login" className="text-gray-500 hover:text-gray-900 text-sm">Sign in</Link>
+          <Link href="/signup" className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-3 py-1.5 rounded-lg font-medium transition-colors">Start free</Link>
+        </div>
         <div className="hidden md:flex items-center gap-8">
           <a href="#features" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Features
