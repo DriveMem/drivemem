@@ -127,9 +127,14 @@ function DataSources() {
 
   const notionIntegration = integrations.find((i: any) => i.provider === "notion")
   const googleDriveIntegration = integrations.find((i: any) => i.provider === "google-drive")
+  const githubIntegration = integrations.find((i: any) => i.provider === "github")
 
   const connectGoogleDrive = () => {
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/google-drive/connect`
+  }
+
+  const connectGitHub = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/github/connect`
   }
 
   return (
@@ -219,6 +224,49 @@ function DataSources() {
               </p>
               <Button onClick={connectGoogleDrive} className="w-full rounded-xl shadow-soft active:scale-[0.98]">
                 Connect Google Drive
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* GitHub Card */}
+        <div className="rounded-2xl border shadow-soft p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-10 w-10 rounded-xl bg-zinc-100 flex items-center justify-center text-lg">🐙</div>
+            <div>
+              <h3 className="font-semibold">GitHub</h3>
+              <p className="text-xs text-muted-foreground">Sync repos as knowledge</p>
+            </div>
+          </div>
+          {githubIntegration ? (
+            <div className="flex-1 flex flex-col gap-3">
+              <div className="text-sm">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 mr-2" />
+                Connected{githubIntegration.externalAccountName ? ` — @${githubIntegration.externalAccountName}` : ""}
+              </div>
+              {(githubIntegration.config as any)?.lastSyncAt && (
+                <p className="text-xs text-muted-foreground">
+                  Last sync: {new Date((githubIntegration.config as any).lastSyncAt).toLocaleString()}
+                </p>
+              )}
+              <div className="mt-auto flex gap-2">
+                <Button size="sm" onClick={() => syncNow(githubIntegration.id)} disabled={syncing === githubIntegration.id}
+                  className="flex-1 rounded-xl active:scale-[0.98]">
+                  {syncing === githubIntegration.id ? <><RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />Syncing…</> : "Sync Now"}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => disconnectIntegration(githubIntegration.id)}
+                  className="rounded-xl active:scale-[0.98]">
+                  Disconnect
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col">
+              <p className="text-sm text-muted-foreground mb-6 flex-1">
+                Connect GitHub to sync repository contents, issues, and markdown files into your knowledge base.
+              </p>
+              <Button onClick={connectGitHub} className="w-full rounded-xl shadow-soft active:scale-[0.98]">
+                Connect GitHub
               </Button>
             </div>
           )}
@@ -324,10 +372,10 @@ export default function ConnectPage() {
           </ol>
           <Button
             variant="outline"
-            className="w-full rounded-xl shadow-soft active:scale-[0.98]"
-            asChild
+            className="w-full rounded-xl shadow-soft opacity-60 cursor-not-allowed"
+            disabled
           >
-            <a href="https://chrome.google.com/webstore" target="_blank" rel="noopener">Install Extension</a>
+            Install Extension <span className="ml-2 text-[10px] font-medium bg-muted px-1.5 py-0.5 rounded-full">Coming Soon</span>
           </Button>
         </div>
         {/* Any App (Webhook) Card */}
@@ -360,7 +408,7 @@ export default function ConnectPage() {
 
       {/* API Key note */}
       <p className="text-sm text-muted-foreground mt-6 text-center">
-        Replace <code className="bg-muted px-1.5 py-0.5 rounded text-xs">YOUR_API_KEY</code> with your key from{" "}
+        Get your API key from{" "}
         <Link href="/settings?tab=developer" className="text-primary hover:underline">Settings → Developer</Link>
       </p>
 
