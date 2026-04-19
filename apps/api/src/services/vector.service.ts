@@ -163,15 +163,25 @@ export async function searchSimilar(params: {
     });
   }
 
-  const results = await qdrant.query(COLLECTION_NAME, {
-    prefetch,
-    query: prefetch.length > 1
-      ? { fusion: 'rrf' as const }
-      : undefined,
-    filter: { must },
-    limit,
-    with_payload: true,
-  });
+  let results;
+  if (prefetch.length > 1) {
+    // Hybrid: dense + BM25 with RRF fusion
+    results = await qdrant.query(COLLECTION_NAME, {
+      prefetch,
+      query: { fusion: 'rrf' as const },
+      filter: { must },
+      limit,
+      with_payload: true,
+    });
+  } else {
+    // Dense-only fallback (no BM25 tokens)
+    results = await qdrant.query(COLLECTION_NAME, {
+      query,
+      filter: { must },
+      limit,
+      with_payload: true,
+    });
+  }
 
   const rawResults = results.points.map((r) => ({
     text: (r.payload as Record<string, unknown>).text as string,
