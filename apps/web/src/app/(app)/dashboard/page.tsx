@@ -392,7 +392,7 @@ export default function HomePage() {
         <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-primary/5 border border-primary/10 mb-6">
           <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
           <span className="text-body text-muted-foreground">
-            DriveMem is active · {fileCount} files indexed · {insightCount} insights
+            DriveMem is active
           </span>
         </div>
 
@@ -518,50 +518,60 @@ export default function HomePage() {
 
         {/* Value Summary */}
         <div className="rounded-2xl border shadow-soft p-6 mb-8">
-          <h3 className="text-sm font-medium text-muted-foreground mb-4">DriveMem is working for you</h3>
+          <h3 className="text-sm font-medium text-muted-foreground mb-4">Your knowledge base</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-heading font-bold">{fileCount}</p>
-              <p className="text-caption text-muted-foreground mt-1">{fileCount === 1 ? "file" : "files"} indexed</p>
+              {fileCount > 0 ? (
+                <>
+                  <p className="text-heading font-bold">{fileCount}</p>
+                  <p className="text-caption text-muted-foreground mt-1">{fileCount === 1 ? "file" : "files"}</p>
+                </>
+              ) : (
+                <button onClick={() => setShowUpload(true)} className="text-caption text-primary hover:underline">
+                  Upload files to get started
+                </button>
+              )}
             </div>
             <div className="text-center">
-              <p className="text-heading font-bold">{insightCount}</p>
-              <p className="text-caption text-muted-foreground mt-1">{insightCount === 1 ? "insight" : "insights"} discovered</p>
+              {insightCount > 0 ? (
+                <>
+                  <p className="text-heading font-bold">{insightCount}</p>
+                  <p className="text-caption text-muted-foreground mt-1">{insightCount === 1 ? "insight" : "insights"}</p>
+                </>
+              ) : (
+                <p className="text-caption text-muted-foreground">Insights appear as you add files</p>
+              )}
             </div>
             <div className="text-center">
-              <p className="text-heading font-bold">{projectCount}</p>
-              <p className="text-caption text-muted-foreground mt-1">{projectCount === 1 ? "project" : "projects"}</p>
+              {projectCount > 0 ? (
+                <>
+                  <p className="text-heading font-bold">{projectCount}</p>
+                  <p className="text-caption text-muted-foreground mt-1">{projectCount === 1 ? "project" : "projects"}</p>
+                </>
+              ) : (
+                <p className="text-caption text-muted-foreground">Create a project to organize files</p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Getting Smarter card */}
-        <div className="rounded-2xl border shadow-soft p-6 mb-8">
-          <h3 className="text-title font-semibold mb-1">Your knowledge base is getting smarter</h3>
-          <p className="text-caption text-muted-foreground mb-4">DriveMem learns from every interaction</p>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-xl bg-muted/30 p-4">
-              <p className="text-heading font-bold text-primary">{weeklyStats?.filesIndexed ?? fileCount}</p>
-              <p className="text-micro text-muted-foreground mt-1">knowledge items indexed</p>
-            </div>
-            <div className="rounded-xl bg-muted/30 p-4">
-              <p className="text-heading font-bold text-primary">{weeklyStats?.connectionsFound ?? insightCount}</p>
-              <p className="text-micro text-muted-foreground mt-1">connections discovered</p>
-            </div>
-            <div className="rounded-xl bg-muted/30 p-4">
-              <p className="text-heading font-bold text-primary">{weeklyStats?.agentInteractions ?? activities.length}</p>
-              <p className="text-micro text-muted-foreground mt-1">agent interactions this week</p>
+        {/* Weekly Stats — only show when meaningful weekly data exists */}
+        {weeklyStats && (weeklyStats.agentInteractions > 0 || weeklyStats.filesIndexed > 0 || weeklyStats.connectionsFound > 0) && (
+          <div className="rounded-2xl border shadow-soft p-6 mb-8">
+            <h3 className="text-title font-semibold mb-1">This week</h3>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mt-2">
+              {weeklyStats.agentInteractions > 0 && (
+                <span>{weeklyStats.agentInteractions} agent {weeklyStats.agentInteractions === 1 ? 'interaction' : 'interactions'}</span>
+              )}
+              {weeklyStats.filesIndexed > 0 && (
+                <span>{weeklyStats.filesIndexed} {weeklyStats.filesIndexed === 1 ? 'file' : 'files'} added</span>
+              )}
+              {weeklyStats.connectionsFound > 0 && (
+                <span>{weeklyStats.connectionsFound} {weeklyStats.connectionsFound === 1 ? 'insight' : 'insights'} found</span>
+              )}
             </div>
           </div>
-          
-          {insightCount > 0 && (
-            <p className="text-caption text-muted-foreground mt-4 flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              AI has found {insightCount} connection{insightCount > 1 ? 's' : ''} between your files
-            </p>
-          )}
-        </div>
+        )}
 
         {/* Active Projects — horizontal scroll chips */}
         {folders.length > 0 && (
