@@ -9,6 +9,9 @@ function hashKey(key: string): string {
 }
 
 export async function requireApiKey(request: FastifyRequest, reply: FastifyReply) {
+  // Allow session-authenticated requests (cookie/JWT already resolved by auth plugin)
+  if (request.user) return;
+
   const auth = request.headers.authorization;
   const queryKey = (request.query as any)?.apiKey;
   
