@@ -22,6 +22,8 @@ const messageSchema = z.object({
   content: z.string().min(1).max(10000),
 });
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default async function conversationRoutes(app: FastifyInstance) {
   // GET /suggestions — AI 推荐问题
   app.get('/suggestions', { preHandler: [requireAuth] }, async (request, reply) => {
@@ -81,8 +83,10 @@ export default async function conversationRoutes(app: FastifyInstance) {
   });
 
   // GET /:id — get conversation with messages
-  app.get('/:id', { preHandler: [requireAuth] }, async (request) => {
+  app.get('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!UUID_RE.test(id)) return reply.status(404).send({ error: 'Not found' });
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return reply ? reply.status(400).send({ error: "Invalid conversation ID" }) : { error: "Invalid conversation ID" };
     const user = request.user!;
 
     const [conversation] = await db
@@ -106,6 +110,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
   // PATCH /:id — update conversation (pin/unpin, rename)
   app.patch('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return reply ? reply.status(400).send({ error: "Invalid conversation ID" }) : { error: "Invalid conversation ID" };
     const user = request.user!;
     const body = request.body as { isPinned?: boolean; title?: string };
 
@@ -132,6 +137,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
   // PUT /:id/pin — pin conversation
   app.put('/:id/pin', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return reply ? reply.status(400).send({ error: "Invalid conversation ID" }) : { error: "Invalid conversation ID" };
     const user = request.user!;
 
     const [conversation] = await db
@@ -154,6 +160,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
   // DELETE /:id/pin — unpin conversation
   app.delete('/:id/pin', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return reply ? reply.status(400).send({ error: "Invalid conversation ID" }) : { error: "Invalid conversation ID" };
     const user = request.user!;
 
     const [conversation] = await db
@@ -176,6 +183,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
   // DELETE /:id — delete conversation
   app.delete('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return reply ? reply.status(400).send({ error: "Invalid conversation ID" }) : { error: "Invalid conversation ID" };
     const user = request.user!;
 
     const [conversation] = await db
@@ -196,6 +204,7 @@ export default async function conversationRoutes(app: FastifyInstance) {
   // POST /:id/messages — RAG chat with SSE streaming
   app.post('/:id/messages', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return reply ? reply.status(400).send({ error: "Invalid conversation ID" }) : { error: "Invalid conversation ID" };
     const user = request.user!;
     const body = messageSchema.parse(request.body);
 
