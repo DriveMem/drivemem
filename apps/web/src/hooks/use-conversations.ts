@@ -15,7 +15,7 @@ export function useConversation(id: string) {
   return useQuery({
     queryKey: ['conversation', id],
     queryFn: () => apiFetch(`/api/conversations/${id}`, { silent: true }),
-    enabled: !!id,
+    enabled: !!id && id !== 'new',
     retry: 2,
     retryDelay: 1000,
   })
