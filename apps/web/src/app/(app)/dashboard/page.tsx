@@ -416,7 +416,7 @@ export default function HomePage() {
         )}
 
         {/* Zero-config onboarding cards — show when user has few files */}
-        {fileCount <= 2 && (
+        {fileCount <= 5 && (
           <div className="space-y-4 mb-8">
             {/* Try asking */}
             <div className="rounded-2xl border shadow-soft p-6">
