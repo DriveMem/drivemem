@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
-import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, Key, Users, Bell, RefreshCw, Webhook, Database } from "lucide-react"
+import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, ChevronRight, Key, Users, Bell, RefreshCw, Webhook, Database, Terminal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { trackEvent } from "@/lib/analytics"
@@ -283,6 +283,7 @@ export default function ConnectPage() {
   useEffect(() => { document.title = "Connect — DriveMem" }, [])
   const [copied, setCopied] = useState<string | null>(null)
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [showManual, setShowManual] = useState(false)
 
   const copyText = (text: string, label: string) => {
     navigator.clipboard?.writeText(text)
@@ -309,6 +310,42 @@ export default function ConnectPage() {
 
       <ConnectedAgents />
 
+      {/* Quick Setup */}
+      <div className="mb-10 rounded-2xl border-2 border-primary/20 bg-primary/[0.03] p-6 md:p-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Terminal className="h-5 w-5 text-primary" />
+          </div>
+          <h2 className="text-xl font-bold tracking-tight">One Command Setup</h2>
+        </div>
+        <p className="text-muted-foreground mb-5 ml-[52px]">Automatically configure Cursor, Claude Desktop, and more</p>
+        <div className="relative ml-[52px] max-w-lg">
+          <pre className="rounded-xl bg-zinc-950 text-zinc-50 px-5 py-4 text-sm font-mono select-all">npx drivemem setup</pre>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg h-8 px-3"
+            onClick={() => copyText("npx drivemem setup", "quick-setup")}
+          >
+            {copied === "quick-setup" ? <><Check className="h-3.5 w-3.5 mr-1.5" />Copied</> : <><Copy className="h-3.5 w-3.5 mr-1.5" />Copy</>}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3 ml-[52px]">
+          Requires Node.js 18+. The CLI will detect your installed tools and configure them automatically.
+        </p>
+      </div>
+
+      {/* Manual Setup (collapsible) */}
+      <div className="mb-10">
+        <button
+          onClick={() => setShowManual(!showManual)}
+          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
+        >
+          {showManual ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          Manual Setup
+          <span className="text-xs font-normal ml-1">— configure each tool individually</span>
+        </button>
+        {showManual && (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {/* Cursor Card */}
         <div className="rounded-2xl border shadow-soft p-6 flex flex-col">
@@ -413,6 +450,8 @@ export default function ConnectPage() {
             {copied === "webhook" ? <><Check className="h-4 w-4 mr-2" />Copied!</> : <><Copy className="h-4 w-4 mr-2" />Copy Webhook URL</>}
           </Button>
         </div>
+      </div>
+        )}
       </div>
 
       {/* Data Sources */}
