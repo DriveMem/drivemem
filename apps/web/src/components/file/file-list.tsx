@@ -817,7 +817,7 @@ export function FileList() {
                   className="shrink-0"
                 />
                 <TypeIcon type={file.type} name={file.name} />
-                <span className="truncate text-sm flex-1 min-w-0" title={file.name}>{file.name}</span>
+                <span className="truncate text-sm flex-1 min-w-0" title={displayFileName(file.name)}>{displayFileName(file.name)}</span>
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">Updated</span>}
                 {file.archivedAt && <span className="shrink-0 rounded bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">Archived</span>}
                 {file.tags?.slice(0, 2).map((tag: any) => (
@@ -915,7 +915,7 @@ export function FileList() {
                     <TypeIcon type={file.type} name={file.name} className="h-14 w-14" />
                   </div>
                   <div className="flex items-center gap-1">
-                    <p className="text-sm font-medium truncate flex-1" title={file.name}>{file.name}</p>
+                    <p className="text-sm font-medium truncate flex-1" title={displayFileName(file.name)}>{displayFileName(file.name)}</p>
                     <button
                       onClick={(e) => { e.stopPropagation(); router.push(`/chat?fileIds=${file.id}&q=Tell me about ${encodeURIComponent(file.name)}`) }}
                       className="shrink-0 h-6 w-6 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
@@ -1189,7 +1189,7 @@ export function FileList() {
               <div className="flex justify-center py-4">
                 <TypeIcon type={drawerFile.type} name={drawerFile.name} className="h-16 w-16" />
               </div>
-              <h2 className="text-lg font-semibold text-center truncate" title={drawerFile.name}>{drawerFile.name}</h2>
+              <h2 className="text-lg font-semibold text-center truncate" title={displayFileName(drawerFile.name)}>{displayFileName(drawerFile.name)}</h2>
               <div className="flex justify-center">
                 <KnowledgeFeedback fileId={drawerFileId!} />
               </div>
