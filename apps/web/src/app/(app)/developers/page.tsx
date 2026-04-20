@@ -78,6 +78,36 @@ function ConnectedAgents() {
           ))}
         </div>
       )}
+
+      {/* Connect → Value: show suggested prompts when agents are connected */}
+      {agents.length > 0 && (
+        <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-950/20 p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">🎉</span>
+            <h3 className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Connected! Try these prompts in your AI tool:</h3>
+          </div>
+          <div className="grid gap-2">
+            {[
+              "Summarize my recent notes and find connections between them",
+              "Based on my knowledge base, what are my current priorities?",
+              "Search my files for anything related to [your topic]",
+            ].map((prompt) => (
+              <button
+                key={prompt}
+                onClick={() => { navigator.clipboard.writeText(prompt); toast.success("Prompt copied!"); trackEvent("connect_value_prompt_copy") }}
+                className="group flex items-center gap-3 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-zinc-900 px-4 py-2.5 text-left text-sm hover:border-emerald-400 hover:shadow-sm transition"
+              >
+                <span className="text-muted-foreground group-hover:text-emerald-600 transition">💬</span>
+                <span className="flex-1 text-zinc-700 dark:text-zinc-300">{prompt}</span>
+                <Copy className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition" />
+              </button>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Paste any prompt above into Cursor, Claude Desktop, or your connected AI tool. DriveMem will automatically provide your knowledge as context.
+          </p>
+        </div>
+      )}
     </div>
   )
 }
@@ -279,6 +309,36 @@ function DataSources() {
   )
 }
 
+/* ---------- Empty KB Warning ---------- */
+function EmptyKBWarning() {
+  const { status } = useSession()
+  const [fileCount, setFileCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (status !== "authenticated") return
+    import("@/lib/api").then(({ apiFetch }) =>
+      apiFetch("/api/v1/files?limit=1").then((d: any) => setFileCount(d?.total ?? d?.files?.length ?? null)).catch(() => {})
+    )
+  }, [status])
+
+  if (fileCount === null || fileCount > 0) return null
+
+  return (
+    <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20 p-5">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-lg">📂</span>
+        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300">Upload files first for the best experience</h3>
+      </div>
+      <p className="text-sm text-muted-foreground mb-3">
+        Your knowledge base is empty. Connect works best when your AI tools have knowledge to draw from.
+      </p>
+      <Link href="/files" className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 text-white px-4 py-2 text-sm font-medium hover:bg-amber-700 transition">
+        Upload your first file →
+      </Link>
+    </div>
+  )
+}
+
 export default function ConnectPage() {
   useEffect(() => { document.title = "Connect — DriveMem" }, [])
   const [copied, setCopied] = useState<string | null>(null)
@@ -309,6 +369,7 @@ export default function ConnectPage() {
       <p className="text-muted-foreground mt-2 mb-8">Pick your tool and connect in under 2 minutes</p>
 
       <ConnectedAgents />
+      <EmptyKBWarning />
 
       {/* Quick Setup */}
       <div className="mb-10 rounded-2xl border-2 border-primary/20 bg-primary/[0.03] p-6 md:p-8">
