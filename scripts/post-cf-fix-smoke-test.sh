@@ -27,10 +27,10 @@ check() {
 
   if $matched; then
     RESULTS+=("✅ PASS  $label (HTTP $status)")
-    ((PASS++))
+    ((PASS++)) || true
   else
     RESULTS+=("❌ FAIL  $label (HTTP $status, expected ${expect_codes[*]})")
-    ((FAIL++))
+    ((FAIL++)) || true
   fi
 }
 
@@ -54,10 +54,10 @@ echo ""
 CSP=$(curl -s -I "$FRONTEND" --max-time 10 2>/dev/null | grep -i 'content-security-policy' || true)
 if echo "$CSP" | grep -qi 'plausible'; then
   RESULTS+=("✅ PASS  CSP includes plausible")
-  ((PASS++))
+  ((PASS++)) || true
 else
   RESULTS+=("❌ FAIL  CSP missing plausible (header: ${CSP:-<empty>})")
-  ((FAIL++))
+  ((FAIL++)) || true
 fi
 
 # Summary
