@@ -41,8 +41,8 @@ echo "-------------------------------------------"
 
 # API route checks (expect 200 or 401, NOT 404)
 check "GET  /api/v1/activation-status" GET  "$API_BASE/api/v1/activation-status" 200 401
-check "POST /api/v1/feedback"          POST "$API_BASE/api/v1/feedback"          401
-check "GET  /api/v1/nudge/status"      GET  "$API_BASE/api/v1/nudge/status"      401
+check "POST /api/feedback"          POST "$API_BASE/api/feedback"          401
+check "GET  /api/v1/nudge/unsubscribe"      GET  "$API_BASE/api/v1/nudge/unsubscribe"      401
 check "GET  /api/v1/digest/weekly"     GET  "$API_BASE/api/v1/digest/weekly"     401
 check "GET  /api/v1/files"             GET  "$API_BASE/api/v1/files"             401
 
