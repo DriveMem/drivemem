@@ -1,6 +1,7 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
+import { getSession } from "next-auth/react"
 import { MessageCircle, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -13,7 +14,7 @@ const TYPES = [
   { value: "confused", label: "🤔 Confused", description: "Hard to use" },
 ] as const
 
-const EXCLUDED_PATHS = ["/login", "/register", "/landing"]
+const EXCLUDED_PATHS = ["/", "/login", "/register", "/landing"]
 
 type FeedbackType = typeof TYPES[number]["value"]
 
@@ -22,13 +23,27 @@ export function FeedbackButton() {
   const [open, setOpen] = useState(false)
   const [type, setType] = useState<FeedbackType>("suggestion")
   const [text, setText] = useState("")
+  const [email, setEmail] = useState("")
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
 
-  // Don't show on auth/landing pages
-  if (EXCLUDED_PATHS.some((p) => pathname.startsWith(p))) return null
+  useEffect(() => {
+    getSession().then((s: any) => {
+      if (s?.user?.email) {
+        setSessionEmail(s.user.email)
+        setEmail(s.user.email)
+      }
+    })
+  }, [])
+
+  // Don't show on auth/landing pages (exact match for "/")
+  if (pathname === "/" || EXCLUDED_PATHS.some((p) => p !== "/" && pathname.startsWith(p))) return null
+
+  const isLoggedIn = !!sessionEmail
+  const canSubmit = text.trim() && (isLoggedIn || email.trim())
 
   const handleSubmit = async () => {
-    if (!text.trim()) return
+    if (!canSubmit) return
     setSending(true)
     try {
       await apiFetch("/api/feedback", {
@@ -36,6 +51,7 @@ export function FeedbackButton() {
         body: JSON.stringify({
           type,
           content: text.trim(),
+          email: email.trim() || undefined,
           page: window.location.href,
         }),
       })
@@ -81,6 +97,15 @@ export function FeedbackButton() {
                 </button>
               ))}
             </div>
+            {/* Email (prefilled for logged-in, required for anonymous) */}
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={isLoggedIn ? "Email (prefilled)" : "Email (required)"}
+              disabled={isLoggedIn}
+              className="w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
+            />
             {/* Message */}
             <textarea
               value={text}
@@ -93,7 +118,7 @@ export function FeedbackButton() {
               <span className="text-xs text-muted-foreground">{text.length}/500</span>
               <Button
                 onClick={handleSubmit}
-                disabled={!text.trim() || sending}
+                disabled={!canSubmit || sending}
                 size="sm"
                 className="bg-brand-500 hover:bg-brand-600"
               >
