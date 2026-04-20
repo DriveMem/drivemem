@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, Key, Users, Bell, RefreshCw, Webhook, Database } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { trackEvent } from "@/lib/analytics"
 
 
 /* ---------- Relative Time ---------- */
@@ -285,6 +286,7 @@ export default function ConnectPage() {
     navigator.clipboard?.writeText(text)
     setCopied(label)
     toast.success("Copied!")
+    trackEvent("connect_mcp", { method: label })
     setTimeout(() => setCopied(null), 2000)
   }
 

@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect, useRef } from "react"
 import { MessageSquare, FileText, Folder, Files, ChevronDown, Link2, Download, Upload, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
+import { trackEvent } from "@/lib/analytics"
 import { ChatInput } from "@/components/chat/chat-input"
 import { useFiles } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
@@ -165,8 +166,10 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
     lastUserMessageRef.current = content
     setError(null)
     setFollowUpSuggestions([])
+    const isFirstMessage = messages.length === 0
     const userMsg: ChatMessage = { id: "u-" + Date.now(), role: "user", content, createdAt: new Date().toISOString() }
     setMessages((prev) => [...prev, userMsg])
+    if (isFirstMessage) trackEvent("chat_first_message")
     setSending(true)
     setStreaming("")
     setFollowUpSuggestions([])

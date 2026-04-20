@@ -10,6 +10,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { trackEvent } from "@/lib/analytics"
 
 const signupSchema = z
   .object({
@@ -75,6 +76,7 @@ export default function SignupPage() {
       if (result?.error) {
         router.push("/login")
       } else {
+        trackEvent("signup_complete")
         router.push("/")
         router.refresh()
       }

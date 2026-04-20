@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useUploadFile } from "@/hooks/use-files"
 import { useUploadStore } from "@/lib/stores/upload-store"
+import { trackEvent } from "@/lib/analytics"
 import { toast } from "sonner"
 
 const ACCEPTED = {
@@ -43,6 +44,7 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
         {
           onSuccess: () => {
             updateEntry(itemId, { status: "done", progress: 100 })
+            trackEvent("file_upload")
           },
           onError: (err: any) => {
             updateEntry(itemId, { status: "error", error: err.message || "Upload failed" })
