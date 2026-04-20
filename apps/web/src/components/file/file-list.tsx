@@ -304,6 +304,19 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
   return null
 }
 
+function getFailureInfo(error?: string): { label: string; tooltip: string; isEncrypted: boolean } {
+  if (error && /password.protected|encrypted/i.test(error)) {
+    return { label: "Password protected", tooltip: "This file is password-protected. Please remove the password and re-upload.", isEncrypted: true }
+  }
+  if (error && /too.large|size.limit/i.test(error)) {
+    return { label: "File too large", tooltip: "This file exceeds the size limit. Try splitting it into smaller files.", isEncrypted: false }
+  }
+  if (error && /unsupported|format/i.test(error)) {
+    return { label: "Unsupported format", tooltip: "This file format is not supported. Try converting to PDF, TXT, or Markdown.", isEncrypted: false }
+  }
+  return { label: "Indexing failed", tooltip: error || "Failed to process this file. Try re-uploading or converting to a different format.", isEncrypted: false }
+}
+
 function StatusIcon({ status, error, compact }: { status: string; error?: string; compact?: boolean }) {
   if (status === "uploading") return <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-500 dark:text-zinc-400" />
   if (status === "parsing") {
@@ -311,8 +324,13 @@ function StatusIcon({ status, error, compact }: { status: string; error?: string
     return <span className="flex items-center gap-1 text-xs text-yellow-500"><Loader2 className="h-3 w-3 animate-spin" />AI Remembering...</span>
   }
   if (status === "indexed") return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-  if (compact) return <span title={error || "Indexing failed, please re-upload"} className="cursor-help"><XCircle className="h-3.5 w-3.5 text-red-500" /></span>
-  return <span title={error || "Parse failed"} className="flex items-center gap-1 text-xs text-red-500 cursor-help"><XCircle className="h-3.5 w-3.5" />Indexing failed</span>
+  const info = getFailureInfo(error)
+  if (compact) return <span title={info.tooltip} className="cursor-help"><XCircle className="h-3.5 w-3.5 text-red-500" /></span>
+  return (
+    <span title={info.tooltip} className="flex items-center gap-1 text-xs text-red-500 cursor-help">
+      <XCircle className="h-3.5 w-3.5" />{info.label}
+    </span>
+  )
 }
 
 export function FileList() {
