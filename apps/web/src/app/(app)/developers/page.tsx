@@ -321,8 +321,9 @@ export default function ConnectPage() {
           </div>
           <ol className="text-sm text-muted-foreground space-y-2 mb-6 flex-1">
             <li>1. Open Cursor → Settings → MCP</li>
-            <li>2. Click <strong>Add Server</strong></li>
-            <li>3. Paste the URL below</li>
+            <li>2. Click <strong>Add Server</strong>, paste the URL below</li>
+            <li>3. <strong>Reload Window</strong> (Cmd+Shift+P → Reload)</li>
+            <li>4. Start a new chat — DriveMem tools are ready!</li>
           </ol>
           <Button
             onClick={() => copyText(mcpUrl, "cursor")}
