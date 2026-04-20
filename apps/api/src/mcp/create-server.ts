@@ -1159,22 +1159,36 @@ ${insightsSection}
   server.setRequestHandler(ListPromptsRequestSchema, async () => ({
     prompts: [
       {
-        name: 'knowledge_check',
-        description: '在回答问题前，先检查用户知识库是否有相关信息',
+        name: 'start_with_context',
+        description: 'Load your full project context — recommended at the start of any session',
         arguments: [
-          { name: 'question', description: '用户的问题', required: true },
+          { name: 'task', description: 'What you are working on (optional)', required: false },
+        ],
+      },
+      {
+        name: 'what_do_i_know',
+        description: 'Search your knowledge base for a topic',
+        arguments: [
+          { name: 'topic', description: 'Topic to search for', required: true },
+        ],
+      },
+      {
+        name: 'knowledge_check',
+        description: 'Check the knowledge base before answering a question',
+        arguments: [
+          { name: 'question', description: 'The question to check against', required: true },
         ],
       },
       {
         name: 'daily_briefing',
-        description: '生成今日知识库活动简报——新文件、新洞察、近期对话摘要',
+        description: 'Generate a daily briefing of knowledge base activity — new files, insights, recent conversations',
         arguments: [],
       },
       {
         name: 'knowledge_capture',
-        description: '将当前对话中的关键发现存入知识库',
+        description: 'Save key findings from the current conversation to the knowledge base',
         arguments: [
-          { name: 'summary', description: '关键发现摘要', required: true },
+          { name: 'summary', description: 'Summary of key findings', required: true },
         ],
       },
     ],
@@ -1184,6 +1198,80 @@ ${insightsSection}
     const { name, arguments: args } = request.params;
 
     switch (name) {
+      case 'start_with_context': {
+        try {
+          const { compileContext } = await import('../services/context-compiler/index.js');
+          const result = await compileContext(userId, {
+            task: args?.task || 'general session',
+            role: detectedCaps?.role || inferRole(agentName),
+            apiKeyId: options?.apiKeyId,
+          });
+          return {
+            description: 'Your project context has been loaded',
+            messages: [
+              {
+                role: 'assistant' as const,
+                content: {
+                  type: 'text' as const,
+                  text: result.compiledContext || 'Knowledge base is empty. Start by uploading files or using aidrive_store to save knowledge.',
+                },
+              },
+            ],
+          };
+        } catch {
+          return {
+            description: 'Knowledge base is empty',
+            messages: [
+              {
+                role: 'assistant' as const,
+                content: {
+                  type: 'text' as const,
+                  text: 'Knowledge base is empty or could not be loaded. Start by uploading files or using aidrive_store to save knowledge.',
+                },
+              },
+            ],
+          };
+        }
+      }
+
+      case 'what_do_i_know': {
+        const topic = args?.topic || '';
+        const [queryVec] = await embedTexts([preprocessQuery(topic)]);
+        const results = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: 5 });
+
+        if (results.length === 0) {
+          return {
+            description: `No knowledge found for "${topic}"`,
+            messages: [
+              {
+                role: 'assistant' as const,
+                content: {
+                  type: 'text' as const,
+                  text: `No results found for "${topic}" in your knowledge base. Try uploading relevant files or saving knowledge with aidrive_store.`,
+                },
+              },
+            ],
+          };
+        }
+
+        const formatted = results.map((r, i) =>
+          `${i + 1}. **${r.fileName}** (score: ${r.score.toFixed(2)})\n${r.text.slice(0, 300)}`
+        ).join('\n\n');
+
+        return {
+          description: `Found ${results.length} results for "${topic}"`,
+          messages: [
+            {
+              role: 'assistant' as const,
+              content: {
+                type: 'text' as const,
+                text: `Here's what your knowledge base contains about "${topic}":\n\n${formatted}`,
+              },
+            },
+          ],
+        };
+      }
+
       case 'knowledge_check': {
         const question = args?.question || '';
         // Search knowledge base for relevant context
@@ -1192,13 +1280,13 @@ ${insightsSection}
         const context = chunks.map(c => `[${c.fileName}]: ${c.text.slice(0, 200)}`).join('\n\n');
 
         return {
-          description: '知识库上下文已加载',
+          description: 'Knowledge base context loaded',
           messages: [
             {
               role: 'user' as const,
               content: {
                 type: 'text' as const,
-                text: `以下是用户知识库中与问题相关的内容：\n\n${context || '（知识库中未找到直接相关内容）'}\n\n基于以上知识库内容和你自己的知识，回答用户问题：${question}`,
+                text: `Here is relevant context from the knowledge base:\n\n${context || '(No directly relevant content found)'}\n\nBased on the above knowledge and your own knowledge, answer the question: ${question}`,
               },
             },
           ],
@@ -1221,7 +1309,7 @@ ${insightsSection}
         const briefing = `## 知识库简报\n\n### 最近文件\n${recentFiles.map(f => `- ${f.name}: ${f.summary?.slice(0, 80) || '处理中...'}`).join('\n')}\n\n### AI 洞察\n${recentInsights.map(i => `- ${i.title}: ${i.description?.slice(0, 80)}`).join('\n') || '暂无新洞察'}`;
 
         return {
-          description: '今日知识库简报',
+          description: 'Daily knowledge base briefing',
           messages: [
             { role: 'user' as const, content: { type: 'text' as const, text: briefing } },
           ],
@@ -1231,13 +1319,13 @@ ${insightsSection}
       case 'knowledge_capture': {
         const summary = args?.summary || '';
         return {
-          description: '准备存入知识库',
+          description: 'Ready to save to knowledge base',
           messages: [
             {
               role: 'user' as const,
               content: {
                 type: 'text' as const,
-                text: `请将以下内容存入 AI Drive 知识库：\n\n${summary}\n\n调用 aidrive_capture_conversation 工具执行存储。`,
+                text: `Please save the following to the AI Drive knowledge base:\n\n${summary}\n\nCall the aidrive_capture_conversation tool to execute the save.`,
               },
             },
           ],
@@ -1245,7 +1333,7 @@ ${insightsSection}
       }
 
       default:
-        return { description: '未知 prompt', messages: [] };
+        return { description: 'Unknown prompt', messages: [] };
     }
   });
 
