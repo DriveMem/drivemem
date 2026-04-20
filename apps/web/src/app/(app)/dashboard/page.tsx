@@ -292,7 +292,7 @@ export default function HomePage() {
 
   // Fetch weekly digest (silent — OK to fail)
   useEffect(() => {
-    apiFetch("/api/v1/digest/weekly", { silent: true })
+    apiFetch("/api/digest/weekly", { silent: true })
       .then((data: any) => setWeeklyStats(data))
       .catch(() => {})
   }, [])

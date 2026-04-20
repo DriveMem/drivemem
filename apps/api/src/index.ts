@@ -151,7 +151,9 @@ import timelineRoutes from './routes/timeline.js';
 await app.register(timelineRoutes, { prefix: '/api/timeline' });
 
 import resumeBriefRoutes from './routes/resume-brief.js';
+import digestRoutes from './routes/digest.js';
 await app.register(resumeBriefRoutes, { prefix: '/api/resume-brief' });
+await app.register(digestRoutes, { prefix: '/api/digest' });
 
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {
