@@ -8,6 +8,7 @@ import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { eq, desc, and, inArray, sql, gt } from 'drizzle-orm';
 import { inferRole } from '../services/context-compiler/agent-profiles.js';
+import { compileContext } from '../services/context-compiler/index.js';
 import type { DetectedCapabilities } from '../services/capability-detector.js';
 import { maybeAccumulate } from '../services/auto-accumulate.js';
 import { detectAndLogRelay } from '../services/relay-detector.js';
@@ -1056,11 +1057,11 @@ ${insightsSection}
       .from(schema.users).where(eq(schema.users.id, userId));
     const profile = (user?.profile as Record<string, any>) || {};
     const identityText = [
-      user?.name ? `名称: ${user.name}` : '',
-      profile.role ? `角色: ${profile.role}` : '',
-      profile.currentGoal ? `当前目标: ${profile.currentGoal}` : '',
-      profile.background ? `背景: ${profile.background}` : '',
-      profile.preferences ? `偏好: ${profile.preferences}` : '',
+      user?.name ? `Name: ${user.name}` : '',
+      profile.role ? `Role: ${profile.role}` : '',
+      profile.currentGoal ? `Current Goal: ${profile.currentGoal}` : '',
+      profile.background ? `Background: ${profile.background}` : '',
+      profile.preferences ? `Preferences: ${profile.preferences}` : '',
     ].filter(Boolean).join('\n');
 
     let relevantFiles;
@@ -1108,9 +1109,15 @@ ${insightsSection}
     return {
       resources: [
         {
+          uri: 'aidrive://context',
+          name: 'Your Knowledge Context',
+          description: 'Auto-compiled briefing from your knowledge base. Read this to understand the user background.',
+          mimeType: 'text/markdown',
+        },
+        {
           uri: 'aidrive://identity',
-          name: '用户档案',
-          description: identityText || '未设置个人档案',
+          name: 'User Profile',
+          description: identityText || 'No profile configured',
           mimeType: 'text/plain',
         },
         ...relevantFiles.map(f => ({
@@ -1126,19 +1133,28 @@ ${insightsSection}
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const uri = request.params.uri;
 
+    if (uri === 'aidrive://context') {
+      try {
+        const result = await compileContext(userId, { task: 'general context for AI assistant', tokenBudget: 3000 });
+        return { contents: [{ uri, text: result.compiledContext || 'Knowledge base is empty. Upload files to build your context.', mimeType: 'text/markdown' }] };
+      } catch {
+        return { contents: [{ uri, text: 'Knowledge base is empty. Upload files to build your context.', mimeType: 'text/markdown' }] };
+      }
+    }
+
     if (uri === 'aidrive://identity') {
       const [user] = await db.select({ name: schema.users.name, email: schema.users.email, profile: schema.users.profile })
         .from(schema.users).where(eq(schema.users.id, userId));
       const profile = (user?.profile as Record<string, any>) || {};
       const text = [
-        user?.name ? `名称: ${user.name}` : '',
-        user?.email ? `邮箱: ${user.email}` : '',
-        profile.role ? `角色: ${profile.role}` : '',
-        profile.currentGoal ? `当前目标: ${profile.currentGoal}` : '',
-        profile.background ? `背景: ${profile.background}` : '',
-        profile.preferences ? `偏好: ${profile.preferences}` : '',
+        user?.name ? `Name: ${user.name}` : '',
+        user?.email ? `Email: ${user.email}` : '',
+        profile.role ? `Role: ${profile.role}` : '',
+        profile.currentGoal ? `Current Goal: ${profile.currentGoal}` : '',
+        profile.background ? `Background: ${profile.background}` : '',
+        profile.preferences ? `Preferences: ${profile.preferences}` : '',
       ].filter(Boolean).join('\n');
-      return { contents: [{ uri, text: text || '未设置个人档案', mimeType: 'text/plain' }] };
+      return { contents: [{ uri, text: text || 'No profile configured', mimeType: 'text/plain' }] };
     }
 
     const fileId = uri.replace('aidrive://files/', '');
