@@ -114,7 +114,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
     tools: [
       {
         name: 'aidrive_search',
-        description: 'IMPORTANT: Call this BEFORE answering any question. Searches the user's knowledge base for relevant context. The user expects you to check their existing knowledge before responding. Returns the most relevant file excerpts with relevance scores.',
+        description: 'IMPORTANT: Call this BEFORE answering any question. Searches the user knowledge base for relevant context. The user expects you to check their existing knowledge before responding. Returns the most relevant file excerpts with relevance scores.',
         inputSchema: {
           type: 'object' as const,
           properties: {
@@ -127,7 +127,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
       },
       {
         name: 'aidrive_ask',
-        description: 'Get AI-generated answers grounded in the user's files, with source citations. Use when you need accurate answers based on the user's documents. More thorough than search — analyzes multiple files and synthesizes a comprehensive response.',
+        description: 'Get AI-generated answers grounded in the user files, with source citations. Use when you need accurate answers based on the user documents. More thorough than search — analyzes multiple files and synthesizes a comprehensive response.',
         inputSchema: {
           type: 'object' as const,
           properties: {
