@@ -19,11 +19,17 @@ DriveMem gives all your AI tools a shared brain — so they remember what you ca
 
 Sign up at [drivemem.cloud](https://drivemem.cloud)
 
-### 2. Get your API Key
+### 2. Connect your agents (one command)
 
-Go to **Settings → Developer** and create an API Key.
+```bash
+npx drivemem setup
+```
 
-### 3. Connect your agent
+This automatically detects and configures **Cursor**, **Claude Desktop**, **Windsurf**, and more. Requires Node.js 18+.
+
+### Manual setup (alternative)
+
+Get your API Key from **Settings → Developer**, then:
 
 **Cursor / Windsurf:**
 ```json
