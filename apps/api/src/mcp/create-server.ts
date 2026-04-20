@@ -473,7 +473,14 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           // Cross-agent relay detection (fire-and-forget)
           logActivity({ userId, agentName, action: 'search', detail: query, metadata: { resultCount: results.length }, relatedFileIds: fileIds });
           detectAndLogRelay(userId, agentName, fileIds);
-          return { content: [{ type: 'text' as const, text: (text || 'No results found.') + searchEnrich }] };
+          // Phase 2: Contextual hint for sparse/empty search results
+          let searchHint = '';
+          if (results.length === 0) {
+            searchHint = '\n\n💡 Tip: Your knowledge base has no matches for this query. Upload more files or use aidrive_store to enrich it.';
+          } else if (results.length <= 2) {
+            searchHint = '\n\n💡 Tip: Only a few matches found. Upload more files to enrich your knowledge base for better results.';
+          }
+          return { content: [{ type: 'text' as const, text: (text || 'No results found.') + searchEnrich + searchHint }] };
         }
 
         case 'aidrive_ask': {
@@ -528,7 +535,9 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           // Cross-agent relay detection (fire-and-forget)
           logActivity({ userId, agentName, action: 'ask', detail: question, metadata: { sourceCount: chunks.length }, relatedFileIds: askFileIds });
           detectAndLogRelay(userId, agentName, askFileIds);
-          return { content: [{ type: 'text' as const, text: answer + askEnrich }] };
+          // Phase 2: Contextual hint for ask — nudge storing conclusions
+          const askHint = '\n\n💡 You can store this conclusion with aidrive_store for future reference across sessions.';
+          return { content: [{ type: 'text' as const, text: answer + askEnrich + askHint }] };
         }
 
         case 'aidrive_list_files': {
@@ -703,7 +712,9 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             ? `\n\n🎉 **First knowledge saved!** This is now available across ALL your AI tools connected to DriveMem. Every future session starts smarter. Keep storing decisions and conclusions — your knowledge compounds over time.`
             : '';
 
-          return { content: [{ type: 'text' as const, text: `✅ 已存入「${title}」到知识库。AI 正在理解内容，稍后可搜索和问答。${celebration}` }] };
+          // Phase 2: Contextual hint for store — positive reinforcement
+          const storeHint = '\n\n✅ Saved! Next time you or any connected AI searches, this knowledge will be available.';
+          return { content: [{ type: 'text' as const, text: `✅ 已存入「${title}」到知识库。AI 正在理解内容，稍后可搜索和问答。${celebration}${storeHint}` }] };
         }
 
         case 'aidrive_capture_conversation': {
@@ -836,7 +847,12 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             }
           } catch { /* best-effort */ }
 
-          const summary = `${result.compiledContext}${staleWarning}\n\n---\n_Compilation: ${result.metadata.fragmentCount} fragments, ${result.metadata.totalTokens}/${result.metadata.tokenBudget} tokens, ${result.metadata.compilationTimeMs}ms, coverage: ${result.metadata.coverage}_`;
+          // Phase 2: Contextual hint for thin compiled context
+          let contextHint = '';
+          if (result.metadata.fragmentCount <= 2) {
+            contextHint = '\n\n💡 Tip: Your knowledge base has limited context for this task. Upload more files or use aidrive_store to build richer context.';
+          }
+          const summary = `${result.compiledContext}${staleWarning}${contextHint}\n\n---\n_Compilation: ${result.metadata.fragmentCount} fragments, ${result.metadata.totalTokens}/${result.metadata.tokenBudget} tokens, ${result.metadata.compilationTimeMs}ms, coverage: ${result.metadata.coverage}_`;
           return { content: [{ type: 'text' as const, text: summary }] };
         }
 
