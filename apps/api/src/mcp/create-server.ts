@@ -651,7 +651,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           await uploadObject(s3Key, buffer, 'text/markdown');
 
           await db.insert(schema.files).values({
-            id: fileId, name: filename, originalName: filename,
+            id: fileId, name: title, originalName: filename,
             mimeType: 'text/markdown', size: buffer.length, status: 'parsing', userId, s3Key,
             ...(detectedProjectId ? { folderId: detectedProjectId } : {}),
           });
@@ -711,7 +711,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           await uploadObject(s3Key, buffer, 'text/markdown');
 
           await db.insert(schema.files).values({
-            id: fileId, name: filename, originalName: filename,
+            id: fileId, name: title, originalName: filename,
             mimeType: 'text/markdown', size: buffer.length, status: 'parsing', userId, s3Key,
           });
 
