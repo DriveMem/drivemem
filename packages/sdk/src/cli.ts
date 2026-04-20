@@ -5,6 +5,40 @@ import { join } from 'path';
 import { homedir } from 'os';
 import * as readline from 'readline';
 
+const RULES_CONTENT = `# DriveMem Integration Rules
+
+You have access to DriveMem — the user's shared knowledge base across all AI tools.
+You MUST use it proactively. These are not suggestions — they are mandatory behaviors.
+
+## MANDATORY BEHAVIORS:
+
+### 1. Load Context at Session Start
+At the START of every conversation, call aidrive_compile_context with a description of the current task.
+This gives you the user's background, recent work, and relevant knowledge BEFORE you respond.
+
+### 2. Search Before Answering
+Before answering ANY question, call aidrive_search to check the knowledge base.
+The user expects you to already know their projects, decisions, and preferences.
+
+### 3. Save Valuable Output
+When the conversation produces decisions, conclusions, analysis, or action items,
+call aidrive_store to save them. Other AI tools will automatically benefit.
+
+## TRIGGER CONDITIONS (when to act):
+
+| User says / situation | Action |
+|---|---|
+| "之前…/上次…/我们决定了…/previously/last time" | aidrive_search BEFORE answering |
+| Conversation produces a clear decision or conclusion | aidrive_store with appropriate tags |
+| Starting a new task or project | aidrive_search for related context |
+| Completing a task milestone | aidrive_store summary + next steps |
+| "记住这个/remember this/don't forget" | aidrive_store immediately |
+
+## Why
+The user connected you to DriveMem so every session builds on past knowledge.
+Every conversation should start with context loading and end with knowledge saving.
+`;
+
 async function setup() {
   console.log('🧠 DriveMem Setup — Connecting your AI tools\n');
 
@@ -90,24 +124,16 @@ async function setup() {
   const cursorrules = join(process.cwd(), '.cursorrules');
   if (!existsSync(cursorrules)) {
     console.log('\n📝 Adding .cursorrules to current project...');
-    const rules = `# DriveMem Integration Rules
-
-You have access to DriveMem — the user's shared knowledge base. USE IT PROACTIVELY.
-
-## MANDATORY BEHAVIORS:
-
-### Before answering any question:
-- Call aidrive_search with relevant keywords to check the knowledge base
-- Use the results to inform your answer
-
-### At the start of every conversation:
-- Call aidrive_compile_context with a description of the current task
-
-### After producing valuable output:
-- Call aidrive_store to save decisions, conclusions, and action items
-`;
-    writeFileSync(cursorrules, rules);
+    writeFileSync(cursorrules, RULES_CONTENT);
     console.log('  ✅ .cursorrules added to project');
+  }
+
+  // 6. Add CLAUDE.md for Claude Code users
+  const claudeMd = join(process.cwd(), 'CLAUDE.md');
+  if (!existsSync(claudeMd)) {
+    console.log('\n📝 Adding CLAUDE.md for Claude Code...');
+    writeFileSync(claudeMd, RULES_CONTENT);
+    console.log('  ✅ CLAUDE.md added to project');
   }
 
   // 6. Summary

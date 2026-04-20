@@ -370,8 +370,15 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           }
         } catch {}
 
-        // Suggested questions based on recent file content
-        if (recentFiles.length > 0) {
+        // Onboarding ritual for empty KB vs suggested actions for existing KB
+        if (totalFiles === 0) {
+          lines.push('\n🎉 **Welcome to DriveMem! Your knowledge base is empty — let\'s fix that.**');
+          lines.push('\n**🚀 Quick Start (do these now):**');
+          lines.push('1. **Store something** — call aidrive_store with a summary of what you\'re working on right now');
+          lines.push('2. **Upload a file** — go to https://drivemem.cloud/files and upload a doc, note, or PDF');
+          lines.push('3. **Ask a question** — after storing, try aidrive_search to see it come back');
+          lines.push('\n💡 *Tip: Every time this conversation produces a decision or conclusion, store it. Future sessions will thank you.*');
+        } else if (recentFiles.length > 0) {
           const fileNames = recentFiles.map(f => f.name);
           const summaries = recentFiles.map(f => f.summary).filter(Boolean);
           const suggestions: string[] = [];
@@ -689,7 +696,14 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             extractWorkItems(userId, content, fileId, agentName || undefined, detectedProjectId || undefined).catch(() => {});
           }).catch(() => {});
 
-          return { content: [{ type: 'text' as const, text: `✅ 已存入「${title}」到知识库。AI 正在理解内容，稍后可搜索和问答。` }] };
+          // First store celebration (onboarding ritual)
+          const [storeCount] = await db.select({ count: sql`count(*)` }).from(schema.files).where(eq(schema.files.userId, userId));
+          const isFirstStore = Number(storeCount?.count || 0) <= 1;
+          const celebration = isFirstStore
+            ? `\n\n🎉 **First knowledge saved!** This is now available across ALL your AI tools connected to DriveMem. Every future session starts smarter. Keep storing decisions and conclusions — your knowledge compounds over time.`
+            : '';
+
+          return { content: [{ type: 'text' as const, text: `✅ 已存入「${title}」到知识库。AI 正在理解内容，稍后可搜索和问答。${celebration}` }] };
         }
 
         case 'aidrive_capture_conversation': {
