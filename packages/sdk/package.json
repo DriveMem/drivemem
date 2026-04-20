@@ -4,14 +4,24 @@
   "description": "DriveMem SDK — connect any AI agent to shared knowledge",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "drivemem": "./dist/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "test": "echo 'no tests yet'"
   },
-  "keywords": ["drivemem", "ai", "agent", "memory", "knowledge", "mcp"],
+  "keywords": [
+    "drivemem",
+    "ai",
+    "agent",
+    "memory",
+    "knowledge",
+    "mcp"
+  ],
   "license": "MIT",
-  "dependencies": {},
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
   }
 }
