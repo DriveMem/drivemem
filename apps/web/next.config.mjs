@@ -31,7 +31,7 @@ const nextConfig = {
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.drivemem.cloud https://*.drivemem.cloud https://cloudflareinsights.com; font-src 'self' data:; frame-src 'self'",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://plausible.io; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.drivemem.cloud https://*.drivemem.cloud https://cloudflareinsights.com https://plausible.io; font-src 'self' data:; frame-src 'self'",
           },
         ],
       },
