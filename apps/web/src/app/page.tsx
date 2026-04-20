@@ -311,8 +311,123 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ===== Use Cases ===== */}
+      <section id="use-cases" className="py-24 md:py-32 bg-[#FAFAFA]">
+        <div className="max-w-6xl mx-auto px-6">
+          <FadeIn>
+            <div className="text-center mb-16">
+              <p className="text-sm font-medium text-brand-500 mb-3">Use Cases</p>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-4">
+                Built for real workflows
+              </h2>
+              <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+                See how teams use DriveMem
+              </p>
+            </div>
+          </FadeIn>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Card 1 — AI Agent Memory */}
+            <FadeIn delay={0}>
+              <div className="bg-white rounded-2xl shadow-soft p-8 h-full flex flex-col">
+                <div className="text-3xl mb-4">🤖</div>
+                <h3 className="text-title font-semibold text-gray-900 mb-2">Your agents remember everything</h3>
+                <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                  Every AI session starts from scratch. DriveMem gives your agents persistent memory across sessions.
+                </p>
+                <div className="rounded-xl bg-gray-50 p-5 mb-6 space-y-4 flex-1">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Before</p>
+                    <p className="text-sm text-gray-400 line-through leading-relaxed">
+                      Copy-paste context every time. Agents forget decisions between sessions.
+                    </p>
+                  </div>
+                  <div className="border-t border-gray-200" />
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-brand-500 mb-1.5">After</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      Agents automatically know your project context, past decisions, and ongoing work.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-auto">
+                  <Link href="/signup" className="text-sm font-medium text-brand-500 hover:text-brand-600 transition-colors">
+                    Connect your first agent →
+                  </Link>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Card 2 — Personal Knowledge Base */}
+            <FadeIn delay={100}>
+              <div className="bg-white rounded-2xl shadow-soft p-8 h-full flex flex-col">
+                <div className="text-3xl mb-4">🧠</div>
+                <h3 className="text-title font-semibold text-gray-900 mb-2">Ask your documents anything</h3>
+                <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                  Knowledge scattered across Notion, Google Docs, and local files. Can&#39;t find what you need when you need it.
+                </p>
+                <div className="rounded-xl bg-gray-50 p-5 mb-6 space-y-4 flex-1">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Before</p>
+                    <p className="text-sm text-gray-400 line-through leading-relaxed">
+                      Manual search through dozens of files. Copy-paste relevant sections into AI chats.
+                    </p>
+                  </div>
+                  <div className="border-t border-gray-200" />
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-brand-500 mb-1.5">After</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      One question gets precise answers from all your files, with source citations.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-auto">
+                  <Link href="/signup" className="text-sm font-medium text-brand-500 hover:text-brand-600 transition-colors">
+                    Start organizing →
+                  </Link>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* Card 3 — Cross-Agent Workflow */}
+            <FadeIn delay={200}>
+              <div className="relative bg-white rounded-2xl shadow-soft p-8 h-full flex flex-col">
+                <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-wider text-brand-500 bg-brand-50 px-2.5 py-0.5 rounded-full">
+                  Coming Soon
+                </span>
+                <div className="text-3xl mb-4">🔄</div>
+                <h3 className="text-title font-semibold text-gray-900 mb-2">Knowledge flows between tools</h3>
+                <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                  Claude doesn&#39;t know what Cursor decided. Each AI tool is an island.
+                </p>
+                <div className="rounded-xl bg-gray-50 p-5 mb-6 space-y-4 flex-1">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Before</p>
+                    <p className="text-sm text-gray-400 line-through leading-relaxed">
+                      Manually relay information between different AI tools.
+                    </p>
+                  </div>
+                  <div className="border-t border-gray-200" />
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-brand-500 mb-1.5">After</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      What one agent learns, every agent knows. Seamless handoff between tools.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-auto">
+                  <a href="#how-it-works" className="text-sm font-medium text-brand-500 hover:text-brand-600 transition-colors">
+                    See how it works →
+                  </a>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
       {/* ===== How it Works ===== */}
-      <section id="how-it-works" className="py-24 md:py-32 bg-[#FAFAFA]">
+      <section id="how-it-works" className="py-24 md:py-32 bg-white">
         <div className="max-w-5xl mx-auto px-6">
           <FadeIn>
             <div className="text-center mb-16">
@@ -342,106 +457,6 @@ export default function LandingPage() {
                 </FadeIn>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ===== Use Cases ===== */}
-      <section id="use-cases" className="py-24 md:py-32 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-16">
-              <p className="text-sm font-medium text-brand-500 mb-3">Use Cases</p>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                See DriveMem in Action
-              </h2>
-              <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-                From scattered notes to unified AI memory
-              </p>
-            </div>
-          </FadeIn>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Card 1 — Personal Knowledge */}
-            <FadeIn delay={0}>
-              <div className="bg-white border border-gray-100 rounded-xl p-8 h-full flex flex-col">
-                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center text-2xl mb-5">
-                  🧠
-                </div>
-                <h3 className="font-semibold text-lg text-gray-900 mb-1">Personal Knowledge Management</h3>
-                <p className="text-sm text-gray-500 mb-5">Let AI truly remember you</p>
-                <div className="border-l-2 border-orange-200 pl-4 mb-4">
-                  <p className="text-sm text-gray-500 italic leading-relaxed">
-                    Notes scattered across Notion, Google Docs, and local files. Every AI conversation starts from scratch.
-                  </p>
-                </div>
-                <div className="border-l-2 border-brand-300 pl-4 mb-6">
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Connect your sources → DriveMem auto-indexes → Ask anything in Chat with precise citations.
-                  </p>
-                </div>
-                <div className="mt-auto">
-                  <Link href="/login" className="text-sm font-medium text-brand-500 hover:text-brand-600 transition-colors">
-                    Start organizing →
-                  </Link>
-                </div>
-              </div>
-            </FadeIn>
-
-            {/* Card 2 — Agent Memory */}
-            <FadeIn delay={100}>
-              <div className="bg-white border border-gray-100 rounded-xl p-8 h-full flex flex-col">
-                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center text-2xl mb-5">
-                  🤖
-                </div>
-                <h3 className="font-semibold text-lg text-gray-900 mb-1">AI Agent Memory Layer</h3>
-                <p className="text-sm text-gray-500 mb-5">Agents that never forget</p>
-                <div className="border-l-2 border-orange-200 pl-4 mb-4">
-                  <p className="text-sm text-gray-500 italic leading-relaxed">
-                    Your AI agents lose all context when sessions end. Decisions, discoveries, project state — gone.
-                  </p>
-                </div>
-                <div className="border-l-2 border-brand-300 pl-4 mb-6">
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Agents store knowledge via MCP → New sessions auto-resume with full context → Multi-agent shared memory.
-                  </p>
-                </div>
-                <div className="mt-auto">
-                  <Link href="/login" className="text-sm font-medium text-brand-500 hover:text-brand-600 transition-colors">
-                    Connect your agent →
-                  </Link>
-                </div>
-              </div>
-            </FadeIn>
-
-            {/* Card 3 — Team Knowledge */}
-            <FadeIn delay={200}>
-              <div className="relative bg-white border border-gray-100 rounded-xl p-8 h-full flex flex-col">
-                <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-wider text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                  Coming Soon
-                </span>
-                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center text-2xl mb-5">
-                  👥
-                </div>
-                <h3 className="font-semibold text-lg text-gray-900 mb-1">Team Knowledge Hub</h3>
-                <p className="text-sm text-gray-500 mb-5">One question, instant answers</p>
-                <div className="border-l-2 border-orange-200 pl-4 mb-4">
-                  <p className="text-sm text-gray-500 italic leading-relaxed">
-                    Team knowledge scattered across 5+ platforms. Finding &ldquo;who decided what&rdquo; takes 30 minutes.
-                  </p>
-                </div>
-                <div className="border-l-2 border-brand-300 pl-4 mb-6">
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Connect Notion + Google Drive + GitHub → Anyone can ask in Chat → AI spots contradictions and stale docs.
-                  </p>
-                </div>
-                <div className="mt-auto">
-                  <span className="text-sm font-medium text-gray-300 cursor-default">
-                    Coming soon
-                  </span>
-                </div>
-              </div>
-            </FadeIn>
           </div>
         </div>
       </section>
