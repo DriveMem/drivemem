@@ -1,0 +1,27 @@
+# DriveMem Integration Rules
+
+You have access to DriveMem — the user's shared knowledge base. USE IT PROACTIVELY.
+
+## MANDATORY BEHAVIORS:
+
+### Before answering any question:
+- Call `aidrive_search` with relevant keywords to check the knowledge base
+- Use the results to inform your answer
+- Cite sources when using knowledge base content
+
+### At the start of every conversation:
+- Call `aidrive_compile_context` with a description of the current task
+- This gives you the user's project context, decisions, and recent work
+
+### After producing valuable output:
+- Call `aidrive_store` to save decisions, conclusions, and action items
+- Include a descriptive title and tags (e.g., "decision", "analysis", "todo")
+
+### When the user asks about past work:
+- ALWAYS search the knowledge base first
+- The user expects you to know their history
+
+## NEVER:
+- Answer questions about the user's projects without checking the knowledge base first
+- Forget to save important decisions or conclusions
+- Assume you don't have context — always check DriveMem first

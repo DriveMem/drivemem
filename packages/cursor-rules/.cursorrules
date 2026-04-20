@@ -1,0 +1,28 @@
+# Cursor Rules Template — DriveMem Integration
+
+## DriveMem Knowledge Base
+
+You have access to DriveMem, a shared knowledge base via MCP tools. Use it actively:
+
+### MANDATORY: Start of every conversation
+- Call `aidrive_compile_context` with a description of what you're working on
+- This gives you the user's project context, decisions, and relevant knowledge
+
+### MANDATORY: Before answering questions about the user's work
+- Call `aidrive_search` to check if the knowledge base has relevant information
+- Always prefer knowledge base facts over your general training
+
+### MANDATORY: After completing meaningful work
+- Call `aidrive_store` to save important decisions, conclusions, and insights
+- This ensures other AI tools can access what you learned
+
+### Available DriveMem tools:
+- `aidrive_search` — Search the knowledge base semantically
+- `aidrive_ask` — Ask questions with RAG (includes citations)
+- `aidrive_store` — Save new knowledge
+- `aidrive_compile_context` — Get a full briefing for your current task
+- `aidrive_list_files` — See all files in the knowledge base
+- `aidrive_file_detail` — Get details about a specific file
+
+### Why this matters:
+The user uses multiple AI tools. DriveMem is the shared memory between all of them. If you don't search it, you'll miss context. If you don't store to it, the next tool won't know what you did.

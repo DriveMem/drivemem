@@ -58,7 +58,9 @@ function ConnectedAgents() {
         </div>
       ) : agents.length === 0 ? (
         <div className="rounded-xl border bg-card p-6 text-center">
-          <p className="text-sm text-muted-foreground">No agents connected yet. Use the cards below to connect your first agent.</p>
+          <div className="text-4xl mb-3">🔌</div>
+          <p className="text-sm font-medium mb-1">No agents connected yet</p>
+          <p className="text-sm text-muted-foreground">Use the cards below to connect your first agent.</p>
         </div>
       ) : (
         <div className="rounded-xl border bg-card divide-y">
@@ -324,6 +326,13 @@ export default function ConnectPage() {
             <li>2. Click <strong>Add Server</strong>, paste the URL below</li>
             <li>3. <strong>Reload Window</strong> (Cmd+Shift+P → Reload)</li>
             <li>4. Start a new chat — DriveMem tools are ready!</li>
+            <li className="mt-2 pt-2 border-t border-dashed">
+              <strong>Pro tip:</strong> Add a{' '}
+              <a href="/cursorrules.txt" download=".cursorrules" className="text-primary underline">
+                .cursorrules file
+              </a>{' '}
+              to your project for auto-context loading
+            </li>
           </ol>
           <Button
             onClick={() => copyText(mcpUrl, "cursor")}

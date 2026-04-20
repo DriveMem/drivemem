@@ -140,14 +140,14 @@ export function SearchResults({ query }: { query: string }) {
   if (results.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-muted-foreground">
-        <Search className="h-8 w-8" />
+        <div className="text-4xl">🔍</div>
         <div className="text-center space-y-2">
-          <p className="text-sm font-medium">No results found for "{query}"</p>
-          <p className="text-xs">Try: </p>
-          <ul className="text-xs space-y-1">
-            <li>• Try rephrasing or using different keywords</li>
-            <li>• Try a shorter query (e.g., search for core concepts only)</li>
-            <li>• <a href="/dashboard" className="text-brand-500 hover:underline">Upload more files</a> Enrich your knowledge library</li>
+          <p className="text-lg font-semibold text-foreground">没有找到相关内容</p>
+          <p className="text-sm">关于 &ldquo;{query}&rdquo; 没有匹配的结果，试试：</p>
+          <ul className="text-sm space-y-1.5 mt-3">
+            <li>• 换个关键词或用更简短的搜索词</li>
+            <li>• <a href="/files" className="text-brand-500 hover:underline font-medium">上传包含相关内容的文件</a></li>
+            <li>• 在 <a href="/chat?new=1" className="text-brand-500 hover:underline font-medium">Chat</a> 中用自然语言提问</li>
           </ul>
         </div>
       </div>
