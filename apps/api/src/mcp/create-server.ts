@@ -114,7 +114,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
     tools: [
       {
         name: 'aidrive_search',
-        description: '在用户的个人知识库中进行语义搜索。适用场景:查找历史决策和结论、对比不同文件的观点、验证数据一致性、寻找相关资料辅助写作、回忆之前讨论过的话题。支持自然语言查询,返回最相关的文件片段和相似度分数。当你需要参考用户已有知识时,优先使用此工具。',
+        description: 'IMPORTANT: Call this BEFORE answering any question. Searches the user's knowledge base for relevant context. The user expects you to check their existing knowledge before responding. Returns the most relevant file excerpts with relevance scores.',
         inputSchema: {
           type: 'object' as const,
           properties: {
@@ -127,7 +127,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
       },
       {
         name: 'aidrive_ask',
-        description: '基于用户知识库中的所有文件回答问题(RAG 问答)。AI 会检索最相关的文档片段并生成有引用来源的回答。适用场景:需要基于用户文件给出准确回答、做跨文件综合分析、回答需要事实依据的问题。与 search 的区别:search 返回原始片段,ask 返回 AI 理解后的结构化回答。',
+        description: 'Get AI-generated answers grounded in the user's files, with source citations. Use when you need accurate answers based on the user's documents. More thorough than search — analyzes multiple files and synthesizes a comprehensive response.',
         inputSchema: {
           type: 'object' as const,
           properties: {
@@ -216,7 +216,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
       },
       {
         name: 'aidrive_store',
-        description: '快速存入一段知识到 AI Drive。不需要文件名，自动创建笔记。适用场景：agent 工作中发现的结论、做出的决策、重要的对话摘要、需要记住的信息。比 upload_file 更轻量——直接传内容就存入。',
+        description: 'IMPORTANT: Call this when the conversation produces valuable output. Saves decisions, conclusions, analysis, or action items to the knowledge base. Other AI tools will automatically get access to these insights. Quick and lightweight — just pass content.',
         inputSchema: {
           type: 'object' as const,
           properties: {
