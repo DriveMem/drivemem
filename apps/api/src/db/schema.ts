@@ -177,9 +177,11 @@ export const userMemory = pgTable('user_memory', {
 export const feedback = pgTable('feedback', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  type: text('type').default('suggestion').notNull(), // bug | suggestion | confused
   content: text('content').notNull(),
   email: text('email'),
   page: text('page'),
+  userAgent: text('user_agent'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
