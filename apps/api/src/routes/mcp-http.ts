@@ -216,6 +216,34 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
   });
 
   // DELETE / — Streamable HTTP session termination
+  // GET /sse — alias for SSE endpoint (some clients use /mcp/sse instead of /mcp)
+  fastify.get('/sse', async (request: FastifyRequest, reply: FastifyReply) => {
+    // Same logic as GET / — SSE connection
+    await requireApiKey(request, reply);
+    if (reply.sent) return;
+    const userId = request.user!.id;
+    const agentName = (request as any).apiKeyName || '';
+    const apiKeyId = (request as any).apiKeyId;
+    const mcpServer = createMcpServer(userId, agentName, { onToolCall: () => {}, apiKeyId });
+    const transport = new SSEServerTransport('/mcp/sse', reply.raw);
+    const sessionId = transport.sessionId;
+    sessions.set(sessionId, { transport, server: mcpServer });
+    reply.raw.on('close', () => { sessions.delete(sessionId); });
+    await mcpServer.connect(transport);
+  });
+
+  // POST /sse — message endpoint for SSE transport (some clients POST to /mcp/sse?sessionId=...)
+  fastify.post('/sse', async (request: FastifyRequest, reply: FastifyReply) => {
+    await requireApiKey(request, reply);
+    if (reply.sent) return;
+    const sessionId = (request.query as any)?.sessionId;
+    if (!sessionId) return reply.status(400).send({ error: 'sessionId required' });
+    const session = sessions.get(sessionId);
+    if (!session) return reply.status(404).send({ error: 'Session not found' });
+    if (!(session.transport instanceof SSEServerTransport)) return reply.status(400).send({ error: 'Not an SSE session' });
+    await session.transport.handlePostMessage(request.raw, reply.raw, request.body);
+  });
+
   fastify.delete('/', async (request: FastifyRequest, reply: FastifyReply) => {
     await requireApiKey(request, reply);
     if (reply.sent) return;
