@@ -191,6 +191,11 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       mimeType: file.mimeType,
     }, PARSE_JOB_OPTIONS);
 
+    // Track activation action: file_upload
+    import('../services/nudge.service.js').then(({ recordActivationAction }) => {
+      recordActivationAction(userId, 'file_upload').catch(() => {});
+    }).catch(() => {});
+
     return reply.send({ fileId, status: 'parsing' });
   });
 

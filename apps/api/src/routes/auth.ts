@@ -106,6 +106,11 @@ export default async function authRoutes(fastify: FastifyInstance) {
     // Fire-and-forget: seed sample files for the new user
     seedDemoProject(user.id).catch(() => {});
 
+    // Fire-and-forget: initialize nudge state for activation sequence
+    import('../services/nudge.service.js').then(({ ensureNudgeState }) => {
+      ensureNudgeState(user.id).catch(() => {});
+    }).catch(() => {});
+
     return reply.status(201).send(user);
   });
 

@@ -340,6 +340,26 @@ export const workItems = pgTable('work_items', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// --- Nudge State (Activation Nudge Sequence) ---
+export const nudgeState = pgTable('nudge_state', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  fileUploadAt: timestamp('file_upload_at', { withTimezone: true }),
+  chatFirstAt: timestamp('chat_first_at', { withTimezone: true }),
+  mcpConnectAt: timestamp('mcp_connect_at', { withTimezone: true }),
+  nudgeD0SentAt: timestamp('nudge_d0_sent_at', { withTimezone: true }),
+  nudgeD1SentAt: timestamp('nudge_d1_sent_at', { withTimezone: true }),
+  nudgeD3SentAt: timestamp('nudge_d3_sent_at', { withTimezone: true }),
+  nudgeD7SentAt: timestamp('nudge_d7_sent_at', { withTimezone: true }),
+  activatedAt: timestamp('activated_at', { withTimezone: true }),
+  unsubscribedEmail: boolean('unsubscribed_email').notNull().default(false),
+  unsubscribeToken: varchar('unsubscribe_token', { length: 64 }).notNull(),
+  lastEmailSentDate: varchar('last_email_sent_date', { length: 10 }), // YYYY-MM-DD
+  lastNotificationSentDate: varchar('last_notification_sent_date', { length: 10 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Integrations (external data sources) ---
 export const integrationStatusEnum = pgEnum('integration_status', ['active', 'paused', 'error', 'revoked']);
 

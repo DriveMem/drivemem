@@ -155,6 +155,9 @@ import digestRoutes from './routes/digest.js';
 await app.register(resumeBriefRoutes, { prefix: '/api/resume-brief' });
 await app.register(digestRoutes, { prefix: '/api/digest' });
 
+import nudgeRoutes from './routes/nudge.js';
+await app.register(nudgeRoutes, { prefix: '/api/v1' });
+
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {
   return reply.send({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
@@ -167,6 +170,18 @@ app.get('/health', async () => ({
 
 try {
   await app.listen({ port: config.PORT, host: '0.0.0.0' });
+
+  // Start nudge scheduler — runs every hour
+  const { runNudgeScheduler } = await import('./services/nudge.service.js');
+  setInterval(async () => {
+    try {
+      await runNudgeScheduler();
+    } catch (err) {
+      app.log.error(err, '[nudge] Scheduler error');
+    }
+  }, 60 * 60 * 1000); // 1 hour
+  // Run once on startup after a short delay
+  setTimeout(() => runNudgeScheduler().catch(err => app.log.error(err, '[nudge] Initial run error')), 10_000);
 } catch (err) {
   app.log.error(err);
   process.exit(1);

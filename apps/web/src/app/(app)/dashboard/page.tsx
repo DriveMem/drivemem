@@ -18,6 +18,7 @@ import { AutoSavedBar } from "@/components/dashboard/auto-saved-bar"
 import { WorkItemsPanel } from "@/components/dashboard/work-items-panel"
 import { WelcomeCard } from "@/components/onboarding/welcome-card"
 import { DashboardSkeleton } from "@/components/ui/skeleton-loader"
+import { ActivationBanner } from "@/components/dashboard/activation-banner"
 
 // --- helpers ---
 function relativeTime(dateStr: string): string {
@@ -382,6 +383,7 @@ export default function HomePage() {
     <div className="flex flex-col h-full overflow-auto">
       <MobileUploadFab />
       <AutoSavedBar />
+      <ActivationBanner />
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} />}
 
       <div className="max-w-4xl mx-auto w-full px-4 md:px-6 py-6 md:py-8 page-enter">

@@ -509,6 +509,11 @@ export default async function v1Routes(fastify: FastifyInstance) {
     await queue.add('parse', { fileId, userId, s3Key, mimeType });
     await queue.close();
 
+    // Track activation action: file_upload
+    import('../services/nudge.service.js').then(({ recordActivationAction }) => {
+      recordActivationAction(userId, 'file_upload').catch(() => {});
+    }).catch(() => {});
+
     return reply.status(201).send({ fileId, name: filename, status: 'parsing' });
   });
 

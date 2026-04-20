@@ -257,6 +257,13 @@ export default async function conversationRoutes(app: FastifyInstance) {
 
     const isFirstUserMessage = existingMsgs.filter((m) => m.role === 'user').length === 1;
 
+    // Track activation action: first chat
+    if (isFirstUserMessage) {
+      import('../services/nudge.service.js').then(({ recordActivationAction }) => {
+        recordActivationAction(user.id, 'chat_first').catch(() => {});
+      }).catch(() => {});
+    }
+
     // Recent context (last N rounds)
     const contextRounds = config.CHAT_CONTEXT_ROUNDS;
     const recentMessages = existingMsgs.slice(-(contextRounds * 2));

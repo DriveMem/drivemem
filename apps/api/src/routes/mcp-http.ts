@@ -13,6 +13,11 @@ import { trackToolCall, onSessionDisconnect } from '../services/session-idle-sum
 // --- Agent Connection Tracking (fire-and-forget) ---
 async function trackConnectionOpen(userId: string, apiKeyId: string | undefined, agentName: string, transport: string): Promise<string | null> {
   try {
+    // Track activation action: mcp_connect
+    import('../services/nudge.service.js').then(({ recordActivationAction }) => {
+      recordActivationAction(userId, 'mcp_connect').catch(() => {});
+    }).catch(() => {});
+
     const [row] = await db.insert(agentConnections).values({
       userId,
       apiKeyId: apiKeyId || null,
