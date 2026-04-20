@@ -6,9 +6,36 @@
  */
 
 import { FastifyInstance } from 'fastify';
-import { unsubscribeByToken, getActivationStatus } from '../services/nudge.service.js';
+import { unsubscribeByToken, getActivationStatus, runNudgeScheduler } from '../services/nudge.service.js';
 
 export default async function nudgeRoutes(fastify: FastifyInstance) {
+  // POST /cron/nudge-check — external cron trigger (protected by CRON_SECRET)
+  fastify.post('/cron/nudge-check', async (request, reply) => {
+    const { authorization } = request.headers;
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret && authorization !== `Bearer ${cronSecret}`) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+    const result = await runNudgeScheduler();
+    return reply.send({ ok: true, ...result });
+  });
+
+  // POST /nudge/unsubscribe — authenticated user unsubscribe from nudge emails
+  fastify.post('/nudge/unsubscribe', async (request, reply) => {
+    const userId = (request as any).user?.id;
+    if (!userId) return reply.status(401).send({ error: 'Unauthorized' });
+
+    const { db } = await import('../db/index.js');
+    const { nudgeState } = await import('../db/schema.js');
+    const { eq } = await import('drizzle-orm');
+
+    const result = await db.update(nudgeState)
+      .set({ unsubscribedEmail: true, updatedAt: new Date() })
+      .where(eq(nudgeState.userId, userId))
+      .returning({ id: nudgeState.id });
+
+    return reply.send({ ok: result.length > 0 });
+  });
   // GET /unsubscribe?token=xxx — public, no auth required
   fastify.get('/unsubscribe', async (request, reply) => {
     const { token } = request.query as { token?: string };

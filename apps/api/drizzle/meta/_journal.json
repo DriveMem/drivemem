@@ -64,6 +64,13 @@
       "when": 1775748533959,
       "tag": "0008_lush_kingpin",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1776681349161,
+      "tag": "0009_steady_revanche",
+      "breakpoints": true
     }
   ]
 }

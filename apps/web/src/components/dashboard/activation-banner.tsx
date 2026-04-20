@@ -5,6 +5,7 @@ import { Upload, MessageCircle, Terminal, X, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { apiFetch } from "@/lib/api"
 import Link from "next/link"
+import { trackEvent } from "@/lib/analytics"
 
 interface ActivationStatus {
   activated: boolean
@@ -77,12 +78,7 @@ export function ActivationBanner() {
     setDismissed(true)
     const today = new Date().toISOString().slice(0, 10)
     localStorage.setItem("activation_banner_dismissed_date", today)
-    // Track dismiss event
-    apiFetch("/api/notifications", {
-      method: "POST",
-      body: JSON.stringify({ event: "nudge_dismissed", step: status.nextAction }),
-      silent: true,
-    }).catch(() => {})
+    trackEvent("nudge_dismissed", { step: status.nextAction || "" })
   }
 
   return (
@@ -103,6 +99,7 @@ export function ActivationBanner() {
         size="sm"
         className="bg-blue-600 hover:bg-blue-700 text-white flex-shrink-0"
         asChild
+        onClick={() => trackEvent("nudge_clicked", { step: status.nextAction || "" })}
       >
         <Link href={config.href}>{config.cta}</Link>
       </Button>

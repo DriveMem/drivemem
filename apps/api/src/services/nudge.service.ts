@@ -11,6 +11,7 @@ import { eq, and, isNull, sql, gte } from 'drizzle-orm';
 import { Resend } from 'resend';
 import crypto from 'crypto';
 import { createNotificationDeduped } from './notification.service.js';
+import { trackServerEvent } from '../lib/analytics.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY || '');
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://drivemem.cloud';
@@ -141,6 +142,7 @@ export async function recordActivationAction(userId: string, action: 'file_uploa
       .set({ activatedAt: new Date(), updatedAt: new Date() })
       .where(eq(schema.nudgeState.userId, userId));
     console.log(`[nudge] User ${userId} activated!`);
+    trackServerEvent('activation_complete', { userId });
   }
 }
 
@@ -240,6 +242,7 @@ export async function runNudgeScheduler(): Promise<{ processed: number; sent: nu
         }).where(eq(schema.nudgeState.userId, user.userId));
 
         console.log(`[nudge] Sent ${nudgeStep} email to ${user.email} (action: ${actionForEmail})`);
+        trackServerEvent('nudge_sent', { channel: 'email', step: nudgeStep, action: actionForEmail });
         sent++;
       } catch (err) {
         console.error(`[nudge] Failed to send email to ${user.email}:`, err);
@@ -264,6 +267,7 @@ export async function runNudgeScheduler(): Promise<{ processed: number; sent: nu
         lastNotificationSentDate: today,
         updatedAt: new Date(),
       }).where(eq(schema.nudgeState.userId, user.userId));
+      trackServerEvent('nudge_sent', { channel: 'notification', step: nudgeStep, action: actionForEmail });
     }
   }
 
