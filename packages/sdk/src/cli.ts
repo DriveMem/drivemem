@@ -157,7 +157,7 @@ function main() {
   } else {
     console.log('🧠 DriveMem CLI\n');
     console.log('Usage:');
-    console.log('  npx drivemem setup    Auto-configure Cursor, Claude Desktop & Windsurf');
+    console.log('  npx drivemem setup    Auto-configure Cursor, Claude Desktop, Windsurf & Claude Code');
     console.log('');
     console.log('More: https://drivemem.cloud/docs');
   }
