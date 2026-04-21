@@ -175,6 +175,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, pre
     const userMsg: ChatMessage = { id: "u-" + Date.now(), role: "user", content, createdAt: new Date().toISOString() }
     setMessages((prev) => [...prev, userMsg])
     if (isFirstMessage) trackEvent("chat_first_message")
+    trackEvent("chat_message_sent")
     setSending(true)
     setStreaming("")
     setFollowUpSuggestions([])

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useRef, useEffect, useState } from "react"
+import { trackEvent } from "@/lib/analytics"
 
 /* ============================================================
    DriveMem Landing — Light, Clean, Notion-inspired
@@ -114,6 +115,7 @@ function Nav() {
           </Link>
           <Link
             href="/signup"
+            onClick={() => trackEvent("signup_click", { source: "nav" })}
             className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-4 py-2 rounded-lg font-medium transition-colors"
           >
             Get started free
@@ -274,6 +276,7 @@ export default function LandingPage() {
         <div className="mt-8 md:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 href="/login"
+                onClick={() => trackEvent("signup_click", { source: "hero" })}
                 className="px-6 py-2.5 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors shadow-brand-sm hover:shadow-brand-md"
               >
                 Get started free
