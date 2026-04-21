@@ -129,19 +129,27 @@ function ActivityItem({ activity }: { activity: any }) {
   )
 }
 
-// --- Project Chip ---
+// --- Project Chip (card with quick prompt button) ---
 function ProjectChip({ project }: { project: any }) {
   return (
-    <Link
-      href={`/files?folderId=${project.id}`}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-body text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition whitespace-nowrap flex-shrink-0"
-    >
-      <Folder className="h-3.5 w-3.5" />
-      {project.name}
-      {project._count?.files != null && (
-        <span className="text-xs text-zinc-400">{project._count.files}</span>
-      )}
-    </Link>
+    <div className="flex flex-col items-stretch rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 shadow-soft flex-shrink-0 min-w-[180px] max-w-[220px]">
+      <Link
+        href={`/files?folderId=${project.id}`}
+        className="flex items-center gap-1.5 px-4 py-3 text-body text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition rounded-t-2xl"
+      >
+        <Folder className="h-3.5 w-3.5 flex-shrink-0" />
+        <span className="truncate">{project.name}</span>
+        {project._count?.files != null && (
+          <span className="text-xs text-zinc-400 ml-auto flex-shrink-0">{project._count.files}</span>
+        )}
+      </Link>
+      <Link
+        href={`/chat?new=1&q=${encodeURIComponent('What are the key insights from my files?')}`}
+        className="flex items-center gap-1.5 px-4 py-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-primary hover:bg-primary/5 transition border-t border-zinc-100 dark:border-zinc-700 rounded-b-2xl"
+      >
+        ⚡ Ask AI about this project
+      </Link>
+    </div>
   )
 }
 
@@ -428,13 +436,21 @@ export default function HomePage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Your knowledge base has sample files to explore. Ask a question to see how it works.
               </p>
-              <Link
-                href="/chat?new=1&q=What%20decisions%20have%20been%20made%3F"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 py-2.5 text-sm font-medium shadow-soft active:scale-[0.98] transition-all"
-              >
-                <MessageCircle className="h-4 w-4" />
-                Ask: &ldquo;What decisions have been made?&rdquo;
-              </Link>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/chat?new=1&q=What%20decisions%20have%20been%20made%3F"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 py-2.5 text-sm font-medium shadow-soft active:scale-[0.98] transition-all"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Ask: &ldquo;What decisions have been made?&rdquo;
+                </Link>
+                <Link
+                  href={`/chat?new=1&q=${encodeURIComponent('What are the key insights from my files?')}`}
+                  className="inline-flex items-center gap-2 rounded-xl border border-primary/20 text-primary px-4 py-2.5 text-sm font-medium hover:bg-primary/5 active:scale-[0.98] transition-all"
+                >
+                  ⚡ Ask AI about this project
+                </Link>
+              </div>
             </div>
 
             {/* Upload real files */}
