@@ -408,8 +408,8 @@ export default function LandingPage() {
             {/* Card 3 — Cross-Agent Workflow */}
             <FadeIn delay={200}>
               <div className="relative bg-white rounded-2xl shadow-soft p-8 h-full flex flex-col">
-                <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-wider text-brand-500 bg-brand-50 px-2.5 py-0.5 rounded-full">
-                  Coming Soon
+                <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+                  Live
                 </span>
                 <div className="text-3xl mb-4">🔄</div>
                 <h3 className="text-title font-semibold text-gray-900 mb-2">Knowledge flows between tools</h3>
