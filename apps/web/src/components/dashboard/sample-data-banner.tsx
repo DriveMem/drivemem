@@ -12,7 +12,7 @@ export function SampleDataBanner() {
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
-    apiFetch("/api/v1/files/samples/status", { silent: true })
+    apiFetch("/api/files/samples/status", { silent: true })
       .then((data) => {
         if (data?.hasSamples) setHasSamples(true)
       })
@@ -24,7 +24,7 @@ export function SampleDataBanner() {
   const handleRemove = async () => {
     setRemoving(true)
     try {
-      await apiFetch("/api/v1/files/samples", { method: "DELETE" })
+      await apiFetch("/api/files/samples", { method: "DELETE" })
       setHasSamples(false)
       toast.success("Sample data removed")
     } catch {

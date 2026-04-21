@@ -789,7 +789,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   // --- Sample files ---
 
   // GET /files/samples/status — check if user has sample files
-  fastify.get('/files/samples/status', async (request, reply) => {
+  fastify.get('/samples/status', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;
     const [row] = await db
       .select({ count: sql<number>`count(*)` })
@@ -799,7 +799,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
   });
 
   // DELETE /files/samples — remove all sample files for the user
-  fastify.delete('/files/samples', async (request, reply) => {
+  fastify.delete('/samples', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;
     const sampleFiles = await db
       .select({ id: schema.files.id, s3Key: schema.files.s3Key })
@@ -816,7 +816,6 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       await deleteObject(f.s3Key).catch(() => {});
     }
 
-    const ids = sampleFiles.map(f => f.id);
     await db.delete(schema.files).where(
       and(eq(schema.files.userId, userId), eq(schema.files.isSample, true))
     );
