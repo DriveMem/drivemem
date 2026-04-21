@@ -21,6 +21,7 @@ import { DashboardSkeleton } from "@/components/ui/skeleton-loader"
 import { ActivationBanner } from "@/components/dashboard/activation-banner"
 import { SampleDataBanner } from "@/components/dashboard/sample-data-banner"
 import { AgentActivityPanel } from "@/components/dashboard/agent-activity-panel"
+import { useMcpSync } from "@/hooks/use-mcp-sync"
 
 // --- helpers ---
 function relativeTime(dateStr: string): string {
@@ -307,6 +308,9 @@ export default function HomePage() {
   const [weeklyStats, setWeeklyStats] = useState<any>(null)
   const [quickPrompts, setQuickPrompts] = useState<{ text: string; icon?: string }[] | null>(null)
   const [quickPromptsLoading, setQuickPromptsLoading] = useState(true)
+
+  // Real-time MCP sync: toast when agents store/capture knowledge
+  useMcpSync(true)
 
   useEffect(() => { document.title = "Home — DriveMem" }, [])
 

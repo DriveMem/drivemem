@@ -55,6 +55,12 @@ export function AgentActivityPanel() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  // Auto-refresh every 30s to show new MCP activity
+  useEffect(() => {
+    const interval = setInterval(fetchData, 30_000)
+    return () => clearInterval(interval)
+  }, [fetchData])
+
   useEffect(() => {
     if (!tracked && !loading) {
       trackEvent("agent_activity_viewed")
