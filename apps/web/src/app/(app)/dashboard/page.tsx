@@ -154,28 +154,37 @@ function ProjectChip({ project }: { project: any }) {
   )
 }
 
-// --- Resume Brief ---
+// --- Since You Left Card (#41) ---
 function ResumeBrief({ brief, onDismiss }: { brief: any; onDismiss: () => void }) {
+  const handleDismiss = async () => {
+    onDismiss()
+    try { await apiFetch("/api/resume-brief/dismiss", { method: "POST", silent: true }) } catch {}
+  }
   return (
-    <div className="mb-6 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-4">
+    <div className="mb-6 rounded-xl border border-indigo-200 dark:border-indigo-800/50 bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-950/30 dark:to-violet-950/30 p-4">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Welcome back</h3>
-        <button onClick={onDismiss} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+        <h3 className="text-sm font-semibold text-indigo-900 dark:text-indigo-100">✨ Since you left</h3>
+        <button onClick={handleDismiss} className="text-indigo-300 hover:text-indigo-500 dark:hover:text-indigo-200 transition">
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
-      <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+      <p className="text-xs text-indigo-500 dark:text-indigo-400 mb-3">
         You were away for {brief.hoursSinceActive}h. Here&apos;s what happened:
       </p>
-      <div className="flex gap-4 text-xs text-zinc-600 dark:text-zinc-300">
+      <div className="flex flex-wrap gap-4 text-xs font-medium">
         {brief.newFilesCount > 0 && (
-          <span className="flex items-center gap-1">
-            <FileText className="h-3.5 w-3.5 text-zinc-400" /> {brief.newFilesCount} new files
+          <span className="flex items-center gap-1.5 text-indigo-700 dark:text-indigo-300">
+            📁 {brief.newFilesCount} new {brief.newFilesCount === 1 ? 'file' : 'files'}
           </span>
         )}
         {brief.newInsightsCount > 0 && (
-          <span className="flex items-center gap-1">
-            <Lightbulb className="h-3.5 w-3.5 text-zinc-400" /> {brief.newInsightsCount} new insights
+          <span className="flex items-center gap-1.5 text-violet-700 dark:text-violet-300">
+            💡 {brief.newInsightsCount} {brief.newInsightsCount === 1 ? 'insight' : 'insights'}
+          </span>
+        )}
+        {brief.agentActivityCount > 0 && (
+          <span className="flex items-center gap-1.5 text-purple-700 dark:text-purple-300">
+            🤖 {brief.agentActivityCount} agent {brief.agentActivityCount === 1 ? 'action' : 'actions'}
           </span>
         )}
       </div>
@@ -327,7 +336,7 @@ export default function HomePage() {
   // Fetch resume brief
   useEffect(() => {
     apiFetch("/api/resume-brief", { silent: true })
-      .then((data: any) => { if (data?.show && data?.changes?.total > 0) setResumeBrief(data) })
+      .then((data: any) => { if (data?.show) setResumeBrief(data) })
       .catch(() => {})
   }, [])
 

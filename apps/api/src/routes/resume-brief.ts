@@ -25,7 +25,12 @@ export default async function resumeBriefRoutes(fastify: FastifyInstance) {
       .from(schema.insights)
       .where(and(eq(schema.insights.userId, userId), gte(schema.insights.createdAt, since)));
 
-    // Get recent agent activity
+    // Count agent/MCP activity since last active
+    const [agentActivity] = await db.select({ count: sql<number>`count(*)::int` })
+      .from(schema.apiActivityLogs)
+      .where(and(eq(schema.apiActivityLogs.userId, userId), gte(schema.apiActivityLogs.createdAt, since)));
+
+    // Get recent agent activity details (top 5)
     const recentActivity = await db.select({
       agentName: schema.apiActivityLogs.agentName,
       action: schema.apiActivityLogs.action,
@@ -41,12 +46,19 @@ export default async function resumeBriefRoutes(fastify: FastifyInstance) {
     await db.update(schema.users).set({ lastActiveAt: new Date() }).where(eq(schema.users.id, userId));
 
     const hoursSinceActive = Math.floor((Date.now() - new Date(since).getTime()) / (1000 * 60 * 60));
+    const newFilesCount = newFiles?.count || 0;
+    const newInsightsCount = newInsights?.count || 0;
+    const agentActivityCount = agentActivity?.count || 0;
+    const total = newFilesCount + newInsightsCount + agentActivityCount;
 
     return reply.send({
-      show: hoursSinceActive >= 4,
+      show: hoursSinceActive >= 4 && total > 0,
+      since: since instanceof Date ? since.toISOString() : new Date(since).toISOString(),
       hoursSinceActive,
-      newFilesCount: newFiles?.count || 0,
-      newInsightsCount: newInsights?.count || 0,
+      newFilesCount,
+      newInsightsCount,
+      agentActivityCount,
+      changes: { total, newFilesCount, newInsightsCount, agentActivityCount },
       recentActivity: recentActivity.map(a => ({
         agentName: a.agentName || 'You',
         action: a.action,
@@ -54,5 +66,12 @@ export default async function resumeBriefRoutes(fastify: FastifyInstance) {
         createdAt: a.createdAt,
       })),
     });
+  });
+
+  // POST /dismiss — Dismiss the card by updating lastActiveAt
+  fastify.post('/dismiss', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    await db.update(schema.users).set({ lastActiveAt: new Date() }).where(eq(schema.users.id, userId));
+    return reply.send({ ok: true });
   });
 }
