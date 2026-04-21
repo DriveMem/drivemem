@@ -155,6 +155,10 @@ import digestRoutes from './routes/digest.js';
 await app.register(resumeBriefRoutes, { prefix: '/api/resume-brief' });
 await app.register(digestRoutes, { prefix: '/api/digest' });
 
+// Also mount digest routes under /api/v1/digest for unsubscribe/tracking endpoints
+import digestRoutesV1 from './routes/digest.js';
+await app.register(digestRoutesV1, { prefix: '/api/v1/digest' });
+
 import nudgeRoutes from './routes/nudge.js';
 await app.register(nudgeRoutes, { prefix: '/api/v1' });
 
@@ -182,6 +186,25 @@ try {
   }, 60 * 60 * 1000); // 1 hour
   // Run once on startup after a short delay
   setTimeout(() => runNudgeScheduler().catch(err => app.log.error(err, '[nudge] Initial run error')), 10_000);
+
+  // Start weekly digest scheduler — checks every hour, sends on Monday 9am UTC
+  const { runWeeklyDigest } = await import('./services/digest.service.js');
+  const checkAndRunDigest = async () => {
+    const now = new Date();
+    const utcDay = now.getUTCDay(); // 0=Sun, 1=Mon
+    const utcHour = now.getUTCHours();
+    // Run on Monday between 9:00-9:59 UTC
+    if (utcDay === 1 && utcHour === 9) {
+      try {
+        await runWeeklyDigest();
+      } catch (err) {
+        app.log.error(err, '[digest] Weekly digest error');
+      }
+    }
+  };
+  setInterval(checkAndRunDigest, 60 * 60 * 1000); // Check every hour
+  // Also check on startup (in case server restarted during the window)
+  setTimeout(checkAndRunDigest, 15_000);
 } catch (err) {
   app.log.error(err);
   process.exit(1);
