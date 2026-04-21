@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Bot, Search, Save, Brain, MessageCircle, ArrowLeftRight, Terminal } from "lucide-react"
+import { Bot, Search, Save, Brain, MessageCircle, ArrowLeftRight, Terminal, Filter } from "lucide-react"
 import Link from "next/link"
 import { apiFetch } from "@/lib/api"
 import { trackEvent } from "@/lib/analytics"
@@ -12,8 +12,11 @@ interface AgentActivity {
   action: string
   summary: string
   detail: string | null
+  source: "agent" | "system"
   createdAt: string
 }
+
+type SourceFilter = "all" | "agent"
 
 const ACTION_CONFIG: Record<string, { icon: typeof Bot; color: string; emoji: string }> = {
   store: { icon: Save, color: "text-emerald-500", emoji: "💾" },
@@ -24,6 +27,11 @@ const ACTION_CONFIG: Record<string, { icon: typeof Bot; color: string; emoji: st
   capture: { icon: Save, color: "text-emerald-500", emoji: "💾" },
   relay: { icon: ArrowLeftRight, color: "text-indigo-500", emoji: "🔄" },
 }
+
+const TABS: { key: SourceFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "agent", label: "Agent" },
+]
 
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -39,23 +47,29 @@ export function AgentActivityPanel() {
   const [activities, setActivities] = useState<AgentActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
+  const [agentCount, setAgentCount] = useState(0)
+  const [filter, setFilter] = useState<SourceFilter>("all")
   const [tracked, setTracked] = useState(false)
 
   const fetchData = useCallback(async () => {
     try {
-      const data = await apiFetch("/api/agent-activity?limit=10", { silent: true }) as any
+      const qs = filter === "all" ? "" : `&source=${filter}`
+      const data = await apiFetch(`/api/agent-activity?limit=10${qs}`, { silent: true }) as any
       setActivities(data?.activities || [])
       setTotal(data?.total || 0)
+      if (data?.sourceCounts) {
+        setAgentCount(data.sourceCounts.agent || 0)
+      }
     } catch {
       // silent
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [filter])
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // Auto-refresh every 30s to show new MCP activity
+  // Auto-refresh every 30s
   useEffect(() => {
     const interval = setInterval(fetchData, 30_000)
     return () => clearInterval(interval)
@@ -81,8 +95,8 @@ export function AgentActivityPanel() {
     )
   }
 
-  // Empty state
-  if (activities.length === 0) {
+  // Empty state — no activity at all
+  if (activities.length === 0 && filter === "all") {
     return (
       <div className="rounded-2xl border shadow-soft p-6 mb-8">
         <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider mb-4">
@@ -92,15 +106,38 @@ export function AgentActivityPanel() {
           <Bot className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-3" />
           <p className="text-sm text-muted-foreground mb-1">No agent activity yet</p>
           <p className="text-xs text-muted-foreground/70 mb-4">
-            Connect an MCP agent to see how AI tools build your knowledge base
+            Connect an AI agent (Cursor, Claude, etc.) to see how they build your knowledge base automatically
           </p>
           <Link
             href="/developers"
             className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
           >
             <Terminal className="h-3.5 w-3.5" />
-            Connect an agent
+            Connect an agent →
           </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Empty state for filtered view
+  if (activities.length === 0 && filter !== "all") {
+    return (
+      <div className="rounded-2xl border shadow-soft p-6 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider">
+            Agent Activity
+          </h2>
+          <TabBar filter={filter} setFilter={setFilter} agentCount={agentCount} />
+        </div>
+        <div className="py-6 text-center">
+          <p className="text-sm text-muted-foreground">No {filter} activity yet</p>
+          <button
+            onClick={() => setFilter("all")}
+            className="mt-2 text-xs text-primary hover:underline"
+          >
+            Show all activity
+          </button>
         </div>
       </div>
     )
@@ -112,9 +149,12 @@ export function AgentActivityPanel() {
         <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider">
           Agent Activity
         </h2>
-        {total > 10 && (
-          <span className="text-xs text-muted-foreground">{total} total</span>
-        )}
+        <div className="flex items-center gap-3">
+          <TabBar filter={filter} setFilter={setFilter} agentCount={agentCount} />
+          {total > 10 && (
+            <span className="text-xs text-muted-foreground">{total} total</span>
+          )}
+        </div>
       </div>
       <div className="space-y-0">
         {activities.map(a => {
@@ -129,6 +169,11 @@ export function AgentActivityPanel() {
               <span className="text-xs text-zinc-500 dark:text-zinc-400 flex-shrink-0 font-medium">
                 {a.agentName}
               </span>
+              {a.source === "agent" && (
+                <span className="text-[10px] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium">
+                  MCP
+                </span>
+              )}
               <span className="text-xs md:text-sm text-zinc-900 dark:text-zinc-100 truncate">
                 {a.summary}
               </span>
@@ -139,6 +184,40 @@ export function AgentActivityPanel() {
           )
         })}
       </div>
+    </div>
+  )
+}
+
+function TabBar({
+  filter,
+  setFilter,
+  agentCount,
+}: {
+  filter: SourceFilter
+  setFilter: (f: SourceFilter) => void
+  agentCount: number
+}) {
+  return (
+    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5">
+      {TABS.map(tab => (
+        <button
+          key={tab.key}
+          onClick={() => {
+            setFilter(tab.key)
+            trackEvent("agent_activity_filter", { source: tab.key })
+          }}
+          className={`text-xs px-2.5 py-1 rounded-md transition-colors ${
+            filter === tab.key
+              ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
+              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
+          }`}
+        >
+          {tab.label}
+          {tab.key === "agent" && agentCount > 0 && (
+            <span className="ml-1 text-[10px] text-emerald-500">{agentCount}</span>
+          )}
+        </button>
+      ))}
     </div>
   )
 }

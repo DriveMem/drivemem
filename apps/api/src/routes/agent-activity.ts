@@ -1,16 +1,20 @@
 import { FastifyInstance } from 'fastify';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, desc, sql } from 'drizzle-orm';
+import { eq, desc, sql, and, isNotNull, isNull, ilike, or, ne } from 'drizzle-orm';
 import { requireAuth } from '../plugins/auth.js';
 
 export default async function agentActivityRoutes(fastify: FastifyInstance) {
   // GET / — paginated agent activity for dashboard
   fastify.get('/', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;
-    const query = request.query as { limit?: string; offset?: string };
+    const query = request.query as { limit?: string; offset?: string; source?: string };
     const limit = Math.min(parseInt(query.limit || '20', 10) || 20, 100);
     const offset = Math.max(parseInt(query.offset || '0', 10) || 0, 0);
+    const source = query.source; // 'agent' | 'user' | 'system' | undefined (all)
+
+    // Source classification: agent = MCP API calls, user = web UI, system = automated
+    const sourceFilter = source ? getSourceCondition(source) : undefined;
 
     const rows = await db.select({
       id: schema.apiActivityLogs.id,
@@ -18,15 +22,29 @@ export default async function agentActivityRoutes(fastify: FastifyInstance) {
       action: schema.apiActivityLogs.action,
       detail: schema.apiActivityLogs.detail,
       metadata: schema.apiActivityLogs.metadata,
+      apiKeyId: schema.apiActivityLogs.apiKeyId,
       createdAt: schema.apiActivityLogs.createdAt,
     })
       .from(schema.apiActivityLogs)
-      .where(eq(schema.apiActivityLogs.userId, userId))
+      .where(sourceFilter
+        ? and(eq(schema.apiActivityLogs.userId, userId), sourceFilter)
+        : eq(schema.apiActivityLogs.userId, userId))
       .orderBy(desc(schema.apiActivityLogs.createdAt))
       .limit(limit)
       .offset(offset);
 
     const [countRow] = await db.select({ count: sql<number>`count(*)::int` })
+      .from(schema.apiActivityLogs)
+      .where(sourceFilter
+        ? and(eq(schema.apiActivityLogs.userId, userId), sourceFilter)
+        : eq(schema.apiActivityLogs.userId, userId));
+
+    // Also return source counts for tab badges
+    const sourceCounts = await db.select({
+      hasAgent: sql<boolean>`bool_or(${schema.apiActivityLogs.apiKeyId} is not null)`,
+      agentCount: sql<number>`count(*) filter (where ${schema.apiActivityLogs.apiKeyId} is not null)::int`,
+      totalCount: sql<number>`count(*)::int`,
+    })
       .from(schema.apiActivityLogs)
       .where(eq(schema.apiActivityLogs.userId, userId));
 
@@ -40,12 +58,33 @@ export default async function agentActivityRoutes(fastify: FastifyInstance) {
         action: r.action,
         summary: buildSummary(r.action, r.detail, r.metadata as Record<string, unknown> | null, agent),
         detail: r.detail?.slice(0, 200) || null,
+        source: r.apiKeyId ? 'agent' : 'system',
         createdAt: r.createdAt,
       };
     });
 
-    return reply.send({ activities, total, limit, offset });
+    return reply.send({
+      activities,
+      total,
+      limit,
+      offset,
+      sourceCounts: {
+        all: sourceCounts[0]?.totalCount || 0,
+        agent: sourceCounts[0]?.agentCount || 0,
+      },
+    });
   });
+}
+
+function getSourceCondition(source: string) {
+  switch (source) {
+    case 'agent':
+      return isNotNull(schema.apiActivityLogs.apiKeyId);
+    case 'system':
+      return isNull(schema.apiActivityLogs.apiKeyId);
+    default:
+      return undefined;
+  }
 }
 
 function formatAgentName(raw: string | null | undefined): string {
