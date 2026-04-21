@@ -152,6 +152,8 @@ await app.register(integrationRoutes, { prefix: '/api/integrations' });
 
 import timelineRoutes from './routes/timeline.js';
 await app.register(timelineRoutes, { prefix: '/api/timeline' });
+import agentActivityRoutes from './routes/agent-activity.js';
+await app.register(agentActivityRoutes, { prefix: '/api/agent-activity' });
 
 import resumeBriefRoutes from './routes/resume-brief.js';
 import digestRoutes from './routes/digest.js';
