@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import {
   FileText, Sparkles, Upload, X, Lightbulb, AlertTriangle,
-  MessageCircle, Folder, Plus, ChevronRight, FolderPlus, Terminal, ArrowLeftRight
+  MessageCircle, Folder, Plus, ChevronRight, FolderPlus, Terminal, ArrowLeftRight, RefreshCw
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { MobileUploadFab } from "@/components/file/mobile-upload-fab"
@@ -294,8 +294,25 @@ export default function HomePage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [connectedAgents] = useState<any[]>([])
   const [weeklyStats, setWeeklyStats] = useState<any>(null)
+  const [quickPrompts, setQuickPrompts] = useState<{ text: string; icon?: string }[] | null>(null)
+  const [quickPromptsLoading, setQuickPromptsLoading] = useState(true)
 
   useEffect(() => { document.title = "Home — DriveMem" }, [])
+
+  // Fetch dynamic quick prompts
+  const fetchQuickPrompts = useCallback(async () => {
+    setQuickPromptsLoading(true)
+    try {
+      const data = await apiFetch("/api/quick-prompts", { silent: true }) as any
+      if (data?.prompts?.length > 0) setQuickPrompts(data.prompts)
+    } catch {
+      // keep null → fallback to static
+    } finally {
+      setQuickPromptsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchQuickPrompts() }, [fetchQuickPrompts])
 
   // connectedAgents removed — banner now uses file/insight counts only
 
@@ -436,20 +453,37 @@ export default function HomePage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Your knowledge base has sample files to explore. Ask a question to see how it works.
               </p>
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  href="/chat?new=1&q=What%20decisions%20have%20been%20made%3F"
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 py-2.5 text-sm font-medium shadow-soft active:scale-[0.98] transition-all"
+              <div className="flex flex-wrap gap-2 items-center">
+                {quickPromptsLoading ? (
+                  <>
+                    <div className="h-10 w-56 rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                    <div className="h-10 w-48 rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                  </>
+                ) : (
+                  (quickPrompts || [
+                    { text: 'What decisions have been made?', icon: '🎯' },
+                    { text: 'What are the key insights from my files?', icon: '⚡' },
+                  ]).slice(0, 3).map((p, i) => (
+                    <Link
+                      key={i}
+                      href={`/chat?new=1&q=${encodeURIComponent(p.text)}`}
+                      className={i === 0
+                        ? "inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 py-2.5 text-sm font-medium shadow-soft active:scale-[0.98] transition-all"
+                        : "inline-flex items-center gap-2 rounded-xl border border-primary/20 text-primary px-4 py-2.5 text-sm font-medium hover:bg-primary/5 active:scale-[0.98] transition-all"
+                      }
+                    >
+                      {p.icon && <span>{p.icon}</span>}
+                      {p.text}
+                    </Link>
+                  ))
+                )}
+                <button
+                  onClick={() => fetchQuickPrompts()}
+                  className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                  title="Refresh suggestions"
                 >
-                  <MessageCircle className="h-4 w-4" />
-                  Ask: &ldquo;What decisions have been made?&rdquo;
-                </Link>
-                <Link
-                  href={`/chat?new=1&q=${encodeURIComponent('What are the key insights from my files?')}`}
-                  className="inline-flex items-center gap-2 rounded-xl border border-primary/20 text-primary px-4 py-2.5 text-sm font-medium hover:bg-primary/5 active:scale-[0.98] transition-all"
-                >
-                  ⚡ Ask AI about this project
-                </Link>
+                  <RefreshCw className={`h-3.5 w-3.5 ${quickPromptsLoading ? 'animate-spin' : ''}`} />
+                </button>
               </div>
             </div>
 
