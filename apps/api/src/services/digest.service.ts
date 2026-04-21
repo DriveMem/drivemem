@@ -20,8 +20,9 @@ const FROM_EMAIL = 'DriveMem <hello@drivemem.cloud>';
 interface DigestData {
   filesAdded: number;
   filesTotal: number;
-  newFileNames: string[];
+  newFiles: { name: string; summary: string | null }[];
   insightsCount: number;
+  topInsight: string | null;
   insightTitles: string[];
   conversationsCount: number;
   agentCalls: number;
@@ -30,13 +31,23 @@ interface DigestData {
 
 async function gatherDigestData(userId: string, since: Date): Promise<DigestData> {
   // New files this week
-  const newFiles = await db.select({
-    name: schema.files.name,
+  // Get total count of new files this week (for "+N more")
+  const [newFilesCount] = await db.select({
+    count: sql<number>`count(*)::int`,
   }).from(schema.files).where(and(
     eq(schema.files.userId, userId),
     gte(schema.files.createdAt, since),
     isNull(schema.files.deletedAt),
-  )).orderBy(desc(schema.files.createdAt)).limit(10);
+  ));
+
+  const newFiles = await db.select({
+    name: schema.files.name,
+    summary: schema.files.summary,
+  }).from(schema.files).where(and(
+    eq(schema.files.userId, userId),
+    gte(schema.files.createdAt, since),
+    isNull(schema.files.deletedAt),
+  )).orderBy(desc(schema.files.createdAt)).limit(5);
 
   const [filesStats] = await db.select({
     total: sql<number>`count(*)::int`,
@@ -72,24 +83,31 @@ async function gatherDigestData(userId: string, since: Date): Promise<DigestData
       eq(schema.messages.role, 'user'),
     ));
 
-  // Generate suggested questions based on recent files
+  // Generate personalized suggested questions based on file names
   const suggestedQuestions: string[] = [];
   if (newFiles.length > 0) {
-    suggestedQuestions.push(`What are the key themes across my recent uploads?`);
+    const sampleName = newFiles[0].name;
+    suggestedQuestions.push(`What are the key takeaways from "${sampleName}"?`);
+    if (newFiles.length > 1) {
+      suggestedQuestions.push(`Compare the themes in "${newFiles[0].name}" and "${newFiles[1].name}"`);
+    }
   }
   if (newInsights.length > 0) {
-    suggestedQuestions.push(`Summarize the new insights discovered this week`);
+    suggestedQuestions.push(`Explain the insight: ${newInsights[0].title}`);
   }
   if ((filesStats?.total ?? 0) > 5) {
     suggestedQuestions.push(`What connections exist between my documents?`);
   }
 
+  const totalNewFiles = newFilesCount?.count ?? newFiles.length;
+
   return {
-    filesAdded: newFiles.length,
+    filesAdded: totalNewFiles,
     filesTotal: filesStats?.total ?? 0,
-    newFileNames: newFiles.map(f => f.name),
+    newFiles: newFiles.map(f => ({ name: f.name, summary: f.summary })),
     insightsCount: newInsights.length,
-    insightTitles: newInsights.map(i => i.title),
+    topInsight: newInsights.length > 0 ? newInsights[0].title : null,
+    insightTitles: newInsights.length > 1 ? newInsights.slice(1).map(i => i.title) : [],
     conversationsCount: convStats?.count ?? 0,
     agentCalls: agentCallStats?.count ?? 0,
     suggestedQuestions,
@@ -97,17 +115,31 @@ async function gatherDigestData(userId: string, since: Date): Promise<DigestData
 }
 
 function buildDigestEmailHtml(data: DigestData, unsubscribeUrl: string, trackingPixelUrl: string): string {
-  const filesList = data.newFileNames.length > 0
-    ? data.newFileNames.map(n => `<li style="margin:4px 0;font-size:14px;">${escapeHtml(n)}</li>`).join('')
+  const filesList = data.newFiles.length > 0
+    ? data.newFiles.map(f => {
+        const summary = f.summary ? ` — <span style="color:#666;">${escapeHtml(f.summary.slice(0, 80))}</span>` : '';
+        return `<li style="margin:4px 0;font-size:14px;">${escapeHtml(f.name)}${summary}</li>`;
+      }).join('')
     : '<li style="color:#999;font-size:14px;">No new files this week</li>';
+
+  const moreFilesHtml = data.filesAdded > 5
+    ? `<p style="margin:4px 0 0 20px;font-size:13px;"><a href="${FRONTEND_URL}/files" style="color:#2563eb;text-decoration:none;">and ${data.filesAdded - 5} more →</a></p>`
+    : '';
 
   const insightsList = data.insightTitles.length > 0
     ? data.insightTitles.map(t => `<li style="margin:4px 0;font-size:14px;">${escapeHtml(t)}</li>`).join('')
     : '';
 
+  const topInsightHtml = data.topInsight
+    ? `<div style="background:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;padding:16px;margin-bottom:20px;">
+  <div style="font-size:11px;color:#92400e;font-weight:600;margin-bottom:4px;">💡 TOP INSIGHT</div>
+  <div style="font-size:16px;font-weight:600;color:#78350f;">${escapeHtml(data.topInsight)}</div>
+</div>`
+    : '';
+
   const questionsList = data.suggestedQuestions.length > 0
     ? data.suggestedQuestions.map(q =>
-      `<li style="margin:4px 0;"><a href="${FRONTEND_URL}/chat/new" style="color:#2563eb;text-decoration:none;font-size:14px;">${escapeHtml(q)}</a></li>`
+      `<li style="margin:4px 0;"><a href="${FRONTEND_URL}/chat?new=1&q=${encodeURIComponent(q)}" style="color:#2563eb;text-decoration:none;font-size:14px;">${escapeHtml(q)}</a></li>`
     ).join('')
     : '';
 
@@ -117,7 +149,7 @@ function buildDigestEmailHtml(data: DigestData, unsubscribeUrl: string, tracking
 
 <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #e5e7eb;">
 
-<h1 style="font-size:20px;margin:0 0 4px;color:#1a1a1a;">📊 Your Weekly Knowledge Digest</h1>
+<h1 style="font-size:20px;margin:0 0 4px;color:#1a1a1a;">Your knowledge grew this week 🌱</h1>
 <p style="font-size:13px;color:#999;margin:0 0 24px;">Here's what happened in your knowledge base this week</p>
 
 <!-- Stats Grid -->
@@ -136,17 +168,20 @@ function buildDigestEmailHtml(data: DigestData, unsubscribeUrl: string, tracking
   </div>
 </div>
 
-${data.newFileNames.length > 0 ? `
+${data.newFiles.length > 0 ? `
 <!-- New Files -->
 <div style="margin-bottom:20px;">
   <h3 style="font-size:14px;margin:0 0 8px;color:#374151;">📁 New Files</h3>
   <ul style="margin:0;padding-left:20px;">${filesList}</ul>
+  ${moreFilesHtml}
 </div>` : ''}
 
+${topInsightHtml}
+
 ${data.insightTitles.length > 0 ? `
-<!-- Insights -->
+<!-- More Insights -->
 <div style="margin-bottom:20px;">
-  <h3 style="font-size:14px;margin:0 0 8px;color:#374151;">💡 Insights Discovered</h3>
+  <h3 style="font-size:14px;margin:0 0 8px;color:#374151;">💡 More Insights</h3>
   <ul style="margin:0;padding-left:20px;">${insightsList}</ul>
 </div>` : ''}
 
@@ -177,24 +212,34 @@ ${data.suggestedQuestions.length > 0 ? `
 }
 
 function buildDigestEmailText(data: DigestData, unsubscribeUrl: string): string {
-  let text = `📊 Your Weekly Knowledge Digest\n\n`;
+  let text = `🌱 Your knowledge grew this week\n\n`;
   text += `Files Added: ${data.filesAdded} | Insights: ${data.insightsCount} | Questions Asked: ${data.agentCalls}\n\n`;
 
-  if (data.newFileNames.length > 0) {
+  if (data.newFiles.length > 0) {
     text += `📁 New Files:\n`;
-    data.newFileNames.forEach(n => { text += `  - ${n}\n`; });
+    data.newFiles.forEach(f => {
+      const summary = f.summary ? ` — ${f.summary.slice(0, 80)}` : '';
+      text += `  - ${f.name}${summary}\n`;
+    });
+    if (data.filesAdded > 5) {
+      text += `  ... and ${data.filesAdded - 5} more\n`;
+    }
     text += '\n';
   }
 
+  if (data.topInsight) {
+    text += `💡 Top Insight: ${data.topInsight}\n\n`;
+  }
+
   if (data.insightTitles.length > 0) {
-    text += `💡 Insights Discovered:\n`;
+    text += `💡 More Insights:\n`;
     data.insightTitles.forEach(t => { text += `  - ${t}\n`; });
     text += '\n';
   }
 
   if (data.suggestedQuestions.length > 0) {
     text += `❓ Try Asking:\n`;
-    data.suggestedQuestions.forEach(q => { text += `  - ${q}\n`; });
+    data.suggestedQuestions.forEach(q => { text += `  - ${q}: ${FRONTEND_URL}/chat?new=1&q=${encodeURIComponent(q)}\n`; });
     text += '\n';
   }
 
@@ -256,10 +301,14 @@ export async function runWeeklyDigest(): Promise<{ processed: number; sent: numb
       const html = buildDigestEmailHtml(data, unsubscribeUrl, trackingPixelUrl);
       const text = buildDigestEmailText(data, unsubscribeUrl);
 
+      const subject = data.filesAdded > 0
+        ? `Your knowledge grew this week 🌱 — ${data.filesAdded} new files`
+        : `Your knowledge grew this week 🌱 — ${data.insightsCount} new insights`;
+
       await resend.emails.send({
         from: FROM_EMAIL,
         to: user.email,
-        subject: `📊 Your week: ${data.filesAdded} files, ${data.insightsCount} insights, ${data.agentCalls} questions`,
+        subject,
         html,
         text,
       });
