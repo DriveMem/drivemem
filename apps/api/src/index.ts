@@ -156,11 +156,7 @@ await app.register(timelineRoutes, { prefix: '/api/timeline' });
 import resumeBriefRoutes from './routes/resume-brief.js';
 import digestRoutes from './routes/digest.js';
 await app.register(resumeBriefRoutes, { prefix: '/api/resume-brief' });
-await app.register(digestRoutes, { prefix: '/api/digest' });
-
-// Also mount digest routes under /api/v1/digest for unsubscribe/tracking endpoints
-import digestRoutesV1 from './routes/digest.js';
-await app.register(digestRoutesV1, { prefix: '/api/v1/digest' });
+await app.register(digestRoutes, { prefix: '/api/v1/digest' });
 
 import nudgeRoutes from './routes/nudge.js';
 await app.register(nudgeRoutes, { prefix: '/api/v1' });
