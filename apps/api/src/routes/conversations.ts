@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { eq, and, desc, asc, sql, isNotNull } from 'drizzle-orm';
+import { eq, and, desc, asc, sql, isNotNull, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { conversations, messages, users, files } from '../db/schema.js';
@@ -49,6 +49,80 @@ export default async function conversationRoutes(app: FastifyInstance) {
     } catch {
       return reply.send({ suggestions: recentFiles.map(f => `Summarize the key points of ${f.name}`) });
     }
+  });
+
+  // GET /recent — recent conversations with preview
+  app.get('/recent', { preHandler: [requireAuth] }, async (request) => {
+    const user = request.user!;
+    const limit = Math.min(Number((request.query as any).limit) || 10, 20);
+
+    const recentConvs = await db
+      .select({
+        id: conversations.id,
+        title: conversations.title,
+        updatedAt: conversations.updatedAt,
+        createdAt: conversations.createdAt,
+        isPinned: conversations.isPinned,
+      })
+      .from(conversations)
+      .where(eq(conversations.userId, user.id))
+      .orderBy(desc(conversations.updatedAt))
+      .limit(limit);
+
+    if (recentConvs.length === 0) {
+      return { conversations: [] };
+    }
+
+    // Get message counts and first user message for each conversation
+    const convIds = recentConvs.map(c => c.id);
+    const msgStats = await db
+      .select({
+        conversationId: messages.conversationId,
+        messageCount: sql<number>`count(*)::int`,
+        lastMessageAt: sql<string>`max(${messages.createdAt})`,
+      })
+      .from(messages)
+      .where(inArray(messages.conversationId, convIds))
+      .groupBy(messages.conversationId);
+
+    // Get first user message per conversation for preview
+    const firstUserMsgs = await db
+      .select({
+        conversationId: messages.conversationId,
+        content: messages.content,
+      })
+      .from(messages)
+      .where(
+        and(
+          inArray(messages.conversationId, convIds),
+          eq(messages.role, 'user')
+        )
+      )
+      .orderBy(asc(messages.createdAt));
+
+    // Dedupe to first per conversation
+    const previewMap = new Map<string, string>();
+    for (const msg of firstUserMsgs) {
+      if (!previewMap.has(msg.conversationId)) {
+        previewMap.set(msg.conversationId, msg.content.slice(0, 100));
+      }
+    }
+
+    const statsMap = new Map(msgStats.map(s => [s.conversationId, s]));
+
+    const result = recentConvs.map(c => {
+      const stats = statsMap.get(c.id);
+      return {
+        id: c.id,
+        title: c.title,
+        lastMessageAt: stats?.lastMessageAt || c.updatedAt,
+        messageCount: stats?.messageCount || 0,
+        previewSnippet: previewMap.get(c.id) || '',
+        isPinned: c.isPinned,
+      };
+    });
+
+    return { conversations: result };
   });
 
   // POST / — create conversation

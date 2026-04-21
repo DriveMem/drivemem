@@ -1,6 +1,23 @@
 import { apiFetch } from '@/lib/api'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
+export interface RecentConversation {
+  id: string
+  title: string
+  lastMessageAt: string
+  messageCount: number
+  previewSnippet: string
+  isPinned: boolean
+}
+
+export function useRecentConversations(limit = 10) {
+  return useQuery<{ conversations: RecentConversation[] }>({
+    queryKey: ['conversations', 'recent', limit],
+    queryFn: () => apiFetch(`/api/conversations/recent?limit=${limit}`, { silent: true }),
+    retry: 2,
+    retryDelay: 1000,
+  })
+}
 
 export function useConversations() {
   return useQuery({

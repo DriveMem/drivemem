@@ -22,6 +22,7 @@ import { ActivationBanner } from "@/components/dashboard/activation-banner"
 import { SampleDataBanner } from "@/components/dashboard/sample-data-banner"
 import { AgentActivityPanel } from "@/components/dashboard/agent-activity-panel"
 import { useMcpSync } from "@/hooks/use-mcp-sync"
+import { useRecentConversations } from "@/hooks/use-conversations"
 
 // --- helpers ---
 function relativeTime(dateStr: string): string {
@@ -308,6 +309,8 @@ export default function HomePage() {
   const [weeklyStats, setWeeklyStats] = useState<any>(null)
   const [quickPrompts, setQuickPrompts] = useState<{ text: string; icon?: string }[] | null>(null)
   const [quickPromptsLoading, setQuickPromptsLoading] = useState(true)
+  const { data: recentConvsData } = useRecentConversations(1)
+  const lastConversation = recentConvsData?.conversations?.[0] || null
 
   // Real-time MCP sync: toast when agents store/capture knowledge
   useMcpSync(true)
@@ -585,6 +588,23 @@ export default function HomePage() {
             </Tooltip>
           </div>
         </TooltipProvider>
+
+        {/* Continue Last Conversation */}
+        {lastConversation && (
+          <Link
+            href={`/chat/${lastConversation.id}`}
+            className="flex items-center gap-3 mb-8 px-4 py-3 rounded-xl border border-violet-200 dark:border-violet-800/50 bg-violet-50/50 dark:bg-violet-950/20 hover:bg-violet-100/50 dark:hover:bg-violet-900/30 transition group"
+          >
+            <MessageCircle className="h-5 w-5 text-violet-500 flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium text-violet-900 dark:text-violet-100">Continue last conversation</div>
+              <div className="text-xs text-violet-600 dark:text-violet-400 truncate mt-0.5">
+                {lastConversation.title}{lastConversation.previewSnippet ? ` — ${lastConversation.previewSnippet}` : ''}
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-violet-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+          </Link>
+        )}
 
         {/* Value Summary removed — file/insight counts now in Status Banner */}
 
