@@ -9,9 +9,9 @@ log "=== Deploying to MAIN server (local) ==="
 cd ~/repos/ai-drive
 git pull --ff-only
 
-# Build API (tsc is incremental, no need to clean dist)
+# Build API (MUST clean dist — incremental tsc leaves stale files)
 log "Building API..."
-cd apps/api && npx tsc && cd ../..
+cd apps/api && rm -rf dist tsconfig.tsbuildinfo && npx tsc && cd ../..
 
 # Build Web (next build overwrites .next in-place, no need to rm)
 log "Building Web..."
@@ -44,7 +44,7 @@ ssh ubuntu@43.165.168.72 "source ~/.nvm/nvm.sh; \
   cd ~/repos/ai-drive && \
   git fetch origin && \
   git reset --hard origin/main && \
-  cd apps/api && npx tsc 2>&1 | tail -1 && \
+  cd apps/api && rm -rf dist tsconfig.tsbuildinfo && npx tsc 2>&1 | tail -1 && \
   cd ../web && npx next build 2>&1 | tail -2 && \
   pm2 restart ai-drive-api ai-drive-worker ai-drive-web --update-env 2>&1 | grep -E 'online|ERROR' && \
   sleep 3 && \
