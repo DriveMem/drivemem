@@ -45,6 +45,14 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
           onSuccess: () => {
             updateEntry(itemId, { status: "done", progress: 100 })
             trackEvent("file_upload")
+            toast.success(`AI understood ${file.name}`, {
+              description: "Try asking a question about it",
+              action: {
+                label: "Ask in Chat",
+                onClick: () => window.location.assign("/chat/new"),
+              },
+              duration: 8000,
+            })
           },
           onError: (err: any) => {
             updateEntry(itemId, { status: "error", error: err.message || "Upload failed" })
