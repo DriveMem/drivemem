@@ -785,4 +785,42 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       .where(and(eq(schema.agentProfiles.id, id), eq(schema.agentProfiles.userId, userId)));
     return reply.send({ success: true });
   });
+
+  // --- Sample files ---
+
+  // GET /files/samples/status — check if user has sample files
+  fastify.get('/files/samples/status', async (request, reply) => {
+    const userId = request.user!.id;
+    const [row] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(schema.files)
+      .where(and(eq(schema.files.userId, userId), eq(schema.files.isSample, true), isNull(schema.files.deletedAt)));
+    return reply.send({ hasSamples: Number(row?.count || 0) > 0, count: Number(row?.count || 0) });
+  });
+
+  // DELETE /files/samples — remove all sample files for the user
+  fastify.delete('/files/samples', async (request, reply) => {
+    const userId = request.user!.id;
+    const sampleFiles = await db
+      .select({ id: schema.files.id, s3Key: schema.files.s3Key })
+      .from(schema.files)
+      .where(and(eq(schema.files.userId, userId), eq(schema.files.isSample, true), isNull(schema.files.deletedAt)));
+
+    if (sampleFiles.length === 0) {
+      return reply.send({ deleted: 0 });
+    }
+
+    // Delete vector embeddings, S3 objects, and DB records
+    for (const f of sampleFiles) {
+      await deleteByFileId(f.id).catch(() => {});
+      await deleteObject(f.s3Key).catch(() => {});
+    }
+
+    const ids = sampleFiles.map(f => f.id);
+    await db.delete(schema.files).where(
+      and(eq(schema.files.userId, userId), eq(schema.files.isSample, true))
+    );
+
+    return reply.send({ deleted: sampleFiles.length });
+  });
 }
