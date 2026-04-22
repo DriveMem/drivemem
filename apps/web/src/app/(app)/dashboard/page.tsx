@@ -125,7 +125,11 @@ function ActivityItem({ activity }: { activity: any }) {
   const action = activity.title || ACTION_LABELS[activity.type] || activity.action || activity.type?.replace(/_/g, " ") || "activity"
   const rawDetail = activity.message || activity.detail || ""
   // Friendlify note-YYYY-MM-DDTHH-MM-SS.md filenames to "AI Note"
-  const detail = rawDetail.replace(/\bnote-\d{4}-\d{2}-\d{2}T[\d-]+\.md\b/g, 'AI Note').replace(/\.(md|pdf|docx|txt)\b/gi, '')
+  const detail = rawDetail
+    .replace(/\bnote-\d{4}-\d{2}-\d{2}T[\d-]+\.md\b/g, 'AI Note')
+    .replace(/\bsession-summary-[\w-]+\.md\b/g, 'Session Summary')
+    .replace(/\bauto-[\w-]+\.md\b/g, 'Auto Note')
+    .replace(/\.(md|pdf|docx|txt)\b/gi, '')
 
   return (
     <div className="flex items-center gap-3 py-1.5 md:py-2.5 text-xs md:text-body border-b border-zinc-100 dark:border-zinc-800 last:border-0">
@@ -425,8 +429,14 @@ export default function HomePage() {
   const insightCount = insights.length
   const projectCount = folders.length
 
-  // Group auto_store activities
-  const groupedActivities = groupAutoStoreActivities(activities)
+  // Group auto_store activities, filter noise
+  const cleanActivities = activities.filter((a: any) => {
+    const msg = (a.message || a.title || '').toLowerCase()
+    if (msg.includes('session idle') || msg.includes('idle summary')) return false
+    if (msg.includes('session_summary')) return false
+    return true
+  })
+  const groupedActivities = groupAutoStoreActivities(cleanActivities)
 
   // --- #66: Dashboard phase-based block visibility ---
   const hasAgentActivity = activities.some((a: any) => a.type === "agent_activity") || connectedAgents.length > 0
