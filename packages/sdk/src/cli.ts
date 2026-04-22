@@ -48,6 +48,13 @@ async function setup() {
     || '';
 
   if (!apiKey) {
+    // Detect non-interactive terminal (piped stdin with no data)
+    if (!process.stdin.isTTY) {
+      console.error('❌ No API key provided. In non-interactive mode, use:');
+      console.error('   npx drivemem setup --api-key=ak_xxx');
+      console.error('   or: echo "ak_xxx" | npx drivemem setup');
+      process.exit(1);
+    }
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     apiKey = await new Promise<string>(resolve => {
       rl.question('Enter your DriveMem API Key (from drivemem.cloud/settings): ', resolve);
