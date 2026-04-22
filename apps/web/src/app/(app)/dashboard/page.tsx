@@ -123,11 +123,12 @@ function ActivityItem({ activity }: { activity: any }) {
   }
 
   const action = activity.title || ACTION_LABELS[activity.type] || activity.action || activity.type?.replace(/_/g, " ") || "activity"
-  const rawDetail = activity.message || activity.detail || ""
+  const rawDetail = activity.description || activity.message || activity.detail || ""
   // Friendlify note-YYYY-MM-DDTHH-MM-SS.md filenames to "AI Note"
   const detail = rawDetail
     .replace(/\bnote-\d{4}-\d{2}-\d{2}T[\d-]+\.md\b/g, 'AI Note')
     .replace(/\bsession-summary-[\w-]+\.md\b/g, 'Session Summary')
+    .replace(/\bauto-capture-[\w-]+\.md\b/g, 'Auto Capture')
     .replace(/\bauto-[\w-]+\.md\b/g, 'Auto Note')
     .replace(/\.(md|pdf|docx|txt)\b/gi, '')
 

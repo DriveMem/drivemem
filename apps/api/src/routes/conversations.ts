@@ -112,12 +112,16 @@ export default async function conversationRoutes(app: FastifyInstance) {
 
     const result = recentConvs.map(c => {
       const stats = statsMap.get(c.id);
+      const preview = previewMap.get(c.id) || '';
+      const fallbackTitle = preview ? preview.slice(0, 30) + (preview.length > 30 ? '...' : '') : null;
       return {
         id: c.id,
-        title: c.title,
+        title: (!c.title || c.title === 'New conversation' || c.title === 'Untitled')
+          ? (fallbackTitle || c.title || 'New conversation')
+          : c.title,
         lastMessageAt: stats?.lastMessageAt || c.updatedAt,
         messageCount: stats?.messageCount || 0,
-        previewSnippet: previewMap.get(c.id) || '',
+        previewSnippet: preview,
         isPinned: c.isPinned,
       };
     });
@@ -153,7 +157,32 @@ export default async function conversationRoutes(app: FastifyInstance) {
       .where(eq(conversations.userId, user.id))
       .orderBy(desc(conversations.isPinned), desc(conversations.pinnedAt), desc(conversations.updatedAt));
 
-    return { conversations: result };
+    // Get first user message per conversation for title fallback
+    const convIds = result.map(c => c.id);
+    const untitledIds = result.filter(c => !c.title || c.title === 'New conversation' || c.title === 'Untitled').map(c => c.id);
+    let previewMap = new Map<string, string>();
+    if (untitledIds.length > 0) {
+      const firstUserMsgs = await db
+        .select({ conversationId: messages.conversationId, content: messages.content })
+        .from(messages)
+        .where(and(inArray(messages.conversationId, untitledIds), eq(messages.role, 'user')))
+        .orderBy(asc(messages.createdAt));
+      for (const msg of firstUserMsgs) {
+        if (!previewMap.has(msg.conversationId)) {
+          const text = msg.content.trim();
+          previewMap.set(msg.conversationId, text.slice(0, 30) + (text.length > 30 ? '...' : ''));
+        }
+      }
+    }
+
+    const enriched = result.map(c => ({
+      ...c,
+      title: (!c.title || c.title === 'New conversation' || c.title === 'Untitled')
+        ? (previewMap.get(c.id) || c.title || 'New conversation')
+        : c.title,
+    }));
+
+    return { conversations: enriched };
   });
 
   // GET /:id — get conversation with messages
@@ -475,7 +504,7 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : userFileCount > 0 
         try {
           const userContent = (body.content || '').trim();
           if (!userContent) {
-            const title = 'New conversation';
+            const title = 'Untitled';
             await db.update(conversations).set({ title }).where(eq(conversations.id, id));
             reply.raw.write(`event: title\ndata: ${JSON.stringify({ title })}\n\n`);
           } else {

@@ -200,7 +200,7 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
     ...conversations.map(c => ({
       id: c.id,
       type: 'conversation' as const,
-      title: c.title || 'New conversation',
+      title: c.title || 'Untitled conversation',
       icon: '💬',
       createdAt: c.updatedAt || c.createdAt,
       metadata: {},
