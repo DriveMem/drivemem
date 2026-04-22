@@ -118,6 +118,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
       .where(and(
         eq(schema.agentConnections.userId, userId),
         gte(schema.agentConnections.connectedAt, weekAgo),
+        sql`${schema.agentConnections.status} != 'disconnected'`,
       ))
       .orderBy(desc(schema.agentConnections.lastActiveAt));
 
@@ -168,6 +169,69 @@ export default async function userRoutes(fastify: FastifyInstance) {
   });
 
 
+
+  // PATCH /me/agents/:name — Rename an agent
+  fastify.patch('/me/agents/:name', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const { name } = request.params as { name: string };
+    const body = z.object({ newName: z.string().min(1).max(100) }).parse(request.body);
+
+    const updated = await db.update(schema.agentConnections)
+      .set({ agentName: body.newName })
+      .where(and(
+        eq(schema.agentConnections.userId, userId),
+        eq(schema.agentConnections.agentName, name),
+      ))
+      .returning({ id: schema.agentConnections.id });
+
+    if (updated.length === 0) {
+      throw new AppError(ErrorCodes.NOT_FOUND, 'Agent not found', 404);
+    }
+    return reply.send({ ok: true, renamed: updated.length });
+  });
+
+  // DELETE /me/agents/:name — Disconnect (soft-delete) an agent
+  fastify.delete('/me/agents/:name', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const { name } = request.params as { name: string };
+
+    const updated = await db.update(schema.agentConnections)
+      .set({ status: 'disconnected', disconnectedAt: new Date() })
+      .where(and(
+        eq(schema.agentConnections.userId, userId),
+        eq(schema.agentConnections.agentName, name),
+      ))
+      .returning({ id: schema.agentConnections.id });
+
+    if (updated.length === 0) {
+      throw new AppError(ErrorCodes.NOT_FOUND, 'Agent not found', 404);
+    }
+    return reply.send({ ok: true, disconnected: updated.length });
+  });
+
+  // GET /me/agents/:name/logs — Get activity logs for a specific agent
+  fastify.get('/me/agents/:name/logs', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const { name } = request.params as { name: string };
+    const query = request.query as { limit?: string };
+    const limit = Math.min(parseInt(query.limit || '20', 10) || 20, 100);
+
+    const rows = await db.select({
+      id: schema.apiActivityLogs.id,
+      action: schema.apiActivityLogs.action,
+      detail: schema.apiActivityLogs.detail,
+      createdAt: schema.apiActivityLogs.createdAt,
+    })
+      .from(schema.apiActivityLogs)
+      .where(and(
+        eq(schema.apiActivityLogs.userId, userId),
+        eq(schema.apiActivityLogs.agentName, name),
+      ))
+      .orderBy(desc(schema.apiActivityLogs.createdAt))
+      .limit(limit);
+
+    return reply.send({ logs: rows });
+  });
 
   // POST /me/avatar
   fastify.post('/me/avatar', { preHandler: [requireAuth] }, async (request, reply) => {

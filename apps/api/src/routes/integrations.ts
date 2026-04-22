@@ -333,4 +333,13 @@ export default async function integrationRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({ error: { message: err.message || 'Sync failed' } });
     }
   });
+
+  // GET /oauth-status — Which integrations have OAuth configured on the server
+  fastify.get('/oauth-status', async (_request, reply) => {
+    return reply.send({
+      notion: !!(config.NOTION_CLIENT_ID && config.NOTION_CLIENT_SECRET),
+      github: !!(config.GITHUB_INTEGRATION_CLIENT_ID && config.GITHUB_INTEGRATION_CLIENT_SECRET),
+      googleDrive: !!(config.GOOGLE_CLIENT_ID && config.GOOGLE_CLIENT_SECRET),
+    });
+  });
 }

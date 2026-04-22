@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useSession, getSession } from "next-auth/react"
 import Link from "next/link"
-import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, ChevronRight, Key, Users, Bell, RefreshCw, Webhook, Database, Terminal } from "lucide-react"
+import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, ChevronRight, Key, Users, Bell, RefreshCw, Webhook, Database, Terminal, MoreHorizontal, Pencil, Unplug, ScrollText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { trackEvent } from "@/lib/analytics"
@@ -21,11 +21,17 @@ function relativeTime(dateStr: string): string {
 }
 
 /* ---------- Connected Agents ---------- */
-function ConnectedAgents() {
+function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: number) => void }) {
   const { status } = useSession()
   const isLoggedIn = status === "authenticated"
   const [agents, setAgents] = useState<{ name: string; status: string; lastActiveAt: string; disconnectedAt: string | null; totalCalls: number }[]>([])
   const [loading, setLoading] = useState(false)
+  const [menuOpen, setMenuOpen] = useState<string | null>(null)
+  const [renaming, setRenaming] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState("")
+  const [logsAgent, setLogsAgent] = useState<string | null>(null)
+  const [logs, setLogs] = useState<{ id: string; action: string; detail: string | null; createdAt: string }[]>([])
+  const [logsLoading, setLogsLoading] = useState(false)
 
   const fetchAgents = useCallback(async () => {
     setLoading(true)
@@ -38,6 +44,41 @@ function ConnectedAgents() {
   }, [])
 
   useEffect(() => { if (isLoggedIn) fetchAgents() }, [isLoggedIn, fetchAgents])
+  useEffect(() => { onAgentCountChange?.(agents.length) }, [agents.length, onAgentCountChange])
+
+  const handleRename = async (oldName: string) => {
+    if (!renameValue.trim() || renameValue === oldName) { setRenaming(null); return }
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/users/me/agents/${encodeURIComponent(oldName)}`, { method: "PATCH", body: JSON.stringify({ newName: renameValue.trim() }) })
+      toast.success("Agent renamed")
+      setRenaming(null)
+      fetchAgents()
+    } catch { toast.error("Failed to rename") }
+  }
+
+  const handleDisconnect = async (name: string) => {
+    if (!confirm(`Disconnect agent "${name}"?`)) return
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/users/me/agents/${encodeURIComponent(name)}`, { method: "DELETE" })
+      toast.success("Agent disconnected")
+      setMenuOpen(null)
+      fetchAgents()
+    } catch { toast.error("Failed to disconnect") }
+  }
+
+  const viewLogs = async (name: string) => {
+    setLogsAgent(name)
+    setLogsLoading(true)
+    setMenuOpen(null)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const data = await apiFetch(`/api/users/me/agents/${encodeURIComponent(name)}/logs?limit=20`)
+      setLogs(data?.logs || [])
+    } catch { setLogs([]) }
+    finally { setLogsLoading(false) }
+  }
 
   if (!isLoggedIn) return null
 
@@ -67,15 +108,73 @@ function ConnectedAgents() {
           {agents.map((agent) => (
             <div key={agent.name} className="flex items-center gap-3 px-5 py-3.5">
               <span className={`inline-block h-2.5 w-2.5 rounded-full shrink-0 ${agent.status === "online" ? "bg-emerald-500" : "bg-zinc-300"}`} />
-              <span className="font-medium text-sm">{agent.name}</span>
-              <span className="text-xs text-muted-foreground">
-                {agent.status === "online"
-                  ? `active ${relativeTime(agent.lastActiveAt)}`
-                  : `offline ${agent.disconnectedAt ? `since ${relativeTime(agent.disconnectedAt)}` : relativeTime(agent.lastActiveAt)}`}
-              </span>
-              <span className="ml-auto text-xs text-muted-foreground tabular-nums">{agent.totalCalls} calls</span>
+              {renaming === agent.name ? (
+                <form onSubmit={(e) => { e.preventDefault(); handleRename(agent.name) }} className="flex items-center gap-2 flex-1">
+                  <input autoFocus value={renameValue} onChange={(e) => setRenameValue(e.target.value)}
+                    className="rounded-md border px-2 py-1 text-sm flex-1 min-w-0" placeholder="New name" />
+                  <Button size="sm" variant="ghost" type="submit" className="h-7 px-2 text-xs">Save</Button>
+                  <Button size="sm" variant="ghost" type="button" onClick={() => setRenaming(null)} className="h-7 px-2 text-xs">Cancel</Button>
+                </form>
+              ) : (
+                <>
+                  <span className="font-medium text-sm">{agent.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {agent.status === "online"
+                      ? `active ${relativeTime(agent.lastActiveAt)}`
+                      : `last seen ${relativeTime(agent.disconnectedAt || agent.lastActiveAt)}`}
+                  </span>
+                  <span className="ml-auto text-xs text-muted-foreground tabular-nums mr-2">{agent.totalCalls} calls</span>
+                  <div className="relative">
+                    <button onClick={() => setMenuOpen(menuOpen === agent.name ? null : agent.name)}
+                      className="rounded-md p-1.5 hover:bg-muted transition">
+                      <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                    {menuOpen === agent.name && (
+                      <div className="absolute right-0 top-full mt-1 z-50 min-w-[140px] rounded-lg border bg-popover shadow-md py-1">
+                        <button onClick={() => { setRenaming(agent.name); setRenameValue(agent.name); setMenuOpen(null) }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-muted transition">
+                          <Pencil className="h-3.5 w-3.5" /> Rename
+                        </button>
+                        <button onClick={() => viewLogs(agent.name)}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-muted transition">
+                          <ScrollText className="h-3.5 w-3.5" /> View Logs
+                        </button>
+                        <button onClick={() => handleDisconnect(agent.name)}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-muted transition">
+                          <Unplug className="h-3.5 w-3.5" /> Disconnect
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Agent Logs Panel */}
+      {logsAgent && (
+        <div className="mt-4 rounded-xl border bg-card p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold">Logs — {logsAgent}</h3>
+            <button onClick={() => setLogsAgent(null)} className="text-xs text-muted-foreground hover:text-foreground">Close</button>
+          </div>
+          {logsLoading ? (
+            <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+          ) : logs.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No activity logs found.</p>
+          ) : (
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {logs.map((log) => (
+                <div key={log.id} className="flex items-start gap-2 text-sm">
+                  <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">{relativeTime(log.createdAt)}</span>
+                  <span className="font-medium text-xs bg-muted px-1.5 py-0.5 rounded">{log.action}</span>
+                  {log.detail && <span className="text-muted-foreground text-xs truncate">{log.detail.slice(0, 80)}</span>}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -119,6 +218,7 @@ function DataSources() {
   const [integrations, setIntegrations] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [syncing, setSyncing] = useState<string | null>(null)
+  const [oauthStatus, setOauthStatus] = useState<{ notion: boolean; github: boolean; googleDrive: boolean }>({ notion: true, github: true, googleDrive: true })
 
   const fetchIntegrations = useCallback(async () => {
     setLoading(true)
@@ -131,6 +231,12 @@ function DataSources() {
   }, [])
 
   useEffect(() => { if (isLoggedIn) fetchIntegrations() }, [isLoggedIn, fetchIntegrations])
+
+  useEffect(() => {
+    import("@/lib/api").then(({ apiFetch }) =>
+      apiFetch("/api/integrations/oauth-status").then((d: any) => d && setOauthStatus(d)).catch(() => {})
+    )
+  }, [])
 
   const connectNotion = async () => {
     const session = await getSession() as any
@@ -218,8 +324,8 @@ function DataSources() {
               <p className="text-sm text-muted-foreground mb-6 flex-1">
                 Connect your Notion workspace to automatically sync pages into your knowledge base.
               </p>
-              <Button onClick={connectNotion} className="w-full rounded-xl shadow-soft active:scale-[0.98]">
-                Connect Notion
+              <Button onClick={connectNotion} className="w-full rounded-xl shadow-soft active:scale-[0.98]" disabled={!oauthStatus.notion}>
+                {oauthStatus.notion ? "Connect Notion" : <>Connect Notion <span className="ml-2 text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Coming Soon</span></>}
               </Button>
             </div>
           )}
@@ -261,8 +367,8 @@ function DataSources() {
               <p className="text-sm text-muted-foreground mb-6 flex-1">
                 Connect Google Drive to automatically sync documents, sheets, and PDFs into your knowledge base.
               </p>
-              <Button onClick={connectGoogleDrive} className="w-full rounded-xl shadow-soft active:scale-[0.98]">
-                Connect Google Drive
+              <Button onClick={connectGoogleDrive} className="w-full rounded-xl shadow-soft active:scale-[0.98]" disabled={!oauthStatus.googleDrive}>
+                {oauthStatus.googleDrive ? "Connect Google Drive" : <>Connect Google Drive <span className="ml-2 text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Coming Soon</span></>}
               </Button>
             </div>
           )}
@@ -304,8 +410,8 @@ function DataSources() {
               <p className="text-sm text-muted-foreground mb-6 flex-1">
                 Connect GitHub to sync repository contents, issues, and markdown files into your knowledge base.
               </p>
-              <Button onClick={connectGitHub} className="w-full rounded-xl shadow-soft active:scale-[0.98]">
-                Connect GitHub
+              <Button onClick={connectGitHub} className="w-full rounded-xl shadow-soft active:scale-[0.98]" disabled={!oauthStatus.github}>
+                {oauthStatus.github ? "Connect GitHub" : <>Connect GitHub <span className="ml-2 text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Coming Soon</span></>}
               </Button>
             </div>
           )}
@@ -350,6 +456,8 @@ export default function ConnectPage() {
   const [copied, setCopied] = useState<string | null>(null)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [showManual, setShowManual] = useState(false)
+  const [agentCount, setAgentCount] = useState(0)
+  const [showSetup, setShowSetup] = useState(true)
 
   const copyText = (text: string, label: string) => {
     navigator.clipboard?.writeText(text)
@@ -374,9 +482,23 @@ export default function ConnectPage() {
       <h1 className="text-2xl font-bold tracking-tight">Connect your agents</h1>
       <p className="text-muted-foreground mt-2 mb-8">Pick your tool and connect in under 2 minutes</p>
 
-      <ConnectedAgents />
+      <ConnectedAgents onAgentCountChange={(c) => { setAgentCount(c); if (c > 0) setShowSetup(false) }} />
       <EmptyKBWarning />
 
+      {/* Quick Setup — collapsed for users with agents */}
+      {agentCount > 0 && !showSetup ? (
+        <button
+          onClick={() => setShowSetup(true)}
+          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-6"
+        >
+          <ChevronRight className="h-4 w-4" />
+          Setup Instructions
+          <span className="text-xs font-normal ml-1">— connect more tools</span>
+        </button>
+      ) : null}
+
+      {(agentCount === 0 || showSetup) && (
+      <>
       {/* Quick Setup */}
       <div className="mb-10 rounded-2xl border-2 border-primary/20 bg-primary/[0.03] p-6 md:p-8">
         <div className="flex items-center gap-3 mb-2">
@@ -525,15 +647,11 @@ export default function ConnectPage() {
       </div>
         )}
       </div>
+      </>
+      )}
 
       {/* Data Sources */}
       <DataSources />
-
-      {/* API Key note */}
-      <p className="text-sm text-muted-foreground mt-6 text-center">
-        Get your API key from{" "}
-        <Link href="/settings?tab=developer" className="text-primary hover:underline">Settings → Developer</Link>
-      </p>
 
       {/* Advanced section */}
       <div className="mt-12">
