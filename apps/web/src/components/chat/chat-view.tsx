@@ -377,7 +377,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
               <Info className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-muted-foreground cursor-help" />
             </TooltipTrigger>
             <TooltipContent side="bottom" className="max-w-[240px] text-xs">
-              AI Memory remembers context across conversations. Choose which files the AI can reference when answering.
+              AI Memory remembers context across conversations. Choose which files the AI can reference when answering. When a project is selected, search results are limited to that project + global knowledge.
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

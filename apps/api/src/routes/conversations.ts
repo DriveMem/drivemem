@@ -509,7 +509,7 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : userFileCount > 0 
             reply.raw.write(`event: title\ndata: ${JSON.stringify({ title })}\n\n`);
           } else {
             const titleResponse = await chat([
-              { role: 'system', content: 'Generate a short title (max 6 words) for this conversation based on the user message. Output only the title, no quotes, no explanation. If the message is unclear, use the first few words.' },
+              { role: 'system', content: 'Generate a short title (max 6 words) for this conversation based on the user message. Generate the title in the same language as the user\'s message. Output only the title, no quotes, no explanation. If the message is unclear, use the first few words.' },
               { role: 'user', content: userContent },
             ]);
             const cleaned = titleResponse.slice(0, 50).trim().replace(/^["'「」《》]+|["'「」《》]+$/g, '');
@@ -530,9 +530,10 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : userFileCount > 0 
 
       // Generate follow-up suggestions (non-blocking)
       try {
-        const suggestPrompt = `Based on this AI response, generate 3 follow-up questions in English. Requirements: each under 60 chars, casual language. Return ONLY a JSON array: ["q1","q2","q3"]
+        const suggestPrompt = `Based on this AI response, generate 3 follow-up questions in the same language as the user's message. Requirements: each under 60 chars, casual language. Return ONLY a JSON array: ["q1","q2","q3"]
 
-Response: ${fullContent.substring(0, 300)}`;
+Response: ${fullContent.substring(0, 300)}
+User message: ${(body.content || '').substring(0, 200)}`;
         const suggestResult = await chat([{ role: 'user', content: suggestPrompt }]);
         // Extract JSON array from response
         const jsonMatch = suggestResult.match(/\[[\s\S]*?\]/);
