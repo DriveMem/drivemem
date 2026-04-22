@@ -159,11 +159,25 @@ function main() {
   const command = process.argv[2];
 
   if (command === 'setup') {
+    // --print-url mode: just output MCP URL for any client
+    const printUrl = process.argv.includes('--print-url');
+    if (printUrl) {
+      const apiKey = process.argv.find(a => a.startsWith('--api-key='))?.split('=')[1]
+        || process.env.DRIVEMEM_API_KEY;
+      if (!apiKey) {
+        console.error('Usage: npx drivemem setup --print-url --api-key=ak_xxx');
+        process.exit(1);
+      }
+      console.log(`https://api.drivemem.cloud/mcp?apiKey=${apiKey}`);
+      return;
+    }
     setup().catch(console.error);
   } else {
     console.log('🧠 DriveMem CLI\n');
     console.log('Usage:');
-    console.log('  npx drivemem setup    Auto-configure Cursor, Claude Desktop, Windsurf & Claude Code');
+    console.log('  npx drivemem setup                       Auto-configure Cursor, Claude Desktop, Windsurf');
+    console.log('  npx drivemem setup --api-key=ak_xxx      Non-interactive mode');
+    console.log('  npx drivemem setup --print-url --api-key=ak_xxx   Just print MCP URL');
     console.log('');
     console.log('More: https://drivemem.cloud/docs');
   }
