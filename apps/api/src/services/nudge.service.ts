@@ -105,10 +105,43 @@ export async function ensureNudgeState(userId: string): Promise<void> {
     .limit(1);
 
   if (!existing) {
+    // Backfill: check if user already completed actions before nudge system existed
+    const now = new Date();
+    let fileUploadAt: Date | null = null;
+    let chatFirstAt: Date | null = null;
+    let mcpConnectAt: Date | null = null;
+
+    try {
+      // Check existing files (non-sample)
+      const [fileCheck] = await db.select({ cnt: sql<number>`count(*)::int` })
+        .from(schema.files)
+        .where(and(eq(schema.files.userId, userId), eq(schema.files.isSample, false)));
+      if (fileCheck && fileCheck.cnt > 0) fileUploadAt = now;
+
+      // Check existing conversations
+      const [chatCheck] = await db.select({ cnt: sql<number>`count(*)::int` })
+        .from(schema.conversations)
+        .where(eq(schema.conversations.userId, userId));
+      if (chatCheck && chatCheck.cnt > 0) chatFirstAt = now;
+
+      // Check existing MCP connections
+      const [mcpCheck] = await db.select({ cnt: sql<number>`count(*)::int` })
+        .from(schema.agentConnections)
+        .where(eq(schema.agentConnections.userId, userId));
+      if (mcpCheck && mcpCheck.cnt > 0) mcpConnectAt = now;
+    } catch {
+      // If backfill fails (e.g. table not found), just create empty state
+    }
+
+    const completedCount = [fileUploadAt, chatFirstAt, mcpConnectAt].filter(Boolean).length;
     const token = crypto.randomBytes(32).toString('hex');
     await db.insert(schema.nudgeState).values({
       userId,
       unsubscribeToken: token,
+      fileUploadAt,
+      chatFirstAt,
+      mcpConnectAt,
+      activatedAt: completedCount >= 2 ? now : null,
     }).onConflictDoNothing();
   }
 }
@@ -151,6 +184,59 @@ export async function getActivationStatus(userId: string) {
   await ensureNudgeState(userId);
   const [state] = await db.select().from(schema.nudgeState).where(eq(schema.nudgeState.userId, userId));
   if (!state) return null;
+
+  // Backfill existing users whose nudge_state was created before backfill logic
+  let needsUpdate = false;
+  const updates: Record<string, Date> = {};
+  const now = new Date();
+
+  try {
+    if (!state.fileUploadAt) {
+      const [fileCheck] = await db.select({ cnt: sql<number>`count(*)::int` })
+        .from(schema.files)
+        .where(and(eq(schema.files.userId, userId), eq(schema.files.isSample, false)));
+      if (fileCheck && fileCheck.cnt > 0) { updates['file_upload_at'] = now; needsUpdate = true; }
+    }
+    if (!state.chatFirstAt) {
+      const [chatCheck] = await db.select({ cnt: sql<number>`count(*)::int` })
+        .from(schema.conversations)
+        .where(eq(schema.conversations.userId, userId));
+      if (chatCheck && chatCheck.cnt > 0) { updates['chat_first_at'] = now; needsUpdate = true; }
+    }
+    if (!state.mcpConnectAt) {
+      const [mcpCheck] = await db.select({ cnt: sql<number>`count(*)::int` })
+        .from(schema.agentConnections)
+        .where(eq(schema.agentConnections.userId, userId));
+      if (mcpCheck && mcpCheck.cnt > 0) { updates['mcp_connect_at'] = now; needsUpdate = true; }
+    }
+
+    if (needsUpdate) {
+      await db.execute(sql`UPDATE nudge_state SET ${sql.raw(
+        Object.entries(updates).map(([k, _v]) => `${k} = now()`).join(', ')
+      )}, updated_at = now() WHERE user_id = ${userId}`);
+      // Re-read updated state
+      const [updated] = await db.select().from(schema.nudgeState).where(eq(schema.nudgeState.userId, userId));
+      if (updated) {
+        const completedActions = [];
+        if (updated.fileUploadAt) completedActions.push('file_upload');
+        if (updated.chatFirstAt) completedActions.push('chat_first');
+        if (updated.mcpConnectAt) completedActions.push('mcp_connect');
+        // Auto-activate if >=2 actions and not already activated
+        if (completedActions.length >= 2 && !updated.activatedAt) {
+          await db.execute(sql`UPDATE nudge_state SET activated_at = now() WHERE user_id = ${userId}`);
+        }
+        return {
+          activated: completedActions.length >= 2,
+          completedActions,
+          nextAction: getNextAction(updated),
+          completedCount: completedActions.length,
+          totalRequired: 2,
+        };
+      }
+    }
+  } catch {
+    // If backfill query fails, continue with current state
+  }
 
   const completedActions = [];
   if (state.fileUploadAt) completedActions.push('file_upload');
