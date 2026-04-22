@@ -42,12 +42,18 @@ Every conversation should start with context loading and end with knowledge savi
 async function setup() {
   console.log('🧠 DriveMem Setup — Connecting your AI tools\n');
 
-  // 1. Get API Key
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const apiKey = await new Promise<string>(resolve => {
-    rl.question('Enter your DriveMem API Key (from drivemem.cloud/settings): ', resolve);
-  });
-  rl.close();
+  // 1. Get API Key — support --api-key flag or env var for non-interactive use
+  let apiKey = process.argv.find(a => a.startsWith('--api-key='))?.split('=')[1]
+    || process.env.DRIVEMEM_API_KEY
+    || '';
+
+  if (!apiKey) {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    apiKey = await new Promise<string>(resolve => {
+      rl.question('Enter your DriveMem API Key (from drivemem.cloud/settings): ', resolve);
+    });
+    rl.close();
+  }
 
   if (!apiKey.startsWith('ak_')) {
     console.log('❌ Invalid API Key. Get yours at https://drivemem.cloud/settings');
