@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, useCallback } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, getSession } from "next-auth/react"
 import Link from "next/link"
 import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, ChevronRight, Key, Users, Bell, RefreshCw, Webhook, Database, Terminal } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -132,8 +132,10 @@ function DataSources() {
 
   useEffect(() => { if (isLoggedIn) fetchIntegrations() }, [isLoggedIn, fetchIntegrations])
 
-  const connectNotion = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/notion/connect`
+  const connectNotion = async () => {
+    const session = await getSession() as any
+    const token = session?.accessToken || ''
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/notion/connect?token=${token}`
   }
 
   const disconnectIntegration = async (id: string) => {
@@ -162,12 +164,16 @@ function DataSources() {
   const googleDriveIntegration = integrations.find((i: any) => i.provider === "google-drive")
   const githubIntegration = integrations.find((i: any) => i.provider === "github")
 
-  const connectGoogleDrive = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/google-drive/connect`
+  const connectGoogleDrive = async () => {
+    const session = await getSession() as any
+    const token = session?.accessToken || ''
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/google-drive/connect?token=${token}`
   }
 
-  const connectGitHub = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/github/connect`
+  const connectGitHub = async () => {
+    const session = await getSession() as any
+    const token = session?.accessToken || ''
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/github/connect?token=${token}`
   }
 
   return (

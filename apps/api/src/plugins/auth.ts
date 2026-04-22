@@ -37,10 +37,11 @@ async function authPlugin(fastify: FastifyInstance) {
   fastify.addHook('onRequest', async (request: FastifyRequest) => {
     // Strategy 1: Authorization Bearer header (plain JWS JWT)
     const auth = request.headers.authorization;
-    if (auth?.startsWith('Bearer ')) {
+    const queryToken = (request.query as any)?.token;
+    const bearerToken = auth?.startsWith('Bearer ') ? auth.slice(7) : queryToken;
+    if (bearerToken) {
       try {
-        const token = auth.slice(7);
-        const { payload } = await jwtVerify(token, secret);
+        const { payload } = await jwtVerify(bearerToken, secret);
         request.user = {
           id: payload.sub as string,
           email: payload.email as string,

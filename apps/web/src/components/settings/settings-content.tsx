@@ -507,16 +507,22 @@ function IntegrationsCard() {
 
   useEffect(() => { fetchIntegrations() }, [])
 
-  const connectNotion = () => {
-    window.location.href = `https://api.drivemem.cloud/api/integrations/notion/connect`
+  const connectNotion = async () => {
+    const session = await getSession() as any
+    const token = session?.accessToken || ''
+    window.location.href = `https://api.drivemem.cloud/api/integrations/notion/connect?token=${token}`
   }
 
-  const connectGitHub = () => {
-    window.location.href = `https://api.drivemem.cloud/api/integrations/github/connect`
+  const connectGitHub = async () => {
+    const session = await getSession() as any
+    const token = session?.accessToken || ''
+    window.location.href = `https://api.drivemem.cloud/api/integrations/github/connect?token=${token}`
   }
 
-  const connectGoogleDrive = () => {
-    window.location.href = `https://api.drivemem.cloud/api/integrations/google-drive/connect`
+  const connectGoogleDrive = async () => {
+    const session = await getSession() as any
+    const token = session?.accessToken || ''
+    window.location.href = `https://api.drivemem.cloud/api/integrations/google-drive/connect?token=${token}`
   }
 
   const disconnect = async (id: string) => {
