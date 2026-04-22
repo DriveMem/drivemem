@@ -554,9 +554,9 @@ export default async function v1Routes(fastify: FastifyInstance) {
 
     const askBudget = body.contextBudget || 0;
     const askFormat = body.preferFormat || 'text';
-    const lengthHint = askBudget && askBudget < 1000 ? `\n请简洁回答，控制在 ${askBudget} 字以内。` : '';
-    const formatHint = askFormat === 'summary' ? '\n用要点列表回答。' : askFormat === 'structured' ? '\n用 JSON 格式回答：{"answer":"...","keyPoints":["..."],"confidence":"high/medium/low"}' : '';
-    const systemPrompt = `你是 AI Drive AI，用户的个人知识助手。严格基于文档内容回答。用上标¹²³引用来源。${lengthHint}${formatHint}\n\n[文档片段]\n${citationSources.join('\n\n') || '（未找到相关文档）'}`;
+    const lengthHint = askBudget && askBudget < 1000 ? `\nBe concise, keep answer under ${askBudget} words.` : '';
+    const formatHint = askFormat === 'summary' ? '\nAnswer in bullet points.' : askFormat === 'structured' ? '\nAnswer in JSON format: {"answer":"...","keyPoints":["..."],"confidence":"high/medium/low"}' : '';
+    const systemPrompt = `You are DriveMem AI, the user's personal knowledge assistant. Answer strictly based on the provided documents. Use superscript ¹²³ to cite sources. Always respond in the same language as the user's question.${lengthHint}${formatHint}\n\n[Document excerpts]\n${citationSources.join('\n\n') || '(No relevant documents found)'}`;
 
     const { chat } = await import('../services/llm.service.js');
     const answer = await chat([

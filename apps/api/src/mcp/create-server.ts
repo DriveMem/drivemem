@@ -509,10 +509,10 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           }
 
           const chunkChars = budget ? Math.min(Math.floor((budget * 2) / Math.max(chunks.length, 1)), 1000) : 500;
-          const citations = chunks.map((c, i) => `来源 ${i + 1} (${c.fileName}): ${c.text.slice(0, chunkChars)}`).join('\n\n');
-          const lengthHint = budget && budget < 1000 ? `\n请简洁回答，控制在 ${budget} 字以内。` : '';
-          const formatHint = format === 'summary' ? '\n用要点列表（bullet points）回答，每点一行。' : format === 'structured' ? '\n用 JSON 格式回答：{"answer":"...","keyPoints":["..."],"confidence":"high/medium/low"}' : '';
-          const systemPrompt = `你是 AI Drive AI，用户的个人知识助手。严格基于文档内容回答。用上标¹²³引用来源。${lengthHint}${formatHint}\n\n[文档片段]\n${citations || '(未找到相关文档)'}`;
+          const citations = chunks.map((c, i) => `Source ${i + 1} (${c.fileName}): ${c.text.slice(0, chunkChars)}`).join('\n\n');
+          const lengthHint = budget && budget < 1000 ? `\nBe concise, keep answer under ${budget} words.` : '';
+          const formatHint = format === 'summary' ? '\nAnswer in bullet points, one per line.' : format === 'structured' ? '\nAnswer in JSON format: {"answer":"...","keyPoints":["..."],"confidence":"high/medium/low"}' : '';
+          const systemPrompt = `You are DriveMem AI, the user's personal knowledge assistant. Answer strictly based on the provided documents. Use superscript ¹²³ to cite sources. Always respond in the same language as the user's question.${lengthHint}${formatHint}\n\n[Document excerpts]\n${citations || '(No relevant documents found)'}`;
           const answer = await chat([{ role: 'system', content: systemPrompt }, { role: 'user', content: question }]);
           const askFileIds = [...new Set(chunks.map(c => c.fileId))];
           const askEnrich = await enrichResponse(userId, question, askFileIds);
