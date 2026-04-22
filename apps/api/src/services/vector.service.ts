@@ -144,7 +144,11 @@ export async function searchSimilar(params: {
   ];
 
   if (scopeType === 'folder' && scopeId) {
-    must.push({ key: 'folder_id', match: { value: scopeId } });
+    // Project isolation: show project files + global files (folder_id = '' means no folder)
+    must.push({
+      key: 'folder_id',
+      match: { any: [scopeId, ''] },
+    } as any);
   } else if (scopeType === 'file' && scopeId) {
     must.push({ key: 'file_id', match: { value: scopeId } });
   }

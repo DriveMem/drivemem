@@ -340,16 +340,22 @@ export default async function v1Routes(fastify: FastifyInstance) {
 
   // GET /search — max_tokens limits snippet length
   fastify.get('/search', async (request, reply) => {
-    const query = request.query as { q: string; max_tokens?: string; format?: string; contextBudget?: string };
+    const query = request.query as { q: string; max_tokens?: string; format?: string; contextBudget?: string; scope?: string; projectId?: string };
     if (!query.q) return reply.status(400).send({ error: 'q parameter required' });
     const userId = request.user!.id;
     const format = query.format || 'text'; // text | structured | summary
     const budget = parseInt(query.contextBudget || '0');
     const maxChars = budget ? Math.min(budget * 4, 8000) : Math.min(parseInt(query.max_tokens || '300') * 4, 2000);
 
+    // Project isolation: scope="project" (default) filters to projectId + global; scope="all" searches everything
+    const scope = query.scope || 'project';
+    const projectId = query.projectId;
+    const scopeType = (scope === 'project' && projectId) ? 'folder' : 'all';
+    const scopeId = (scope === 'project' && projectId) ? projectId : undefined;
+
     const { preprocessQuery } = await import("../services/vector.service.js");
     const [queryVec] = await embedTexts([preprocessQuery(query.q)]);
-    const chunks = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: 10 });
+    const chunks = await searchSimilar({ userId, query: queryVec, scopeType, scopeId, limit: 10 });
 
     // Filter archived files from search results
     const searchFiles = await db.select({ id: schema.files.id, archivedAt: schema.files.archivedAt })

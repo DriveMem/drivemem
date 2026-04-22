@@ -109,12 +109,12 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
   )
 }
 
-export function ChatView({ conversationId: initialConversationId, fileScope, presetQuestion, compareMode, fileA, fileB }: { conversationId?: string; fileScope?: string; presetQuestion?: string; compareMode?: boolean; fileA?: string; fileB?: string }) {
+export function ChatView({ conversationId: initialConversationId, fileScope, folderScope, presetQuestion, compareMode, fileA, fileB }: { conversationId?: string; fileScope?: string; folderScope?: string; presetQuestion?: string; compareMode?: boolean; fileA?: string; fileB?: string }) {
   const [conversationId, setConversationId] = useState<string | undefined>(initialConversationId)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [streaming, setStreaming] = useState<string | undefined>(undefined)
-  const [scope, setScope] = useState<ScopeType>(fileScope ? "file" : "all")
-  const [scopeId, setScopeId] = useState<string | undefined>(fileScope || undefined)
+  const [scope, setScope] = useState<ScopeType>(fileScope ? "file" : folderScope ? "folder" : "all")
+  const [scopeId, setScopeId] = useState<string | undefined>(fileScope || folderScope || undefined)
 
   // Compare mode: force scope to "all" and extract file names from query
   const compareFileNames = compareMode && presetQuestion

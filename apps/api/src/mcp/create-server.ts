@@ -122,6 +122,8 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             query: { type: 'string', description: '搜索关键词或问题' },
             contextBudget: { type: 'number', description: '返回内容的 token 预算（默认完整返回）。小模型传 2000，大模型传 50000' },
             preferFormat: { type: 'string', description: '返回格式：text(自然语言,默认) | structured(JSON) | summary(要点列表)', enum: ['text', 'structured', 'summary'] },
+            scope: { type: 'string', description: 'Search scope: "project" (default, searches current project + global) or "all" (searches everything)', enum: ['project', 'all'] },
+            projectId: { type: 'string', description: 'Project/folder ID to scope search to. When scope="project" and projectId is set, only returns results from that project + unassigned files.' },
           },
           required: ['query'],
         },
@@ -256,6 +258,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             tokenBudget: { type: 'number', description: 'Max output tokens (default 8000)' },
             model: { type: 'string', description: 'Target model name (e.g. claude-opus, gpt-4o)' },
             project: { type: 'string', description: 'Project scope filter' },
+            scope: { type: 'string', description: 'Search scope: "project" (default) or "all"', enum: ['project', 'all'] },
             tags: { type: 'string', description: 'Tag filter (comma-separated)' },
             recency: { type: 'string', description: 'Time range preference (e.g. 7d, 30d)' },
           },
@@ -406,6 +409,8 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           const query = (args as any).query as string;
           const budget = ((args as any).contextBudget as number) || 0;
           const format = ((args as any).preferFormat as string) || 'text';
+          const searchScope = ((args as any).scope as string) || 'project';
+          const searchProjectId = (args as any).projectId as string | undefined;
 
           // Auto-detect project if not yet detected
           if (!detectedProjectId && query.length > 10) {
@@ -419,23 +424,13 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             } catch { /* don't block on detection failure */ }
           }
 
-          const [queryVec] = await embedTexts([preprocessQuery(query)]);
-          let results = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: budget && budget < 3000 ? 3 : 5 });
+          // Determine effective project ID for scoping
+          const effectiveProjectId = searchProjectId || detectedProjectId;
+          const scopeType = (searchScope === 'project' && effectiveProjectId) ? 'folder' : 'all';
+          const scopeId = (searchScope === 'project' && effectiveProjectId) ? effectiveProjectId : undefined;
 
-          // Boost project-scoped results
-          if (detectedProjectId && results.length > 0) {
-            const resultFileIds = [...new Set(results.map(r => r.fileId))];
-            const fileRecords = await db.select({ id: schema.files.id, folderId: schema.files.folderId })
-              .from(schema.files)
-              .where(inArray(schema.files.id, resultFileIds));
-            const fileFolderMap: Record<string, string | null> = {};
-            fileRecords.forEach(f => { fileFolderMap[f.id] = f.folderId; });
-            results = results.map(r => ({
-              ...r,
-              score: fileFolderMap[r.fileId] === detectedProjectId ? r.score * 1.2 : r.score,
-            }));
-            results.sort((a, b) => b.score - a.score);
-          }
+          const [queryVec] = await embedTexts([preprocessQuery(query)]);
+          let results = await searchSimilar({ userId, query: queryVec, scopeType, scopeId, limit: budget && budget < 3000 ? 3 : 5 });
 
           // Apply feedback weights
           const { applyFeedbackWeights } = await import('../services/feedback-weights.js');
@@ -500,23 +495,12 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             } catch { /* don't block on detection failure */ }
           }
 
-          const [queryVec] = await embedTexts([preprocessQuery(question)]);
-          let chunks = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: budget && budget < 2000 ? 3 : 6 });
+          // Use project scope for ask too
+          const askScopeType = detectedProjectId ? 'folder' : 'all';
+          const askScopeId = detectedProjectId || undefined;
 
-          // Boost project-scoped chunks
-          if (detectedProjectId && chunks.length > 0) {
-            const chunkFileIds = [...new Set(chunks.map(c => c.fileId))];
-            const fileRecords = await db.select({ id: schema.files.id, folderId: schema.files.folderId })
-              .from(schema.files)
-              .where(inArray(schema.files.id, chunkFileIds));
-            const fileFolderMap: Record<string, string | null> = {};
-            fileRecords.forEach(f => { fileFolderMap[f.id] = f.folderId; });
-            chunks = chunks.map(c => ({
-              ...c,
-              score: fileFolderMap[c.fileId] === detectedProjectId ? c.score * 1.2 : c.score,
-            }));
-            chunks.sort((a, b) => b.score - a.score);
-          }
+          const [queryVec] = await embedTexts([preprocessQuery(question)]);
+          let chunks = await searchSimilar({ userId, query: queryVec, scopeType: askScopeType, scopeId: askScopeId, limit: budget && budget < 2000 ? 3 : 6 });
 
           // Apply feedback weights
           {
@@ -813,6 +797,10 @@ You are not just a chat assistant — you are part of the user's knowledge syste
         case 'aidrive_compile_context': {
           const task = (args as any).task as string;
           if (!task) return { content: [{ type: 'text' as const, text: '需要 task 参数。' }], isError: true };
+          const compileScope = ((args as any).scope as string) || 'project';
+          const compileProjectHint = (args as any).project as string | undefined;
+          // If scope=project, use project hint or detected project as folderId for scoped retrieval
+          const compileFolderId = (compileScope === 'project') ? (compileProjectHint || detectedProjectId || undefined) : undefined;
           const { compileContext } = await import('../services/context-compiler/index.js');
           const result = await compileContext(userId, {
             task,
@@ -821,7 +809,8 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             role: detectedCaps?.role || inferRole(agentName),
             apiKeyId: options?.apiKeyId,
             hints: {
-              project: (args as any).project as string | undefined,
+              project: compileProjectHint,
+              folderId: compileFolderId,
               tags: (args as any).tags ? ((args as any).tags as string).split(',').map((t: string) => t.trim()) : undefined,
               recency: (args as any).recency as string | undefined,
             },
