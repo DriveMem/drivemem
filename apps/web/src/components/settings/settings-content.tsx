@@ -74,7 +74,7 @@ function ApiKeysCard() {
       </CardHeader>
       <CardContent>
         <div className="flex gap-2 mb-4">
-          <Input placeholder="Key Name（e.g., My Agent)" value={keyName} onChange={(e) => setKeyName(e.target.value)} />
+          <Input placeholder="Key Name (e.g., My Agent)" value={keyName} onChange={(e) => setKeyName(e.target.value)} />
           <Button onClick={createKey} disabled={!keyName.trim() || creating}>
             {creating ? "Create..." : "Create Key"}
           </Button>
@@ -920,7 +920,7 @@ function WebhookCard() {
               </Button>
             </div>
             <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-              Use this secret to verify <code className="font-mono">X-DriveMem-Signature</code> header（HMAC-SHA256）
+              Use this secret to verify <code className="font-mono">X-DriveMem-Signature</code> header (HMAC-SHA256)
             </p>
           </div>
         )}
