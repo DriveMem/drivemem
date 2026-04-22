@@ -80,7 +80,7 @@ function ActivityItem({ activity }: { activity: any }) {
   const agentName = isSystemGenerated
     ? "AI"
     : hasAgentActor && rawAgent && rawAgent !== "You"
-      ? rawAgent.replace(/^agent[-_]?[a-z][-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Agent'
+      ? activity.metadata?.actorLabel || rawAgent.replace(/^agent[-_]?[a-z][-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Agent'
       : hasAgentActor
         ? "Agent"
         : "You"

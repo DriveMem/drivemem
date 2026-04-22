@@ -14,7 +14,12 @@ import remarkGfm from "remark-gfm"
 import { cn } from "@/lib/utils"
 
 function displayFileName(name: string): string {
-  return name.replace(/\.md$/i, "").replace(/^note-\d{4}-\d{2}-\d{2}T[\d-]+$/, "AI Note")
+  return name
+    .replace(/\.md$/i, "")
+    .replace(/^note-\d{4}-\d{2}-\d{2}T[\d-]+$/, "AI Note")
+    .replace(/^session-summary-[\w-]+$/, "Session Summary")
+    .replace(/^auto-capture-[\w-]+$/, "Auto Capture")
+    .replace(/^auto-[\w-]+$/, "Auto Note")
 }
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"

@@ -398,10 +398,10 @@ Important rules:
 5. **Always respond in the same language as the user's question.** If the user asks in English, respond in English. If in Chinese, respond in Chinese.
 6. ${userFileCount === 0 ? 'The user has no files yet. Suggest they upload files first.' : 'Do not suggest uploading files. If search results are empty, it means no content matching the question was found.'}
 7. Structure answers clearly using headings, bullet points, etc. for readability.
-8. 当用户发送问候（如"你好"、"hi"）时，友好回复并简要介绍你能做什么，不要引用任何来源
+8. When the user sends a greeting (e.g. "hello", "hi"), respond warmly and briefly introduce what you can do. Do not cite any sources.
 
-[文档片段]
-${citationSources.length > 0 ? citationSources.join('\n\n') : userFileCount > 0 ? '（当前问题未匹配到相关文档片段）' : '（用户尚未上传文件）'}`;
+[Document Excerpts]
+${citationSources.length > 0 ? citationSources.join('\n\n') : userFileCount > 0 ? '(No relevant excerpts matched for this question)' : '(The user has not uploaded any files yet)'}`;
 
     // Get user memories for context
     const userMemories = await db.select({ key: schema.userMemory.key, value: schema.userMemory.value })
@@ -411,14 +411,14 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : userFileCount > 0 
       .limit(10);
 
     const memoryContext = userMemories.length > 0
-      ? `\n\n[用户记忆]\n你记住了关于这个用户的以下信息：\n${userMemories.map(m => `- ${m.key}: ${m.value}`).join('\n')}\n在回答时自然地运用这些记忆，让用户感觉你了解他们。不要刻意提及"我记得你..."。`
+      ? `\n\n[User Memory]\nYou remember the following about this user:\n${userMemories.map(m => `- ${m.key}: ${m.value}`).join('\n')}\nNaturally incorporate this knowledge when answering. Don't explicitly say "I remember you...".`
       : '';
 
     // Enhance prompt for comparison queries
-    const compareKeywords = ['对比', '比较', '异同', '区别', '差异', 'compare', 'vs'];
-    const isCompare = compareKeywords.some(k => body.content.includes(k));
+    const compareKeywords = ['对比', '比较', '异同', '区别', '差异', 'compare', 'vs', 'difference'];
+    const isCompare = compareKeywords.some(k => body.content.toLowerCase().includes(k));
     const finalSystemPrompt = (isCompare
-      ? systemPrompt + `\n\n【对比分析模式】\n用户正在进行文件对比分析。请使用以下结构化格式输出：\n## 📋 相同点\n列出两份文档的共同之处\n## 🔍 不同点\n列出两份文档的差异\n## 🤝 互补之处\n分析两份文档如何互相补充\n## 💡 建议\n基于对比结果给出 1-2 条有价值的建议`
+      ? systemPrompt + `\n\n[Comparison Mode]\nThe user is comparing files. Use this structured format:\n## 📋 Similarities\nList what the documents share in common\n## 🔍 Differences\nList where the documents differ\n## 🤝 Complementary Aspects\nAnalyze how the documents complement each other\n## 💡 Suggestions\nProvide 1-2 actionable suggestions based on the comparison`
       : systemPrompt) + memoryContext;
 
     // Build chat history for LLM
