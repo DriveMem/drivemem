@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc, sql, notInArray } from 'drizzle-orm';
 import { requireAuth } from '../plugins/auth.js';
 
 const DEFAULT_PREFERENCES = {
@@ -22,6 +22,9 @@ const preferencesSchema = z.object({
 });
 
 export default async function notificationRoutes(fastify: FastifyInstance) {
+  // System noise types — hidden from bell, don't count toward badge
+  const NOISE_TYPES = ['file_indexed', 'summary_generated', 'file_updated', 'chunk_indexed'];
+
   // GET /preferences — 获取通知偏好
   fastify.get('/preferences', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;
@@ -47,7 +50,7 @@ export default async function notificationRoutes(fastify: FastifyInstance) {
     const userId = request.user!.id;
     const notifications = await db.select()
       .from(schema.notifications)
-      .where(eq(schema.notifications.userId, userId))
+      .where(and(eq(schema.notifications.userId, userId), notInArray(schema.notifications.type, NOISE_TYPES)))
       .orderBy(desc(schema.notifications.createdAt))
       .limit(50);
     return reply.send({ notifications });
@@ -58,7 +61,7 @@ export default async function notificationRoutes(fastify: FastifyInstance) {
     const userId = request.user!.id;
     const [result] = await db.select({ count: sql<number>`count(*)` })
       .from(schema.notifications)
-      .where(and(eq(schema.notifications.userId, userId), eq(schema.notifications.read, false)));
+      .where(and(eq(schema.notifications.userId, userId), eq(schema.notifications.read, false), notInArray(schema.notifications.type, NOISE_TYPES)));
     return reply.send({ count: Number(result?.count || 0) });
   });
 
