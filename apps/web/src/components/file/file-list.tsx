@@ -13,14 +13,24 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { cn } from "@/lib/utils"
 
-function displayFileName(name: string): string {
+function displayFileName(name: string, summary?: string | null): string {
   const bare = name.replace(/\.md$/i, "")
   // Friendly labels for generated files
   if (/^note-\d{4}-\d{2}-\d{2}T[\d-]+$/.test(bare)) return "AI Note"
   if (/^session-summary-[\w-]+$/.test(bare)) return "Session Summary"
   if (/^auto-capture-[\w-]+$/.test(bare)) return "Auto Capture"
   if (/^auto-[\w-]+$/.test(bare)) return "Auto Note"
+  // Date-only filenames: use summary first sentence if available
+  if (/^\d{4}-\d{2}-\d{2}$/.test(bare) && summary) {
+    const firstSentence = summary.split(/[.。!！?\n]/)[0].trim()
+    return firstSentence.slice(0, 50) || bare
+  }
   return bare
+}
+
+const SYSTEM_TAGS = new Set(['test', 'report', 'auto-generated', 'ai-note', 'session-summary', 'imported', 'mcp-stored', 'conversation', 'knowledge'])
+function isSystemTag(tag: { isSystem?: boolean; name: string }): boolean {
+  return tag.isSystem === true || SYSTEM_TAGS.has(tag.name.toLowerCase())
 }
 
 function fileSubtitle(name: string, summary?: string | null, createdAt?: string): string | null {
@@ -857,13 +867,13 @@ export function FileList() {
                 />
                 <TypeIcon type={file.type} name={file.name} />
                 <div className="truncate flex-1 min-w-0">
-                  <span className="truncate text-sm block" title={displayFileName(file.name)}>{displayFileName(file.name)}</span>
+                  <span className="truncate text-sm block" title={displayFileName(file.name, file.summary)}>{displayFileName(file.name, file.summary)}</span>
                   {fileSubtitle(file.name, file.summary, file.createdAt) && <span className="block text-xs text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name, file.summary, file.createdAt)}</span>}
                 </div>
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">Updated</span>}
                 {file.archivedAt && <span className="shrink-0 rounded bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">Archived</span>}
                 {file.tags?.slice(0, 2).map((tag: any) => (
-                  <span key={tag.name} className={cn("shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium", tag.isSystem ? "border border-dashed border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 bg-transparent italic" : "")} style={tag.isSystem ? {} : { backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
+                  <span key={tag.name} className={cn("shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium", isSystemTag(tag) ? "border border-dashed border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 bg-transparent italic" : "")} style={isSystemTag(tag) ? {} : { backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
                 ))}
                 {file.suggestedFolder && !file.folderId && (
                   <TooltipProvider delayDuration={300}>
@@ -957,14 +967,14 @@ export function FileList() {
                     <TypeIcon type={file.type} name={file.name} className="h-14 w-14" />
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <p className="text-sm font-medium truncate flex-1" title={displayFileName(file.name)}>{displayFileName(file.name)}</p>
+                    <p className="text-sm font-medium truncate flex-1" title={displayFileName(file.name, file.summary)}>{displayFileName(file.name, file.summary)}</p>
                     {fileSubtitle(file.name, file.summary, file.createdAt) && <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name, file.summary, file.createdAt)}</p>}
                   </div>
 
                   {file.tags && file.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {file.tags.slice(0, 2).map((tag: any) => (
-                        <span key={tag.name} className={cn("rounded-full px-1.5 py-0.5 text-[9px] font-medium", tag.isSystem ? "border border-dashed border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 bg-transparent italic" : "")} style={tag.isSystem ? {} : { backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
+                        <span key={tag.name} className={cn("rounded-full px-1.5 py-0.5 text-[9px] font-medium", isSystemTag(tag) ? "border border-dashed border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 bg-transparent italic" : "")} style={isSystemTag(tag) ? {} : { backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
                       ))}
                     </div>
                   )}
@@ -1223,7 +1233,7 @@ export function FileList() {
               <div className="flex justify-center py-4">
                 <TypeIcon type={drawerFile.type} name={drawerFile.name} className="h-16 w-16" />
               </div>
-              <h2 className="text-lg font-semibold text-center truncate" title={displayFileName(drawerFile.name)}>{displayFileName(drawerFile.name)}</h2>
+              <h2 className="text-lg font-semibold text-center truncate" title={displayFileName(drawerFile.name, drawerFile.summary)}>{displayFileName(drawerFile.name, drawerFile.summary)}</h2>
               <div className="flex justify-center">
                 <KnowledgeFeedback fileId={drawerFileId!} />
               </div>
