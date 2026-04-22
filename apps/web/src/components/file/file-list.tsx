@@ -970,7 +970,7 @@ export function FileList() {
           <DropdownMenuTrigger asChild>
             <div style={{ position: "fixed", left: contextMenu.x, top: contextMenu.y, width: 1, height: 1 }} />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
+          <DropdownMenuContent align="start" side="right" collisionPadding={16}>
             <DropdownMenuItem onClick={() => {
               const file = files.find(f => f.id === contextMenu.fileId)
               setRenameTarget({ fileId: contextMenu.fileId, currentName: file?.name || "" })
@@ -1042,25 +1042,25 @@ export function FileList() {
         </DropdownMenu>
       )}
       {selected.size > 0 && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-zinc-900 text-white border border-zinc-700 shadow-lg px-4 py-3 z-50">
-          <span className="text-sm font-medium">{selected.size} files selected</span>
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-xl bg-zinc-900 text-white border border-zinc-700 shadow-2xl px-4 py-3 z-50">
+          <span className="text-sm font-medium whitespace-nowrap">{selected.size} files selected</span>
           <Button variant="destructive" size="sm" onClick={handleBatchDelete}>Delete</Button>
-          <Button variant="outline" size="sm" className="border-zinc-600 text-white hover:bg-zinc-700" onClick={handleBatchArchive}>Archive</Button>
-          <Button variant="outline" size="sm" className="border-zinc-600 text-white hover:bg-zinc-700" onClick={() => setBatchMoveOpen(true)}>Move</Button>
-          <Button variant="outline" size="sm" className="border-zinc-600 text-white hover:bg-zinc-700" onClick={handleBatchDownload}>Download</Button>
-          <Button variant="outline" size="sm" className="border-zinc-600 text-white hover:bg-zinc-700" onClick={() => {
+          <button className="px-3 py-1.5 text-sm font-medium rounded-md bg-zinc-700 text-white hover:bg-zinc-600 transition" onClick={handleBatchArchive}>Archive</button>
+          <button className="px-3 py-1.5 text-sm font-medium rounded-md bg-zinc-700 text-white hover:bg-zinc-600 transition" onClick={() => setBatchMoveOpen(true)}>Move</button>
+          <button className="px-3 py-1.5 text-sm font-medium rounded-md bg-zinc-700 text-white hover:bg-zinc-600 transition" onClick={handleBatchDownload}>Download</button>
+          <button className="px-3 py-1.5 text-sm font-medium rounded-md bg-zinc-700 text-white hover:bg-zinc-600 transition" onClick={() => {
             if (selected.size > 0) {
               setTagManagerFileIds(Array.from(selected))
               setTagManagerFileId("__batch__")
             }
-          }}>Tags</Button>
-          <Button variant="outline" size="sm" className="border-zinc-600 text-white hover:bg-zinc-700" onClick={() => {
+          }}>Tags</button>
+          <button className="px-3 py-1.5 text-sm font-medium rounded-md bg-zinc-700 text-white hover:bg-zinc-600 transition" onClick={() => {
               const ids = Array.from(selected).join(",")
               router.push(`/chat?fileIds=${ids}`)
             }}>
             💬 Ask AI
-          </Button>
-          <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white hover:bg-zinc-700" onClick={() => setSelected(new Set())}>Cancel</Button>
+          </button>
+          <button className="px-3 py-1.5 text-sm font-medium rounded-md text-zinc-400 hover:text-white hover:bg-zinc-700 transition" onClick={() => setSelected(new Set())}>Cancel</button>
         </div>
       )}
       <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
