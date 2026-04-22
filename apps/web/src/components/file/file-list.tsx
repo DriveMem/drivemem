@@ -13,20 +13,29 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { cn } from "@/lib/utils"
 
-function displayFileName(name: string, summary?: string | null): string {
-  if (summary) {
-    return summary.slice(0, 80) + (summary.length > 80 ? '…' : '');
-  }
-  return name
-    .replace(/\.md$/i, "")
-    .replace(/^note-\d{4}-\d{2}-\d{2}T[\d-]+$/, "AI Note")
-    .replace(/^session-summary-[\w-]+$/, "Session Summary")
-    .replace(/^auto-capture-[\w-]+$/, "Auto Capture")
-    .replace(/^auto-[\w-]+$/, "Auto Note")
+function displayFileName(name: string): string {
+  const bare = name.replace(/\.md$/i, "")
+  // Friendly labels for generated files
+  if (/^note-\d{4}-\d{2}-\d{2}T[\d-]+$/.test(bare)) return "AI Note"
+  if (/^session-summary-[\w-]+$/.test(bare)) return "Session Summary"
+  if (/^auto-capture-[\w-]+$/.test(bare)) return "Auto Capture"
+  if (/^auto-[\w-]+$/.test(bare)) return "Auto Note"
+  return bare
 }
 
-function fileSubtitle(name: string): string {
-  return name.replace(/\.md$/i, "");
+function fileSubtitle(name: string, summary?: string | null, createdAt?: string): string | null {
+  const bare = name.replace(/\.md$/i, "")
+  const isGenerated = /^note-\d{4}-\d{2}-\d{2}T[\d-]+$/.test(bare)
+    || /^session-summary-[\w-]+$/.test(bare)
+    || /^auto-capture-[\w-]+$/.test(bare)
+    || /^auto-[\w-]+$/.test(bare)
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(bare)
+
+  if (isGenerated || isDateOnly) {
+    if (summary) return summary.slice(0, 60) + (summary.length > 60 ? '…' : '')
+    if (createdAt) return new Date(createdAt).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+  }
+  return null
 }
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -848,8 +857,8 @@ export function FileList() {
                 />
                 <TypeIcon type={file.type} name={file.name} />
                 <div className="truncate flex-1 min-w-0">
-                  <span className="truncate text-sm block" title={displayFileName(file.name, file.summary)}>{displayFileName(file.name, file.summary)}</span>
-                  {file.summary && <span className="block text-xs text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name)}</span>}
+                  <span className="truncate text-sm block" title={displayFileName(file.name)}>{displayFileName(file.name)}</span>
+                  {fileSubtitle(file.name, file.summary, file.createdAt) && <span className="block text-xs text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name, file.summary, file.createdAt)}</span>}
                 </div>
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">Updated</span>}
                 {file.archivedAt && <span className="shrink-0 rounded bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">Archived</span>}
@@ -948,8 +957,8 @@ export function FileList() {
                     <TypeIcon type={file.type} name={file.name} className="h-14 w-14" />
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <p className="text-sm font-medium truncate flex-1" title={displayFileName(file.name, file.summary)}>{displayFileName(file.name, file.summary)}</p>
-                    {file.summary && <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name)}</p>}
+                    <p className="text-sm font-medium truncate flex-1" title={displayFileName(file.name)}>{displayFileName(file.name)}</p>
+                    {fileSubtitle(file.name, file.summary, file.createdAt) && <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name, file.summary, file.createdAt)}</p>}
                   </div>
 
                   {file.tags && file.tags.length > 0 && (
@@ -1214,7 +1223,7 @@ export function FileList() {
               <div className="flex justify-center py-4">
                 <TypeIcon type={drawerFile.type} name={drawerFile.name} className="h-16 w-16" />
               </div>
-              <h2 className="text-lg font-semibold text-center truncate" title={displayFileName(drawerFile.name, drawerFile.summary)}>{displayFileName(drawerFile.name, drawerFile.summary)}</h2>
+              <h2 className="text-lg font-semibold text-center truncate" title={displayFileName(drawerFile.name)}>{displayFileName(drawerFile.name)}</h2>
               <div className="flex justify-center">
                 <KnowledgeFeedback fileId={drawerFileId!} />
               </div>
