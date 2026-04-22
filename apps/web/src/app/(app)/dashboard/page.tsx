@@ -320,6 +320,7 @@ export default function HomePage() {
   const [activityPage, setActivityPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [activityFilter, setActivityFilter] = useState<"all" | "files" | "conversations" | "agent">("all")
   const [connectedAgents] = useState<any[]>([])
   const [weeklyStats, setWeeklyStats] = useState<any>(null)
   const [quickPrompts, setQuickPrompts] = useState<{ text: string; icon?: string }[] | null>(null)
@@ -389,9 +390,10 @@ export default function HomePage() {
   }, [])
 
   // Fetch activity feed (using timeline API)
-  const fetchActivities = useCallback(async (page = 1) => {
+  const fetchActivities = useCallback(async (page = 1, typeFilter = activityFilter) => {
     try {
-      const data = await apiFetch(`/api/timeline?limit=20&page=${page}`, { silent: true }) as any
+      const typeParam = typeFilter !== "all" ? `&type=${typeFilter}` : ""
+      const data = await apiFetch(`/api/timeline?limit=20&page=${page}${typeParam}`, { silent: true }) as any
       const items = data?.events || data?.activities || data?.notifications || []
       if (page === 1) {
         setActivities(items)
@@ -410,11 +412,12 @@ export default function HomePage() {
         } catch {}
       }
     }
-  }, [])
+  }, [activityFilter])
 
   useEffect(() => {
-    fetchActivities(1)
-  }, [fetchActivities])
+    setActivityPage(1)
+    fetchActivities(1, activityFilter)
+  }, [activityFilter]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadMore = async () => {
     setLoadingMore(true)
@@ -430,11 +433,14 @@ export default function HomePage() {
   const insightCount = insights.length
   const projectCount = folders.length
 
-  // Group auto_store activities, filter noise
+  // Group auto_store activities, filter noise, dedup agent activity
   const cleanActivities = activities.filter((a: any) => {
     const msg = (a.message || a.title || '').toLowerCase()
     if (msg.includes('session idle') || msg.includes('idle summary')) return false
     if (msg.includes('session_summary')) return false
+    // Dedup: when showing "all" and AgentActivityPanel is visible, exclude agent_activity
+    // to avoid showing the same operations in both panels
+    if (activityFilter === "all" && blockVis.agentActivity && (a.type === 'agent_activity' || a.type === 'auto_capture')) return false
     return true
   })
   const groupedActivities = groupAutoStoreActivities(cleanActivities)
@@ -741,9 +747,31 @@ export default function HomePage() {
 
         {/* Activity Feed — only when total_activity >= 3 (#66) */}
         {blockVis.recentActivity && (<div>
-          <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider mb-4">
-            Recent Activity
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider">
+              Recent Activity
+            </h2>
+            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5">
+              {([
+                { key: "all", label: "All" },
+                { key: "files", label: "Files" },
+                { key: "conversations", label: "Conversations" },
+                { key: "agent", label: "Agent" },
+              ] as const).map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActivityFilter(tab.key)}
+                  className={`text-xs px-2.5 py-1 rounded-md transition-colors ${
+                    activityFilter === tab.key
+                      ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
           {groupedActivities.length === 0 ? (
             <div className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">
               <p>No recent activity</p>

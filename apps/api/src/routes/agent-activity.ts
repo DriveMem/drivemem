@@ -24,8 +24,10 @@ export default async function agentActivityRoutes(fastify: FastifyInstance) {
       metadata: schema.apiActivityLogs.metadata,
       apiKeyId: schema.apiActivityLogs.apiKeyId,
       createdAt: schema.apiActivityLogs.createdAt,
+      apiKeyName: schema.apiKeys.name,
     })
       .from(schema.apiActivityLogs)
+      .leftJoin(schema.apiKeys, eq(schema.apiActivityLogs.apiKeyId, schema.apiKeys.id))
       .where(sourceFilter
         ? and(eq(schema.apiActivityLogs.userId, userId), sourceFilter)
         : eq(schema.apiActivityLogs.userId, userId))
@@ -51,7 +53,7 @@ export default async function agentActivityRoutes(fastify: FastifyInstance) {
     const total = countRow?.count || 0;
 
     const activities = rows.map(r => {
-      const agent = formatAgentName(r.agentName);
+      const agent = formatAgentName(r.agentName, r.apiKeyName);
       return {
         id: r.id,
         agentName: agent,
@@ -87,13 +89,17 @@ function getSourceCondition(source: string) {
   }
 }
 
-function formatAgentName(raw: string | null | undefined): string {
-  if (!raw) return 'AI Agent';
+function formatAgentName(raw: string | null | undefined, apiKeyName?: string | null): string {
+  if (!raw || raw === 'AI Agent' || raw === 'Unknown') {
+    // Fall back to API key name if available
+    if (apiKeyName) return apiKeyName;
+    return 'AI Agent';
+  }
   const cleaned = raw
     .replace(/^agent[-_]?[a-z][-_]?/i, '')
     .replace(/[-_]/g, ' ')
     .trim();
-  if (!cleaned) return 'AI Agent';
+  if (!cleaned) return apiKeyName || 'AI Agent';
   return cleaned.replace(/\b\w/g, c => c.toUpperCase());
 }
 

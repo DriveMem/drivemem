@@ -46,16 +46,28 @@ function relativeTime(dateStr: string): string {
 export function AgentActivityPanel() {
   const [activities, setActivities] = useState<AgentActivity[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [total, setTotal] = useState(0)
+  const [offset, setOffset] = useState(0)
   const [agentCount, setAgentCount] = useState(0)
   const [filter, setFilter] = useState<SourceFilter>("all")
   const [tracked, setTracked] = useState(false)
 
-  const fetchData = useCallback(async () => {
+  const PAGE_SIZE = 10
+
+  const fetchData = useCallback(async (loadMore = false) => {
+    const currentOffset = loadMore ? offset + PAGE_SIZE : 0
+    if (loadMore) setLoadingMore(true)
     try {
       const qs = filter === "all" ? "" : `&source=${filter}`
-      const data = await apiFetch(`/api/agent-activity?limit=10${qs}`, { silent: true }) as any
-      setActivities(data?.activities || [])
+      const data = await apiFetch(`/api/agent-activity?limit=${PAGE_SIZE}&offset=${currentOffset}${qs}`, { silent: true }) as any
+      const newItems = data?.activities || []
+      if (loadMore) {
+        setActivities(prev => [...prev, ...newItems])
+      } else {
+        setActivities(newItems)
+      }
+      setOffset(currentOffset)
       setTotal(data?.total || 0)
       if (data?.sourceCounts) {
         setAgentCount(data.sourceCounts.agent || 0)
@@ -64,16 +76,17 @@ export function AgentActivityPanel() {
       // silent
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
-  }, [filter])
+  }, [filter, offset])
 
-  useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => { fetchData(false) }, [filter]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-refresh every 30s
+  // Auto-refresh every 30s (first page only)
   useEffect(() => {
-    const interval = setInterval(fetchData, 30_000)
+    const interval = setInterval(() => fetchData(false), 30_000)
     return () => clearInterval(interval)
-  }, [fetchData])
+  }, [filter]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!tracked && !loading) {
@@ -198,6 +211,15 @@ export function AgentActivityPanel() {
           )
         })}
       </div>
+      {activities.length < total && (
+        <button
+          onClick={() => fetchData(true)}
+          disabled={loadingMore}
+          className="mt-3 w-full py-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 border border-zinc-200 dark:border-zinc-700 rounded-lg transition disabled:opacity-50"
+        >
+          {loadingMore ? "Loading..." : `Load more (${activities.length} of ${total})`}
+        </button>
+      )}
     </div>
   )
 }
