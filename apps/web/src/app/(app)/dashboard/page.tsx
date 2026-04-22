@@ -21,6 +21,9 @@ import { DashboardSkeleton } from "@/components/ui/skeleton-loader"
 import { ActivationBanner } from "@/components/dashboard/activation-banner"
 import { SampleDataBanner } from "@/components/dashboard/sample-data-banner"
 import { AgentActivityPanel } from "@/components/dashboard/agent-activity-panel"
+import { WelcomeHero, WelcomeBanner } from "@/components/dashboard/welcome-hero"
+import { QuickStartChecklist } from "@/components/dashboard/quick-start-checklist"
+import { computeBlockVisibility, computeChecklist } from "@/hooks/use-dashboard-phase"
 import { useMcpSync } from "@/hooks/use-mcp-sync"
 import { useRecentConversations } from "@/hooks/use-conversations"
 
@@ -418,6 +421,21 @@ export default function HomePage() {
   // Group auto_store activities
   const groupedActivities = groupAutoStoreActivities(activities)
 
+  // --- #66: Dashboard phase-based block visibility ---
+  const hasAgentActivity = activities.some((a: any) => a.type === "agent_activity") || connectedAgents.length > 0
+  const totalActivityCount = activities.length
+  const hasAskedAi = (recentConvsData?.conversations?.length ?? 0) > 0
+  const accountAgeDays = files.length > 0
+    ? Math.floor((Date.now() - new Date(files[files.length - 1]?.createdAt || Date.now()).getTime()) / 86400000)
+    : 0
+
+  const blockVis = computeBlockVisibility({
+    fileCount, hasAgentActivity, totalActivityCount, insightCount, accountAgeDays, hasAskedAi,
+  })
+  const checklist = computeChecklist({
+    fileCount, hasAgentActivity, totalActivityCount, insightCount, accountAgeDays, hasAskedAi,
+  })
+
   if (filesLoading && foldersLoading) {
     return <DashboardSkeleton />
   }
@@ -431,8 +449,13 @@ export default function HomePage() {
       {showUpload && <FileUpload onClose={() => setShowUpload(false)} />}
 
       <div className="max-w-4xl mx-auto w-full px-4 md:px-6 py-6 md:py-8 page-enter">
-        {/* Welcome Card for new users */}
-        <WelcomeCard onUpload={() => setShowUpload(true)} />
+        {/* #66: Welcome Hero (Phase 1) or Banner (Phase 2) */}
+        {blockVis.welcomeHero && <WelcomeHero onUpload={() => setShowUpload(true)} />}
+        {blockVis.welcomeBanner && <WelcomeBanner />}
+        {/* #66: Quick Start Checklist */}
+        {blockVis.quickStartChecklist && <QuickStartChecklist checklist={checklist} onUpload={() => setShowUpload(true)} />}
+        {/* Legacy Welcome Card — hidden when new hero/banner active */}
+        {!blockVis.welcomeHero && !blockVis.welcomeBanner && <WelcomeCard onUpload={() => setShowUpload(true)} />}
 
         {/* Status Banner */}
         <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-primary/5 border border-primary/10 mb-6">
@@ -695,11 +718,11 @@ export default function HomePage() {
         {/* Work Items */}
         <WorkItemsPanel />
 
-        {/* Agent Activity */}
-        <AgentActivityPanel />
+        {/* Agent Activity — only when has agent activity (#66) */}
+        {blockVis.agentActivity && <AgentActivityPanel />}
 
-        {/* Activity Feed */}
-        <div>
+        {/* Activity Feed — only when total_activity >= 3 (#66) */}
+        {blockVis.recentActivity && (<div>
           <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider mb-4">
             Recent Activity
           </h2>
@@ -726,7 +749,7 @@ export default function HomePage() {
               )}
             </div>
           )}
-        </div>
+        </div>)}
       </div>
     </div>
   )
