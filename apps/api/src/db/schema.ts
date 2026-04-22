@@ -114,6 +114,7 @@ export const tags = pgTable('tags', {
   name: varchar('name', { length: 50 }).notNull(),
   color: varchar('color', { length: 20 }).notNull(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  isSystem: boolean('is_system').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

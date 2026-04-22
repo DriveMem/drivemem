@@ -162,7 +162,7 @@ ${historyLines.join('\n')}`;
           [existing] = await db.insert(schema.tags).values({
             name: tagName,
             color: tagName === 'session-summary' ? '#3B82F6' : '#6B7280',
-            userId: state.userId,
+            isSystem: true, userId: state.userId,
           }).returning();
         }
         if (existing) {

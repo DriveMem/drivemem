@@ -98,7 +98,7 @@ export default async function inboundRoutes(fastify: FastifyInstance) {
           .where(and(eq(schema.tags.userId, userId), eq(schema.tags.name, tagName)));
         if (!existingTag) {
           [existingTag] = await db.insert(schema.tags).values({
-            name: tagName, color: tagColors[tagName] || '#6B7280', userId,
+            name: tagName, color: tagColors[tagName] || '#6B7280', isSystem: true, userId,
           }).returning();
         }
         if (existingTag) {

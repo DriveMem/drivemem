@@ -150,7 +150,7 @@ const worker = new Worker<ParseJobData>(
               [existingTag] = await db.insert(schema.tags).values({
                 name: tagName,
                 color: tagColors[tagName] || '#6B7280',
-                userId,
+                isSystem: true, userId,
               }).returning();
             }
             

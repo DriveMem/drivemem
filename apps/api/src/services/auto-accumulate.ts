@@ -114,7 +114,7 @@ async function storeInsight(userId: string, insight: string): Promise<void> {
       [tag] = await db.insert(schema.tags).values({
         name: 'auto-accumulated',
         color: '#6366F1',
-        userId,
+        isSystem: true, userId,
       }).returning();
     }
     if (tag) {

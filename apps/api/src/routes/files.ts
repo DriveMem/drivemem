@@ -249,7 +249,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
 
     // Enrich with tags
     const filesWithTags = await Promise.all(fileList.map(async (f) => {
-      const fileTags = await db.select({ name: schema.tags.name, color: schema.tags.color })
+      const fileTags = await db.select({ name: schema.tags.name, color: schema.tags.color, isSystem: schema.tags.isSystem })
         .from(schema.fileTags)
         .innerJoin(schema.tags, eq(schema.fileTags.tagId, schema.tags.id))
         .where(eq(schema.fileTags.fileId, f.id));

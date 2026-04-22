@@ -71,6 +71,13 @@
       "when": 1776681349161,
       "tag": "0009_steady_revanche",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1776888535005,
+      "tag": "0010_brief_harpoon",
+      "breakpoints": true
     }
   ]
 }

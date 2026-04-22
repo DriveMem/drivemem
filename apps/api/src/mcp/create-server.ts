@@ -674,7 +674,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
                   .where(and(eq(schema.tags.userId, userId), eq(schema.tags.name, tagName)));
                 if (!existingTag) {
                   [existingTag] = await db.insert(schema.tags).values({
-                    name: tagName, color: tagColors[tagName] || '#6B7280', userId,
+                    name: tagName, color: tagColors[tagName] || '#6B7280', isSystem: true, userId,
                   }).returning();
                 }
                 if (existingTag) {
@@ -733,7 +733,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           // Auto-tag as conversation capture
           try {
             let [tag] = await db.select().from(schema.tags).where(and(eq(schema.tags.userId, userId), eq(schema.tags.name, 'conversation')));
-            if (!tag) [tag] = await db.insert(schema.tags).values({ name: 'conversation', color: '#8B5CF6', userId }).returning();
+            if (!tag) [tag] = await db.insert(schema.tags).values({ name: 'conversation', color: '#8B5CF6', isSystem: true, userId }).returning();
             if (tag) await db.insert(schema.fileTags).values({ fileId, tagId: tag.id });
           } catch { /* skip */ }
 
@@ -761,7 +761,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
             for (const tn of tagNames) {
               let [existing] = await db.select().from(schema.tags).where(and(eq(schema.tags.userId, userId), eq(schema.tags.name, tn)));
               if (!existing) {
-                [existing] = await db.insert(schema.tags).values({ name: tn, color: tagColors[tn] || '#6B7280', userId }).returning();
+                [existing] = await db.insert(schema.tags).values({ name: tn, color: tagColors[tn] || '#6B7280', isSystem: true, userId }).returning();
               }
               if (existing) await db.insert(schema.fileTags).values({ fileId, tagId: existing.id });
             }
