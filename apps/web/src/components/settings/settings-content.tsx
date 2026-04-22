@@ -70,7 +70,7 @@ function ApiKeysCard() {
     <Card>
       <CardHeader>
         <CardTitle>🔑 API Keys</CardTitle>
-        <CardDescription>Create API Key Let AI agents access your knowledge library</CardDescription>
+        <CardDescription>Create API keys to let AI agents access your knowledge library.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex gap-2 mb-4">
@@ -677,7 +677,7 @@ function ConnectedAgentsCard() {
     <Card className="mt-4">
       <CardHeader>
         <CardTitle>🔗 Connected Agents</CardTitle>
-        <CardDescription>ViewWhich AI tools are using your knowledge library</CardDescription>
+        <CardDescription>View which AI tools are using your knowledge library.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {keys.length === 0 ? (
