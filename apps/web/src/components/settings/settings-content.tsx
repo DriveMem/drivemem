@@ -84,7 +84,7 @@ function ApiKeysCard() {
           <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
             <p className="text-sm font-medium text-amber-600 mb-2">⚠️ Please save your API Key — shown only once</p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 rounded bg-zinc-50 dark:bg-zinc-800 px-3 py-2 text-sm font-mono select-all">{newKey}</code>
+              <code className="flex-1 rounded bg-zinc-50 dark:bg-zinc-800 px-3 py-2 text-sm font-mono select-all truncate overflow-hidden">{newKey}</code>
               <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newKey); toast.success("Copied") }}>
                 Copy
               </Button>
@@ -140,7 +140,7 @@ function ApiKeysCard() {
 
     {/* New Key Config Dialog — shown after creating a key */}
     <Dialog open={showNewKeyConfig} onOpenChange={setShowNewKeyConfig}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg overflow-y-auto max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>🎉 API Key Created — Configure Your Agent</DialogTitle>
         </DialogHeader>
