@@ -291,7 +291,7 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
 const WEBHOOK_EVENTS = [
   { id: 'file.indexed', label: 'File indexing complete', desc: 'File uploaded and AI indexing complete' },
   { id: 'insight.discovered', label: 'AI discovered insights', desc: 'New knowledge connections discovered' },
-  { id: 'file.deleted', label: 'FilesDelete', desc: 'Fileswas deleted' },
+  { id: 'file.deleted', label: 'File Deleted', desc: 'A file was deleted' },
 ]
 
 function AgentProfilesSection() {
@@ -874,7 +874,7 @@ function WebhookCard() {
   return (
     <Card className="mt-4">
       <CardHeader>
-        <CardTitle>🔔 Webhook Event push</CardTitle>
+        <CardTitle>🔔 Webhook Event Push</CardTitle>
         <CardDescription>Automatically notify your app when file indexing is complete or AI discovers new insights</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -976,7 +976,7 @@ function WebhookCard() {
         )}
 
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Each event sends a JSON POST containing <code className="font-mono">X-DriveMem-Signature</code> Signature。
+          Each event sends a JSON POST containing <code className="font-mono">X-DriveMem-Signature</code> Signature.
           <a href="/developers" className="text-brand-500 hover:underline ml-1">View Docs ↗</a>
         </p>
 
