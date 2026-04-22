@@ -398,8 +398,13 @@ export default function ConnectPage() {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-3 ml-[52px]">
-          Requires Node.js 18+. The CLI will detect your installed tools and configure them automatically.
+          Requires Node.js 18+. You'll need your API Key — <Link href="/settings?tab=developer" className="text-primary font-medium hover:underline">get it from Settings → Developer</Link>
         </p>
+        <div className="mt-3 ml-[52px] flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2.5">
+          <span className="text-sm">🔑</span>
+          <span className="text-sm text-amber-700 dark:text-amber-400">Don't have an API Key yet?</span>
+          <Link href="/settings?tab=developer" className="text-sm font-medium text-primary hover:underline">Create one →</Link>
+        </div>
       </div>
 
       {/* Manual Setup (collapsible) */}
