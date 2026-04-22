@@ -1045,16 +1045,16 @@ export function FileList() {
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-xl bg-zinc-900 text-white border border-zinc-700 shadow-lg px-4 py-3 z-50">
           <span className="text-sm font-medium">{selected.size} files selected</span>
           <Button variant="destructive" size="sm" onClick={handleBatchDelete}>Delete</Button>
-          <Button variant="outline" size="sm" onClick={handleBatchArchive}>Archive</Button>
-          <Button variant="outline" size="sm" onClick={() => setBatchMoveOpen(true)}>Move</Button>
-          <Button variant="outline" size="sm" onClick={handleBatchDownload}>Download</Button>
-          <Button variant="outline" size="sm" onClick={() => {
+          <Button variant="secondary" size="sm" onClick={handleBatchArchive}>Archive</Button>
+          <Button variant="secondary" size="sm" onClick={() => setBatchMoveOpen(true)}>Move</Button>
+          <Button variant="secondary" size="sm" onClick={handleBatchDownload}>Download</Button>
+          <Button variant="secondary" size="sm" onClick={() => {
             if (selected.size > 0) {
               setTagManagerFileIds(Array.from(selected))
               setTagManagerFileId("__batch__")
             }
           }}>Tags</Button>
-          <Button variant="outline" size="sm" onClick={() => {
+          <Button variant="secondary" size="sm" onClick={() => {
               const ids = Array.from(selected).join(",")
               router.push(`/chat?fileIds=${ids}`)
             }}>
