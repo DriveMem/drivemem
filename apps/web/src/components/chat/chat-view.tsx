@@ -1,6 +1,6 @@
 "use client"
 import { useState, useCallback, useEffect, useRef } from "react"
-import { MessageSquare, FileText, Folder, Files, ChevronDown, Link2, Download, Upload, Loader2 } from "lucide-react"
+import { MessageSquare, FileText, Folder, Files, ChevronDown, Link2, Download, Upload, Loader2, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
 import { trackEvent } from "@/lib/analytics"
@@ -14,6 +14,12 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { apiFetch } from "@/lib/api"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { getSession } from "next-auth/react"
@@ -365,6 +371,16 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
       )}
       <div className="flex items-center gap-2 border-b border-border px-3 md:px-4 py-2 overflow-x-auto scrollbar-none">
         <span className="text-xs text-muted-foreground">AI Memory scope: </span>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-[240px] text-xs">
+              AI Memory remembers context across conversations. Choose which files the AI can reference when answering.
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined); toast("Memory scope: All files", { duration: 1500 }) }} className="gap-1 text-xs rounded-full">
           <Files className="h-3 w-3" />All Files{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}
         </Button>
