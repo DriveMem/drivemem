@@ -121,7 +121,7 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
                   <span className="text-xs text-muted-foreground">
                     {agent.status === "online"
                       ? `active ${relativeTime(agent.lastActiveAt)}`
-                      : `last seen ${relativeTime(agent.disconnectedAt || agent.lastActiveAt)}`}
+                      : `offline ${relativeTime(agent.disconnectedAt || agent.lastActiveAt)}`}
                   </span>
                   <span className="ml-auto text-xs text-muted-foreground tabular-nums mr-2">{agent.totalCalls} calls</span>
                   <div className="relative">
@@ -522,11 +522,7 @@ export default function ConnectPage() {
         <p className="text-xs text-muted-foreground mt-3 ml-[52px]">
           Requires Node.js 18+. You'll need your API Key — <Link href="/settings?tab=developer" className="text-primary font-medium hover:underline">get it from Settings → Developer</Link>
         </p>
-        <div className="mt-3 ml-[52px] flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2.5">
-          <span className="text-sm">🔑</span>
-          <span className="text-sm text-amber-700 dark:text-amber-400">Don't have an API Key yet?</span>
-          <Link href="/settings?tab=developer" className="text-sm font-medium text-primary hover:underline">Create one →</Link>
-        </div>
+
       </div>
 
       {/* Manual Setup (collapsible) */}
