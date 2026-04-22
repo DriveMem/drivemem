@@ -73,10 +73,17 @@ function ActivityItem({ activity }: { activity: any }) {
   const isRelay = activity.type === 'agent_activity' && activity.metadata?.action === 'relay'
   const Icon = isRelay ? ArrowLeftRight : (activityIcons[activity.type] || Lightbulb)
   const isAgentActivity = activity.type === 'agent_activity'
+  const isAutoCapture = activity.type === 'auto_capture'
+  const isSystemGenerated = activity.type === 'insight' || activity.type === 'insight_generated' || activity.type === 'knowledge_link_found'
   const rawAgent = activity.metadata?.agentName || activity.agentName
-  const agentName = isAgentActivity && rawAgent && rawAgent !== "You"
-    ? rawAgent.replace(/^agent[-_]?[a-z][-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'AI Agent'
-    : "You"
+  const hasAgentActor = activity.metadata?.actorType === 'agent' || isAgentActivity || isAutoCapture
+  const agentName = isSystemGenerated
+    ? "AI"
+    : hasAgentActor && rawAgent && rawAgent !== "You"
+      ? rawAgent.replace(/^agent[-_]?[a-z][-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Agent'
+      : hasAgentActor
+        ? "Agent"
+        : "You"
   const ACTION_LABELS: Record<string, string> = {
     file_indexed: "indexed a file",
     file_uploaded: "uploaded a file",

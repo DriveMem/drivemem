@@ -95,8 +95,22 @@ export function AgentActivityPanel() {
     )
   }
 
+  // Filter out noisy/system entries users can't understand
+  const filteredActivities = activities.filter(a => {
+    // Filter out idle session summaries
+    if (/idle|Session idle/i.test(a.summary)) return false
+    // Filter out raw session_summary style entries
+    if (/^Session .* summary:/i.test(a.summary)) return false
+    return true
+  }).map(a => ({
+    ...a,
+    // Humanize tool-call counts: "3 tool calls" → "Agent made 3 operations"
+    summary: a.summary.replace(/^(\d+)\s+tool\s+calls?$/i, 'Agent made $1 operations')
+      .replace(/(\d+)\s+tool\s+calls?/i, '$1 operations'),
+  }))
+
   // Empty state — no activity at all
-  if (activities.length === 0 && filter === "all") {
+  if (filteredActivities.length === 0 && filter === "all") {
     return (
       <div className="rounded-2xl border shadow-soft p-6 mb-8">
         <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider mb-4">
@@ -104,9 +118,9 @@ export function AgentActivityPanel() {
         </h2>
         <div className="py-8 text-center">
           <Bot className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground mb-1">No agent activity yet</p>
+          <p className="text-sm text-muted-foreground mb-1">Your agents haven&apos;t done anything yet</p>
           <p className="text-xs text-muted-foreground/70 mb-4">
-            Connect an AI agent (Cursor, Claude, etc.) to see how they build your knowledge base automatically
+            Connect an agent to see their activity here.
           </p>
           <Link
             href="/developers"
@@ -121,7 +135,7 @@ export function AgentActivityPanel() {
   }
 
   // Empty state for filtered view
-  if (activities.length === 0 && filter !== "all") {
+  if (filteredActivities.length === 0 && filter !== "all") {
     return (
       <div className="rounded-2xl border shadow-soft p-6 mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -157,7 +171,7 @@ export function AgentActivityPanel() {
         </div>
       </div>
       <div className="space-y-0">
-        {activities.map(a => {
+        {filteredActivities.map(a => {
           const config = ACTION_CONFIG[a.action] || { icon: Bot, color: "text-zinc-400", emoji: "🤖" }
           const Icon = config.icon
           return (
