@@ -152,6 +152,7 @@ export async function seedDemoProject(userId: string): Promise<void> {
       {
         userId,
         type: 'file_upload',
+        read: true,
         title: 'uploaded',
         message: 'Welcome to DriveMem.md',
         createdAt: new Date(Date.now() - 4 * 86400000),
@@ -159,6 +160,7 @@ export async function seedDemoProject(userId: string): Promise<void> {
       {
         userId,
         type: 'file_upload',
+        read: true,
         title: 'uploaded',
         message: 'Example — Product Decision.md',
         createdAt: new Date(Date.now() - 2 * 86400000),
@@ -166,6 +168,7 @@ export async function seedDemoProject(userId: string): Promise<void> {
       {
         userId,
         type: 'file_upload',
+        read: true,
         title: 'uploaded',
         message: 'Example — Meeting Notes.md',
         createdAt: new Date(Date.now() - 10000),
