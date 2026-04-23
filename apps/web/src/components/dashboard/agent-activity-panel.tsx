@@ -114,6 +114,8 @@ export function AgentActivityPanel() {
     if (/idle|Session idle/i.test(a.summary)) return false
     // Filter out raw session_summary style entries
     if (/^Session .* summary:/i.test(a.summary)) return false
+    // Filter out garbled encoding (consecutive ?)
+    if (/\?{3,}/.test(a.summary) || /\?{3,}/.test(a.detail || '')) return false
     return true
   }).map(a => ({
     ...a,
