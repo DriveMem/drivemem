@@ -206,10 +206,16 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     });
     const transport = new SSEServerTransport('/mcp', reply.raw);
 
+    // SSE keepalive — send comment every 30s to prevent proxy/CF timeout
+    const keepalive = setInterval(() => {
+      try { reply.raw.write(': keepalive\n\n'); } catch { clearInterval(keepalive); }
+    }, 30000);
+
     const sessionId = (transport as any)._sessionId as string;
     sessions.set(sessionId, { transport, server: mcpServer });
 
     transport.onclose = () => {
+      clearInterval(keepalive);
       onSessionDisconnect(sessionId);
       sessions.delete(sessionId);
       trackConnectionClose(sseConnectionId);
@@ -231,9 +237,15 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     const apiKeyId = (request as any).apiKeyId;
     const mcpServer = createMcpServer(userId, agentName, { onToolCall: () => {}, apiKeyId });
     const transport = new SSEServerTransport('/mcp/sse', reply.raw);
+
+    // SSE keepalive — send comment every 30s to prevent proxy/CF timeout
+    const keepalive = setInterval(() => {
+      try { reply.raw.write(': keepalive\n\n'); } catch { clearInterval(keepalive); }
+    }, 30000);
+
     const sessionId = transport.sessionId;
     sessions.set(sessionId, { transport, server: mcpServer });
-    reply.raw.on('close', () => { sessions.delete(sessionId); });
+    reply.raw.on('close', () => { clearInterval(keepalive); sessions.delete(sessionId); });
     await mcpServer.connect(transport);
   });
 
