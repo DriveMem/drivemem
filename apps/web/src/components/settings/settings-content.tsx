@@ -157,7 +157,7 @@ function ApiKeysCard() {
 
     {/* Show Config Dialog */}
     <Dialog open={!!showConfigFor} onOpenChange={(open) => { if (!open) setShowConfigFor(null) }}>
-      <DialogContent>
+      <DialogContent className="max-w-lg overflow-y-auto max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>Agent Configuration</DialogTitle>
         </DialogHeader>
