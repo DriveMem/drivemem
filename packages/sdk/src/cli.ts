@@ -171,26 +171,101 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
   let harvestCount = 0;
 
   // Model-Aware Injection Profiles
-  const MODEL_PROFILES: Record<string, { tokenBudget: number; threshold: number; mode: 'full' | 'summary' | 'key_facts' }> = {
-    // Reasoning models — less is more
-    'deepseek-r1': { tokenBudget: 300, threshold: 0.8, mode: 'key_facts' },
-    'o1': { tokenBudget: 300, threshold: 0.8, mode: 'key_facts' },
-    'o1-mini': { tokenBudget: 200, threshold: 0.8, mode: 'key_facts' },
-    'qwq': { tokenBudget: 300, threshold: 0.8, mode: 'key_facts' },
-    // Code models — focus on technical content
-    'deepseek-coder': { tokenBudget: 1000, threshold: 0.7, mode: 'full' },
-    'qwen-coder': { tokenBudget: 1000, threshold: 0.7, mode: 'full' },
-    // Large context models — can take more
-    'deepseek-v3': { tokenBudget: 1500, threshold: 0.6, mode: 'full' },
-    'deepseek-v3.2': { tokenBudget: 1500, threshold: 0.6, mode: 'full' },
-    'gpt-4o': { tokenBudget: 1500, threshold: 0.6, mode: 'full' },
-    'claude-3-5-sonnet': { tokenBudget: 2000, threshold: 0.6, mode: 'full' },
-    // Light/fast models — be frugal
-    'gpt-4o-mini': { tokenBudget: 500, threshold: 0.75, mode: 'summary' },
+  const MODEL_PROFILES: Record<string, { tokenBudget: number; threshold: number; mode: 'full' | 'summary' | 'key_facts' | 'code_first' }> = {
+    // --- Anthropic Claude ---
+    'claude-opus-4': { tokenBudget: 3000, threshold: 0.65, mode: 'full' },
+    'claude-sonnet-4': { tokenBudget: 2000, threshold: 0.68, mode: 'full' },
+    'claude-haiku-3.5': { tokenBudget: 1000, threshold: 0.72, mode: 'summary' },
+    'claude-3-5-sonnet': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+    'claude-3-opus': { tokenBudget: 3000, threshold: 0.65, mode: 'full' },
+
+    // --- OpenAI ---
+    'o3': { tokenBudget: 800, threshold: 0.82, mode: 'key_facts' },
+    'o4-mini': { tokenBudget: 600, threshold: 0.82, mode: 'key_facts' },
+    'o1': { tokenBudget: 800, threshold: 0.82, mode: 'key_facts' },
+    'o1-mini': { tokenBudget: 600, threshold: 0.82, mode: 'key_facts' },
+    'gpt-4.1': { tokenBudget: 3000, threshold: 0.65, mode: 'full' },
+    'gpt-4.1-mini': { tokenBudget: 1500, threshold: 0.70, mode: 'summary' },
+    'gpt-4o': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+    'gpt-4o-mini': { tokenBudget: 800, threshold: 0.72, mode: 'summary' },
+    'gpt-4-turbo': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
     'gpt-3.5-turbo': { tokenBudget: 300, threshold: 0.75, mode: 'summary' },
+
+    // --- DeepSeek ---
+    'deepseek-v3.2': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+    'deepseek-v3.1': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+    'deepseek-v3': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+    'deepseek-r1': { tokenBudget: 600, threshold: 0.82, mode: 'key_facts' },
+    'deepseek-r1-distill-llama-70b': { tokenBudget: 400, threshold: 0.85, mode: 'key_facts' },
+    'deepseek-r1-distill-qwen-32b': { tokenBudget: 400, threshold: 0.85, mode: 'key_facts' },
+    'deepseek-r1-distill': { tokenBudget: 300, threshold: 0.85, mode: 'key_facts' },
+    'deepseek-coder': { tokenBudget: 2000, threshold: 0.70, mode: 'code_first' },
+
+    // --- Qwen (阿里百炼) ---
+    'qwen3-235b': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+    'qwen3-max': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+    'qwen3-plus': { tokenBudget: 1500, threshold: 0.68, mode: 'summary' },
+    'qwen3-flash': { tokenBudget: 800, threshold: 0.72, mode: 'summary' },
+    'qwen3-4b': { tokenBudget: 400, threshold: 0.78, mode: 'summary' },
+    'qwen3-8b': { tokenBudget: 400, threshold: 0.78, mode: 'summary' },
+    'qwen-coder-plus': { tokenBudget: 2000, threshold: 0.70, mode: 'code_first' },
+    'qwen3-coder': { tokenBudget: 2000, threshold: 0.70, mode: 'code_first' },
+    'qwq-plus': { tokenBudget: 600, threshold: 0.82, mode: 'key_facts' },
+    'qwq': { tokenBudget: 600, threshold: 0.82, mode: 'key_facts' },
     'qwen-turbo': { tokenBudget: 400, threshold: 0.75, mode: 'summary' },
+
+    // --- Kimi (Moonshot) ---
+    'kimi-k2.5': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+    'kimi-k2-thinking': { tokenBudget: 600, threshold: 0.82, mode: 'key_facts' },
+
+    // --- MiniMax ---
+    'minimax-m2.7': { tokenBudget: 3000, threshold: 0.63, mode: 'full' },
+    'minimax-m2.5': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+    'minimax-m2.1': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
   };
-  const DEFAULT_PROFILE = { tokenBudget: contextBudget, threshold: 0.5, mode: 'full' as const };
+  const DEFAULT_PROFILE = { tokenBudget: contextBudget || 800, threshold: 0.75, mode: 'summary' as const };
+
+  function formatContext(snippets: Array<{fileName: string; text: string}>, mode: string): string {
+    if (snippets.length === 0) return '';
+
+    switch (mode) {
+      case 'key_facts': {
+        const facts = snippets.map(s => {
+          const firstSentence = s.text.split(/[.。!！?\n]/)[0].trim();
+          return `• ${firstSentence} (source: ${s.fileName})`;
+        });
+        return `[DriveMem: Key Facts]\n${facts.join('\n')}`;
+      }
+      case 'code_first': {
+        const codeSnippets = snippets.filter(s =>
+          /\.(ts|js|py|go|rs|java|c|cpp|tsx|jsx|sql|sh|yaml|json)$/i.test(s.fileName) ||
+          s.text.includes('```') || s.text.includes('function ') || s.text.includes('const ') || s.text.includes('import ')
+        );
+        const textSnippets = snippets.filter(s => !codeSnippets.includes(s));
+
+        let result = '[DriveMem: Relevant Code & Docs]\n\n';
+        if (codeSnippets.length > 0) {
+          result += codeSnippets.map((s, i) => `[${i + 1}] ${s.fileName}:\n${s.text}`).join('\n\n');
+        }
+        if (textSnippets.length > 0) {
+          result += '\n\n---\n' + textSnippets.map((s, i) => `[${codeSnippets.length + i + 1}] ${s.fileName}: ${s.text}`).join('\n\n');
+        }
+        return result;
+      }
+      case 'summary': {
+        const summaries = snippets.map((s, i) => {
+          const compressed = s.text.slice(0, 200).replace(/\n+/g, ' ').trim();
+          return `[${i + 1}] ${s.fileName}: ${compressed}`;
+        });
+        return `[DriveMem Context]\n${summaries.join('\n')}`;
+      }
+      case 'full':
+      default: {
+        const items = snippets.map((s, i) => `[${i + 1}] ${s.fileName}: ${s.text}`);
+        return `[DriveMem Context]\nThe following knowledge from the user's knowledge base is relevant:\n\n${items.join('\n\n')}\n\nUse this when relevant. Cite sources.`;
+      }
+    }
+  }
 
   function getModelProfile(modelName: string) {
     // Exact match first, then prefix match
@@ -244,21 +319,21 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
                   // Token budget from model profile, greedy fill by score
                   const TOKEN_BUDGET_CHARS = profile.tokenBudget * 4;
                   let usedChars = 0;
-                  const snippets: string[] = [];
+                  const collected: Array<{fileName: string; text: string}> = [];
                   
                   for (const r of relevant) {
                     const text = r.text || '';
                     const remaining = TOKEN_BUDGET_CHARS - usedChars;
                     if (remaining <= 50) break; // not enough room
-                    const snippet = `[${snippets.length + 1}] ${r.fileName}: ${text.slice(0, remaining)}`;
-                    snippets.push(snippet);
-                    usedChars += snippet.length;
+                    const truncatedText = text.slice(0, remaining);
+                    collected.push({ fileName: r.fileName || 'unknown', text: truncatedText });
+                    usedChars += truncatedText.length + (r.fileName || 'unknown').length + 10;
                   }
                   
-                  if (snippets.length > 0) {
-                    contextSnippet = snippets.join('\n\n');
+                  if (collected.length > 0) {
+                    contextSnippet = formatContext(collected, profile.mode);
                     contextCount++;
-                    console.log(`  ✅ [${modelName || 'unknown'}] Injected ${snippets.length} sources, ~${Math.round(usedChars / 4)} tokens (budget: ${profile.tokenBudget}, threshold: ${profile.threshold})`);
+                    console.log(`  ✅ [${modelName || 'unknown'}] ${profile.mode} mode | ${collected.length} sources, ~${Math.round(usedChars / 4)} tokens (budget: ${profile.tokenBudget})`);
                   }
                 }
               }
@@ -270,7 +345,7 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
           if (contextSnippet) {
             const contextMsg = {
               role: 'system',
-              content: `[DriveMem Context] Relevant knowledge from the user's knowledge base:\n\n${contextSnippet}\n\nUse this when relevant. Cite sources.`
+              content: contextSnippet
             };
             const lastSystemIdx = injectedMessages.reduce((acc: number, m: { role: string }, i: number) => m.role === 'system' ? i : acc, -1);
             injectedMessages.splice(lastSystemIdx + 1, 0, contextMsg);
