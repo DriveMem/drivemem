@@ -715,15 +715,15 @@ function main() {
 
     startProxy(apiKey, port, upstreamUrl, contextBudgetArg).catch(console.error);
   } else {
-    console.log('🧠 DriveMem CLI\n');
-    console.log('Usage:');
-    console.log('  npx drivemem setup                              Auto-configure MCP for Cursor/Claude/Windsurf');
-    console.log('  npx drivemem setup --api-key=ak_xxx             Non-interactive mode');
-    console.log('  npx drivemem setup --print-url --api-key=ak_xxx Just print MCP URL');
-    console.log('  npx drivemem proxy --api-key=ak_xxx             Start local LLM proxy (recommended)');
-    console.log('  npx drivemem proxy --daemon --api-key=ak_xxx    Start as background process');
-    console.log('');
-    console.log('More: https://drivemem.cloud/docs');
+    console.error('🧠 DriveMem CLI\n');
+    console.error('Usage:');
+    console.error('  npx drivemem setup                              Auto-configure MCP for Cursor/Claude/Windsurf');
+    console.error('  npx drivemem setup --api-key=ak_xxx             Non-interactive mode');
+    console.error('  npx drivemem setup --print-url --api-key=ak_xxx Just print MCP URL');
+    console.error('  npx drivemem proxy --api-key=ak_xxx             Start local LLM proxy (recommended)');
+    console.error('  npx drivemem proxy --daemon --api-key=ak_xxx    Start as background process');
+    console.error('');
+    console.error('More: https://drivemem.cloud/docs');
   }
 }
 
