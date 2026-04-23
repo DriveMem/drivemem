@@ -224,7 +224,7 @@ function AgentConfigTabs({ apiKey }: { apiKey: string }) {
         mcpServers: {
           "drivemem": {
             command: "npx",
-            args: ["-y", "@anthropic/mcp-remote", "https://api.drivemem.cloud/mcp"],
+            args: ["-y", "drivemem", "mcp"],
             env: {
               AI_DRIVE_API_KEY: apiKey
             }
