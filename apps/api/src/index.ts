@@ -163,6 +163,9 @@ await app.register(digestRoutes, { prefix: '/api/v1/digest' });
 import nudgeRoutes from './routes/nudge.js';
 await app.register(nudgeRoutes, { prefix: '/api/v1' });
 
+import llmProxyRoutes from './routes/llm-proxy.js';
+await app.register(llmProxyRoutes, { prefix: '/proxy' });
+
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {
   return reply.send({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
