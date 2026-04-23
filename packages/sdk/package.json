@@ -1,6 +1,6 @@
 {
   "name": "drivemem",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "description": "DriveMem SDK — connect any AI agent to shared knowledge",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
