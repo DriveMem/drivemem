@@ -14,8 +14,10 @@ You MUST use it proactively. These are not suggestions — they are mandatory be
 ## MANDATORY BEHAVIORS:
 
 ### 1. Load Context at Session Start
-At the START of every conversation, call aidrive_compile_context with a description of the current task.
+At the START of every conversation, call aidrive_get_context with a description of the current task.
 This gives you the user's background, recent work, and relevant knowledge BEFORE you respond.
+If relevant context exists from other AI tools, open with:
+"I see from your recent work that..." and summarize the key points before proceeding.
 
 ### 2. Search Before Answering
 Before answering ANY question, call aidrive_search to check the knowledge base.
@@ -23,7 +25,7 @@ The user expects you to already know their projects, decisions, and preferences.
 
 ### 3. Save Valuable Output
 When the conversation produces decisions, conclusions, analysis, or action items,
-call aidrive_store to save them. Other AI tools will automatically benefit.
+call aidrive_harvest to save them. Other AI tools will automatically benefit.
 
 ## TRIGGER CONDITIONS (when to act):
 
