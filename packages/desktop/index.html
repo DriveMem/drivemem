@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>DriveMem Setup</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fff; color: #1a1a2e; padding: 32px; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+    .step { display: none; }
+    .step.active { display: block; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    input, select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
+    input:focus, select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    .btn { display: inline-block; padding: 10px 24px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
+    .btn:hover { background: #4f46e5; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: #f3f4f6; color: #374151; }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .tools { margin-bottom: 16px; }
+    .tool { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; }
+    .tool.detected { border-color: #10b981; background: #f0fdf4; }
+    .tool-name { font-weight: 600; font-size: 14px; }
+    .tool-status { font-size: 12px; color: #6b7280; }
+    .success { text-align: center; padding: 40px 0; }
+    .success h2 { font-size: 20px; margin-bottom: 8px; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 24px; }
+    .stat { background: #f9fafb; border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #6366f1; }
+    .stat-label { font-size: 11px; color: #6b7280; margin-top: 4px; }
+    .logo { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+    .logo-icon { width: 32px; height: 32px; background: #6366f1; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <div class="logo-icon">D</div>
+    <span style="font-weight:700;font-size:18px;">DriveMem</span>
+  </div>
+
+  <!-- Step 1: DriveMem API Key -->
+  <div class="step active" id="step1">
+    <h1>Connect DriveMem</h1>
+    <p class="subtitle">Enter your DriveMem API Key from drivemem.cloud/settings</p>
+    <label>DriveMem API Key</label>
+    <input type="text" id="driveMemKey" placeholder="ak_..." />
+    <button class="btn" onclick="goToStep2()">Next →</button>
+  </div>
+
+  <!-- Step 2: LLM Provider -->
+  <div class="step" id="step2">
+    <h1>Choose your LLM</h1>
+    <p class="subtitle">Select your AI provider</p>
+    <label>LLM Provider</label>
+    <select id="llmProvider">
+      <option value="openai">OpenAI (GPT-4, etc.)</option>
+      <option value="deepseek">DeepSeek (via DashScope)</option>
+      <option value="anthropic">Anthropic (Claude)</option>
+    </select>
+    <label>LLM API Key</label>
+    <input type="password" id="llmKey" placeholder="sk-..." />
+    <button class="btn" onclick="goToStep3()">Next →</button>
+  </div>
+
+  <!-- Step 3: Detect & Configure Tools -->
+  <div class="step" id="step3">
+    <h1>Configure your tools</h1>
+    <p class="subtitle">DriveMem will configure these automatically</p>
+    <div class="tools" id="toolList">Detecting installed tools...</div>
+    <button class="btn" onclick="goToStep4()">Connect All →</button>
+  </div>
+
+  <!-- Step 4: Success -->
+  <div class="step" id="step4">
+    <div class="success">
+      <h2>🎉 DriveMem is running!</h2>
+      <p class="subtitle">Your AI tools now have shared memory</p>
+      <div class="stats">
+        <div class="stat"><div class="stat-value" id="statInjections">0</div><div class="stat-label">Context Injections</div></div>
+        <div class="stat"><div class="stat-value" id="statHarvests">0</div><div class="stat-label">Harvests</div></div>
+        <div class="stat"><div class="stat-value" id="statFiles">0</div><div class="stat-label">Knowledge Items</div></div>
+      </div>
+      <p style="margin-top:24px;font-size:13px;color:#6b7280;">DriveMem is running in the background. Close this window — it stays in your menu bar.</p>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
