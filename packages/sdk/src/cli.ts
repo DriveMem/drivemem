@@ -170,6 +170,35 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
   let contextCount = 0;
   let harvestCount = 0;
 
+  // Model-Aware Injection Profiles
+  const MODEL_PROFILES: Record<string, { tokenBudget: number; threshold: number; mode: 'full' | 'summary' | 'key_facts' }> = {
+    // Reasoning models — less is more
+    'deepseek-r1': { tokenBudget: 300, threshold: 0.8, mode: 'key_facts' },
+    'o1': { tokenBudget: 300, threshold: 0.8, mode: 'key_facts' },
+    'o1-mini': { tokenBudget: 200, threshold: 0.8, mode: 'key_facts' },
+    'qwq': { tokenBudget: 300, threshold: 0.8, mode: 'key_facts' },
+    // Code models — focus on technical content
+    'deepseek-coder': { tokenBudget: 1000, threshold: 0.7, mode: 'full' },
+    'qwen-coder': { tokenBudget: 1000, threshold: 0.7, mode: 'full' },
+    // Large context models — can take more
+    'deepseek-v3': { tokenBudget: 1500, threshold: 0.6, mode: 'full' },
+    'deepseek-v3.2': { tokenBudget: 1500, threshold: 0.6, mode: 'full' },
+    'gpt-4o': { tokenBudget: 1500, threshold: 0.6, mode: 'full' },
+    'claude-3-5-sonnet': { tokenBudget: 2000, threshold: 0.6, mode: 'full' },
+    // Light/fast models — be frugal
+    'gpt-4o-mini': { tokenBudget: 500, threshold: 0.75, mode: 'summary' },
+    'gpt-3.5-turbo': { tokenBudget: 300, threshold: 0.75, mode: 'summary' },
+    'qwen-turbo': { tokenBudget: 400, threshold: 0.75, mode: 'summary' },
+  };
+  const DEFAULT_PROFILE = { tokenBudget: contextBudget, threshold: 0.5, mode: 'full' as const };
+
+  function getModelProfile(modelName: string) {
+    // Exact match first, then prefix match
+    if (MODEL_PROFILES[modelName]) return MODEL_PROFILES[modelName];
+    const prefix = Object.keys(MODEL_PROFILES).find(k => modelName.startsWith(k));
+    return prefix ? MODEL_PROFILES[prefix] : DEFAULT_PROFILE;
+  }
+
   const server = http.createServer(async (req, res) => {
     // CORS headers for local dev tools
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -191,6 +220,10 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
           const messages: Array<{ role: string; content: string }> = data.messages || [];
           const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
           const query = typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '';
+          
+          // Model-aware profile
+          const modelName = (data.model || '').toLowerCase();
+          const profile = getModelProfile(modelName);
 
           // 1. Search DriveMem for context (smart injection)
           let contextSnippet = '';
@@ -204,12 +237,12 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
               });
               if (searchRes.ok) {
                 const searchData = await searchRes.json() as { results?: Array<{ fileName?: string; text?: string; score?: number }> };
-                // Score threshold 0.5 — only truly relevant results
-                const relevant = (searchData.results || []).filter((r: any) => (r.score || 0) > 0.5);
+                // Score threshold from model profile
+                const relevant = (searchData.results || []).filter((r: any) => (r.score || 0) > profile.threshold);
                 
                 if (relevant.length > 0) {
-                  // Token budget mode: ~500 tokens ≈ 2000 chars, greedy fill by score
-                  const TOKEN_BUDGET_CHARS = contextBudget * 4; // ~4 chars per token
+                  // Token budget from model profile, greedy fill by score
+                  const TOKEN_BUDGET_CHARS = profile.tokenBudget * 4;
                   let usedChars = 0;
                   const snippets: string[] = [];
                   
@@ -225,7 +258,7 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
                   if (snippets.length > 0) {
                     contextSnippet = snippets.join('\n\n');
                     contextCount++;
-                    console.log(`  ✅ Injected context for "${query.slice(0, 40)}..." (${snippets.length} sources, ~${Math.round(usedChars / 4)} tokens)`);
+                    console.log(`  ✅ [${modelName || 'unknown'}] Injected ${snippets.length} sources, ~${Math.round(usedChars / 4)} tokens (budget: ${profile.tokenBudget}, threshold: ${profile.threshold})`);
                   }
                 }
               }
