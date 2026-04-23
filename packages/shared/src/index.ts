@@ -29,6 +29,22 @@ export {
   type SuccessResponse,
 } from './schemas/common.js';
 
+// Proxy core
+export {
+  extractUserQuery,
+  formatContextSnippet,
+  injectContext,
+  collectStreamedText,
+  forwardChatCompletion,
+} from './proxy/index.js';
+export type {
+  ChatMessage,
+  ChatCompletionRequest,
+  ContextSearchResult,
+  ProxyAdapter,
+  ForwardOptions,
+} from './proxy/types.js';
+
 // Constants
 export {
   STORAGE_LIMIT,
