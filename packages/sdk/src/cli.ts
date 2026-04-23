@@ -163,7 +163,7 @@ async function setup() {
   console.log('='.repeat(50));
 }
 
-async function startProxy(driveMemApiKey: string, port: number) {
+async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamUrl: string = '') {
   console.log('🧠 DriveMem Proxy starting...\n');
 
   const DRIVEMEM_API = 'https://api.drivemem.cloud';
@@ -224,7 +224,7 @@ async function startProxy(driveMemApiKey: string, port: number) {
 
           // 3. Get user's LLM endpoint
           const authHeader = req.headers['authorization'] || '';
-          const llmBaseUrl = ((req.headers['x-llm-base-url'] as string) || 'https://api.openai.com').replace(/\/$/, '');
+          const llmBaseUrl = (defaultUpstreamUrl || (req.headers['x-llm-base-url'] as string) || 'https://api.openai.com').replace(/\/$/, '');
           const targetUrl = `${llmBaseUrl}/v1/chat/completions`;
 
           // 4. Forward to LLM
@@ -310,6 +310,7 @@ async function startProxy(driveMemApiKey: string, port: number) {
 
   server.listen(port, () => {
     console.log(`🧠 DriveMem Proxy running on http://localhost:${port}`);
+    console.log(`→ Upstream LLM: ${defaultUpstreamUrl || 'https://api.openai.com (default)'}`);
     console.log(`→ Set your AI tool's API Base URL to: http://localhost:${port}/v1`);
     console.log(`→ Your LLM API keys stay local. Only knowledge queries go to DriveMem cloud.`);
     console.log(`→ Health check: http://localhost:${port}/health`);
@@ -352,13 +353,14 @@ function main() {
 
     const apiKey = process.argv.find(a => a.startsWith('--api-key='))?.split('=')[1] || process.env.DRIVEMEM_API_KEY;
     const port = parseInt(process.argv.find(a => a.startsWith('--port='))?.split('=')[1] || '7879');
+    const upstreamUrl = process.argv.find(a => a.startsWith('--upstream-url='))?.split('=')[1] || process.env.LLM_BASE_URL || '';
 
     if (!apiKey) {
       console.error('❌ DriveMem API Key required. Use --api-key=ak_xxx or set DRIVEMEM_API_KEY env var');
       process.exit(1);
     }
 
-    startProxy(apiKey, port).catch(console.error);
+    startProxy(apiKey, port, upstreamUrl).catch(console.error);
   } else {
     console.log('🧠 DriveMem CLI\n');
     console.log('Usage:');
