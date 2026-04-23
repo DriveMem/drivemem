@@ -38,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script defer data-domain="drivemem.cloud" src="https://plausible.io/js/script.js"></script>
         <script dangerouslySetInnerHTML={{ __html: `
 (function(){
-  var K="__dm_reload_count",T="__dm_reload_ts",M=2,R=3e5;
+  var K="chunk-reload-count",T="chunk-reload-ts",M=2,R=3e5;
   function c(e){var m=e&&e.message||"",n=e&&e.name||"";
     return /ChunkLoadError|Loading chunk|Failed to fetch dynamically imported module/.test(m)||
       (n==="ReferenceError"&&/before initialization/.test(m))||
