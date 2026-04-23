@@ -225,7 +225,11 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
           // 3. Get user's LLM endpoint
           const authHeader = req.headers['authorization'] || '';
           const llmBaseUrl = (defaultUpstreamUrl || (req.headers['x-llm-base-url'] as string) || 'https://api.openai.com').replace(/\/$/, '');
-          const targetUrl = `${llmBaseUrl}/v1/chat/completions`;
+          // Smart path join: if upstream already ends with /v1, only append /chat/completions
+          const targetUrl = llmBaseUrl.endsWith('/v1')
+            ? `${llmBaseUrl}/chat/completions`
+            : `${llmBaseUrl}/v1/chat/completions`;
+          console.log(`  → Forwarding to: ${targetUrl}`);
 
           // 4. Forward to LLM
           const forwardBody = JSON.stringify({ ...data, messages: injectedMessages });
