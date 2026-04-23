@@ -13,6 +13,10 @@ git pull --ff-only
 log "Building API..."
 cd apps/api && rm -rf dist tsconfig.tsbuildinfo && npx tsc && cd ../..
 
+# Sync DB schema (auto-migrate new columns/tables)
+log "Syncing DB schema..."
+PGPASSWORD=aidrive_dev bash scripts/db-sync.sh 2>&1 | tail -1
+
 # Build Web (next build overwrites .next in-place, no need to rm)
 log "Building Web..."
 cd apps/web && npx next build && cd ../..
@@ -45,6 +49,7 @@ ssh ubuntu@43.165.168.72 "source ~/.nvm/nvm.sh; \
   git fetch origin && \
   git reset --hard origin/main && \
   cd apps/api && rm -rf dist tsconfig.tsbuildinfo && npx tsc 2>&1 | tail -1 && \
+  cd ../.. && DB_CMD='docker exec -i aidrive-postgres psql -U aidrive -d aidrive' bash scripts/db-sync.sh 2>&1 | tail -1 && \
   cd ../web && npx next build 2>&1 | tail -2 && \
   pm2 restart ai-drive-api ai-drive-worker ai-drive-web --update-env 2>&1 | grep -E 'online|ERROR' && \
   sleep 3 && \
