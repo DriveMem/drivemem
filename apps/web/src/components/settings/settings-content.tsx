@@ -24,6 +24,8 @@ function ApiKeysCard() {
   const [creating, setCreating] = useState(false)
   const [showConfigFor, setShowConfigFor] = useState<string | null>(null)
   const [showNewKeyConfig, setShowNewKeyConfig] = useState(false)
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState("")
 
   useEffect(() => {
     const fetchKeys = async () => {
@@ -62,6 +64,19 @@ function ApiKeysCard() {
       toast.success("Deleted")
     } catch {
       toast.error("Delete failed")
+    }
+  }
+
+  const renameKey = async (id: string) => {
+    if (!renameValue.trim()) return
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      await apiFetch(`/api/api-keys/${id}`, { method: "PATCH", body: JSON.stringify({ name: renameValue.trim() }) })
+      setKeys(prev => prev.map(k => k.id === id ? { ...k, name: renameValue.trim() } : k))
+      setRenamingId(null)
+      toast.success("Renamed")
+    } catch {
+      toast.error("Rename failed")
     }
   }
 
@@ -107,6 +122,21 @@ function ApiKeysCard() {
                   </p>
                 </div>
                 <div className="flex gap-2">
+                  {renamingId === k.id ? (
+                    <div className="flex gap-1">
+                      <Input
+                        className="h-8 w-40 text-sm"
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { renameKey(k.id); } if (e.key === 'Escape') { setRenamingId(null); } }}
+                        autoFocus
+                      />
+                      <Button size="sm" variant="outline" onClick={() => renameKey(k.id)} disabled={!renameValue.trim()}>Save</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setRenamingId(null)}>Cancel</Button>
+                    </div>
+                  ) : (
+                    <Button size="sm" variant="ghost" onClick={() => { setRenamingId(k.id); setRenameValue(k.name); }}>Rename</Button>
+                  )}
                   <Button size="sm" variant="outline" onClick={() => setShowConfigFor(k.id)}>
                     Show Config
                   </Button>
@@ -289,8 +319,8 @@ function McpQuickConnectCard({ apiKeyPrefix, newKey }: { apiKeyPrefix: string | 
 }
 
 const WEBHOOK_EVENTS = [
-  { id: 'file.indexed', label: 'File indexing complete', desc: 'File uploaded and AI indexing complete' },
-  { id: 'insight.discovered', label: 'AI discovered insights', desc: 'New knowledge connections discovered' },
+  { id: 'file.indexed', label: 'File Indexing Complete', desc: 'File uploaded and AI indexing complete' },
+  { id: 'insight.discovered', label: 'Insight Discovered', desc: 'New knowledge connections discovered' },
   { id: 'file.deleted', label: 'File Deleted', desc: 'A file was deleted' },
 ]
 
@@ -1268,6 +1298,8 @@ export default function SettingsContent() {
   const [storageTotal, setStorageTotal] = useState<string>("—")
   const [chatUsedToday, setChatUsedToday] = useState<string>("—")
   const [chatLimitToday, setChatLimitToday] = useState<string>("—")
+  const [fileCount, setFileCount] = useState<number>(0)
+  const [fileLimit] = useState<number>(50)
 
   useEffect(() => {
     const fetchUsage = async () => {
@@ -1278,6 +1310,7 @@ export default function SettingsContent() {
         setStorageTotal(((data.storageLimit || 5368709120) / 1073741824).toFixed(1))
         setChatUsedToday(String(data.dailyChatCount ?? "—"))
         setChatLimitToday(String(data.dailyChatLimit ?? 20))
+        setFileCount(data.totalFiles ?? 0)
       } catch {
         // API not available, keep fallback "—"
       }
@@ -1309,7 +1342,7 @@ export default function SettingsContent() {
   }
 
   const handleDelete = () => {
-    if (deleteConfirm === "ConfirmDelete") {
+    if (deleteConfirm === "DELETE") {
       alert("Account deleted (mock)")
       setDeleteOpen(false)
     }
@@ -1339,8 +1372,39 @@ export default function SettingsContent() {
         <>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">API Keys let your AI agents access your knowledge base securely. Connect Cursor, Claude Desktop, OpenClaw, or any MCP-compatible tool — create an API key, copy the config, and paste it into your tool.</p>
           <ApiKeysCard />
-          <IntegrationsCard />
-          <ConnectedAgentsCard />
+
+          {/* Integrations — summary with link to Connect page */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Integrations</CardTitle>
+              <CardDescription>Connect external data sources to sync content into your knowledge base.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">
+                Notion, GitHub, Google Drive and more — manage all your integrations in one place.
+              </p>
+              <a href="/developers" className="inline-flex items-center gap-1 text-sm text-brand-500 hover:underline font-medium">
+                Manage in Connect page ↗
+              </a>
+            </CardContent>
+          </Card>
+
+          {/* Connected Agents — summary with link */}
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle>🔗 Connected Agents</CardTitle>
+              <CardDescription>View which AI tools are using your knowledge library.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">
+                See all active and inactive agent connections, manage API key permissions.
+              </p>
+              <a href="/developers" className="inline-flex items-center gap-1 text-sm text-brand-500 hover:underline font-medium">
+                Manage in Connect page ↗
+              </a>
+            </CardContent>
+          </Card>
+
           <InboundSourcesCard />
           <WebhookCard />
           <AgentProfilesSection />
@@ -1428,6 +1492,26 @@ export default function SettingsContent() {
           <CardTitle>Usage</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div>
+            {(() => {
+              const filePct = fileLimit > 0 ? (fileCount / fileLimit) * 100 : 0
+              const fileBarColor = filePct > 95 ? "bg-red-500" : filePct > 80 ? "bg-yellow-500" : "bg-emerald-500"
+              const fileTextColor = filePct > 95 ? "text-red-500" : filePct > 80 ? "text-yellow-600" : "text-zinc-500 dark:text-zinc-400"
+              return (
+                <>
+                  <p className={`mb-1 text-sm ${fileTextColor}`}>
+                    Files: {fileCount} / {fileLimit} {filePct > 95 ? "⚠️ Almost full" : filePct > 80 ? "⚡ Approaching limit" : ""}
+                  </p>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-50 dark:bg-zinc-800">
+                    <div
+                      className={`h-full rounded-full ${fileBarColor} transition-all`}
+                      style={{ width: `${Math.min(filePct, 100)}%` }}
+                    />
+                  </div>
+                </>
+              )
+            })()}
+          </div>
           <div>
             {(() => {
               const pct = storageUsed !== "—" && storageTotal !== "—" ? (parseFloat(storageUsed) / parseFloat(storageTotal)) * 100 : 0

@@ -53,4 +53,15 @@ export default async function apiKeyRoutes(fastify: FastifyInstance) {
       .where(and(eq(schema.apiKeys.id, id), eq(schema.apiKeys.userId, request.user!.id)));
     return reply.status(204).send();
   });
+
+  fastify.patch('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as { name?: string };
+    if (!body.name?.trim()) return reply.status(400).send({ error: 'name is required' });
+
+    await db.update(schema.apiKeys)
+      .set({ name: body.name.trim() })
+      .where(and(eq(schema.apiKeys.id, id), eq(schema.apiKeys.userId, request.user!.id)));
+    return reply.send({ success: true });
+  });
 }
