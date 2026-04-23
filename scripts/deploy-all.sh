@@ -10,6 +10,9 @@ cd ~/repos/ai-drive
 git pull --ff-only
 
 # Build API (MUST clean dist — incremental tsc leaves stale files)
+log "Building shared package..."
+cd packages/shared && npx tsc && cd ../..
+
 log "Building API..."
 cd apps/api && rm -rf dist tsconfig.tsbuildinfo && npx tsc && cd ../..
 
