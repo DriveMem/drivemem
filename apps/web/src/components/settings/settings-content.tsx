@@ -117,8 +117,8 @@ function ApiKeysCard() {
                   <p className="text-sm font-medium">{k.name}</p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">{k.keyPrefix}••••••••</p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Created on {new Date(k.createdAt).toLocaleDateString("zh-CN")}
-                    {k.lastUsedAt && ` · Last used ${new Date(k.lastUsedAt).toLocaleDateString("zh-CN")}`}
+                    Created on {new Date(k.createdAt).toLocaleDateString()}
+                    {k.lastUsedAt && ` · Last used ${new Date(k.lastUsedAt).toLocaleDateString()}`}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -724,7 +724,7 @@ function ConnectedAgentsCard() {
                       <div>
                         <p className="text-sm font-medium">{k.name}</p>
                         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Last active: {new Date(k.lastUsedAt).toLocaleString("zh-CN")}
+                          Last active: {new Date(k.lastUsedAt).toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -1142,11 +1142,11 @@ function WebhookDeliveryLog() {
   }, [])
 
   if (loading) return <p className="text-xs text-zinc-500 dark:text-zinc-400 py-2">Loading delivery records...</p>
-  if (deliveries.length === 0) return <p className="text-xs text-zinc-500 dark:text-zinc-400 py-2">NoneDelivery records</p>
+  if (deliveries.length === 0) return <p className="text-xs text-zinc-500 dark:text-zinc-400 py-2">No delivery records yet</p>
 
   return (
     <div className="mt-4 border-t pt-4">
-      <h4 className="text-sm font-medium mb-2">📋 RecentDelivery records</h4>
+      <h4 className="text-sm font-medium mb-2">📋 Recent Deliveries</h4>
       <div className="space-y-1.5 max-h-60 overflow-y-auto">
         {deliveries.map((d: any) => (
           <div key={d.id} className="flex items-center gap-2 rounded-md border px-3 py-2 text-xs">
@@ -1155,7 +1155,7 @@ function WebhookDeliveryLog() {
             <span className="truncate text-zinc-500 dark:text-zinc-400 flex-1">{d.url}</span>
             {d.statusCode && <span className={`shrink-0 font-mono ${d.success ? "text-green-600" : "text-red-500"}`}>{d.statusCode}</span>}
             {d.duration && <span className="shrink-0 text-zinc-500 dark:text-zinc-400">{d.duration}ms</span>}
-            <span className="shrink-0 text-zinc-500 dark:text-zinc-400/60">{new Date(d.createdAt).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}</span>
+            <span className="shrink-0 text-zinc-500 dark:text-zinc-400/60">{new Date(d.createdAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</span>
           </div>
         ))}
       </div>
@@ -1267,9 +1267,9 @@ export default function SettingsContent() {
         method: "PATCH",
         body: JSON.stringify({ role: profileRole, currentGoal: profileGoal, background: profileBg, preferences: profilePrefs }),
       })
-      toast.success("ProfileSaved")
+      toast.success("Profile saved")
     } catch {
-      toast.error("SaveFailed")
+      toast.error("Save failed")
     } finally {
       setProfileSaving(false)
     }
@@ -1328,7 +1328,7 @@ export default function SettingsContent() {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
-      if (!res.ok) throw new Error("ExportFailed")
+      if (!res.ok) throw new Error("Export failed")
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
@@ -1337,7 +1337,7 @@ export default function SettingsContent() {
       a.click()
       URL.revokeObjectURL(url)
     } catch {
-      alert("ExportFailed，Please try again later")
+      alert("Export failed. Please try again later.")
     }
   }
 
@@ -1571,7 +1571,7 @@ export default function SettingsContent() {
                   <div>
                     <p className="text-sm font-medium">{m.key}</p>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400">{m.value}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400/50 mt-1">{new Date(m.createdAt).toLocaleDateString("zh-CN")}</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400/50 mt-1">{new Date(m.createdAt).toLocaleDateString()}</p>
                   </div>
                   <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => handleDeleteMemory(m.id)}>
                     ✕
