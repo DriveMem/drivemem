@@ -252,7 +252,15 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     await requireApiKey(request, reply);
     if (reply.sent) return;
     const sessionId = (request.query as any)?.sessionId;
-    if (!sessionId) return reply.status(400).send({ error: 'sessionId required' });
+    if (!sessionId) {
+      // mcp-remote http-first strategy tries POST without sessionId
+      // Return proper JSON-RPC error so it falls back to SSE
+      return reply.status(400).send({
+        jsonrpc: '2.0',
+        error: { code: -32600, message: 'Use SSE transport: connect via GET to this endpoint first' },
+        id: null,
+      });
+    }
     const session = sessions.get(sessionId);
     if (!session) return reply.status(404).send({ error: 'Session not found' });
     if (!(session.transport instanceof SSEServerTransport)) return reply.status(400).send({ error: 'Not an SSE session' });
