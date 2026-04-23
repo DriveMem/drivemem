@@ -104,7 +104,11 @@ async function setup() {
       config = JSON.parse(readFileSync(claudeConfigPath, 'utf-8'));
     }
     if (!config.mcpServers || typeof config.mcpServers !== 'object') config.mcpServers = {};
-    (config.mcpServers as Record<string, unknown>).drivemem = { url: mcpUrl };
+    // Claude Desktop requires command+args format (doesn't support url field)
+    (config.mcpServers as Record<string, unknown>).drivemem = {
+      command: "npx",
+      args: ["-y", "@anthropic/mcp-remote", mcpUrl.replace('/mcp?', '/mcp/sse?')]
+    };
     writeFileSync(claudeConfigPath, JSON.stringify(config, null, 2));
     console.log('  ✅ Claude Desktop configured — restart Claude to connect');
     configured++;
