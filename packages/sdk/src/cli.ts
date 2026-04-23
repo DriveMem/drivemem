@@ -305,6 +305,28 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
     return cloud['_default'] || DEFAULT_PROFILE;
   }
 
+  function dedup(results: Array<{fileName?: string; text?: string; score?: number}>): Array<{fileName?: string; text?: string; score?: number}> {
+    const seen = new Set<string>();
+    const deduped: typeof results = [];
+    for (const r of results) {
+      const fileKey = r.fileName || '';
+      if (seen.has(fileKey)) continue;
+      seen.add(fileKey);
+      const textPrefix = (r.text || '').slice(0, 100).toLowerCase().replace(/\s+/g, ' ');
+      const isDuplicate = deduped.some(existing => {
+        const existingPrefix = (existing.text || '').slice(0, 100).toLowerCase().replace(/\s+/g, ' ');
+        if (!textPrefix || !existingPrefix) return false;
+        const words1 = new Set(textPrefix.split(' '));
+        const words2 = new Set(existingPrefix.split(' '));
+        const overlap = [...words1].filter(w => words2.has(w)).length;
+        const similarity = overlap / Math.max(words1.size, words2.size);
+        return similarity > 0.8;
+      });
+      if (!isDuplicate) deduped.push(r);
+    }
+    return deduped;
+  }
+
   const server = http.createServer(async (req, res) => {
     // CORS headers for local dev tools
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -346,28 +368,6 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
                 // Score threshold from model profile
                 const relevant = (searchData.results || []).filter((r: any) => (r.score || 0) > profile.threshold);
                 
-                // Layer 2: Dedup — remove near-duplicate results
-                function dedup(results: Array<{fileName?: string; text?: string; score?: number}>): Array<{fileName?: string; text?: string; score?: number}> {
-                  const seen = new Set<string>();
-                  const deduped: typeof results = [];
-                  for (const r of results) {
-                    const fileKey = r.fileName || '';
-                    if (seen.has(fileKey)) continue;
-                    seen.add(fileKey);
-                    const textPrefix = (r.text || '').slice(0, 100).toLowerCase().replace(/\s+/g, ' ');
-                    const isDuplicate = deduped.some(existing => {
-                      const existingPrefix = (existing.text || '').slice(0, 100).toLowerCase().replace(/\s+/g, ' ');
-                      if (!textPrefix || !existingPrefix) return false;
-                      const words1 = new Set(textPrefix.split(' '));
-                      const words2 = new Set(existingPrefix.split(' '));
-                      const overlap = [...words1].filter(w => words2.has(w)).length;
-                      const similarity = overlap / Math.max(words1.size, words2.size);
-                      return similarity > 0.8;
-                    });
-                    if (!isDuplicate) deduped.push(r);
-                  }
-                  return deduped;
-                }
                 const dedupedResults = dedup(relevant);
                 if (dedupedResults.length < relevant.length) {
                   console.log(`  ℹ️ Dedup: ${relevant.length} → ${dedupedResults.length} results`);
@@ -490,12 +490,167 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
           res.end(JSON.stringify({ error: { message: 'Proxy error', type: 'proxy_error' } }));
         }
       });
+    } else if (req.method === 'POST' && req.url?.startsWith('/v1/messages')) {
+      // Anthropic Messages API format
+      let body = '';
+      req.on('data', (chunk: Buffer) => { body += chunk; });
+      req.on('end', async () => {
+        try {
+          const data = JSON.parse(body);
+          
+          // Anthropic format: messages array + system (separate field)
+          const messages = data.messages || [];
+          const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user');
+          const query = typeof lastUserMsg?.content === 'string' 
+            ? lastUserMsg.content 
+            : Array.isArray(lastUserMsg?.content) 
+              ? lastUserMsg.content.filter((c: any) => c.type === 'text').map((c: any) => c.text).join(' ')
+              : '';
+          
+          // Model-aware profile
+          const modelName = (data.model || '').toLowerCase();
+          const profile = getModelProfile(modelName);
+          
+          // Search & inject (same logic as OpenAI)
+          let contextSnippet = '';
+          const trivialPatterns = /^(hi|hello|hey|thanks|ok|yes|no|sure|bye)\b/i;
+          if (query && query.length > 10 && !trivialPatterns.test(query.trim())) {
+            try {
+              const searchRes = await fetch(`${DRIVEMEM_API}/api/v1/search?q=${encodeURIComponent(query)}&limit=5`, {
+                headers: { 'Authorization': `Bearer ${driveMemApiKey}` }
+              });
+              if (searchRes.ok) {
+                const searchData = await searchRes.json() as any;
+                const relevant = (searchData.results || []).filter((r: any) => (r.score || 0) > profile.threshold);
+                const dedupedResults = dedup(relevant);
+                
+                if (dedupedResults.length > 0) {
+                  const TOKEN_BUDGET_CHARS = profile.tokenBudget * 4;
+                  let usedChars = 0;
+                  const collected: Array<{fileName: string; text: string}> = [];
+                  
+                  for (const r of dedupedResults) {
+                    const text = r.text || '';
+                    const remaining = TOKEN_BUDGET_CHARS - usedChars;
+                    if (remaining <= 50) break;
+                    collected.push({ fileName: r.fileName || 'unknown', text: text.slice(0, remaining) });
+                    usedChars += text.slice(0, remaining).length + (r.fileName || '').length + 10;
+                  }
+                  
+                  if (collected.length > 0) {
+                    contextSnippet = formatContext(collected, profile.mode);
+                    contextCount++;
+                    console.log(`  ✅ [${modelName}] ${profile.mode} mode | ${collected.length} sources, ~${Math.round(usedChars / 4)} tokens (budget: ${profile.tokenBudget})`);
+                  }
+                }
+              }
+            } catch {}
+          }
+          
+          // Inject into Anthropic format
+          // Anthropic uses a separate "system" field, not a system message in messages array
+          const forwardData = { ...data };
+          if (contextSnippet) {
+            const existingSystem = forwardData.system || '';
+            forwardData.system = existingSystem 
+              ? `${existingSystem}\n\n${contextSnippet}`
+              : contextSnippet;
+          }
+          
+          // Forward to Anthropic (or upstream)
+          const anthropicKey = req.headers['x-api-key'] as string || req.headers['authorization']?.replace('Bearer ', '') || '';
+          const llmBaseUrl = (defaultUpstreamUrl || 'https://api.anthropic.com').replace(/\/$/, '');
+          const targetUrl = llmBaseUrl.endsWith('/v1') 
+            ? `${llmBaseUrl}/messages`
+            : `${llmBaseUrl}/v1/messages`;
+          
+          console.log(`  → Forwarding to: ${targetUrl}`);
+          
+          const llmRes = await fetch(targetUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': anthropicKey,
+              'anthropic-version': req.headers['anthropic-version'] as string || '2023-06-01',
+            },
+            body: JSON.stringify(forwardData),
+          });
+          
+          // Handle streaming
+          if (data.stream && llmRes.body) {
+            res.writeHead(llmRes.status, {
+              'Content-Type': 'text/event-stream',
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive',
+            });
+            
+            const reader = llmRes.body.getReader();
+            const decoder = new TextDecoder();
+            let fullResponse = '';
+            
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              const chunk = decoder.decode(value, { stream: true });
+              res.write(chunk);
+              
+              // Collect Anthropic streaming response
+              chunk.split('\n').filter(l => l.startsWith('data: ')).forEach(line => {
+                try {
+                  const d = JSON.parse(line.slice(6));
+                  if (d.type === 'content_block_delta' && d.delta?.text) {
+                    fullResponse += d.delta.text;
+                  }
+                } catch {}
+              });
+            }
+            res.end();
+            
+            // Async harvest
+            if (fullResponse.length > 100) {
+              harvestCount++;
+              console.log(`  ✅ Harvested (${fullResponse.length} chars)`);
+              fetch(`${DRIVEMEM_API}/api/v1/store`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${driveMemApiKey}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: `Q: ${query.slice(0, 200)}\nA: ${fullResponse.slice(0, 2000)}`, tags: ['proxy'] })
+              }).catch(() => {});
+            }
+            
+            return;
+          }
+          
+          // Non-streaming
+          const responseText = await llmRes.text();
+          res.writeHead(llmRes.status, { 'Content-Type': 'application/json' });
+          res.end(responseText);
+          
+          // Harvest from non-streaming Anthropic response
+          try {
+            const parsed = JSON.parse(responseText);
+            const content = parsed.content?.map((c: any) => c.text).join('') || '';
+            if (content.length > 100) {
+              harvestCount++;
+              fetch(`${DRIVEMEM_API}/api/v1/store`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${driveMemApiKey}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: `Q: ${query.slice(0, 200)}\nA: ${content.slice(0, 2000)}`, tags: ['proxy'] })
+              }).catch(() => {});
+            }
+          } catch {}
+          
+        } catch (err: any) {
+          console.error('  ❌ Anthropic proxy error:', err.message);
+          res.writeHead(502);
+          res.end(JSON.stringify({ error: { type: 'proxy_error', message: 'Proxy error' } }));
+        }
+      });
     } else if (req.method === 'GET' && req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok', contextInjections: contextCount, harvests: harvestCount }));
+      res.end(JSON.stringify({ status: 'ok', contextInjections: contextCount, harvests: harvestCount, formats: ['openai', 'anthropic'] }));
     } else {
       res.writeHead(404);
-      res.end(JSON.stringify({ error: 'Only /v1/chat/completions is proxied' }));
+      res.end(JSON.stringify({ error: 'Only /v1/chat/completions and /v1/messages are proxied' }));
     }
   });
 
@@ -506,6 +661,7 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
     console.log(`🧠 DriveMem Proxy running on http://localhost:${port}`);
     console.log(`→ Upstream LLM: ${defaultUpstreamUrl || 'https://api.openai.com (default)'}`);
     console.log(`→ Context budget: ${contextBudget} tokens per request`);
+    console.log(`→ Supports: OpenAI (/v1/chat/completions) + Anthropic (/v1/messages)`);
     console.log(`→ Set your AI tool's API Base URL to: http://localhost:${port}/v1`);
     console.log(`→ Your LLM API keys stay local. Only knowledge queries go to DriveMem cloud.`);
     console.log(`→ Health check: http://localhost:${port}/health`);
