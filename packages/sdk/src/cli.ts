@@ -107,7 +107,7 @@ async function setup() {
     // Claude Desktop requires command+args format (doesn't support url field)
     (config.mcpServers as Record<string, unknown>).drivemem = {
       command: "npx",
-      args: ["-y", "mcp-remote", "--transport", "sse-only", mcpUrl.replace('/mcp?', '/mcp/sse?')]
+      args: ["-y", "drivemem", "mcp", `--api-key=${apiKey}`]
     };
     writeFileSync(claudeConfigPath, JSON.stringify(config, null, 2));
     console.log('  ✅ Claude Desktop configured — restart Claude to connect');
@@ -670,6 +670,116 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
   });
 }
 
+async function startStdioBridge(apiKey: string) {
+  const SSE_URL = `https://api.drivemem.cloud/mcp/sse?apiKey=${apiKey}`;
+
+  // All logs must go to stderr to not pollute stdout
+  const log = (msg: string) => process.stderr.write(`[drivemem-bridge] ${msg}\n`);
+
+  log('Connecting to DriveMem...');
+
+  // 1. Establish SSE connection
+  const sseRes = await fetch(SSE_URL, {
+    headers: { 'Accept': 'text/event-stream' },
+  });
+
+  if (!sseRes.ok || !sseRes.body) {
+    throw new Error(`SSE connection failed: ${sseRes.status}`);
+  }
+
+  let postUrl = '';
+  const reader = (sseRes.body as ReadableStream<Uint8Array>).getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  // 2. Read SSE events to get POST URL and relay server messages
+  const readSSE = async () => {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      let eventType = '';
+      for (const line of lines) {
+        if (line.startsWith('event: ')) {
+          eventType = line.slice(7).trim();
+        } else if (line.startsWith('data: ')) {
+          const data = line.slice(6).trim();
+
+          if (eventType === 'endpoint') {
+            postUrl = data.startsWith('http') ? data : `https://api.drivemem.cloud${data}`;
+            log(`Connected. POST endpoint: ${postUrl}`);
+          } else if (eventType === 'message' || (!eventType && data)) {
+            try {
+              JSON.parse(data); // validate JSON
+              process.stdout.write(data + '\n');
+            } catch {
+              // Not JSON, skip
+            }
+          }
+          eventType = '';
+        } else if (line.trim() === '' || line.startsWith(': ')) {
+          eventType = '';
+        }
+      }
+    }
+  };
+
+  readSSE().catch(err => {
+    log(`SSE read error: ${err.message}`);
+    process.exit(1);
+  });
+
+  // Wait for POST URL
+  let waitCount = 0;
+  while (!postUrl && waitCount < 50) {
+    await new Promise(r => setTimeout(r, 100));
+    waitCount++;
+  }
+  if (!postUrl) {
+    throw new Error('Timeout waiting for SSE endpoint');
+  }
+
+  // 3. Read JSON-RPC from stdin, POST to DriveMem
+  let stdinBuffer = '';
+  process.stdin.setEncoding('utf-8');
+  process.stdin.on('data', async (chunk: string) => {
+    stdinBuffer += chunk;
+    const lines = stdinBuffer.split('\n');
+    stdinBuffer = lines.pop() || '';
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      try {
+        JSON.parse(trimmed);
+        const res = await fetch(postUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: trimmed,
+        });
+        if (!res.ok) {
+          log(`POST error: ${res.status} ${await res.text()}`);
+        }
+      } catch (err: any) {
+        log(`Parse/send error: ${err.message}`);
+      }
+    }
+  });
+
+  process.stdin.on('end', () => {
+    log('stdin closed, shutting down');
+    process.exit(0);
+  });
+
+  // Keep process alive
+  setInterval(() => {}, 60000);
+}
+
 function main() {
   const command = process.argv[2];
 
@@ -686,6 +796,16 @@ function main() {
       return;
     }
     setup().catch(console.error);
+  } else if (command === 'mcp') {
+    const apiKey = process.argv.find(a => a.startsWith('--api-key='))?.split('=')[1] || process.env.DRIVEMEM_API_KEY;
+    if (!apiKey) {
+      process.stderr.write('❌ DriveMem API Key required. Use --api-key=ak_xxx or set DRIVEMEM_API_KEY\n');
+      process.exit(1);
+    }
+    startStdioBridge(apiKey).catch(err => {
+      process.stderr.write(`Fatal: ${err.message}\n`);
+      process.exit(1);
+    });
   } else if (command === 'proxy') {
     // Daemon mode
     if (process.argv.includes('--daemon')) {
@@ -722,6 +842,7 @@ function main() {
     console.error('  npx drivemem setup --print-url --api-key=ak_xxx Just print MCP URL');
     console.error('  npx drivemem proxy --api-key=ak_xxx             Start local LLM proxy (recommended)');
     console.error('  npx drivemem proxy --daemon --api-key=ak_xxx    Start as background process');
+    console.error('  npx drivemem mcp --api-key=ak_xxx                Stdio MCP bridge for Claude Desktop');
     console.error('');
     console.error('More: https://drivemem.cloud/docs');
   }
