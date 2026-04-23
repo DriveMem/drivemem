@@ -33,6 +33,16 @@ const TABS: { key: SourceFilter; label: string }[] = [
   { key: "agent", label: "Agent" },
 ]
 
+function displayAgentName(name: string): string {
+  const cleaned = name
+    .replace(/^agent[-_]?[a-z][-_]?/i, '')
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase())
+    .trim();
+  if (!cleaned || /^\d+$/.test(cleaned)) return 'AI Agent';
+  return cleaned;
+}
+
 function relativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
   if (diff < 60000) return "just now"
@@ -196,11 +206,11 @@ export function AgentActivityPanel() {
             >
               <Icon className={`h-4 w-4 flex-shrink-0 ${config.color}`} />
               <span className={`text-xs flex-shrink-0 ${
-                /^Agent\d+$/.test(a.agentName)
+                displayAgentName(a.agentName) === 'AI Agent'
                   ? "text-zinc-400 dark:text-zinc-500 italic"
                   : "text-zinc-500 dark:text-zinc-400 font-medium"
               }`}>
-                {/^Agent\d+$/.test(a.agentName) ? "Unnamed Agent" : a.agentName}
+                {displayAgentName(a.agentName)}
               </span>
               {a.source === "agent" && (
                 <span className="text-[10px] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium">

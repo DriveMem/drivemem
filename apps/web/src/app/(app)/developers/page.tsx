@@ -665,7 +665,7 @@ export default function ConnectPage() {
     mcpServers: {
       drivemem: {
         command: "npx",
-        args: ["-y", "drivemem", "mcp"]
+        args: ["-y", "drivemem", "mcp", "--api-key=YOUR_API_KEY"]
       }
     }
   }, null, 2)

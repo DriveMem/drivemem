@@ -224,10 +224,7 @@ function AgentConfigTabs({ apiKey }: { apiKey: string }) {
         mcpServers: {
           "drivemem": {
             command: "npx",
-            args: ["-y", "drivemem", "mcp"],
-            env: {
-              AI_DRIVE_API_KEY: apiKey
-            }
+            args: ["-y", "drivemem", "mcp", `--api-key=${apiKey}`]
           }
         }
       }, null, 2),
