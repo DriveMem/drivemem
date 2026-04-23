@@ -81,38 +81,38 @@ export function createMcpServer(userId: string, agentName: string = '', options?
         resources: {},
         prompts: {},
       },
-      instructions: `You are connected to DriveMem — the user's shared knowledge base across all AI tools. You MUST use it proactively.
+      instructions: `You are connected to DriveMem — the user's persistent knowledge base across all AI tools.
 
-## CRITICAL: You must do these automatically — do NOT wait for the user to ask.
+## When to load context (AUTOMATIC):
+- At the START of every conversation: call aidrive_get_context to load background, recent work, and relevant knowledge
+- Before answering any domain-specific question: call aidrive_search to check existing knowledge
 
-### 1. FIRST THING — Load Context (MANDATORY)
-At the START of every conversation, IMMEDIATELY call aidrive_compile_context with a description of what the user seems to need. This gives you their background, recent work, and relevant knowledge. Do this BEFORE your first substantive reply.
+## When to save knowledge (TRIGGERS):
+- User says "OK", "sounds good", "let's do that" → decision made → call aidrive_harvest
+- Conversation reaches 10+ messages → call aidrive_harvest with summary
+- User explicitly asks to remember something → call aidrive_store
+- Analysis or research completed → call aidrive_harvest
 
-### 2. EVERY QUESTION — Search First (MANDATORY)  
-Before answering ANY question, call aidrive_search to check the knowledge base. The user expects you to already know their projects and decisions. Not searching = giving uninformed answers.
-
-### 3. AFTER VALUABLE OUTPUT — Save It (MANDATORY)
-When the conversation produces decisions, conclusions, analysis, or action items, call aidrive_store to save them. Other AI tools the user works with will automatically get access to these insights.
-
-### 4. Citation
-When using knowledge base content in your answer, mention the source file name.
-
-## Why this matters
-The user connected you to DriveMem so you can be smarter — you have access to their entire knowledge history. USE IT. Every conversation should start with context loading and end with knowledge saving.
-
-## Available Context Tools
-- aidrive_compile_context: Get a compiled briefing for the current task (recommended on session start)
+## Available Tools (5 only):
 - aidrive_search: Semantic search across all files
 - aidrive_ask: RAG Q&A with cited sources
-- aidrive_store: Save knowledge back to the library
+- aidrive_store: Save a piece of knowledge (text, decision, note)
+- aidrive_harvest: End-of-conversation harvest — extracts decisions, conclusions, TODOs from summary
+- aidrive_get_context: Load full project context (files, insights, recent activity) in one call
 
-You are not just a chat assistant — you are part of the user's knowledge system. Every conversation should make the knowledge base richer, and every new session should benefit from past knowledge.`,
+## Citation
+When using knowledge base content, mention the source file name.
+
+## Response hints:
+- After every aidrive_search result, ask yourself: "Should I save any conclusions from this conversation?"
+- Every conversation should make the knowledge base richer.`,
     }
   );
 
   // List available tools
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: [
+      // === 5 CORE TOOLS (simplified from 17) ===
       {
         name: 'aidrive_search',
         description: 'IMPORTANT: Call this BEFORE answering any question. Searches the user knowledge base for relevant context. The user expects you to check their existing knowledge before responding. Returns the most relevant file excerpts with relevance scores.',
@@ -142,82 +142,6 @@ You are not just a chat assistant — you are part of the user's knowledge syste
         },
       },
       {
-        name: 'aidrive_list_files',
-        description: '列出用户知识库中的所有文件,包含文件名、类型、状态和 AI 自动生成的摘要。适用场景:了解用户知识库全貌、查看有哪些可用资料、检查文件索引状态、获取文件 ID 用于后续操作。建议在使用 search 或 ask 之前先调用此工具了解知识库内容。',
-        inputSchema: { type: 'object' as const, properties: {} },
-      },
-      {
-        name: 'aidrive_get_insights',
-        description: '获取 AI 主动发现的知识洞察--文件之间的关联、矛盾观点和共同趋势。这些洞察由 AI 在文件索引时自动生成,无需用户提问。适用场景:发现用户可能没注意到的知识联系、找出文档间的矛盾点、识别跨文件的共同趋势、为用户提供知识库的全局视角。',
-        inputSchema: { type: 'object' as const, properties: {} },
-      },
-      {
-        name: 'aidrive_file_detail',
-        description: '获取某个文件的详细信息,包括 AI 自动生成的摘要、文件类型、状态等。适用场景:深入了解某个特定文件的内容、获取 AI 对文件的理解、在搜索到文件后查看详情。需要文件 ID(可通过 list_files 获取)。',
-        inputSchema: {
-          type: 'object' as const,
-          properties: {
-            fileId: { type: 'string', description: '文件 ID' },
-            detail: { type: 'string', description: 'brief(默认)或 full', enum: ['brief', 'full'] },
-            contextBudget: { type: 'number', description: 'token 预算，自动决定返回 brief 还是 full' },
-            preferFormat: { type: 'string', description: '返回格式：text | structured | summary', enum: ['text', 'structured', 'summary'] },
-          },
-          required: ['fileId'],
-        },
-      },
-      {
-        name: 'aidrive_suggest_workflow',
-        description: '根据用户知识库的当前内容,AI 主动建议 3-5 个可以执行的操作或分析方向。当你不确定知识库能做什么、或想帮用户发现知识价值时调用。常见建议:对比两份文件观点、生成分析报告、检查数据一致性、发现知识盲点等。',
-        inputSchema: { type: 'object' as const, properties: {} },
-      },
-      {
-        name: 'aidrive_timeline',
-        description: '查看用户知识库的活动时间线——包括文件上传、AI 对话、AI 洞察发现、报告生成等所有活动。适用场景：了解用户最近做了什么、知识库有什么变化、追踪知识积累过程。',
-        inputSchema: {
-          type: 'object' as const,
-          properties: {
-            limit: { type: 'number', description: '返回条数（默认 20）' },
-          },
-        },
-      },
-      {
-        name: 'aidrive_upload_file',
-        description: '上传文件到用户的 AI Drive 知识库。上传后 AI 会自动解析、生成摘要、发现知识关联。适用场景:agent 想把工作产出物(报告、笔记、分析结果)存入知识库供后续检索和问答。',
-        inputSchema: {
-          type: 'object' as const,
-          properties: {
-            filename: { type: 'string', description: '文件名(如 report.md)' },
-            content: { type: 'string', description: '文件内容(纯文本或 Markdown)' },
-          },
-          required: ['filename', 'content'],
-        },
-      },
-      {
-        name: 'aidrive_update_file',
-        description: '更新文件属性（重命名、标签）',
-        inputSchema: {
-          type: 'object' as const,
-          properties: {
-            fileId: { type: 'string', description: '文件 ID' },
-            name: { type: 'string', description: '新文件名' },
-            tags: { type: 'string', description: '逗号分隔的标签' },
-          },
-          required: ['fileId'],
-        },
-      },
-      {
-        name: 'aidrive_batch',
-        description: '批量文件操作',
-        inputSchema: {
-          type: 'object' as const,
-          properties: {
-            action: { type: 'string', enum: ['delete', 'archive', 'unarchive'], description: '操作类型' },
-            fileIds: { type: 'string', description: '逗号分隔的文件ID' },
-          },
-          required: ['action', 'fileIds'],
-        },
-      },
-      {
         name: 'aidrive_store',
         description: 'IMPORTANT: Call this when the conversation produces valuable output. Saves decisions, conclusions, analysis, or action items to the knowledge base. Other AI tools will automatically get access to these insights. Quick and lightweight — just pass content.',
         inputSchema: {
@@ -231,80 +155,48 @@ You are not just a chat assistant — you are part of the user's knowledge syste
         },
       },
       {
-        name: 'aidrive_capture_conversation',
-        description: '自动捕获当前对话中的关键结论和决策，提取摘要存入知识库。当对话产生了有价值的分析、决定或发现时调用此工具。AI Drive 会自动提取要点、打标签、关联到相关文件。',
+        name: 'aidrive_harvest',
+        description: 'End-of-conversation knowledge harvest. Pass conversation summary or key points — DriveMem extracts decisions, conclusions, TODOs and stores them structured. Call this when a conversation reaches a natural conclusion or when decisions are made.',
         inputSchema: {
           type: 'object' as const,
           properties: {
-            summary: { type: 'string', description: '对话中的关键结论或决策摘要' },
-            context: { type: 'string', description: '相关上下文（可选，如讨论了什么主题）' },
-            tags: { type: 'string', description: '标签（可选，逗号分隔）' },
+            summary: { type: 'string', description: 'Summary of the conversation or key conclusions' },
+            decisions: { type: 'array', items: { type: 'string' }, description: 'Explicit decisions made (optional — auto-extracted if not provided)' },
+            todos: { type: 'array', items: { type: 'string' }, description: 'Action items identified (optional — auto-extracted if not provided)' },
+            tags: { type: 'array', items: { type: 'string' }, description: 'Tags for categorization (optional)' },
           },
           required: ['summary'],
         },
       },
       {
-        name: 'aidrive_identity',
-        description: 'Get user identity and profile (name, email, role, goals, preferences)',
-        inputSchema: { type: 'object' as const, properties: {}, required: [] },
-      },
-      {
-        name: 'aidrive_compile_context',
-        description: 'Compile task-relevant context from knowledge base. Returns structured markdown optimized for the target model.',
+        name: 'aidrive_get_context',
+        description: 'Load full project context in one call — combines file listing, compiled context, and insights. Recommended at the START of every conversation.',
         inputSchema: {
           type: 'object' as const,
           properties: {
-            task: { type: 'string', description: 'Current task description' },
+            task: { type: 'string', description: 'Current task description (for context compilation)' },
             tokenBudget: { type: 'number', description: 'Max output tokens (default 8000)' },
-            model: { type: 'string', description: 'Target model name (e.g. claude-opus, gpt-4o)' },
             project: { type: 'string', description: 'Project scope filter' },
             scope: { type: 'string', description: 'Search scope: "project" (default) or "all"', enum: ['project', 'all'] },
-            tags: { type: 'string', description: 'Tag filter (comma-separated)' },
-            recency: { type: 'string', description: 'Time range preference (e.g. 7d, 30d)' },
-          },
-          required: ['task'],
-        },
-      },
-      {
-        name: 'aidrive_context_packet',
-        description: '生成项目的交接包——将项目的文件、决策、进展打包成精炼的上下文摘要，用于跨模型/跨 agent 任务接力',
-        inputSchema: {
-          type: 'object' as const,
-          properties: {
-            folderId: { type: 'string', description: '文件夹/项目 ID' },
-            format: { type: 'string', enum: ['markdown', 'json'], description: '输出格式，默认 markdown' },
-          },
-          required: ['folderId'],
-        },
-      },
-      {
-        name: 'aidrive_auto_capture',
-        description: 'Automatically extract and save valuable knowledge from a conversation or text. Extracts decisions, conclusions, preferences, action items.',
-        inputSchema: {
-          type: 'object' as const,
-          properties: {
-            content: { type: 'string', description: 'Conversation or text to extract knowledge from' },
-            sessionId: { type: 'string', description: 'Optional session ID for source tracking' },
-          },
-          required: ['content'],
-        },
-      },
-      {
-        name: 'aidrive_work_items',
-        description: 'Query and manage work items (decisions, TODOs, blockers, milestones) extracted from knowledge. Use to check project status, find blockers, or mark items done.',
-        inputSchema: {
-          type: 'object' as const,
-          properties: {
-            action: { type: 'string', description: 'Action: list (default), update, delete', enum: ['list', 'update', 'delete'] },
-            type: { type: 'string', description: 'Filter by type: decision, todo, blocker, milestone, insight' },
-            status: { type: 'string', description: 'Filter by status: active, done, blocked, archived' },
-            folderId: { type: 'string', description: 'Filter by project folder ID' },
-            itemId: { type: 'string', description: 'Work item ID (for update/delete)' },
-            newStatus: { type: 'string', description: 'New status (for update action)' },
           },
           required: [],
         },
       },
+      // === REMOVED FROM MCP (kept as internal services) ===
+      // aidrive_list_files → merged into aidrive_get_context
+      // aidrive_file_detail → merged into search results
+      // aidrive_compile_context → merged into aidrive_get_context
+      // aidrive_get_insights → merged into aidrive_get_context
+      // aidrive_suggest_workflow → removed
+      // aidrive_timeline → removed
+      // aidrive_work_items → merged into search
+      // aidrive_auto_capture → merged into aidrive_harvest
+      // aidrive_capture_conversation → merged into aidrive_harvest
+      // aidrive_upload_file → merged into aidrive_store
+      // aidrive_context_packet → removed
+      // aidrive_identity → removed (available via resource)
+      // aidrive_update_file → kept internally but not exposed
+      // aidrive_batch → kept internally but not exposed
     ],
   }));
 
@@ -475,7 +367,8 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           } else if (results.length <= 2) {
             searchHint = '\n\n💡 Tip: Only a few matches found. Upload more files to enrich your knowledge base for better results.';
           }
-          return { content: [{ type: 'text' as const, text: (text || 'No results found.') + searchEnrich + searchHint }] };
+          const harvestReminder = '\n\n---\n💡 Reminder: If this conversation produced valuable conclusions, call aidrive_harvest to save them.';
+          return { content: [{ type: 'text' as const, text: (text || 'No results found.') + searchEnrich + searchHint + harvestReminder }] };
         }
 
         case 'aidrive_ask': {
@@ -520,7 +413,7 @@ You are not just a chat assistant — you are part of the user's knowledge syste
           logActivity({ userId, agentName, action: 'ask', detail: question, metadata: { sourceCount: chunks.length }, relatedFileIds: askFileIds });
           detectAndLogRelay(userId, agentName, askFileIds);
           // Phase 2: Contextual hint for ask — nudge storing conclusions
-          const askHint = '\n\n💡 You can store this conclusion with aidrive_store for future reference across sessions.';
+          const askHint = '\n\n---\n💡 Reminder: If this conversation produced valuable conclusions, call aidrive_harvest to save them.';
           return { content: [{ type: 'text' as const, text: answer + askEnrich + askHint }] };
         }
 
@@ -991,6 +884,113 @@ ${insightsSection}
           }
 
           return { content: [{ type: 'text' as const, text: `Unknown action: ${action}` }], isError: true };
+        }
+
+        case 'aidrive_harvest': {
+          const summary = (args as any).summary as string;
+          if (!summary) return { content: [{ type: 'text' as const, text: 'summary parameter required.' }], isError: true };
+          const decisions = (args as any).decisions as string[] | undefined;
+          const todos = (args as any).todos as string[] | undefined;
+          const harvestTags = (args as any).tags as string[] | undefined;
+
+          // Build structured markdown from provided + auto-extracted content
+          const sections: string[] = [`# Conversation Harvest\n\n## Summary\n${summary}`];
+          if (decisions && decisions.length > 0) {
+            sections.push(`\n## Decisions\n${decisions.map(d => `- ✅ ${d}`).join('\n')}`);
+          }
+          if (todos && todos.length > 0) {
+            sections.push(`\n## Action Items\n${todos.map(t => `- [ ] ${t}`).join('\n')}`);
+          }
+          const harvestContent = sections.join('\n');
+
+          // Use auto-capture service for LLM extraction as well
+          const { autoCapture } = await import('../services/auto-capture.js');
+          const captureResult = await autoCapture(userId, harvestContent, { projectId: detectedProjectId || undefined });
+
+          // Also store the structured harvest itself
+          const { randomUUID } = await import('crypto');
+          const harvestFileId = randomUUID();
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+          const filename = `harvest-${timestamp.slice(0, 10)}.md`;
+          const mdContent = `${harvestContent}\n\n---\n_Harvested: ${new Date().toLocaleString()} | Auto-extracted: ${captureResult.captured} items_`;
+          const s3Key = `users/${userId}/files/${harvestFileId}/${filename}`;
+          const buffer = Buffer.from(mdContent, 'utf-8');
+
+          const { uploadObject } = await import('../services/s3.service.js');
+          await uploadObject(s3Key, buffer, 'text/markdown');
+
+          await db.insert(schema.files).values({
+            id: harvestFileId, name: `Harvest: ${summary.slice(0, 40)}`, originalName: filename,
+            mimeType: 'text/markdown', size: buffer.length, status: 'parsing', userId, s3Key,
+            ...(detectedProjectId ? { folderId: detectedProjectId } : {}),
+          });
+
+          const { Queue } = await import('bullmq');
+          const queue = new Queue('file-parse', { connection: { host: 'localhost', port: 6379 } });
+          await queue.add('parse', { fileId: harvestFileId, userId, s3Key, mimeType: 'text/markdown' });
+          await queue.close();
+
+          // Apply tags
+          if (harvestTags && harvestTags.length > 0) {
+            for (const tagName of harvestTags.slice(0, 5)) {
+              try {
+                let [existing] = await db.select().from(schema.tags).where(and(eq(schema.tags.userId, userId), eq(schema.tags.name, tagName)));
+                if (!existing) [existing] = await db.insert(schema.tags).values({ name: tagName, color: '#6B7280', isSystem: true, userId }).returning();
+                if (existing) await db.insert(schema.fileTags).values({ fileId: harvestFileId, tagId: existing.id });
+              } catch { /* skip */ }
+            }
+          }
+
+          // Work items extraction (fire-and-forget)
+          import('../services/work-item-extractor.js').then(({ extractWorkItems }) => {
+            extractWorkItems(userId, harvestContent, harvestFileId, agentName || undefined, detectedProjectId || undefined).catch(() => {});
+          }).catch(() => {});
+
+          const autoItems = captureResult.items.length > 0
+            ? `\nAuto-extracted: ${captureResult.items.map(i => i.title).join(', ')}`
+            : '';
+          return { content: [{ type: 'text' as const, text: `✅ Harvest saved! Stored structured summary with ${decisions?.length || 0} decisions, ${todos?.length || 0} TODOs.${autoItems}` }] };
+        }
+
+        case 'aidrive_get_context': {
+          const task = (args as any).task as string || 'general session context';
+          const compileScope = ((args as any).scope as string) || 'project';
+          const compileProjectHint = (args as any).project as string | undefined;
+          const compileFolderId = (compileScope === 'project') ? (compileProjectHint || detectedProjectId || undefined) : undefined;
+
+          // 1. Compile context
+          const { compileContext: compileCtx } = await import('../services/context-compiler/index.js');
+          const ctxResult = await compileCtx(userId, {
+            task,
+            tokenBudget: (args as any).tokenBudget as number | undefined,
+            role: detectedCaps?.role || inferRole(agentName),
+            apiKeyId: options?.apiKeyId,
+            hints: {
+              project: compileProjectHint,
+              folderId: compileFolderId,
+            },
+          });
+
+          // 2. File listing (recent 10)
+          const recentFiles = await db.select({ id: schema.files.id, name: schema.files.name, summary: schema.files.summary, createdAt: schema.files.createdAt })
+            .from(schema.files).where(eq(schema.files.userId, userId))
+            .orderBy(desc(schema.files.createdAt)).limit(10);
+          const fileList = recentFiles.length > 0
+            ? '\n\n## Recent Files\n' + recentFiles.map(f => `- ${f.name}: ${f.summary?.slice(0, 100) || 'processing...'}`).join('\n')
+            : '';
+
+          // 3. Insights (top 5)
+          let insightText = '';
+          try {
+            const insights = await db.select().from(schema.insights)
+              .where(eq(schema.insights.userId, userId)).orderBy(desc(schema.insights.createdAt)).limit(5);
+            if (insights.length > 0) {
+              insightText = '\n\n## AI Insights\n' + insights.map(i => `- 💡 ${i.title}: ${i.description?.slice(0, 100)}`).join('\n');
+            }
+          } catch { /* skip */ }
+
+          const summary = `${ctxResult.compiledContext}${fileList}${insightText}\n\n---\n_Context: ${ctxResult.metadata.fragmentCount} fragments, ${ctxResult.metadata.totalTokens} tokens, ${recentFiles.length} files_`;
+          return { content: [{ type: 'text' as const, text: summary }] };
         }
 
                 default:
