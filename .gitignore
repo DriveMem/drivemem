@@ -7,3 +7,4 @@ dist/
 .turbo
 coverage/
 apps/monitor-web/.astro/
+packages/sdk/*.tgz
