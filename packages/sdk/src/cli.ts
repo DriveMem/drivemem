@@ -315,13 +315,40 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
                 // Score threshold from model profile
                 const relevant = (searchData.results || []).filter((r: any) => (r.score || 0) > profile.threshold);
                 
-                if (relevant.length > 0) {
+                // Layer 2: Dedup — remove near-duplicate results
+                function dedup(results: Array<{fileName?: string; text?: string; score?: number}>): Array<{fileName?: string; text?: string; score?: number}> {
+                  const seen = new Set<string>();
+                  const deduped: typeof results = [];
+                  for (const r of results) {
+                    const fileKey = r.fileName || '';
+                    if (seen.has(fileKey)) continue;
+                    seen.add(fileKey);
+                    const textPrefix = (r.text || '').slice(0, 100).toLowerCase().replace(/\s+/g, ' ');
+                    const isDuplicate = deduped.some(existing => {
+                      const existingPrefix = (existing.text || '').slice(0, 100).toLowerCase().replace(/\s+/g, ' ');
+                      if (!textPrefix || !existingPrefix) return false;
+                      const words1 = new Set(textPrefix.split(' '));
+                      const words2 = new Set(existingPrefix.split(' '));
+                      const overlap = [...words1].filter(w => words2.has(w)).length;
+                      const similarity = overlap / Math.max(words1.size, words2.size);
+                      return similarity > 0.8;
+                    });
+                    if (!isDuplicate) deduped.push(r);
+                  }
+                  return deduped;
+                }
+                const dedupedResults = dedup(relevant);
+                if (dedupedResults.length < relevant.length) {
+                  console.log(`  ℹ️ Dedup: ${relevant.length} → ${dedupedResults.length} results`);
+                }
+
+                if (dedupedResults.length > 0) {
                   // Token budget from model profile, greedy fill by score
                   const TOKEN_BUDGET_CHARS = profile.tokenBudget * 4;
                   let usedChars = 0;
                   const collected: Array<{fileName: string; text: string}> = [];
                   
-                  for (const r of relevant) {
+                  for (const r of dedupedResults) {
                     const text = r.text || '';
                     const remaining = TOKEN_BUDGET_CHARS - usedChars;
                     if (remaining <= 50) break; // not enough room
