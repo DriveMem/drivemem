@@ -401,7 +401,7 @@ function DataSources() {
                 Connect your Notion workspace to automatically sync pages into your knowledge base.
               </p>
               <Button onClick={connectNotion} className="w-full rounded-xl shadow-soft active:scale-[0.98]" disabled={!oauthStatus.notion}>
-                {oauthStatus.notion ? "Connect Notion" : <>Connect Notion <span className="ml-2 text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Coming Soon</span></>}
+                {oauthStatus.notion ? "Connect Notion" : <>Connect Notion <span className="ml-2 text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Coming Q3 2026</span></>}
               </Button>
             </div>
           )}
@@ -444,7 +444,7 @@ function DataSources() {
                 Connect Google Drive to automatically sync documents, sheets, and PDFs into your knowledge base.
               </p>
               <Button onClick={connectGoogleDrive} className="w-full rounded-xl shadow-soft active:scale-[0.98]" disabled={!oauthStatus.googleDrive}>
-                {oauthStatus.googleDrive ? "Connect Google Drive" : <>Connect Google Drive <span className="ml-2 text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Coming Soon</span></>}
+                {oauthStatus.googleDrive ? "Connect Google Drive" : <>Connect Google Drive <span className="ml-2 text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Coming Q3 2026</span></>}
               </Button>
             </div>
           )}
@@ -487,7 +487,7 @@ function DataSources() {
                 Connect GitHub to sync repository contents, issues, and markdown files into your knowledge base.
               </p>
               <Button onClick={connectGitHub} className="w-full rounded-xl shadow-soft active:scale-[0.98]" disabled={!oauthStatus.github}>
-                {oauthStatus.github ? "Connect GitHub" : <>Connect GitHub <span className="ml-2 text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Coming Soon</span></>}
+                {oauthStatus.github ? "Connect GitHub" : <>Connect GitHub <span className="ml-2 text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Coming Q3 2026</span></>}
               </Button>
             </div>
           )}
