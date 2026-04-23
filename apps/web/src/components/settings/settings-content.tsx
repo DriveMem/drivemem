@@ -157,7 +157,7 @@ function ApiKeysCard() {
 
     {/* Show Config Dialog */}
     <Dialog open={!!showConfigFor} onOpenChange={(open) => { if (!open) setShowConfigFor(null) }}>
-      <DialogContent className="max-w-2xl overflow-y-auto max-h-[85vh]">
+      <DialogContent className="max-w-2xl w-[90vw] overflow-y-auto max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>Agent Configuration</DialogTitle>
         </DialogHeader>
@@ -170,7 +170,7 @@ function ApiKeysCard() {
 
     {/* New Key Config Dialog — shown after creating a key */}
     <Dialog open={showNewKeyConfig} onOpenChange={setShowNewKeyConfig}>
-      <DialogContent className="max-w-2xl overflow-y-auto max-h-[85vh]">
+      <DialogContent className="max-w-2xl w-[90vw] overflow-y-auto max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>🎉 API Key Created — Configure Your Agent</DialogTitle>
         </DialogHeader>
