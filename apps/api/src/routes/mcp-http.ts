@@ -97,11 +97,40 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
 
     if (mcpSessionId) {
       // --- Streamable HTTP: subsequent request with existing session ---
-      const session = sessions.get(mcpSessionId);
-      if (!session) {
-        // Session expired (server restart?) — auto-rebuild for Streamable HTTP
-        console.log(`[MCP] Session ${mcpSessionId} expired, auto-rebuilding...`);
-        // Fall through to initialize path below
+      let session = sessions.get(mcpSessionId);
+      if (!session && isInitializeRequest(request.body)) {
+        // Session expired (server restart?) — auto-rebuild with same session ID
+        console.log(`[MCP] Session ${mcpSessionId} expired, auto-rebuilding with initialize...`);
+        const transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => mcpSessionId,
+          onsessioninitialized: (sessionId: string) => {
+            sessions.set(sessionId, { transport, server: mcpServer });
+          },
+        });
+        let connectionId: string | null = null;
+        transport.onclose = () => {
+          onSessionDisconnect(mcpSessionId);
+          sessions.delete(mcpSessionId);
+          trackConnectionClose(connectionId);
+        };
+        const mcpServer = createMcpServer(userId, agentName, {
+          apiKeyId: (request as any).apiKeyId,
+          onToolCall: (toolName, toolArgs) => {
+            trackToolCall(mcpSessionId, userId, agentName, toolName, toolArgs);
+            trackConnectionActivity(connectionId);
+          },
+        });
+        await mcpServer.connect(transport);
+        trackConnectionOpen(userId, (request as any).apiKeyId, agentName, 'streamable-http-reconnect').then(id => { connectionId = id; });
+        await transport.handleRequest(request.raw, reply.raw, request.body);
+        reply.hijack();
+        return;
+      } else if (!session) {
+        return reply.status(404).send({
+          jsonrpc: '2.0',
+          error: { code: -32000, message: 'Session expired. Send an initialize request with the same session ID to reconnect.' },
+          id: null,
+        });
       } else if (!(session.transport instanceof StreamableHTTPServerTransport)) {
         return reply.status(400).send({
           jsonrpc: '2.0',
@@ -182,6 +211,11 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
           id: null,
         });
       }
+      // Keepalive for Streamable HTTP SSE stream
+      const shKeep = setInterval(() => {
+        try { reply.raw.write(': keepalive\n\n'); } catch { clearInterval(shKeep); }
+      }, 15000);
+      reply.raw.on('close', () => clearInterval(shKeep));
       await session.transport.handleRequest(request.raw, reply.raw);
       reply.hijack();
       return;
