@@ -192,20 +192,23 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
           const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
           const query = typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '';
 
-          // 1. Search DriveMem for context
+          // 1. Search DriveMem for context (skip trivial queries)
           let contextSnippet = '';
-          if (query && query.length > 5) {
+          const trivialPatterns = /^(hi|hello|hey|thanks|thank you|ok|yes|no|sure|bye|good|great)\b/i;
+          if (query && query.length > 10 && !trivialPatterns.test(query.trim())) {
             try {
-              const searchRes = await fetch(`${DRIVEMEM_API}/api/v1/search?q=${encodeURIComponent(query)}&limit=5`, {
+              const searchRes = await fetch(`${DRIVEMEM_API}/api/v1/search?q=${encodeURIComponent(query)}&limit=2`, {
                 headers: { 'Authorization': `Bearer ${driveMemApiKey}` }
               });
               if (searchRes.ok) {
-                const searchData = await searchRes.json() as { results?: Array<{ fileName?: string; text?: string }> };
-                const results = searchData.results || [];
+                const searchData = await searchRes.json() as { results?: Array<{ fileName?: string; text?: string; score?: number }> };
+                const results = (searchData.results || []).filter((r: any) => (r.score || 0) > 0.3);
                 if (results.length > 0) {
-                  contextSnippet = results.map((r: { fileName?: string; text?: string }, i: number) => `[${i + 1}] ${r.fileName}: ${r.text?.slice(0, 300)}`).join('\n\n');
+                  // Budget: max ~400 tokens ≈ 1600 chars total
+                  const maxCharsPerResult = Math.floor(1600 / results.length);
+                  contextSnippet = results.map((r: { fileName?: string; text?: string }, i: number) => `[${i + 1}] ${r.fileName}: ${r.text?.slice(0, maxCharsPerResult)}`).join('\n\n');
                   contextCount++;
-                  console.log(`  ✅ Injected context for "${query.slice(0, 40)}..." (${results.length} sources)`);
+                  console.log(`  ✅ Injected context for "${query.slice(0, 40)}..." (${results.length} sources, ~${contextSnippet.length} chars)`);
                 }
               }
             } catch { /* ignore search errors */ }
