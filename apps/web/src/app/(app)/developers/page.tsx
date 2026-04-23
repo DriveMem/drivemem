@@ -20,6 +20,43 @@ function relativeTime(dateStr: string): string {
   return `${Math.floor(h / 24)}d ago`
 }
 
+/* ---------- Health Status Helpers ---------- */
+type HealthStatus = "connected" | "degraded" | "disconnected" | "unknown"
+
+function healthDot(health: HealthStatus) {
+  switch (health) {
+    case "connected": return "bg-emerald-500"
+    case "degraded": return "bg-yellow-400"
+    case "disconnected": return "bg-red-500"
+    default: return "bg-zinc-300"
+  }
+}
+
+function healthLabel(health: HealthStatus) {
+  switch (health) {
+    case "connected": return "Connected"
+    case "degraded": return "Degraded"
+    case "disconnected": return "Disconnected"
+    default: return "Unknown"
+  }
+}
+
+function healthEmoji(health: HealthStatus) {
+  switch (health) {
+    case "connected": return "🟢"
+    case "degraded": return "🟡"
+    case "disconnected": return "🔴"
+    default: return "⚪"
+  }
+}
+
+const TROUBLESHOOTING_STEPS = [
+  { num: "1", title: "Check your API key", desc: "Ensure your API key is valid and not expired. Go to Settings → Developer to verify." },
+  { num: "2", title: "Verify network connectivity", desc: "Make sure you can reach api.drivemem.cloud from your machine. Try: curl https://api.drivemem.cloud/health" },
+  { num: "3", title: "Restart your AI tool", desc: "Close and reopen Cursor, Claude Desktop, or your connected tool. MCP connections don't auto-reconnect." },
+  { num: "4", title: "Re-run setup", desc: "Run `npx drivemem setup` again to reconfigure. This fixes most connection issues." },
+]
+
 /* ---------- Connected Agents ---------- */
 function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: number) => void }) {
   const { status } = useSession()
@@ -32,6 +69,9 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
   const [logsAgent, setLogsAgent] = useState<string | null>(null)
   const [logs, setLogs] = useState<{ id: string; action: string; detail: string | null; createdAt: string }[]>([])
   const [logsLoading, setLogsLoading] = useState(false)
+  const [healthMap, setHealthMap] = useState<Record<string, { health: HealthStatus; checkedAt: string }>>({})
+  const [testing, setTesting] = useState<string | null>(null)
+  const [troubleshootAgent, setTroubleshootAgent] = useState<string | null>(null)
 
   const fetchAgents = useCallback(async () => {
     setLoading(true)
@@ -43,8 +83,51 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
     finally { setLoading(false) }
   }, [])
 
+  const fetchHealth = useCallback(async () => {
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const data = await apiFetch("/api/mcp/health-check")
+      if (data?.agents) {
+        const map: Record<string, { health: HealthStatus; checkedAt: string }> = {}
+        for (const a of data.agents) {
+          map[a.name] = { health: a.health, checkedAt: a.checkedAt }
+        }
+        setHealthMap(map)
+      }
+    } catch { /* ignore */ }
+  }, [])
+
+  const testConnection = useCallback(async (agentName: string) => {
+    setTesting(agentName)
+    try {
+      const { apiFetch } = await import("@/lib/api")
+      const data = await apiFetch(`/api/mcp/health-check?agentName=${encodeURIComponent(agentName)}`)
+      setHealthMap(prev => ({ ...prev, [agentName]: { health: data?.health || "disconnected", checkedAt: data?.checkedAt || new Date().toISOString() } }))
+      if (data?.health === "connected") {
+        toast.success(`${agentName} is healthy!`)
+      } else if (data?.health === "degraded") {
+        toast.warning(`${agentName} may be degraded`)
+      } else {
+        toast.error(`${agentName} appears disconnected`)
+        setTroubleshootAgent(agentName)
+      }
+    } catch {
+      toast.error("Health check failed")
+    } finally {
+      setTesting(null)
+    }
+  }, [])
+
   useEffect(() => { if (isLoggedIn) fetchAgents() }, [isLoggedIn, fetchAgents])
   useEffect(() => { onAgentCountChange?.(agents.length) }, [agents.length, onAgentCountChange])
+
+  // Fetch health on mount and every 60s
+  useEffect(() => {
+    if (!isLoggedIn || agents.length === 0) return
+    fetchHealth()
+    const interval = setInterval(fetchHealth, 60_000)
+    return () => clearInterval(interval)
+  }, [isLoggedIn, agents.length, fetchHealth])
 
   const handleRename = async (oldName: string) => {
     if (!renameValue.trim() || renameValue === oldName) { setRenaming(null); return }
@@ -105,9 +188,12 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
         </div>
       ) : (
         <div className="rounded-xl border bg-card divide-y">
-          {agents.map((agent) => (
-            <div key={agent.name} className="flex items-center gap-3 px-5 py-3.5">
-              <span className={`inline-block h-2.5 w-2.5 rounded-full shrink-0 ${agent.status === "online" ? "bg-emerald-500" : "bg-zinc-300"}`} />
+          {agents.map((agent) => {
+            const h = healthMap[agent.name]?.health || (agent.status === "online" ? "connected" : "disconnected")
+            return (
+            <div key={agent.name}>
+            <div className="flex items-center gap-3 px-5 py-3.5">
+              <span title={`${healthEmoji(h)} ${healthLabel(h)}`} className={`inline-block h-2.5 w-2.5 rounded-full shrink-0 ${healthDot(h)}`} />
               {renaming === agent.name ? (
                 <form onSubmit={(e) => { e.preventDefault(); handleRename(agent.name) }} className="flex items-center gap-2 flex-1">
                   <input autoFocus value={renameValue} onChange={(e) => setRenameValue(e.target.value)}
@@ -123,7 +209,16 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
                       ? `active ${relativeTime(agent.lastActiveAt)}`
                       : `offline ${relativeTime(agent.disconnectedAt || agent.lastActiveAt)}`}
                   </span>
-                  <span className="ml-auto text-xs text-muted-foreground tabular-nums mr-2">{agent.totalCalls} calls</span>
+                  <span className="ml-auto text-xs text-muted-foreground tabular-nums mr-1">{agent.totalCalls} calls</span>
+                  <button
+                    onClick={() => testConnection(agent.name)}
+                    disabled={testing === agent.name}
+                    className="flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted/50 transition disabled:opacity-50 mr-1"
+                    title="Test Connection"
+                  >
+                    <Zap className={`h-3 w-3 ${testing === agent.name ? "animate-pulse" : ""}`} />
+                    {testing === agent.name ? "Testing…" : "Test"}
+                  </button>
                   <div className="relative">
                     <button onClick={() => setMenuOpen(menuOpen === agent.name ? null : agent.name)}
                       className="rounded-md p-1.5 hover:bg-muted transition">
@@ -149,7 +244,30 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
                 </>
               )}
             </div>
-          ))}
+            {/* Troubleshooting Panel */}
+            {troubleshootAgent === agent.name && h !== "connected" && (
+              <div className="px-5 pb-4">
+                <div className="rounded-lg border border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-300">🔧 Troubleshooting Steps</h4>
+                    <button onClick={() => setTroubleshootAgent(null)} className="text-xs text-muted-foreground hover:text-foreground">Dismiss</button>
+                  </div>
+                  <div className="space-y-3">
+                    {TROUBLESHOOTING_STEPS.map((step) => (
+                      <div key={step.num} className="flex gap-3">
+                        <div className="h-6 w-6 rounded-full bg-amber-200 dark:bg-amber-800 flex items-center justify-center text-xs font-bold text-amber-800 dark:text-amber-200 shrink-0">{step.num}</div>
+                        <div>
+                          <p className="text-sm font-medium">{step.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{step.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            </div>
+          )})}
         </div>
       )}
 

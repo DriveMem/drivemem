@@ -179,7 +179,9 @@ import inboundRoutes from './routes/inbound.js';
 await app.register(inboundRoutes, { prefix: '/api/v1/inbound' });
 
 import mcpHttpRoutes from './routes/mcp-http.js';
+import mcpHealthRoutes from './routes/mcp-health.js';
 await app.register(mcpHttpRoutes, { prefix: '/mcp' });
+await app.register(mcpHealthRoutes, { prefix: '/api/mcp' });
 
 import integrationRoutes from './routes/integrations.js';
 await app.register(integrationRoutes, { prefix: '/api/integrations' });
