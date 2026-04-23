@@ -1194,6 +1194,18 @@ ${insightsSection}
   server.setRequestHandler(ListPromptsRequestSchema, async () => ({
     prompts: [
       {
+        name: 'drivemem-context',
+        description: 'Your personal knowledge context — recent decisions, project status, and key information from your knowledge base. Loaded automatically at conversation start.',
+        arguments: [],
+      },
+      {
+        name: 'project-briefing',
+        description: 'Get a briefing on a specific project from your knowledge base.',
+        arguments: [
+          { name: 'project', description: 'Project name or topic', required: true },
+        ],
+      },
+      {
         name: 'start_with_context',
         description: 'Load your full project context — recommended at the start of any session',
         arguments: [
@@ -1233,6 +1245,105 @@ ${insightsSection}
     const { name, arguments: args } = request.params;
 
     switch (name) {
+      case 'drivemem-context': {
+        try {
+          const recentKBFiles = await db.select({
+            name: schema.files.name,
+            summary: schema.files.summary,
+            updatedAt: schema.files.updatedAt,
+          }).from(schema.files)
+            .where(eq(schema.files.userId, userId))
+            .orderBy(desc(schema.files.updatedAt))
+            .limit(5);
+
+          const recentActivity = await db.select({
+            type: schema.notifications.type,
+            title: schema.notifications.title,
+            message: schema.notifications.message,
+            createdAt: schema.notifications.createdAt,
+          }).from(schema.notifications)
+            .where(eq(schema.notifications.userId, userId))
+            .orderBy(desc(schema.notifications.createdAt))
+            .limit(5);
+
+          let context = `# DriveMem — Your Knowledge Context\n\n`;
+          context += `*Auto-generated at ${new Date().toISOString()}*\n\n`;
+
+          if (recentKBFiles.length > 0) {
+            context += `## Recent Knowledge\n`;
+            for (const f of recentKBFiles) {
+              const summary = f.summary ? f.summary.slice(0, 150) : 'No summary';
+              context += `- **${f.name}**: ${summary}\n`;
+            }
+            context += `\n`;
+          }
+
+          if (recentActivity.length > 0) {
+            context += `## Recent Activity\n`;
+            for (const a of recentActivity) {
+              context += `- ${a.title || a.type}: ${a.message || ''}\n`;
+            }
+            context += `\n`;
+          }
+
+          context += `\n---\nUse this context when relevant. For more details, use the aidrive_search or aidrive_ask tools.\n`;
+          context += `💡 When this conversation produces valuable conclusions, call aidrive_harvest to save them.\n`;
+
+          return {
+            messages: [
+              {
+                role: 'user' as const,
+                content: { type: 'text' as const, text: context },
+              },
+            ],
+          };
+        } catch (err) {
+          return {
+            messages: [
+              {
+                role: 'user' as const,
+                content: { type: 'text' as const, text: 'DriveMem is connected. Use aidrive_search to find knowledge, aidrive_harvest to save conclusions.' },
+              },
+            ],
+          };
+        }
+      }
+
+      case 'project-briefing': {
+        try {
+          const project = args?.project || '';
+          const [queryVec] = await embedTexts([project]);
+          const chunks = await searchSimilar({ userId, query: queryVec, scopeType: 'all', limit: 5 });
+
+          let briefing = `# Project Briefing: ${project}\n\n`;
+          if (chunks.length > 0) {
+            for (const c of chunks) {
+              briefing += `## ${c.fileName}\n${c.text.slice(0, 300)}\n\n`;
+            }
+          } else {
+            briefing += `No knowledge found for "${project}". Try uploading relevant files or use aidrive_store to save information.\n`;
+          }
+
+          return {
+            messages: [
+              {
+                role: 'user' as const,
+                content: { type: 'text' as const, text: briefing },
+              },
+            ],
+          };
+        } catch {
+          return {
+            messages: [
+              {
+                role: 'user' as const,
+                content: { type: 'text' as const, text: `Could not generate briefing for "${args?.project || ''}". Try aidrive_search instead.` },
+              },
+            ],
+          };
+        }
+      }
+
       case 'start_with_context': {
         try {
           const { compileContext } = await import('../services/context-compiler/index.js');
