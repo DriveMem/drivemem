@@ -533,7 +533,6 @@ export default function ConnectPage() {
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [showManual, setShowManual] = useState(false)
   const [agentCount, setAgentCount] = useState(0)
-  const [showSetup, setShowSetup] = useState(true)
 
   const copyText = (text: string, label: string) => {
     navigator.clipboard?.writeText(text)
@@ -558,24 +557,10 @@ export default function ConnectPage() {
       <h1 className="text-2xl font-bold tracking-tight">Connect your agents</h1>
       <p className="text-muted-foreground mt-2 mb-8">Pick your tool and connect in under 2 minutes</p>
 
-      <ConnectedAgents onAgentCountChange={(c) => { setAgentCount(c); if (c > 0) setShowSetup(false) }} />
+      <ConnectedAgents onAgentCountChange={(c) => setAgentCount(c)} />
       <EmptyKBWarning />
 
-      {/* Quick Setup — collapsed for users with agents */}
-      {agentCount > 0 && !showSetup ? (
-        <button
-          onClick={() => setShowSetup(true)}
-          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-6"
-        >
-          <ChevronRight className="h-4 w-4" />
-          Setup Instructions
-          <span className="text-xs font-normal ml-1">— connect more tools</span>
-        </button>
-      ) : null}
-
-      {(agentCount === 0 || showSetup) && (
-      <>
-      {/* Quick Setup */}
+      {/* Quick Setup — always visible */}
       <div className="mb-10 rounded-2xl border-2 border-primary/20 bg-primary/[0.03] p-6 md:p-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -719,8 +704,6 @@ export default function ConnectPage() {
       </div>
         )}
       </div>
-      </>
-      )}
 
       {/* LLM Proxy */}
       <LLMProxySection copied={copied} copyText={copyText} />
