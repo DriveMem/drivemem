@@ -433,18 +433,6 @@ export default function HomePage() {
   const insightCount = insights.length
   const projectCount = folders.length
 
-  // Group auto_store activities, filter noise, dedup agent activity
-  const cleanActivities = activities.filter((a: any) => {
-    const msg = (a.message || a.title || '').toLowerCase()
-    if (msg.includes('session idle') || msg.includes('idle summary')) return false
-    if (msg.includes('session_summary')) return false
-    // Dedup: when showing "all" and AgentActivityPanel is visible, exclude agent_activity
-    // to avoid showing the same operations in both panels
-    if (activityFilter === "all" && blockVis.agentActivity && (a.type === 'agent_activity' || a.type === 'auto_capture')) return false
-    return true
-  })
-  const groupedActivities = groupAutoStoreActivities(cleanActivities)
-
   // --- #66: Dashboard phase-based block visibility ---
   const hasAgentActivity = activities.some((a: any) => a.type === "agent_activity") || connectedAgents.length > 0
   const totalActivityCount = activities.length
@@ -459,6 +447,16 @@ export default function HomePage() {
   const checklist = computeChecklist({
     fileCount, hasAgentActivity, totalActivityCount, insightCount, accountAgeDays, hasAskedAi,
   })
+
+  // Group auto_store activities, filter noise, dedup agent activity
+  const cleanActivities = activities.filter((a: any) => {
+    const msg = (a.message || a.title || '').toLowerCase()
+    if (msg.includes('session idle') || msg.includes('idle summary')) return false
+    if (msg.includes('session_summary')) return false
+    if (activityFilter === "all" && blockVis.agentActivity && (a.type === 'agent_activity' || a.type === 'auto_capture')) return false
+    return true
+  })
+  const groupedActivities = groupAutoStoreActivities(cleanActivities)
 
   if (filesLoading && foldersLoading) {
     return <DashboardSkeleton />
