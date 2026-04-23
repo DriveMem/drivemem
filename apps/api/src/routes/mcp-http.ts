@@ -101,22 +101,20 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
       // --- Streamable HTTP: subsequent request with existing session ---
       const session = sessions.get(mcpSessionId);
       if (!session) {
-        return reply.status(404).send({
-          jsonrpc: '2.0',
-          error: { code: -32000, message: 'Session not found' },
-          id: null,
-        });
-      }
-      if (!(session.transport instanceof StreamableHTTPServerTransport)) {
+        // Session expired (server restart?) — auto-rebuild for Streamable HTTP
+        console.log(`[MCP] Session ${mcpSessionId} expired, auto-rebuilding...`);
+        // Fall through to initialize path below
+      } else if (!(session.transport instanceof StreamableHTTPServerTransport)) {
         return reply.status(400).send({
           jsonrpc: '2.0',
           error: { code: -32000, message: 'Session uses a different transport protocol' },
           id: null,
         });
+      } else {
+        await session.transport.handleRequest(request.raw, reply.raw, request.body);
+        reply.hijack();
+        return;
       }
-      await session.transport.handleRequest(request.raw, reply.raw, request.body);
-      reply.hijack();
-      return;
     }
 
     // --- Streamable HTTP: new session (initialize request) ---
@@ -206,10 +204,10 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     });
     const transport = new SSEServerTransport('/mcp', reply.raw);
 
-    // SSE keepalive — send comment every 30s to prevent proxy/CF timeout
+    // SSE keepalive — send comment every 15s to prevent proxy/CF timeout
     const keepalive = setInterval(() => {
       try { reply.raw.write(': keepalive\n\n'); } catch { clearInterval(keepalive); }
-    }, 30000);
+    }, 15000);
 
     const sessionId = (transport as any)._sessionId as string;
     sessions.set(sessionId, { transport, server: mcpServer });
@@ -238,10 +236,10 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     const mcpServer = createMcpServer(userId, agentName, { onToolCall: () => {}, apiKeyId });
     const transport = new SSEServerTransport('/mcp/sse', reply.raw);
 
-    // SSE keepalive — send comment every 30s to prevent proxy/CF timeout
+    // SSE keepalive — send comment every 15s to prevent proxy/CF timeout
     const keepalive = setInterval(() => {
       try { reply.raw.write(': keepalive\n\n'); } catch { clearInterval(keepalive); }
-    }, 30000);
+    }, 15000);
 
     const sessionId = transport.sessionId;
     sessions.set(sessionId, { transport, server: mcpServer });
