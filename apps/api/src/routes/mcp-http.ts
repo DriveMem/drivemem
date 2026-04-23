@@ -67,20 +67,9 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
 
   // POST / — handles both Streamable HTTP and legacy SSE message posting
   fastify.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    await requireApiKey(request, reply);
-    if (reply.sent) return;
-
-    const userId = request.user!.id;
-    const agentName = (request as any).apiKeyName || '';
-
-    // Check for Streamable HTTP session header
-    const mcpSessionId = request.headers['mcp-session-id'] as string | undefined;
-
-    // Check for legacy SSE sessionId query param
+    // Check for legacy SSE sessionId — skip auth if valid session (already authed on GET)
     const legacySessionId = (request.query as any)?.sessionId as string | undefined;
-
     if (legacySessionId) {
-      // --- Legacy SSE POST path ---
       const session = sessions.get(legacySessionId);
       if (!session) {
         return reply.status(404).send({ error: 'Session not found. Establish SSE connection first.' });
@@ -96,6 +85,15 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
       reply.hijack();
       return;
     }
+
+    await requireApiKey(request, reply);
+    if (reply.sent) return;
+
+    const userId = request.user!.id;
+    const agentName = (request as any).apiKeyName || '';
+
+    // Check for Streamable HTTP session header
+    const mcpSessionId = request.headers['mcp-session-id'] as string | undefined;
 
     if (mcpSessionId) {
       // --- Streamable HTTP: subsequent request with existing session ---
@@ -249,22 +247,27 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
 
   // POST /sse — message endpoint for SSE transport (some clients POST to /mcp/sse?sessionId=...)
   fastify.post('/sse', async (request: FastifyRequest, reply: FastifyReply) => {
+    const sessionId = (request.query as any)?.sessionId;
+    
+    // If sessionId provided, skip API key auth (already authenticated on SSE GET)
+    if (sessionId) {
+      const session = sessions.get(sessionId);
+      if (!session) return reply.status(404).send({ error: 'Session not found' });
+      if (!(session.transport instanceof SSEServerTransport)) return reply.status(400).send({ error: 'Not an SSE session' });
+      await session.transport.handlePostMessage(request.raw, reply.raw, request.body);
+      return;
+    }
+    
+    // No sessionId — require API key auth
     await requireApiKey(request, reply);
     if (reply.sent) return;
-    const sessionId = (request.query as any)?.sessionId;
-    if (!sessionId) {
-      // mcp-remote http-first strategy tries POST without sessionId
-      // Return proper JSON-RPC error so it falls back to SSE
-      return reply.status(400).send({
-        jsonrpc: '2.0',
-        error: { code: -32600, message: 'Use SSE transport: connect via GET to this endpoint first' },
-        id: null,
-      });
-    }
-    const session = sessions.get(sessionId);
-    if (!session) return reply.status(404).send({ error: 'Session not found' });
-    if (!(session.transport instanceof SSEServerTransport)) return reply.status(400).send({ error: 'Not an SSE session' });
-    await session.transport.handlePostMessage(request.raw, reply.raw, request.body);
+    
+    // mcp-remote http-first: return error to fall back to SSE
+    return reply.status(400).send({
+      jsonrpc: '2.0',
+      error: { code: -32600, message: 'Use SSE transport: connect via GET to this endpoint first' },
+      id: null,
+    });
   });
 
   fastify.delete('/', async (request: FastifyRequest, reply: FastifyReply) => {
