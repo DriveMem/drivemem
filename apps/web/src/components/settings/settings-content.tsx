@@ -112,16 +112,16 @@ function ApiKeysCard() {
         ) : (
           <div className="space-y-2">
             {keys.map(k => (
-              <div key={k.id} className="flex items-center justify-between rounded-lg border p-3">
-                <div>
-                  <p className="text-sm font-medium">{k.name}</p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">{k.keyPrefix}••••••••</p>
+              <div key={k.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border p-3 overflow-hidden">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{k.name}</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono truncate">{k.keyPrefix}••••••••</p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     Created on {new Date(k.createdAt).toLocaleDateString()}
                     {k.lastUsedAt && ` · Last used ${new Date(k.lastUsedAt).toLocaleDateString()}`}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-shrink-0">
                   {renamingId === k.id ? (
                     <div className="flex gap-1">
                       <Input
@@ -157,7 +157,7 @@ function ApiKeysCard() {
 
     {/* Show Config Dialog */}
     <Dialog open={!!showConfigFor} onOpenChange={(open) => { if (!open) setShowConfigFor(null) }}>
-      <DialogContent className="max-w-lg overflow-y-auto max-h-[85vh]">
+      <DialogContent className="max-w-2xl overflow-y-auto max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>Agent Configuration</DialogTitle>
         </DialogHeader>
@@ -170,7 +170,7 @@ function ApiKeysCard() {
 
     {/* New Key Config Dialog — shown after creating a key */}
     <Dialog open={showNewKeyConfig} onOpenChange={setShowNewKeyConfig}>
-      <DialogContent className="max-w-lg overflow-y-auto max-h-[85vh]">
+      <DialogContent className="max-w-2xl overflow-y-auto max-h-[85vh]">
         <DialogHeader>
           <DialogTitle>🎉 API Key Created — Configure Your Agent</DialogTitle>
         </DialogHeader>
@@ -263,7 +263,7 @@ openclaw config set mcp.servers.drivemem.url "https://api.drivemem.cloud/mcp/sse
         ))}
       </div>
       <div className="relative">
-        <pre className="rounded-lg border bg-[#1C1B18] p-3 text-sm font-mono text-[#E5E4E1] overflow-x-auto">
+        <pre className="rounded-lg border bg-[#1C1B18] p-3 text-sm font-mono text-[#E5E4E1] overflow-x-auto whitespace-pre-wrap break-all">
           <code>{current.content}</code>
         </pre>
         <Button
@@ -1667,7 +1667,7 @@ export default function SettingsContent() {
               <DialogTrigger asChild>
                 <Button variant="destructive" size="sm">Delete account</Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-2xl overflow-y-auto max-h-[85vh]">
                 <DialogHeader>
                   <DialogTitle className="text-red-600">⚠️ Confirm account deletion</DialogTitle>
                 </DialogHeader>
