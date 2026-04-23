@@ -107,7 +107,7 @@ async function setup() {
     // Claude Desktop requires command+args format (doesn't support url field)
     (config.mcpServers as Record<string, unknown>).drivemem = {
       command: "npx",
-      args: ["-y", "@anthropic/mcp-remote", mcpUrl.replace('/mcp?', '/mcp/sse?')]
+      args: ["-y", "mcp-remote", mcpUrl.replace('/mcp?', '/mcp/sse?')]
     };
     writeFileSync(claudeConfigPath, JSON.stringify(config, null, 2));
     console.log('  ✅ Claude Desktop configured — restart Claude to connect');
