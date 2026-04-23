@@ -41,6 +41,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 export default function GraphPage() {
   const [insights, setInsights] = useState<Insight[]>([])
+  const [totalFileCount, setTotalFileCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null)
   const [nodeCount, setNodeCount] = useState(0)
@@ -54,10 +55,13 @@ export default function GraphPage() {
   const router = useRouter()
 
   useEffect(() => {
-    apiFetch("/api/insights?limit=50", { silent: true })
-      .then((data: any) => setInsights(data?.insights || []))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    Promise.all([
+      apiFetch("/api/insights?limit=50", { silent: true }).then((data: any) => setInsights(data?.insights || [])).catch(() => {}),
+      apiFetch("/api/files", { silent: true }).then((data: any) => {
+        const files = Array.isArray(data) ? data : (data?.files || [])
+        setTotalFileCount(files.length)
+      }).catch(() => {}),
+    ]).finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
@@ -313,6 +317,12 @@ export default function GraphPage() {
           ))}
         </div>
       </div>
+      {totalFileCount > 0 && nodeCount < totalFileCount * 0.3 && (
+        <div className="mx-6 mt-2 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 px-3 py-2 text-xs text-blue-700 dark:text-blue-300 flex items-center gap-2">
+          <Network className="h-3.5 w-3.5 shrink-0" />
+          <span>Only {nodeCount} of {totalFileCount} files have connections. Upload more files to discover connections.</span>
+        </div>
+      )}
       <div className="flex-1 relative bg-zinc-50 dark:bg-zinc-950">
         <canvas
           ref={canvasRef}

@@ -13,19 +13,19 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { cn } from "@/lib/utils"
 
-function displayFileName(name: string, summary?: string | null): string {
+function displayFileName(name: string, summary?: string | null, disambiguator?: string): string {
   const bare = name.replace(/\.md$/i, "")
-  // Friendly labels for generated files
-  if (/^note-\d{4}-\d{2}-\d{2}T[\d-]+$/.test(bare)) return "AI Note"
-  if (/^session-summary-[\w-]+$/.test(bare)) return "Session Summary"
-  if (/^auto-capture-[\w-]+$/.test(bare)) return "Auto Capture"
-  if (/^auto-[\w-]+$/.test(bare)) return "Auto Note"
-  // Date-only filenames: use summary first sentence if available
-  if (/^\d{4}-\d{2}-\d{2}$/.test(bare) && summary) {
+  let label = bare
+  if (/^note-\d{4}-\d{2}-\d{2}T[\d-]+$/.test(bare)) label = "AI Note"
+  else if (/^session-summary-[\w-]+$/.test(bare)) label = "Session Summary"
+  else if (/^auto-capture-[\w-]+$/.test(bare)) label = "Auto Capture"
+  else if (/^auto-[\w-]+$/.test(bare)) label = "Auto Note"
+  else if (/^\d{4}-\d{2}-\d{2}$/.test(bare) && summary) {
     const firstSentence = summary.split(/[.。!！?\n]/)[0].trim()
-    return firstSentence.slice(0, 50) || bare
+    label = firstSentence.slice(0, 50) || bare
   }
-  return bare
+  if (disambiguator) label = `${label} (${disambiguator})`
+  return label
 }
 
 const SYSTEM_TAGS = new Set(['test', 'report', 'auto-generated', 'ai-note', 'session-summary', 'imported', 'mcp-stored', 'conversation', 'knowledge'])
@@ -34,18 +34,57 @@ function isSystemTag(tag: { isSystem?: boolean; name: string }): boolean {
 }
 
 function fileSubtitle(name: string, summary?: string | null, createdAt?: string): string | null {
+  if (summary) return summary.slice(0, 60) + (summary.length > 60 ? '…' : '')
   const bare = name.replace(/\.md$/i, "")
   const isGenerated = /^note-\d{4}-\d{2}-\d{2}T[\d-]+$/.test(bare)
     || /^session-summary-[\w-]+$/.test(bare)
     || /^auto-capture-[\w-]+$/.test(bare)
     || /^auto-[\w-]+$/.test(bare)
   const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(bare)
-
-  if (isGenerated || isDateOnly) {
-    if (summary) return summary.slice(0, 60) + (summary.length > 60 ? '…' : '')
-    if (createdAt) return new Date(createdAt).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+  if ((isGenerated || isDateOnly) && createdAt) {
+    return new Date(createdAt).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
   }
   return null
+}
+
+function buildDisambiguators(files: FileItem[]): Map<string, string> {
+  const nameGroups = new Map<string, FileItem[]>()
+  for (const f of files) {
+    const dn = displayFileName(f.name, f.summary)
+    const arr = nameGroups.get(dn) || []
+    arr.push(f)
+    nameGroups.set(dn, arr)
+  }
+  const result = new Map<string, string>()
+  for (const [, group] of nameGroups) {
+    if (group.length <= 1) continue
+    const sorted = [...group].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    for (const f of sorted) {
+      const d = new Date(f.createdAt)
+      result.set(f.id, d.toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }))
+    }
+  }
+  return result
+}
+
+function CollapsibleSystemTags({ tags }: { tags: { name: string; color?: string }[] }) {
+  const [expanded, setExpanded] = useState(false)
+  if (tags.length === 0) return null
+  if (expanded) {
+    return (
+      <>
+        {tags.map((tag) => (
+          <span key={tag.name} className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium border border-dashed border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 bg-transparent italic">{tag.name}</span>
+        ))}
+        <button onClick={(e) => { e.stopPropagation(); setExpanded(false) }} className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition">hide</button>
+      </>
+    )
+  }
+  return (
+    <button onClick={(e) => { e.stopPropagation(); setExpanded(true) }} className="shrink-0 rounded-full border border-dashed border-zinc-300 dark:border-zinc-600 px-1.5 py-0.5 text-[10px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 italic transition">
+      +{tags.length} system {tags.length === 1 ? 'tag' : 'tags'}
+    </button>
+  )
 }
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -505,6 +544,8 @@ export function FileList() {
     ? typeFiltered.filter((f: any) => f.tags?.some((t: any) => t.name === activeTagFilter))
     : typeFiltered
 
+  const disambiguators = useMemo(() => buildDisambiguators(filteredFiles), [filteredFiles])
+
   const virt = useVirtualizer({ count: filteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 52, overscan: 5 })
 
   const toggleSort = (k: SortKey) => { if (sortKey === k) setSortDir((d) => d === "asc" ? "desc" : "asc"); else { setSortKey(k); setSortDir("asc") } }
@@ -796,6 +837,7 @@ export function FileList() {
                 <span className={cn("cursor-pointer hover:text-foreground", i === path.length - 1 && "text-foreground font-medium")} onClick={() => setCurrentFolder(i === path.length - 1 ? p.id : p.id)}>
                   {p.name}
                 </span>
+                {i === path.length - 1 && <span className="text-xs text-zinc-400 ml-1">({filteredFiles.length})</span>}
               </span>
             ))
           })()}
@@ -867,14 +909,23 @@ export function FileList() {
                 />
                 <TypeIcon type={file.type} name={file.name} />
                 <div className="truncate flex-1 min-w-0">
-                  <span className="truncate text-sm block" title={displayFileName(file.name, file.summary)}>{displayFileName(file.name, file.summary)}</span>
+                  <span className="truncate text-sm block" title={displayFileName(file.name, file.summary, disambiguators.get(file.id))}>{displayFileName(file.name, file.summary, disambiguators.get(file.id))}</span>
                   {fileSubtitle(file.name, file.summary, file.createdAt) && <span className="block text-xs text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name, file.summary, file.createdAt)}</span>}
                 </div>
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">Updated</span>}
                 {file.archivedAt && <span className="shrink-0 rounded bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">Archived</span>}
-                {file.tags?.slice(0, 2).map((tag: any) => (
-                  <span key={tag.name} className={cn("shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium", isSystemTag(tag) ? "border border-dashed border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 bg-transparent italic" : "")} style={isSystemTag(tag) ? {} : { backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
-                ))}
+                {(() => {
+                  const userTags2 = (file.tags || []).filter((t: any) => !isSystemTag(t))
+                  const sysTags2 = (file.tags || []).filter((t: any) => isSystemTag(t))
+                  return (
+                    <>
+                      {userTags2.slice(0, 2).map((tag: any) => (
+                        <span key={tag.name} className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
+                      ))}
+                      {sysTags2.length > 0 && <CollapsibleSystemTags tags={sysTags2} />}
+                    </>
+                  )
+                })()}
                 {file.suggestedFolder && !file.folderId && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
@@ -961,26 +1012,36 @@ export function FileList() {
                   onContextMenu={(e) => { e.preventDefault(); setContextMenu({ fileId: file.id, x: e.clientX, y: e.clientY }) }}
                   draggable
                   onDragStart={(e) => { e.dataTransfer.setData("text/plain", file.id); e.dataTransfer.effectAllowed = "move" }}
-                  className={cn("rounded-xl border p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-3 overflow-hidden min-w-0", isSel && "bg-brand-50 dark:bg-brand-500/10 ring-2 ring-brand-500")}
+                  className={cn("group relative rounded-xl border p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:scale-[1.02] hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col gap-3 overflow-hidden min-w-0", isSel && "bg-brand-50 dark:bg-brand-500/10 ring-2 ring-brand-500")}
                 >
                   <div className="flex h-28 items-center justify-center rounded-lg bg-zinc-50/50 dark:bg-zinc-800/50">
                     <TypeIcon type={file.type} name={file.name} className="h-14 w-14" />
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <p className="text-sm font-medium truncate flex-1" title={displayFileName(file.name, file.summary)}>{displayFileName(file.name, file.summary)}</p>
+                    <p className="text-sm font-medium truncate flex-1" title={displayFileName(file.name, file.summary, disambiguators.get(file.id))}>{displayFileName(file.name, file.summary, disambiguators.get(file.id))}</p>
                     {fileSubtitle(file.name, file.summary, file.createdAt) && <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name, file.summary, file.createdAt)}</p>}
                   </div>
 
                   {file.tags && file.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {file.tags.slice(0, 2).map((tag: any) => (
-                        <span key={tag.name} className={cn("rounded-full px-1.5 py-0.5 text-[9px] font-medium", isSystemTag(tag) ? "border border-dashed border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 bg-transparent italic" : "")} style={isSystemTag(tag) ? {} : { backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
+                      {(file.tags || []).filter((t: any) => !isSystemTag(t)).slice(0, 2).map((tag: any) => (
+                        <span key={tag.name} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
                       ))}
+                      {(file.tags || []).filter((t: any) => isSystemTag(t)).length > 0 && (
+                        <CollapsibleSystemTags tags={(file.tags || []).filter((t: any) => isSystemTag(t))} />
+                      )}
                     </div>
                   )}
                   {file.suggestedFolder && !file.folderId && (
                     <span className="text-xs text-indigo-500">💡 {file.suggestedFolder}</span>
                   )}
+                  {/* Grid hover actions */}
+                  <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-md p-0.5">
+                    <button onClick={(e) => { e.stopPropagation(); handleDownload(file.id, e) }} className="h-6 w-6 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center" title="Download"><Download className="h-3 w-3 text-zinc-500" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); router.push(`/chat?fileIds=${file.id}&q=Tell me about ${encodeURIComponent(file.name)}`) }} className="h-6 w-6 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center" title="Ask AI"><BotMessageSquare className="h-3 w-3 text-brand-500" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); handleShare(file.id) }} className="h-6 w-6 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center" title="Share"><Share2 className="h-3 w-3 text-zinc-500" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); openDrawer(file.id) }} className="h-6 w-6 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center" title="Details"><Info className="h-3 w-3 text-zinc-500" /></button>
+                  </div>
                   <div className="flex items-center justify-between mt-auto">
                     <StatusIcon status={file.status} error={file.errorMessage} />
                     <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{fmtSize(file.size)}</span>
