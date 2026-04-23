@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useSession, getSession } from "next-auth/react"
 import Link from "next/link"
-import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, ChevronRight, Key, Users, Bell, RefreshCw, Webhook, Database, Terminal, MoreHorizontal, Pencil, Unplug, ScrollText } from "lucide-react"
+import { Copy, Check, Monitor, Globe, Puzzle, ChevronDown, ChevronRight, Key, Users, Bell, RefreshCw, Webhook, Database, Terminal, MoreHorizontal, Pencil, Unplug, ScrollText, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { trackEvent } from "@/lib/analytics"
@@ -207,6 +207,82 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
           </p>
         </div>
       )}
+    </div>
+  )
+}
+
+/* ---------- LLM Proxy Section ---------- */
+function LLMProxySection({ copied, copyText }: { copied: string | null; copyText: (text: string, label: string) => void }) {
+  const proxyBaseUrl = "https://api.drivemem.cloud/proxy/v1"
+
+  const steps = [
+    {
+      num: "1",
+      title: "Set API Base URL",
+      content: (
+        <div className="mt-2">
+          <div className="relative">
+            <pre className="rounded-lg bg-zinc-950 text-zinc-50 px-4 py-3 text-sm font-mono select-all pr-20 overflow-x-auto">
+              {proxyBaseUrl}
+            </pre>
+            <button
+              onClick={() => copyText(proxyBaseUrl, "proxy-url")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3 py-1.5 text-xs font-medium transition"
+            >
+              {copied === "proxy-url" ? <><Check className="h-3.5 w-3.5" />Copied</> : <><Copy className="h-3.5 w-3.5" />Copy</>}
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Set this as the base URL / API endpoint in your LLM client settings
+          </p>
+        </div>
+      ),
+    },
+    {
+      num: "2",
+      title: "Use Your Own API Key",
+      content: (
+        <p className="text-sm text-muted-foreground mt-2">
+          Your existing OpenAI or Anthropic API key works as-is — just enter it in your client. We never store your key.
+        </p>
+      ),
+    },
+    {
+      num: "3",
+      title: "Chat with Knowledge",
+      content: (
+        <p className="text-sm text-muted-foreground mt-2">
+          Your DriveMem files are automatically included as context in every conversation. No extra configuration needed.
+        </p>
+      ),
+    },
+  ]
+
+  return (
+    <div className="mb-10">
+      <div className="flex items-center gap-3 mb-4">
+        <h2 className="text-lg font-semibold tracking-tight">Universal LLM Proxy</h2>
+        <span className="text-[10px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-wider">Beta</span>
+      </div>
+      <p className="text-muted-foreground text-sm mb-6">
+        Use your knowledge with ChatGPT, Claude, or any LLM — just change one setting
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        {steps.map((step) => (
+          <div key={step.num} className="rounded-2xl border shadow-soft p-6 flex flex-col">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                {step.num}
+              </div>
+              <h3 className="font-semibold text-sm">{step.title}</h3>
+            </div>
+            {step.content}
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground mt-4">
+        🔒 Your API key passes through securely and is never stored.
+      </p>
     </div>
   )
 }
@@ -645,6 +721,9 @@ export default function ConnectPage() {
       </div>
       </>
       )}
+
+      {/* LLM Proxy */}
+      <LLMProxySection copied={copied} copyText={copyText} />
 
       {/* Data Sources */}
       <DataSources />
