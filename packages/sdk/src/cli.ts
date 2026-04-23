@@ -163,7 +163,7 @@ async function setup() {
   console.log('='.repeat(50));
 }
 
-async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamUrl: string = '') {
+async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamUrl: string = '', contextBudget: number = 500) {
   console.log('🧠 DriveMem Proxy starting...\n');
 
   const DRIVEMEM_API = 'https://api.drivemem.cloud';
@@ -192,23 +192,41 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
           const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
           const query = typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '';
 
-          // 1. Search DriveMem for context (skip trivial queries)
+          // 1. Search DriveMem for context (smart injection)
           let contextSnippet = '';
-          const trivialPatterns = /^(hi|hello|hey|thanks|thank you|ok|yes|no|sure|bye|good|great)\b/i;
-          if (query && query.length > 10 && !trivialPatterns.test(query.trim())) {
+          const trivialPatterns = /^(hi|hello|hey|thanks|thank you|ok|yes|no|sure|bye|good|great|什么|你好|谢谢)\b/i;
+          const needsContext = query && query.length > 10 && !trivialPatterns.test(query.trim());
+          
+          if (needsContext) {
             try {
-              const searchRes = await fetch(`${DRIVEMEM_API}/api/v1/search?q=${encodeURIComponent(query)}&limit=2`, {
+              const searchRes = await fetch(`${DRIVEMEM_API}/api/v1/search?q=${encodeURIComponent(query)}&limit=5`, {
                 headers: { 'Authorization': `Bearer ${driveMemApiKey}` }
               });
               if (searchRes.ok) {
                 const searchData = await searchRes.json() as { results?: Array<{ fileName?: string; text?: string; score?: number }> };
-                const results = (searchData.results || []).filter((r: any) => (r.score || 0) > 0.3);
-                if (results.length > 0) {
-                  // Budget: max ~400 tokens ≈ 1600 chars total
-                  const maxCharsPerResult = Math.floor(1600 / results.length);
-                  contextSnippet = results.map((r: { fileName?: string; text?: string }, i: number) => `[${i + 1}] ${r.fileName}: ${r.text?.slice(0, maxCharsPerResult)}`).join('\n\n');
-                  contextCount++;
-                  console.log(`  ✅ Injected context for "${query.slice(0, 40)}..." (${results.length} sources, ~${contextSnippet.length} chars)`);
+                // Score threshold 0.5 — only truly relevant results
+                const relevant = (searchData.results || []).filter((r: any) => (r.score || 0) > 0.5);
+                
+                if (relevant.length > 0) {
+                  // Token budget mode: ~500 tokens ≈ 2000 chars, greedy fill by score
+                  const TOKEN_BUDGET_CHARS = contextBudget * 4; // ~4 chars per token
+                  let usedChars = 0;
+                  const snippets: string[] = [];
+                  
+                  for (const r of relevant) {
+                    const text = r.text || '';
+                    const remaining = TOKEN_BUDGET_CHARS - usedChars;
+                    if (remaining <= 50) break; // not enough room
+                    const snippet = `[${snippets.length + 1}] ${r.fileName}: ${text.slice(0, remaining)}`;
+                    snippets.push(snippet);
+                    usedChars += snippet.length;
+                  }
+                  
+                  if (snippets.length > 0) {
+                    contextSnippet = snippets.join('\n\n');
+                    contextCount++;
+                    console.log(`  ✅ Injected context for "${query.slice(0, 40)}..." (${snippets.length} sources, ~${Math.round(usedChars / 4)} tokens)`);
+                  }
                 }
               }
             } catch { /* ignore search errors */ }
@@ -318,6 +336,7 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
   server.listen(port, () => {
     console.log(`🧠 DriveMem Proxy running on http://localhost:${port}`);
     console.log(`→ Upstream LLM: ${defaultUpstreamUrl || 'https://api.openai.com (default)'}`);
+    console.log(`→ Context budget: ${contextBudget} tokens per request`);
     console.log(`→ Set your AI tool's API Base URL to: http://localhost:${port}/v1`);
     console.log(`→ Your LLM API keys stay local. Only knowledge queries go to DriveMem cloud.`);
     console.log(`→ Health check: http://localhost:${port}/health`);
@@ -361,13 +380,14 @@ function main() {
     const apiKey = process.argv.find(a => a.startsWith('--api-key='))?.split('=')[1] || process.env.DRIVEMEM_API_KEY;
     const port = parseInt(process.argv.find(a => a.startsWith('--port='))?.split('=')[1] || '7879');
     const upstreamUrl = process.argv.find(a => a.startsWith('--upstream-url='))?.split('=')[1] || process.env.LLM_BASE_URL || '';
+    const contextBudgetArg = parseInt(process.argv.find(a => a.startsWith('--context-budget='))?.split('=')[1] || '500');
 
     if (!apiKey) {
       console.error('❌ DriveMem API Key required. Use --api-key=ak_xxx or set DRIVEMEM_API_KEY env var');
       process.exit(1);
     }
 
-    startProxy(apiKey, port, upstreamUrl).catch(console.error);
+    startProxy(apiKey, port, upstreamUrl, contextBudgetArg).catch(console.error);
   } else {
     console.log('🧠 DriveMem CLI\n');
     console.log('Usage:');
