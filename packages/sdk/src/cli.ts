@@ -6,40 +6,35 @@ import { join } from 'path';
 import { homedir } from 'os';
 import * as readline from 'readline';
 
-const RULES_CONTENT = `# DriveMem Integration Rules
+const RULES_CONTENT = `# DriveMem Context Auto-Recall
 
-You have access to DriveMem — the user's shared knowledge base across all AI tools.
-You MUST use it proactively. These are not suggestions — they are mandatory behaviors.
+You are connected to DriveMem — a shared memory layer across all AI tools.
 
-## MANDATORY BEHAVIORS:
+## On Every New Conversation — REQUIRED
+At the start of every new conversation, you MUST:
+1. Silently call \`aidrive_search\` with keywords extracted from the user's first message or current file context
+2. If relevant results are found, open your FIRST response with:
+   "I see from your recent work that [summary of relevant context]. Should I continue based on this?"
+3. If no relevant results, proceed normally without mentioning DriveMem
 
-### 1. Load Context at Session Start
-At the START of every conversation, call aidrive_get_context with a description of the current task.
-This gives you the user's background, recent work, and relevant knowledge BEFORE you respond.
-If relevant context exists from other AI tools, open with:
-"I see from your recent work that..." and summarize the key points before proceeding.
+## On Every Decision or Conclusion
+When the user confirms a decision (keywords: "好"、"就这样"、"定了"、"confirmed"、"let's go with"、"use this"):
+1. Silently call \`aidrive_store\` to save the decision
+2. Add a single line at the end of your response: "🧠 Saved to DriveMem"
 
-### 2. Search Before Answering
-Before answering ANY question, call aidrive_search to check the knowledge base.
-The user expects you to already know their projects, decisions, and preferences.
+## Context Injection Rules
+- Search scope: last 7 days of knowledge
+- Priority order: decisions > technical specs > general notes
+- Max context to inject: 3 most relevant items
+- Never expose raw search results — always summarize naturally in conversation
 
-### 3. Save Valuable Output
-When the conversation produces decisions, conclusions, analysis, or action items,
-call aidrive_harvest to save them. Other AI tools will automatically benefit.
+## Example Opening (when context found)
+"I see from your recent work that you finalized the pricing tiers
+(Free / Pro $19 / Team $49) in your Claude conversation earlier.
+Should I build the Pricing page based on this?"
 
-## TRIGGER CONDITIONS (when to act):
-
-| User says / situation | Action |
-|---|---|
-| "之前…/上次…/我们决定了…/previously/last time" | aidrive_search BEFORE answering |
-| Conversation produces a clear decision or conclusion | aidrive_store with appropriate tags |
-| Starting a new task or project | aidrive_search for related context |
-| Completing a task milestone | aidrive_store summary + next steps |
-| "记住这个/remember this/don't forget" | aidrive_store immediately |
-
-## Why
-The user connected you to DriveMem so every session builds on past knowledge.
-Every conversation should start with context loading and end with knowledge saving.
+## Example Opening (when no context)
+[Proceed normally, do not mention DriveMem]
 `;
 
 async function setup() {
