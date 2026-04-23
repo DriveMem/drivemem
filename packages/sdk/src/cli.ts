@@ -170,6 +170,28 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
   let contextCount = 0;
   let harvestCount = 0;
 
+  // Cloud profile cache
+  let cloudProfiles: Record<string, any> | null = null;
+  let profileFetchedAt = 0;
+  const PROFILE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+
+  async function getCloudProfiles(): Promise<Record<string, any>> {
+    if (cloudProfiles && (Date.now() - profileFetchedAt < PROFILE_CACHE_TTL)) {
+      return cloudProfiles;
+    }
+    try {
+      const res = await fetch(`${DRIVEMEM_API}/api/v1/model-profiles`);
+      if (res.ok) {
+        const data = await res.json() as any;
+        cloudProfiles = data.profiles || {};
+        profileFetchedAt = Date.now();
+        console.log(`  📋 Loaded ${Object.keys(cloudProfiles!).length} model profiles from cloud`);
+        return cloudProfiles!;
+      }
+    } catch {}
+    return {};
+  }
+
   // Model-Aware Injection Profiles
   const MODEL_PROFILES: Record<string, { tokenBudget: number; threshold: number; mode: 'full' | 'summary' | 'key_facts' | 'code_first' }> = {
     // --- Anthropic Claude ---
@@ -268,10 +290,19 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
   }
 
   function getModelProfile(modelName: string) {
-    // Exact match first, then prefix match
+    // 1. Check cloud profiles (cached)
+    const cloud = cloudProfiles || {};
+    if (cloud[modelName]) return cloud[modelName];
+    const cloudPrefix = Object.keys(cloud).find(k => k !== '_default' && modelName.startsWith(k));
+    if (cloudPrefix) return cloud[cloudPrefix];
+
+    // 2. Check local hardcoded profiles
     if (MODEL_PROFILES[modelName]) return MODEL_PROFILES[modelName];
-    const prefix = Object.keys(MODEL_PROFILES).find(k => modelName.startsWith(k));
-    return prefix ? MODEL_PROFILES[prefix] : DEFAULT_PROFILE;
+    const localPrefix = Object.keys(MODEL_PROFILES).find(k => modelName.startsWith(k));
+    if (localPrefix) return MODEL_PROFILES[localPrefix];
+
+    // 3. Cloud default or local default
+    return cloud['_default'] || DEFAULT_PROFILE;
   }
 
   const server = http.createServer(async (req, res) => {
@@ -467,6 +498,9 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
       res.end(JSON.stringify({ error: 'Only /v1/chat/completions is proxied' }));
     }
   });
+
+  // Pre-fetch cloud profiles
+  await getCloudProfiles();
 
   server.listen(port, () => {
     console.log(`🧠 DriveMem Proxy running on http://localhost:${port}`);

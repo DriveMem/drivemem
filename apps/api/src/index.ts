@@ -128,6 +128,40 @@ await app.register(apiKeyRoutes, { prefix: '/api/api-keys' });
 import v1Routes from './routes/v1.js';
 await app.register(v1Routes, { prefix: '/api/v1' });
 
+// Public endpoints (no auth)
+await app.register(async function publicRoutes(pub) {
+  pub.get('/model-profiles', async (request, reply) => {
+    const profiles = {
+      'claude-opus-4': { tokenBudget: 3000, threshold: 0.65, mode: 'full' },
+      'claude-sonnet-4': { tokenBudget: 2000, threshold: 0.68, mode: 'full' },
+      'claude-haiku-3.5': { tokenBudget: 1000, threshold: 0.72, mode: 'summary' },
+      'claude-3-5-sonnet': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+      'o3': { tokenBudget: 800, threshold: 0.82, mode: 'key_facts' },
+      'o4-mini': { tokenBudget: 600, threshold: 0.82, mode: 'key_facts' },
+      'o1': { tokenBudget: 800, threshold: 0.82, mode: 'key_facts' },
+      'gpt-4.1': { tokenBudget: 3000, threshold: 0.65, mode: 'full' },
+      'gpt-4.1-mini': { tokenBudget: 1500, threshold: 0.70, mode: 'summary' },
+      'gpt-4o': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+      'gpt-4o-mini': { tokenBudget: 800, threshold: 0.72, mode: 'summary' },
+      'gpt-3.5-turbo': { tokenBudget: 300, threshold: 0.75, mode: 'summary' },
+      'deepseek-v3.2': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+      'deepseek-r1': { tokenBudget: 600, threshold: 0.82, mode: 'key_facts' },
+      'deepseek-r1-distill': { tokenBudget: 300, threshold: 0.85, mode: 'key_facts' },
+      'deepseek-coder': { tokenBudget: 2000, threshold: 0.70, mode: 'code_first' },
+      'qwen3-max': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+      'qwen3-plus': { tokenBudget: 1500, threshold: 0.68, mode: 'summary' },
+      'qwen3-flash': { tokenBudget: 800, threshold: 0.72, mode: 'summary' },
+      'qwen-coder-plus': { tokenBudget: 2000, threshold: 0.70, mode: 'code_first' },
+      'qwq-plus': { tokenBudget: 600, threshold: 0.82, mode: 'key_facts' },
+      'kimi-k2.5': { tokenBudget: 2000, threshold: 0.65, mode: 'full' },
+      'minimax-m2.7': { tokenBudget: 3000, threshold: 0.63, mode: 'full' },
+      '_default': { tokenBudget: 800, threshold: 0.75, mode: 'summary' },
+    };
+    reply.header('Cache-Control', 'public, max-age=86400');
+    return reply.send({ profiles, version: '2026-04-23', count: Object.keys(profiles).length });
+  });
+}, { prefix: '/api/v1' });
+
 import quickPromptRoutes from './routes/quick-prompts.js';
 await app.register(quickPromptRoutes, { prefix: '/api/quick-prompts' });
 
