@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useTheme } from "next-themes"
-import { Bell, Menu, Sun, Moon } from "lucide-react"
+import { Bell, Menu, Sun, Moon, FileText, MessageSquare, AlertTriangle, Info, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Popover,
@@ -78,10 +78,35 @@ export function TopNav() {
   }
 
   const markAllRead = async () => {
+    // Optimistic update: immediately zero badge and mark all read
+    setUnreadCount(0)
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
     try {
       await apiFetch("/api/notifications/read-all", { method: "POST" })
+    } catch {
+      // Revert on failure
       await Promise.all([fetchNotifications(), fetchUnreadCount()])
-    } catch {}
+    }
+  }
+
+  const getNotificationCta = (type: string): { label: string; icon: React.ReactNode } | null => {
+    switch (type) {
+      case 'file_indexed':
+      case 'file_updated':
+        return { label: 'View file', icon: <FileText className="h-3 w-3" /> }
+      case 'chat_message':
+      case 'chat_mention':
+        return { label: 'Open chat', icon: <MessageSquare className="h-3 w-3" /> }
+      case 'storage_warning':
+      case 'storage_limit':
+        return { label: 'Manage storage', icon: <AlertTriangle className="h-3 w-3" /> }
+      case 'summary_generated':
+      case 'ai_analysis':
+      case 'insight_ready':
+        return { label: 'See details', icon: <Info className="h-3 w-3" /> }
+      default:
+        return { label: 'View', icon: <ExternalLink className="h-3 w-3" /> }
+    }
   }
 
   return (
@@ -134,20 +159,42 @@ export function TopNav() {
               {notifications.length === 0 ? (
                 <p className="py-8 text-center text-sm text-zinc-400">No notifications</p>
               ) : (
-                notifications.map(n => (
-                  <div
-                    key={n.id}
-                    onClick={() => markRead(n.id)}
-                    className={cn(
-                      "px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer",
-                      !n.read && "bg-brand-500/5"
-                    )}
-                  >
-                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{n.title}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{n.message}</p>
-                    <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">{formatRelativeTime(n.createdAt)}</p>
-                  </div>
-                ))
+                notifications.map(n => {
+                  const cta = getNotificationCta(n.type)
+                  return (
+                    <div
+                      key={n.id}
+                      onClick={() => !n.read && markRead(n.id)}
+                      className={cn(
+                        "relative px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors",
+                        !n.read && "bg-blue-50/80 dark:bg-blue-950/20",
+                        !n.read && "pl-7"
+                      )}
+                    >
+                      {/* Unread blue dot */}
+                      {!n.read && (
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-blue-500" />
+                      )}
+                      <p className={cn(
+                        "text-sm text-zinc-900 dark:text-zinc-100",
+                        !n.read ? "font-semibold" : "font-medium"
+                      )}>{n.title}</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{n.message}</p>
+                      <div className="flex items-center justify-between mt-1.5">
+                        <p className="text-xs text-zinc-400 dark:text-zinc-500">{formatRelativeTime(n.createdAt)}</p>
+                        {cta && (
+                          <button
+                            onClick={(e) => { e.stopPropagation() }}
+                            className="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 dark:hover:text-brand-400 font-medium"
+                          >
+                            {cta.icon}
+                            {cta.label}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })
               )}
             </div>
           </PopoverContent>
