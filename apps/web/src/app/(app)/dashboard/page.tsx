@@ -234,28 +234,25 @@ function ConflictBanner({ count }: { count: number }) {
 // --- Activity grouping: fold same-type activities within 1 minute (#99) ---
 function getActivityMinuteKey(a: any): string {
   const d = new Date(a.createdAt)
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}-${d.getMinutes()}`
+  const min2 = Math.floor(d.getMinutes() / 2)
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}-${min2}`
 }
 
 function getActivityTypeKey(a: any): string {
-  if (a.type === 'auto_capture' || a.action === 'auto_store' || a.metadata?.source === 'auto_store') return 'auto_store'
-  if (a.type === 'agent_activity') return `agent_${a.metadata?.action || 'activity'}`
+  if (a.type === 'file_uploaded' || a.type === 'auto_capture' || a.action === 'auto_store' || a.metadata?.source === 'auto_store') return 'file_mutation'
+  if (a.type === 'agent_activity') return 'agent_activity'
   return a.type || 'unknown'
 }
 
 const GROUP_LABELS: Record<string, { verb: string; noun: string }> = {
-  auto_store: { verb: 'saved', noun: 'files' },
+  file_mutation: { verb: 'saved', noun: 'files' },
   file_indexed: { verb: 'indexed', noun: 'files' },
   file_upload: { verb: 'uploaded', noun: 'files' },
   insight_generated: { verb: 'generated', noun: 'insights' },
   knowledge_link_found: { verb: 'found', noun: 'connections' },
   conversation: { verb: 'had', noun: 'conversations' },
-  agent_store: { verb: 'saved', noun: 'files' },
-  agent_harvest: { verb: 'harvested', noun: 'files' },
-  agent_compile: { verb: 'compiled', noun: 'briefings' },
-  agent_search: { verb: 'searched', noun: 'queries' },
-  agent_ask: { verb: 'asked', noun: 'questions' },
-  agent_relay: { verb: 'relayed', noun: 'files' },
+  agent_activity: { verb: 'performed', noun: 'actions' },
+  unknown: { verb: 'performed', noun: 'actions' },
 }
 
 function groupActivitiesByMinuteAndType(activities: any[]) {
