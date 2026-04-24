@@ -138,8 +138,11 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
     const storeActivities = await db.select({
       detail: schema.apiActivityLogs.detail,
       agentName: schema.apiActivityLogs.agentName,
+      apiKeyId: schema.apiActivityLogs.apiKeyId,
       metadata: schema.apiActivityLogs.metadata,
+      apiKeyName: schema.apiKeys.name,
     }).from(schema.apiActivityLogs)
+      .leftJoin(schema.apiKeys, eq(schema.apiActivityLogs.apiKeyId, schema.apiKeys.id))
       .where(and(
         eq(schema.apiActivityLogs.userId, userId),
         sql`${schema.apiActivityLogs.action} = 'store'`,
@@ -151,7 +154,7 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
       const meta = sa.metadata as Record<string, unknown> | null;
       const fileId = meta?.fileId as string;
       if (fileId && fileIds.includes(fileId) && sa.agentName) {
-        fileAgentMap[fileId] = sa.agentName;
+        fileAgentMap[fileId] = formatAgentName(sa.agentName, sa.apiKeyName);
       }
     }
   }
@@ -205,7 +208,7 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
       createdAt: f.createdAt,
       metadata: {
         mimeType: f.mimeType, size: Number(f.size), status: f.status,
-        ...(storedByAgent ? { agentName: storedByAgent, actorType: 'agent', actorLabel: formatAgentName(storedByAgent) } : {}),
+        ...(storedByAgent ? { agentName: storedByAgent, actorType: 'agent', actorLabel: storedByAgent } : {}),
       },
     };}),
     ...conversations.map(c => ({
@@ -243,7 +246,7 @@ export async function fetchTimeline(userId: string, limit: number, cursor?: stri
     ...activities.map(a => {
       const iconMap: Record<string, string> = { search: '🔍', store: '📥', ask: '💬', compile: '📋', relay: '🔄' };
       const icon = iconMap[a.action] || '🤖';
-      const agent = formatAgentName(a.agentName, (a as any).apiKeyName) || 'API';
+      const agent = formatAgentName(a.agentName, a.apiKeyName) || 'API';
       const fullDetail = getFullDetail(a.detail, a.metadata as Record<string, unknown>);
       const shortDetail = fullDetail ? (fullDetail.length > 60 ? fullDetail.slice(0, 57) + '...' : fullDetail) : null;
 
@@ -329,15 +332,26 @@ export default async function timelineRoutes(fastify: FastifyInstance) {
     const query = request.query as { limit?: string };
     const limit = Math.min(parseInt(query.limit || '50'), 200);
     
-    const activities = await db.select()
+    const activities = await db.select({
+      id: schema.apiActivityLogs.id,
+      agentName: schema.apiActivityLogs.agentName,
+      action: schema.apiActivityLogs.action,
+      detail: schema.apiActivityLogs.detail,
+      metadata: schema.apiActivityLogs.metadata,
+      createdAt: schema.apiActivityLogs.createdAt,
+      apiKeyId: schema.apiActivityLogs.apiKeyId,
+      relatedFileIds: schema.apiActivityLogs.relatedFileIds,
+      apiKeyName: schema.apiKeys.name,
+    })
       .from(schema.apiActivityLogs)
+      .leftJoin(schema.apiKeys, eq(schema.apiActivityLogs.apiKeyId, schema.apiKeys.id))
       .where(eq(schema.apiActivityLogs.userId, userId))
       .orderBy(desc(schema.apiActivityLogs.createdAt))
       .limit(limit);
 
     const agentGroups: Record<string, any[]> = {};
     for (const a of activities) {
-      const agent = formatAgentName(a.agentName, (a as any).apiKeyName);
+      const agent = formatAgentName(a.agentName, a.apiKeyName);
       if (!agentGroups[agent]) agentGroups[agent] = [];
       agentGroups[agent].push({
         id: a.id, action: a.action, detail: getFullDetail(a.detail, a.metadata as Record<string, unknown>),
@@ -350,7 +364,7 @@ export default async function timelineRoutes(fastify: FastifyInstance) {
     for (const a of activities) {
       if (a.action === 'store' && a.metadata) {
         const fileId = (a.metadata as any).fileId;
-        if (fileId) fileAgentMap[fileId] = formatAgentName(a.agentName, (a as any).apiKeyName);
+        if (fileId) fileAgentMap[fileId] = formatAgentName(a.agentName, a.apiKeyName);
       }
     }
     for (const a of activities) {
@@ -358,7 +372,7 @@ export default async function timelineRoutes(fastify: FastifyInstance) {
         for (const fid of (a.relatedFileIds as string[])) {
           const sourceAgent = fileAgentMap[fid];
           if (sourceAgent && sourceAgent !== (a.agentName || 'You')) {
-            flows.push({ from: sourceAgent, to: formatAgentName(a.agentName, (a as any).apiKeyName), fileNames: [], timestamp: a.createdAt?.toISOString() || '' });
+            flows.push({ from: sourceAgent, to: formatAgentName(a.agentName, a.apiKeyName), fileNames: [], timestamp: a.createdAt?.toISOString() || '' });
           }
         }
       }
