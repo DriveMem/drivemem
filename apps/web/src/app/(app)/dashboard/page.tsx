@@ -133,12 +133,26 @@ function ActivityItem({ activity }: { activity: any }) {
     .replace(/\.(md|pdf|docx|txt)\b/gi, '')
 
   // #100: Extract title (filename/action) as primary, detail as secondary
-  const primaryTitle = activity.metadata?.fileName
-    ? activity.metadata.fileName.replace(/\.(md|pdf|docx|txt)$/i, '')
-    : activity.title || action
+  const primaryTitle = (() => {
+    const raw = activity.metadata?.fileName
+      ? String(activity.metadata.fileName).replace(/\.(md|pdf|docx|txt)$/i, '')
+      : activity.title || action
+    // Humanize auto-generated filenames
+    return raw
+      .replace(/^session-summary-[\w-]+$/i, 'Session Summary')
+      .replace(/^auto-capture-[\w-]+$/i, 'Auto Capture')
+      .replace(/^auto-[\w-]+$/i, 'Auto Note')
+      .replace(/^note-\d{4}-\d{2}-\d{2}T[\w-]+$/i, 'Note')
+  })()
   const secondaryDetail = activity.metadata?.fileName
     ? (detail || action)
     : detail
+
+  // Strip low-info prefixes from AI-generated summaries
+  const cleanDetail = secondaryDetail
+    ?.replace(/^This (document|file|note|page|article|entry|memo|record|piece) (is about|describes|details|outlines|summarizes|covers|contains|provides|presents|discusses|explains|records|captures|announces|is a)[^.]*?\.\s*/i, '')
+    ?.replace(/^(Here is|The following|Below is)[^.]*?\.\s*/i, '')
+    ?.trim()
 
   return (
     <div className="flex items-start gap-3 py-2 md:py-3 text-xs md:text-body border-b border-zinc-100 dark:border-zinc-800 last:border-0">
@@ -148,8 +162,8 @@ function ActivityItem({ activity }: { activity: any }) {
           <span className="text-xs text-muted-foreground/60 flex-shrink-0">{agentName}</span>
           <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">{primaryTitle}</span>
         </div>
-        {secondaryDetail && (
-          <p className="mt-0.5 text-xs text-muted-foreground/70 line-clamp-1">{secondaryDetail}</p>
+        {cleanDetail && (
+          <p className="mt-0.5 text-[11px] text-muted-foreground/50 line-clamp-1">{cleanDetail}</p>
         )}
       </div>
       <span className="ml-auto text-micro md:text-caption text-muted-foreground/50 flex-shrink-0 whitespace-nowrap mt-0.5">
