@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Bot, Search, Save, Brain, MessageCircle, ArrowLeftRight, Terminal, Filter } from "lucide-react"
+import { Bot, Search, Save, Brain, MessageCircle, ArrowLeftRight, Terminal } from "lucide-react"
 import Link from "next/link"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { apiFetch } from "@/lib/api"
@@ -17,7 +17,7 @@ interface AgentActivity {
   createdAt: string
 }
 
-type SourceFilter = "all" | "agent"
+type AgentFilter = string // "all" or agent name
 
 const ACTION_CONFIG: Record<string, { icon: typeof Bot; color: string; emoji: string }> = {
   store: { icon: Save, color: "text-emerald-500", emoji: "💾" },
@@ -29,10 +29,7 @@ const ACTION_CONFIG: Record<string, { icon: typeof Bot; color: string; emoji: st
   relay: { icon: ArrowLeftRight, color: "text-indigo-500", emoji: "🔄" },
 }
 
-const TABS: { key: SourceFilter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "agent", label: "Agent" },
-]
+// Tabs are now generated dynamically from activity data
 
 function displayAgentName(name: string): string {
   // Strip generic "Agent" prefixes: Agent10, agent_a, agent-B-xyz, etc.
@@ -70,7 +67,7 @@ export function AgentActivityPanel() {
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
   const [agentCount, setAgentCount] = useState(0)
-  const [filter, setFilter] = useState<SourceFilter>("all")
+  const [filter, setFilter] = useState<AgentFilter>("all")
   const [tracked, setTracked] = useState(false)
 
   const PAGE_SIZE = 10
@@ -79,8 +76,7 @@ export function AgentActivityPanel() {
     const currentOffset = loadMore ? offset + PAGE_SIZE : 0
     if (loadMore) setLoadingMore(true)
     try {
-      const qs = filter === "all" ? "" : `&source=${filter}`
-      const data = await apiFetch(`/api/agent-activity?limit=${PAGE_SIZE}&offset=${currentOffset}${qs}`, { silent: true }) as any
+      const data = await apiFetch(`/api/agent-activity?limit=${PAGE_SIZE}&offset=${currentOffset}`, { silent: true }) as any
       const newItems = data?.activities || []
       if (loadMore) {
         setActivities(prev => [...prev, ...newItems])
@@ -98,15 +94,15 @@ export function AgentActivityPanel() {
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [filter, offset])
+  }, [offset])
 
-  useEffect(() => { fetchData(false) }, [filter]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchData(false) }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-refresh every 30s (first page only)
   useEffect(() => {
     const interval = setInterval(() => fetchData(false), 30_000)
     return () => clearInterval(interval)
-  }, [filter]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!tracked && !loading) {
@@ -128,8 +124,17 @@ export function AgentActivityPanel() {
     )
   }
 
+  // Extract unique agent names for dynamic tabs
+  const uniqueAgents = Array.from(
+    new Map(
+      activities.map(a => [a.agentName, displayAgentName(a.agentName)])
+    )
+  ).sort((a, b) => a[1].localeCompare(b[1]))
+
   // Filter out noisy/system entries users can't understand
   const filteredActivities = activities.filter(a => {
+    // Apply agent name filter
+    if (filter !== "all" && a.agentName !== filter) return false
     // Filter out idle session summaries
     if (/idle|Session idle/i.test(a.summary)) return false
     // Filter out raw session_summary style entries
@@ -177,10 +182,10 @@ export function AgentActivityPanel() {
           <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider">
             Agent Activity
           </h2>
-          <TabBar filter={filter} setFilter={setFilter} agentCount={agentCount} />
+          <TabBar filter={filter} setFilter={setFilter} uniqueAgents={uniqueAgents} />
         </div>
         <div className="py-6 text-center">
-          <p className="text-sm text-muted-foreground">No {filter} activity yet</p>
+          <p className="text-sm text-muted-foreground">No activity for this agent yet</p>
           <button
             onClick={() => setFilter("all")}
             className="mt-2 text-xs text-primary hover:underline"
@@ -199,7 +204,7 @@ export function AgentActivityPanel() {
           Agent Activity
         </h2>
         <div className="flex items-center gap-3">
-          <TabBar filter={filter} setFilter={setFilter} agentCount={agentCount} />
+          <TabBar filter={filter} setFilter={setFilter} uniqueAgents={uniqueAgents} />
           {total > 10 && (
             <span className="text-xs text-muted-foreground">{total} total</span>
           )}
@@ -272,31 +277,36 @@ export function AgentActivityPanel() {
 function TabBar({
   filter,
   setFilter,
-  agentCount,
+  uniqueAgents,
 }: {
-  filter: SourceFilter
-  setFilter: (f: SourceFilter) => void
-  agentCount: number
+  filter: AgentFilter
+  setFilter: (f: AgentFilter) => void
+  uniqueAgents: [string, string][] // [rawName, displayName]
 }) {
+  // Don't show tabs if only 1 agent
+  if (uniqueAgents.length <= 1) return null
+
+  const tabs: { key: string; label: string }[] = [
+    { key: "all", label: "All" },
+    ...uniqueAgents.map(([raw, display]) => ({ key: raw, label: display })),
+  ]
+
   return (
-    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5">
-      {TABS.map(tab => (
+    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5 overflow-x-auto max-w-[400px]">
+      {tabs.map(tab => (
         <button
           key={tab.key}
           onClick={() => {
             setFilter(tab.key)
-            trackEvent("agent_activity_filter", { source: tab.key })
+            trackEvent("agent_activity_filter", { agent: tab.key })
           }}
-          className={`text-xs px-2.5 py-1 rounded-md transition-colors ${
+          className={`text-xs px-2.5 py-1 rounded-md transition-colors whitespace-nowrap ${
             filter === tab.key
               ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
               : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
           }`}
         >
           {tab.label}
-          {tab.key === "agent" && agentCount > 0 && (
-            <span className="ml-1 text-[10px] text-emerald-500">{agentCount}</span>
-          )}
         </button>
       ))}
     </div>
