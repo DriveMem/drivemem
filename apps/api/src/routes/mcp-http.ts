@@ -51,8 +51,40 @@ async function trackConnectionClose(connectionId: string | null) {
 }
 
 export default async function mcpHttpRoutes(fastify: FastifyInstance) {
-  // Active sessions: sessionId -> { transport, server }
-  const sessions = new Map<string, { transport: SSEServerTransport | StreamableHTTPServerTransport; server: any }>();
+  // Active sessions: sessionId -> session metadata
+  // SSE sessions are kept alive for SESSION_TTL_MS after disconnect to allow reconnection
+  const SESSION_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+  interface SessionEntry {
+    transport: SSEServerTransport | StreamableHTTPServerTransport;
+    server: any;
+    userId: string;
+    agentName: string;
+    apiKeyId?: string;
+    connectionId: string | null;
+    disconnectedAt?: number; // timestamp when SSE closed (undefined = still connected)
+  }
+
+  const sessions = new Map<string, SessionEntry>();
+
+  // Cleanup interval: remove SSE sessions that have been disconnected > TTL
+  const cleanupInterval = setInterval(() => {
+    const now = Date.now();
+    for (const [id, session] of sessions) {
+      if (session.disconnectedAt && (now - session.disconnectedAt) > SESSION_TTL_MS) {
+        sessions.delete(id);
+        trackConnectionClose(session.connectionId);
+      }
+    }
+  }, 60_000);
+
+  fastify.addHook('onClose', () => {
+    clearInterval(cleanupInterval);
+    for (const [id, session] of sessions) {
+      trackConnectionClose(session.connectionId);
+    }
+    sessions.clear();
+  });
 
   // Session idle summary is handled per-session via session-idle-summary service
 
@@ -71,8 +103,8 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     const legacySessionId = (request.query as any)?.sessionId as string | undefined;
     if (legacySessionId) {
       const session = sessions.get(legacySessionId);
-      if (!session) {
-        return reply.status(404).send({ error: 'Session not found. Establish SSE connection first.' });
+      if (!session || session.disconnectedAt) {
+        return reply.status(404).send({ error: 'Session not found or disconnected. Establish SSE connection first.' });
       }
       if (!(session.transport instanceof SSEServerTransport)) {
         return reply.status(400).send({
@@ -104,7 +136,7 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
         const transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => mcpSessionId,
           onsessioninitialized: (sessionId: string) => {
-            sessions.set(sessionId, { transport, server: mcpServer });
+            sessions.set(sessionId, { transport, server: mcpServer, userId, agentName, apiKeyId: (request as any).apiKeyId, connectionId: null });
           },
         });
         let connectionId: string | null = null;
@@ -121,7 +153,11 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
           },
         });
         await mcpServer.connect(transport);
-        trackConnectionOpen(userId, (request as any).apiKeyId, agentName, 'streamable-http-reconnect').then(id => { connectionId = id; });
+        trackConnectionOpen(userId, (request as any).apiKeyId, agentName, 'streamable-http-reconnect').then(id => {
+          connectionId = id;
+          const s = sessions.get(mcpSessionId);
+          if (s) s.connectionId = id;
+        });
         await transport.handleRequest(request.raw, reply.raw, request.body);
         reply.hijack();
         return;
@@ -149,7 +185,7 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         onsessioninitialized: (sessionId: string) => {
-          sessions.set(sessionId, { transport, server: mcpServer });
+          sessions.set(sessionId, { transport, server: mcpServer, userId, agentName, apiKeyId: (request as any).apiKeyId, connectionId: null });
         },
       });
 
@@ -173,7 +209,11 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
         },
       });
       await mcpServer.connect(transport);
-      trackConnectionOpen(userId, (request as any).apiKeyId, agentName, 'streamable-http').then(id => { connectionId = id; });
+      trackConnectionOpen(userId, (request as any).apiKeyId, agentName, 'streamable-http').then(id => {
+        connectionId = id;
+        const sid = transport.sessionId;
+        if (sid) { const s = sessions.get(sid); if (s) s.connectionId = id; }
+      });
       await transport.handleRequest(request.raw, reply.raw, request.body);
       reply.hijack();
       return;
@@ -221,10 +261,66 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
       return;
     }
 
-    // --- Legacy SSE: establish new SSE connection ---
+    // --- Legacy SSE: establish new or reconnect existing SSE connection ---
     const userId = request.user!.id;
     const agentName = (request as any).apiKeyName || '';
+    const reconnectSessionId = (request.query as any)?.sessionId as string | undefined;
 
+    // Check for reconnection to an existing disconnected session
+    if (reconnectSessionId) {
+      const existing = sessions.get(reconnectSessionId);
+      if (existing && existing.disconnectedAt && existing.userId === userId && existing.agentName === agentName) {
+        // Reconnect: reuse MCP server, create new SSE transport
+        const newTransport = new SSEServerTransport('/mcp', reply.raw);
+        const newSessionId = (newTransport as any)._sessionId as string;
+
+        const keepalive = setInterval(() => {
+          try { reply.raw.write(': keepalive\n\n'); } catch { clearInterval(keepalive); }
+        }, 15000);
+
+        // Remove old session entry, create new one with same server
+        sessions.delete(reconnectSessionId);
+        sessions.set(newSessionId, {
+          transport: newTransport,
+          server: existing.server,
+          userId,
+          agentName,
+          apiKeyId: existing.apiKeyId,
+          connectionId: existing.connectionId,
+          disconnectedAt: undefined,
+        });
+
+        newTransport.onclose = () => {
+          clearInterval(keepalive);
+          const sess = sessions.get(newSessionId);
+          if (sess) {
+            sess.disconnectedAt = Date.now();
+            onSessionDisconnect(newSessionId);
+          }
+        };
+
+        reply.raw.on('close', () => {
+          clearInterval(keepalive);
+          const sess = sessions.get(newSessionId);
+          if (sess && !sess.disconnectedAt) {
+            sess.disconnectedAt = Date.now();
+            onSessionDisconnect(newSessionId);
+          }
+        });
+
+        await existing.server.connect(newTransport);
+        trackConnectionOpen(userId, existing.apiKeyId, agentName, 'sse-reconnect').then(id => {
+          const sess = sessions.get(newSessionId);
+          if (sess) sess.connectionId = id;
+        });
+        console.log(`[MCP] SSE reconnected: old=${reconnectSessionId} new=${newSessionId}`);
+        reply.hijack();
+        return;
+      }
+      // If session not found or not disconnected, fall through to create new session
+    }
+
+    // --- New SSE session ---
     let sseConnectionId: string | null = null;
 
     const mcpServer = createMcpServer(userId, agentName, {
@@ -242,41 +338,154 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     }, 15000);
 
     const sessionId = (transport as any)._sessionId as string;
-    sessions.set(sessionId, { transport, server: mcpServer });
+    sessions.set(sessionId, {
+      transport,
+      server: mcpServer,
+      userId,
+      agentName,
+      apiKeyId: (request as any).apiKeyId,
+      connectionId: sseConnectionId,
+    });
 
     transport.onclose = () => {
       clearInterval(keepalive);
-      onSessionDisconnect(sessionId);
-      sessions.delete(sessionId);
-      trackConnectionClose(sseConnectionId);
+      // Soft-delete: mark disconnected instead of removing, allows reconnection within TTL
+      const sess = sessions.get(sessionId);
+      if (sess) {
+        sess.disconnectedAt = Date.now();
+        onSessionDisconnect(sessionId);
+      }
     };
 
+    reply.raw.on('close', () => {
+      clearInterval(keepalive);
+      const sess = sessions.get(sessionId);
+      if (sess && !sess.disconnectedAt) {
+        sess.disconnectedAt = Date.now();
+        onSessionDisconnect(sessionId);
+      }
+    });
+
     await mcpServer.connect(transport);
-    trackConnectionOpen(userId, (request as any).apiKeyId, agentName, 'sse').then(id => { sseConnectionId = id; });
+    trackConnectionOpen(userId, (request as any).apiKeyId, agentName, 'sse').then(id => {
+      sseConnectionId = id;
+      const sess = sessions.get(sessionId);
+      if (sess) sess.connectionId = id;
+    });
     reply.hijack();
   });
 
   // DELETE / — Streamable HTTP session termination
   // GET /sse — alias for SSE endpoint (some clients use /mcp/sse instead of /mcp)
   fastify.get('/sse', async (request: FastifyRequest, reply: FastifyReply) => {
-    // Same logic as GET / — SSE connection
     await requireApiKey(request, reply);
     if (reply.sent) return;
     const userId = request.user!.id;
     const agentName = (request as any).apiKeyName || '';
     const apiKeyId = (request as any).apiKeyId;
-    const mcpServer = createMcpServer(userId, agentName, { onToolCall: () => {}, apiKeyId });
+    const reconnectSessionId = (request.query as any)?.sessionId as string | undefined;
+
+    // Check for reconnection to an existing disconnected session
+    if (reconnectSessionId) {
+      const existing = sessions.get(reconnectSessionId);
+      if (existing && existing.disconnectedAt && existing.userId === userId && existing.agentName === agentName) {
+        const newTransport = new SSEServerTransport('/mcp/sse', reply.raw);
+        const newSessionId = newTransport.sessionId;
+
+        const keepalive = setInterval(() => {
+          try { reply.raw.write(': keepalive\n\n'); } catch { clearInterval(keepalive); }
+        }, 15000);
+
+        sessions.delete(reconnectSessionId);
+        sessions.set(newSessionId, {
+          transport: newTransport,
+          server: existing.server,
+          userId,
+          agentName,
+          apiKeyId: existing.apiKeyId,
+          connectionId: existing.connectionId,
+          disconnectedAt: undefined,
+        });
+
+        newTransport.onclose = () => {
+          clearInterval(keepalive);
+          const sess = sessions.get(newSessionId);
+          if (sess) {
+            sess.disconnectedAt = Date.now();
+            onSessionDisconnect(newSessionId);
+          }
+        };
+
+        reply.raw.on('close', () => {
+          clearInterval(keepalive);
+          const sess = sessions.get(newSessionId);
+          if (sess && !sess.disconnectedAt) {
+            sess.disconnectedAt = Date.now();
+            onSessionDisconnect(newSessionId);
+          }
+        });
+
+        await existing.server.connect(newTransport);
+        trackConnectionOpen(userId, existing.apiKeyId, agentName, 'sse-reconnect').then(id => {
+          const sess = sessions.get(newSessionId);
+          if (sess) sess.connectionId = id;
+        });
+        console.log(`[MCP] SSE /sse reconnected: old=${reconnectSessionId} new=${newSessionId}`);
+        reply.hijack();
+        return;
+      }
+    }
+
+    // --- New SSE session ---
+    let sseConnectionId: string | null = null;
+    const mcpServer = createMcpServer(userId, agentName, {
+      apiKeyId,
+      onToolCall: (toolName, toolArgs) => {
+        trackToolCall(sessionId, userId, agentName, toolName, toolArgs);
+        trackConnectionActivity(sseConnectionId);
+      },
+    });
     const transport = new SSEServerTransport('/mcp/sse', reply.raw);
 
-    // SSE keepalive — send comment every 15s to prevent proxy/CF timeout
     const keepalive = setInterval(() => {
       try { reply.raw.write(': keepalive\n\n'); } catch { clearInterval(keepalive); }
     }, 15000);
 
     const sessionId = transport.sessionId;
-    sessions.set(sessionId, { transport, server: mcpServer });
-    reply.raw.on('close', () => { clearInterval(keepalive); sessions.delete(sessionId); });
+    sessions.set(sessionId, {
+      transport,
+      server: mcpServer,
+      userId,
+      agentName,
+      apiKeyId,
+      connectionId: sseConnectionId,
+    });
+
+    transport.onclose = () => {
+      clearInterval(keepalive);
+      const sess = sessions.get(sessionId);
+      if (sess) {
+        sess.disconnectedAt = Date.now();
+        onSessionDisconnect(sessionId);
+      }
+    };
+
+    reply.raw.on('close', () => {
+      clearInterval(keepalive);
+      const sess = sessions.get(sessionId);
+      if (sess && !sess.disconnectedAt) {
+        sess.disconnectedAt = Date.now();
+        onSessionDisconnect(sessionId);
+      }
+    });
+
     await mcpServer.connect(transport);
+    trackConnectionOpen(userId, apiKeyId, agentName, 'sse').then(id => {
+      sseConnectionId = id;
+      const sess = sessions.get(sessionId);
+      if (sess) sess.connectionId = id;
+    });
+    reply.hijack();
   });
 
   // POST /sse — message endpoint for SSE transport (some clients POST to /mcp/sse?sessionId=...)
@@ -286,7 +495,7 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
     // If sessionId provided, skip API key auth (already authenticated on SSE GET)
     if (sessionId) {
       const session = sessions.get(sessionId);
-      if (!session) return reply.status(404).send({ error: 'Session not found' });
+      if (!session || session.disconnectedAt) return reply.status(404).send({ error: 'Session not found or disconnected' });
       if (!(session.transport instanceof SSEServerTransport)) return reply.status(400).send({ error: 'Not an SSE session' });
       await session.transport.handlePostMessage(request.raw, reply.raw, request.body);
       return;
@@ -333,6 +542,7 @@ export default async function mcpHttpRoutes(fastify: FastifyInstance) {
       // Legacy SSE transport doesn't support DELETE, just clean up
       await session.transport.close?.();
       sessions.delete(mcpSessionId);
+      trackConnectionClose(session.connectionId);
       return reply.status(200).send({ ok: true });
     }
   });
