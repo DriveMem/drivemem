@@ -59,3 +59,31 @@ function switchStep(stepId) {
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
   document.getElementById(stepId).classList.add('active');
 }
+
+// Update banner handling
+if (window.electronAPI && window.electronAPI.onUpdateAvailable) {
+  let currentUpdateData = null;
+
+  window.electronAPI.onUpdateAvailable((data) => {
+    currentUpdateData = data;
+    const banner = document.getElementById('update-banner');
+    const text = document.getElementById('update-text');
+    const summary = data.summary ? ` — ${data.summary}` : '';
+    text.textContent = `DriveMem v${data.version} available${summary}`;
+    banner.classList.add('visible');
+  });
+
+  document.getElementById('update-download').addEventListener('click', () => {
+    if (currentUpdateData && currentUpdateData.downloadUrl) {
+      window.electronAPI.openDownloadUrl(currentUpdateData.downloadUrl);
+    }
+  });
+
+  document.getElementById('update-dismiss').addEventListener('click', () => {
+    const banner = document.getElementById('update-banner');
+    banner.classList.remove('visible');
+    if (currentUpdateData) {
+      window.electronAPI.dismissUpdate(currentUpdateData.version);
+    }
+  });
+}

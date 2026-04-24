@@ -200,7 +200,9 @@ import nudgeRoutes from './routes/nudge.js';
 await app.register(nudgeRoutes, { prefix: '/api/v1' });
 
 import llmProxyRoutes from './routes/llm-proxy.js';
+import desktopRoutes from './routes/desktop.js';
 await app.register(llmProxyRoutes, { prefix: '/proxy' });
+await app.register(desktopRoutes, { prefix: '/api/desktop' });
 
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {

@@ -18,6 +18,13 @@
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-secondary { background: #f3f4f6; color: #374151; }
     .btn-secondary:hover { background: #e5e7eb; }
+    /* Update banner */
+    #update-banner { display: none; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; font-size: 13px; color: #3730a3; align-items: center; gap: 8px; }
+    #update-banner.visible { display: flex; }
+    #update-banner .update-text { flex: 1; }
+    #update-banner .btn-download { padding: 4px 12px; background: #6366f1; color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    #update-banner .btn-download:hover { background: #4f46e5; }
+    #update-banner .btn-dismiss { background: none; border: none; color: #6b7280; cursor: pointer; font-size: 16px; padding: 0 4px; }
     .tools { margin-bottom: 16px; }
     .tool { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; }
     .tool.detected { border-color: #10b981; background: #f0fdf4; }
@@ -34,6 +41,11 @@
   </style>
 </head>
 <body>
+  <div id="update-banner">
+    <span class="update-text" id="update-text"></span>
+    <button class="btn-download" id="update-download">Download</button>
+    <button class="btn-dismiss" id="update-dismiss">×</button>
+  </div>
   <div class="logo">
     <div class="logo-icon">D</div>
     <span style="font-weight:700;font-size:18px;">DriveMem</span>
