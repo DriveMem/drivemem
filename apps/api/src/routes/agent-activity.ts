@@ -90,17 +90,21 @@ function getSourceCondition(source: string) {
 }
 
 function formatAgentName(raw: string | null | undefined, apiKeyName?: string | null): string {
+  // Priority 1: use the API key display name from agent config
+  if (apiKeyName) return apiKeyName;
+
+  // Priority 2: if raw name is missing or generic, show default
   if (!raw || raw === 'AI Agent' || raw === 'Unknown') {
-    // Fall back to API key name if available
-    if (apiKeyName) return apiKeyName;
     return 'AI Agent';
   }
-  const cleaned = raw
-    .replace(/^agent[-_]?\w?[-_]?/i, '')
-    .replace(/[-_]/g, ' ')
-    .trim();
-  if (!cleaned) return apiKeyName || 'AI Agent';
-  return cleaned.replace(/\b\w/g, c => c.toUpperCase());
+
+  // Priority 3: mask internal "Agent10"-style names as "Unnamed Agent"
+  if (/^Agent\d+$/i.test(raw)) {
+    return 'Unnamed Agent';
+  }
+
+  // Priority 4: return raw name as-is (it's a meaningful name)
+  return raw;
 }
 
 function buildSummary(action: string, detail: string | null, metadata: Record<string, unknown> | null, agent: string): string {
