@@ -1,0 +1,57 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Deploy to VPS1
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS1_HOST }}
+          username: ubuntu
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script_stop: true
+          command_timeout: 15m
+          script: |
+            source ~/.nvm/nvm.sh
+            cd ~/repos/ai-drive
+            git pull --ff-only
+            bash deploy.sh --all
+            echo "VPS1 deploy complete"
+
+      - name: Deploy to VPS2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: 43.165.168.72
+          username: ubuntu
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script_stop: true
+          command_timeout: 15m
+          script: |
+            source ~/.nvm/nvm.sh
+            cd ~/repos/ai-drive
+            git pull --ff-only
+            bash deploy.sh --all
+            echo "VPS2 deploy complete"
+
+      - name: Verify both servers
+        run: |
+          sleep 5
+          VPS1_API=$(curl -s -o /dev/null -w "%{http_code}" "http://${{ secrets.VPS1_HOST }}:3001/api/v1/health" 2>/dev/null || echo "000")
+          VPS2_API=$(curl -s -o /dev/null -w "%{http_code}" "http://43.165.168.72:3001/api/v1/health" 2>/dev/null || echo "000")
+          echo "VPS1 API: $VPS1_API | VPS2 API: $VPS2_API"
+          if [ "$VPS1_API" != "200" ] || [ "$VPS2_API" != "200" ]; then
+            echo "⚠️ Health check failed on one or more servers"
+            exit 1
+          fi
+          echo "✅ Both servers healthy"
