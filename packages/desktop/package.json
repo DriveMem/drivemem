@@ -2,6 +2,11 @@
   "name": "drivemem-desktop",
   "version": "0.1.0",
   "description": "DriveMem Desktop — AI Memory Layer",
+  "author": "DriveMem <hello@drivemem.cloud>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yufuche1/ai-drive.git"
+  },
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -32,7 +37,8 @@
     "linux": {
       "target": ["AppImage"],
       "icon": "assets/icon.png"
-    }
+    },
+    "publish": null
   },
   "devDependencies": {
     "electron": "^33.0.0",
