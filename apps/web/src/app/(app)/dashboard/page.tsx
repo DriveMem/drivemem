@@ -333,15 +333,25 @@ function BatchActivityGroup({ group }: { group: any }) {
       </button>
       {expanded && (
         <div className="pl-7 pb-2 space-y-0.5">
-          {group.items.map((a: any, i: number) => (
-            <div key={a.id || i} className="flex items-center gap-2 py-1 text-xs text-zinc-500 dark:text-zinc-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 flex-shrink-0" />
-              <span className="truncate font-medium text-zinc-700 dark:text-zinc-300">{a.title || a.metadata?.fileName || a.detail || a.message || 'Activity'}</span>
-              {(a.description || a.message) && a.title && (
-                <span className="text-muted-foreground truncate max-w-[200px]">{a.description || a.message}</span>
-              )}
-            </div>
-          ))}
+          {group.items.map((a: any, i: number) => {
+            const rawTitle = a.title || a.metadata?.fileName || a.detail || a.message || 'Activity'
+            const rawDesc = a.description || a.message || ''
+            const cleanDesc = rawTitle !== rawDesc ? rawDesc
+              .replace(/^This (document|file|note|page|article|entry|memo|record|piece) (is about|describes|details|outlines|summarizes|covers|contains|provides|presents|discusses|explains|records|captures|announces|is a)[^.]*?\.\s*/i, '')
+              .replace(/^(Here is|The following|Below is)[^.]*?\.\s*/i, '')
+              .trim() : ''
+            return (
+              <div key={a.id || i} className="flex items-start gap-2 py-1 text-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 flex-shrink-0 mt-1.5" />
+                <div className="min-w-0 flex-1">
+                  <span className="font-medium text-zinc-700 dark:text-zinc-300 truncate block">{rawTitle}</span>
+                  {cleanDesc && (
+                    <p className="text-[11px] text-muted-foreground/50 line-clamp-1">{cleanDesc}</p>
+                  )}
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

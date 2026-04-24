@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { Bot, Search, Save, Brain, MessageCircle, ArrowLeftRight, Terminal, Filter } from "lucide-react"
 import Link from "next/link"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { apiFetch } from "@/lib/api"
 import { trackEvent } from "@/lib/analytics"
 
@@ -41,6 +42,14 @@ function displayAgentName(name: string): string {
     .trim();
   if (!cleaned || /^\d+$/.test(cleaned)) return 'AI Agent';
   return cleaned;
+}
+
+/** Strip low-value prefixes from AI-generated summaries */
+function cleanSummaryText(text: string): string {
+  return text
+    .replace(/^This (document|file|note|page|article|entry|memo|record|piece) (is about|describes|details|outlines|summarizes|covers|contains|provides|presents|discusses|explains|records|captures|announces|is a)[^.]*?\.\s*/i, '')
+    .replace(/^(Here is|The following|Below is)[^.]*?\.\s*/i, '')
+    .trim()
 }
 
 function relativeTime(dateStr: string): string {
@@ -195,38 +204,57 @@ export function AgentActivityPanel() {
           )}
         </div>
       </div>
-      <div className="space-y-0">
-        {filteredActivities.map(a => {
-          const config = ACTION_CONFIG[a.action] || { icon: Bot, color: "text-zinc-400", emoji: "🤖" }
-          const Icon = config.icon
-          return (
-            <div
-              key={a.id}
-              className="flex items-center gap-3 py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
-            >
-              <Icon className={`h-4 w-4 flex-shrink-0 ${config.color}`} />
-              <span className={`text-xs flex-shrink-0 ${
-                displayAgentName(a.agentName) === 'AI Agent'
-                  ? "text-zinc-400 dark:text-zinc-500 italic"
-                  : "text-zinc-500 dark:text-zinc-400 font-medium"
-              }`}>
-                {displayAgentName(a.agentName)}
-              </span>
-              {a.source === "agent" && (
-                <span className="text-[10px] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium">
-                  MCP
+      <TooltipProvider delayDuration={300}>
+        <div className="space-y-0">
+          {filteredActivities.map(a => {
+            const config = ACTION_CONFIG[a.action] || { icon: Bot, color: "text-zinc-400", emoji: "🤖" }
+            const Icon = config.icon
+            const cleanedSummary = cleanSummaryText(a.summary)
+            return (
+              <div
+                key={a.id}
+                className="flex items-start gap-3 py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
+              >
+                <Icon className={`h-4 w-4 flex-shrink-0 mt-0.5 ${config.color}`} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs flex-shrink-0 ${
+                      displayAgentName(a.agentName) === 'AI Agent'
+                        ? "text-zinc-400 dark:text-zinc-500 italic"
+                        : "text-muted-foreground/60 font-medium"
+                    }`}>
+                      {displayAgentName(a.agentName)}
+                    </span>
+                    {a.source === "agent" && (
+                      <span className="text-[10px] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium">
+                        MCP
+                      </span>
+                    )}
+                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                      {a.action?.replace(/_/g, ' ') || 'activity'}
+                    </span>
+                  </div>
+                  {cleanedSummary && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className="mt-0.5 text-xs text-muted-foreground/50 line-clamp-1 cursor-default">
+                          {cleanedSummary}
+                        </p>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" align="start" className="max-w-xs text-xs">
+                        {a.summary}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
+                <span className="ml-auto text-xs text-muted-foreground/50 flex-shrink-0 whitespace-nowrap mt-0.5">
+                  {relativeTime(a.createdAt)}
                 </span>
-              )}
-              <span className="text-xs md:text-sm text-zinc-900 dark:text-zinc-100 truncate">
-                {a.summary}
-              </span>
-              <span className="ml-auto text-xs text-muted-foreground flex-shrink-0 whitespace-nowrap">
-                {relativeTime(a.createdAt)}
-              </span>
-            </div>
-          )
-        })}
-      </div>
+              </div>
+            )
+          })}
+        </div>
+      </TooltipProvider>
       {activities.length < total && (
         <button
           onClick={() => fetchData(true)}
