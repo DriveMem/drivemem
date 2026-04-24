@@ -10,6 +10,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
@@ -44,6 +45,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: DriveMem-${{ matrix.target }}
@@ -52,3 +54,18 @@ jobs:
             packages/desktop/dist/*.exe
             packages/desktop/dist/*.AppImage
           if-no-files-found: ignore
+
+      - name: Create GitHub Release (draft)
+        if: success()
+        continue-on-error: true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: desktop-v0.1.0-${{ matrix.target }}
+          name: DriveMem Desktop v0.1.0 (${{ matrix.target }})
+          draft: true
+          files: |
+            packages/desktop/dist/*.dmg
+            packages/desktop/dist/*.exe
+            packages/desktop/dist/*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
