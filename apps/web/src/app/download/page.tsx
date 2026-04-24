@@ -74,16 +74,17 @@ const PLATFORMS: Record<Platform, { label: string; icon: React.ReactNode; req: s
   },
 }
 
-function detectOS(): Platform {
-  if (typeof navigator === "undefined") return "win"
+function detectOS(): Platform | null {
+  if (typeof navigator === "undefined") return null
   const ua = navigator.userAgent.toLowerCase()
   if (ua.includes("mac")) return "mac"
+  if (ua.includes("win")) return "win"
   if (ua.includes("linux")) return "linux"
-  return "win"
+  return null
 }
 
 export default function DownloadPage() {
-  const [detected, setDetected] = useState<Platform>("win")
+  const [detected, setDetected] = useState<Platform | null>(null)
   const [info, setInfo] = useState<DownloadInfo>(makeFallback)
   const [loading, setLoading] = useState(true)
 
@@ -95,7 +96,10 @@ export default function DownloadPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const order: Platform[] = [detected, ...( ["mac", "win", "linux"] as Platform[]).filter(p => p !== detected)]
+  const allPlatforms: Platform[] = ["mac", "win", "linux"]
+  const order: Platform[] = detected
+    ? [detected, ...allPlatforms.filter(p => p !== detected)]
+    : allPlatforms
 
   return (
     <div className="min-h-screen bg-white text-gray-900 selection:bg-brand-100">
@@ -138,7 +142,7 @@ export default function DownloadPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {order.map((platform) => {
               const p = PLATFORMS[platform]
-              const isPrimary = platform === detected
+              const isPrimary = detected !== null && platform === detected
               return (
                 <div
                   key={platform}
