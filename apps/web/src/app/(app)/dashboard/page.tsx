@@ -132,14 +132,22 @@ function ActivityItem({ activity }: { activity: any }) {
     .replace(/\bauto-[\w-]+\.md\b/g, 'Auto Note')
     .replace(/\.(md|pdf|docx|txt)\b/gi, '')
 
+  // #100: Extract title (filename/action) as primary, detail as secondary
+  const primaryTitle = activity.metadata?.fileName
+    ? activity.metadata.fileName.replace(/\.(md|pdf|docx|txt)$/i, '')
+    : activity.title || action
+  const secondaryDetail = activity.metadata?.fileName
+    ? (detail || action)
+    : detail
+
   return (
     <div className="flex items-center gap-3 py-1.5 md:py-2.5 text-xs md:text-body border-b border-zinc-100 dark:border-zinc-800 last:border-0">
       <Icon className="h-4 w-4 text-zinc-400 flex-shrink-0" />
-      <span className="text-zinc-500 dark:text-zinc-400 flex-shrink-0">{agentName}</span>
-      <span className="text-zinc-900 dark:text-zinc-100 truncate">
-        {action}
-        {detail && <span className="text-zinc-500 dark:text-zinc-400"> — {detail}</span>}
-      </span>
+      <span className="text-zinc-500 dark:text-zinc-400 flex-shrink-0 text-xs">{agentName}</span>
+      <div className="min-w-0 flex-1 truncate">
+        <span className="font-medium text-zinc-900 dark:text-zinc-100">{primaryTitle}</span>
+        {secondaryDetail && <span className="ml-1.5 text-sm text-muted-foreground truncate">{secondaryDetail}</span>}
+      </div>
       <span className="ml-auto text-micro md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
         <span className="hidden md:inline">{relativeTime(activity.createdAt)}</span>
         <span className="md:hidden">{shortTime(activity.createdAt)}</span>
@@ -223,80 +231,100 @@ function ConflictBanner({ count }: { count: number }) {
   )
 }
 
-// --- Auto-store grouping ---
-function isAutoStoreActivity(a: any): boolean {
-  return a.type === "auto_capture" || a.action === "auto_store" ||
-    (a.metadata?.source === "auto_store")
+// --- Activity grouping: fold same-type activities within 1 minute (#99) ---
+function getActivityMinuteKey(a: any): string {
+  const d = new Date(a.createdAt)
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}-${d.getMinutes()}`
 }
 
-function groupAutoStoreActivities(activities: any[]) {
-  const result: any[] = []
-  let currentGroup: any[] = []
+function getActivityTypeKey(a: any): string {
+  if (a.type === 'auto_capture' || a.action === 'auto_store' || a.metadata?.source === 'auto_store') return 'auto_store'
+  if (a.type === 'agent_activity') return `agent_${a.metadata?.action || 'activity'}`
+  return a.type || 'unknown'
+}
 
-  const flushGroup = () => {
-    if (currentGroup.length === 0) return
-    if (currentGroup.length === 1) {
-      result.push(currentGroup[0])
-    } else {
+const GROUP_LABELS: Record<string, { verb: string; noun: string }> = {
+  auto_store: { verb: 'saved', noun: 'files' },
+  file_indexed: { verb: 'indexed', noun: 'files' },
+  file_upload: { verb: 'uploaded', noun: 'files' },
+  insight_generated: { verb: 'generated', noun: 'insights' },
+  knowledge_link_found: { verb: 'found', noun: 'connections' },
+  conversation: { verb: 'had', noun: 'conversations' },
+  agent_store: { verb: 'saved', noun: 'files' },
+  agent_harvest: { verb: 'harvested', noun: 'files' },
+  agent_compile: { verb: 'compiled', noun: 'briefings' },
+  agent_search: { verb: 'searched', noun: 'queries' },
+  agent_ask: { verb: 'asked', noun: 'questions' },
+  agent_relay: { verb: 'relayed', noun: 'files' },
+}
+
+function groupActivitiesByMinuteAndType(activities: any[]) {
+  const result: any[] = []
+  let i = 0
+  while (i < activities.length) {
+    const a = activities[i]
+    const typeKey = getActivityTypeKey(a)
+    const minuteKey = getActivityMinuteKey(a)
+    const group = [a]
+    let j = i + 1
+    while (j < activities.length) {
+      const b = activities[j]
+      if (getActivityTypeKey(b) === typeKey && getActivityMinuteKey(b) === minuteKey) {
+        group.push(b)
+        j++
+      } else {
+        break
+      }
+    }
+    if (group.length >= 2) {
+      const label = GROUP_LABELS[typeKey] || { verb: typeKey.replace(/_/g, ' '), noun: 'items' }
       result.push({
         isGroup: true,
-        id: `group-${currentGroup[0].id}`,
-        items: currentGroup,
-        count: currentGroup.length,
-        createdAt: currentGroup[0].createdAt,
+        id: `group-${group[0].id}-${typeKey}`,
+        items: group,
+        count: group.length,
+        createdAt: group[0].createdAt,
+        typeKey,
+        label,
       })
-    }
-    currentGroup = []
-  }
-
-  for (const a of activities) {
-    if (isAutoStoreActivity(a)) {
-      if (currentGroup.length > 0) {
-        const lastTime = new Date(currentGroup[currentGroup.length - 1].createdAt).getTime()
-        const thisTime = new Date(a.createdAt).getTime()
-        if (Math.abs(lastTime - thisTime) > 5 * 60 * 1000) {
-          flushGroup()
-        }
-      }
-      currentGroup.push(a)
     } else {
-      flushGroup()
       result.push(a)
     }
+    i = j
   }
-  flushGroup()
   return result
 }
 
-// --- Auto Store Group Component ---
-function AutoStoreGroup({ group }: { group: any }) {
+// --- Batch Activity Group Component (#99) ---
+function BatchActivityGroup({ group }: { group: any }) {
   const [expanded, setExpanded] = useState(false)
+  const label = group.label || { verb: 'processed', noun: 'items' }
+  const Icon = activityIcons[group.typeKey] || Sparkles
+  const timeStr = new Date(group.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
   return (
     <div className="border-b border-zinc-100 dark:border-zinc-800 last:border-0">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-3 py-1.5 md:py-2.5 text-xs md:text-body w-full text-left hover:bg-violet-50/50 dark:hover:bg-violet-950/20 rounded transition"
+        className="flex items-center gap-3 py-1.5 md:py-2.5 text-xs md:text-body w-full text-left hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 rounded transition"
       >
-        <Sparkles className="h-4 w-4 text-violet-500 flex-shrink-0" />
-        <span className="text-violet-600 dark:text-violet-400 flex-shrink-0">AI</span>
-        <span className="text-violet-700 dark:text-violet-300 truncate">
-          saved {group.count} notes from your session
+        <Icon className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+        <span className="font-medium text-zinc-900 dark:text-zinc-100">
+          {group.count} {label.noun} {label.verb}
         </span>
-        <ChevronRight className={`ml-auto h-3.5 w-3.5 text-violet-400 flex-shrink-0 transition-transform ${expanded ? "rotate-90" : ""}`} />
-        <span className="text-micro md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap mr-1">
-          <span className="hidden md:inline">{relativeTime(group.createdAt)}</span>
-          <span className="md:hidden">{shortTime(group.createdAt)}</span>
+        <ChevronRight className={`h-3.5 w-3.5 text-zinc-400 flex-shrink-0 transition-transform ${expanded ? "rotate-90" : ""}`} />
+        <span className="ml-auto text-micro md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
+          {timeStr}
         </span>
       </button>
       {expanded && (
         <div className="pl-7 pb-2 space-y-0.5">
           {group.items.map((a: any, i: number) => (
             <div key={a.id || i} className="flex items-center gap-2 py-1 text-xs text-zinc-500 dark:text-zinc-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 flex-shrink-0" />
-              <span className="truncate">{a.title || a.detail || a.message || "Auto-saved note"}</span>
-              <span className="ml-auto text-micro text-muted-foreground flex-shrink-0">
-                {new Date(a.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 flex-shrink-0" />
+              <span className="truncate font-medium text-zinc-700 dark:text-zinc-300">{a.title || a.metadata?.fileName || a.detail || a.message || 'Activity'}</span>
+              {(a.description || a.message) && a.title && (
+                <span className="text-muted-foreground truncate max-w-[200px]">{a.description || a.message}</span>
+              )}
             </div>
           ))}
         </div>
@@ -460,7 +488,7 @@ export default function HomePage() {
     if (activityFilter === "all" && blockVis.agentActivity && (a.type === 'agent_activity' || a.type === 'auto_capture')) return false
     return true
   })
-  const groupedActivities = groupAutoStoreActivities(cleanActivities)
+  const groupedActivities = groupActivitiesByMinuteAndType(cleanActivities)
 
   if (filesLoading && foldersLoading) {
     return <DashboardSkeleton />
@@ -812,7 +840,7 @@ export default function HomePage() {
             <div>
               {groupedActivities.map((entry: any, i: number) => (
                 entry.isGroup
-                  ? <AutoStoreGroup key={entry.id} group={entry} />
+                  ? <BatchActivityGroup key={entry.id} group={entry} />
                   : <ActivityItem key={entry.id || i} activity={entry} />
               ))}
               {hasMore && (
