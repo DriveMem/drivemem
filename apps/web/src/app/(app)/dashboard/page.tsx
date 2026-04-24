@@ -80,7 +80,7 @@ function ActivityItem({ activity }: { activity: any }) {
   const agentName = isSystemGenerated
     ? "AI"
     : hasAgentActor && rawAgent && rawAgent !== "You"
-      ? activity.metadata?.actorLabel || rawAgent.replace(/^agent[-_]?[a-z][-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Agent'
+      ? activity.metadata?.actorLabel || rawAgent.replace(/^agent[-_]?\w?[-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Agent'
       : hasAgentActor
         ? "Agent"
         : "You"
@@ -102,7 +102,7 @@ function ActivityItem({ activity }: { activity: any }) {
   if (isRelay) {
     const meta = activity.metadata || {}
     const fromAgent = meta.fromAgent
-      ? String(meta.fromAgent).replace(/^agent[-_]?[a-z][-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'AI Agent'
+      ? String(meta.fromAgent).replace(/^agent[-_]?\w?[-_]?/i, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'AI Agent'
       : 'another agent'
     const fileName = meta.fileName || activity.detail || ''
 

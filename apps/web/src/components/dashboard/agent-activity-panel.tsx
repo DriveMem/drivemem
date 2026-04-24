@@ -35,8 +35,9 @@ const TABS: { key: SourceFilter; label: string }[] = [
 ]
 
 function displayAgentName(name: string): string {
+  // Strip generic "Agent" prefixes: Agent10, agent_a, agent-B-xyz, etc.
   const cleaned = name
-    .replace(/^agent[-_]?[a-z][-_]?/i, '')
+    .replace(/^agent[-_]?\w?[-_]?/i, '')
     .replace(/[-_]/g, ' ')
     .replace(/\b\w/g, c => c.toUpperCase())
     .trim();

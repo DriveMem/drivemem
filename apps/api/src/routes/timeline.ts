@@ -20,7 +20,7 @@ function formatAgentName(raw: string | null | undefined, apiKeyName?: string | n
     return 'AI Agent';
   }
   const cleaned = raw
-    .replace(/^agent[-_]?[a-z][-_]?/i, '')
+    .replace(/^agent[-_]?\w?[-_]?/i, '')
     .replace(/[-_]/g, ' ')
     .trim();
   if (!cleaned) return apiKeyName || 'AI Agent';
