@@ -31,23 +31,26 @@ function makeFallback(): DownloadInfo {
 }
 
 async function fetchLatestRelease(): Promise<DownloadInfo> {
-  const res = await fetch("https://api.github.com/repos/yufuche1/ai-drive/releases/latest")
-  if (!res.ok) throw new Error(`GitHub API ${res.status}`)
+  const res = await fetch("/api/desktop/latest-version")
+  if (!res.ok) throw new Error(`Backend API ${res.status}`)
   const data = await res.json()
-  const version = (data.tag_name as string).replace(/^v/, "")
-  const assets: Array<{ name: string; browser_download_url: string }> = data.assets ?? []
+  const version: string | null = data.version
+  if (!version) throw new Error("No version available")
 
-  const fallback = makeFallback()
-  const urls = { ...fallback.urls }
-  const files = { ...fallback.files }
-
-  for (const asset of assets) {
-    if (asset.name.endsWith(".dmg")) { urls.mac = asset.browser_download_url; files.mac = asset.name }
-    else if (asset.name.endsWith(".exe")) { urls.win = asset.browser_download_url; files.win = asset.name }
-    else if (asset.name.endsWith(".AppImage")) { urls.linux = asset.browser_download_url; files.linux = asset.name }
+  const base = FALLBACK_BASE
+  return {
+    version,
+    urls: {
+      mac: `${base}/DriveMem-${version}.dmg`,
+      win: `${base}/DriveMem-Setup-${version}.exe`,
+      linux: `${base}/DriveMem-${version}.AppImage`,
+    },
+    files: {
+      mac: `DriveMem-${version}.dmg`,
+      win: `DriveMem-Setup-${version}.exe`,
+      linux: `DriveMem-${version}.AppImage`,
+    },
   }
-
-  return { version, urls, files }
 }
 
 const PLATFORMS: Record<Platform, { label: string; icon: React.ReactNode; req: string }> = {
