@@ -18,6 +18,12 @@ log "Pulling..."
 git pull --ff-only || { log "ERROR: git pull failed"; exit 1; }
 log "Commit: $(git log --oneline -1)"
 
+# Always build shared packages first (API and Web both depend on them)
+log "Building shared packages..."
+(cd packages/shared-types && npx tsc) || { log "ERROR: shared-types build failed!"; exit 1; }
+(cd packages/shared && npx tsc) || { log "ERROR: shared build failed!"; exit 1; }
+log "Shared packages built ✅"
+
 if [[ "$MODE" == "--all" || "$MODE" == "--api-only" ]]; then
   log "Building API..."
   (cd apps/api && npx tsc) || { log "ERROR: API build failed!"; exit 1; }
