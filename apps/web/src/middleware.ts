@@ -11,12 +11,19 @@ export default auth((req) => {
   const isApiRoute = req.nextUrl.pathname.startsWith("/api")
 
   const isSharePage = req.nextUrl.pathname.startsWith("/share")
+  const isPublicPage = req.nextUrl.pathname === "/download" ||
+    req.nextUrl.pathname.startsWith("/docs") ||
+    req.nextUrl.pathname === "/privacy" ||
+    req.nextUrl.pathname === "/terms"
 
   // API routes always pass through
   if (isApiRoute) return
 
   // Share pages are public
   if (isSharePage) return
+
+  // Public pages always pass through
+  if (isPublicPage) return
 
   // Logged-in user on landing page → redirect to /dashboard (files)
   if (isLoggedIn && isLandingPage) {
