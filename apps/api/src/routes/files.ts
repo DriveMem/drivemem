@@ -229,6 +229,32 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     return reply.send({ success: true });
   });
 
+  // POST /stale/refresh-all — re-parse all stale files
+  fastify.post('/stale/refresh-all', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const { detectStaleContent } = await import('../services/stale-detector.js');
+    const staleFiles = await detectStaleContent(userId);
+    let success = 0;
+    let failed = 0;
+    for (const sf of staleFiles) {
+      try {
+        const [file] = await db.select({ id: schema.files.id, s3Key: schema.files.s3Key, mimeType: schema.files.mimeType })
+          .from(schema.files)
+          .where(and(eq(schema.files.id, sf.fileId), eq(schema.files.userId, userId)));
+        if (file && file.s3Key) {
+          await db.update(schema.files).set({ status: 'parsing', lastAccessedAt: new Date(), staleScore: 0 }).where(eq(schema.files.id, file.id));
+          await fileParseQueue.add('parse', { fileId: file.id, userId, s3Key: file.s3Key, mimeType: file.mimeType || 'text/plain' });
+          success++;
+        } else {
+          failed++;
+        }
+      } catch {
+        failed++;
+      }
+    }
+    return reply.send({ success, failed, total: staleFiles.length });
+  });
+
   // GET / — file list
   fastify.get('/', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;

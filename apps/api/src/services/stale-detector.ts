@@ -7,6 +7,7 @@ import { files, knowledgeFeedback } from '../db/schema.js';
 import { eq, and, sql, lt, isNull } from 'drizzle-orm';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const OUTDATED_THRESHOLD_DAYS = 7;
 
 export interface StaleFile {
   fileId: string;
@@ -41,7 +42,7 @@ const OUTDATED_PATTERNS = [
  */
 export async function detectStaleContent(userId: string): Promise<StaleFile[]> {
   const now = Date.now();
-  const ninetyDaysAgo = new Date(now - 90 * DAY_MS);
+  const thresholdAgo = new Date(now - OUTDATED_THRESHOLD_DAYS * DAY_MS);
   const thirtyDaysAgo = new Date(now - 30 * DAY_MS);
   const staleFiles: StaleFile[] = [];
 
@@ -81,12 +82,11 @@ export async function detectStaleContent(userId: string): Promise<StaleFile[]> {
     let reason: StaleFile['reason'] | null = null;
     let score = 0;
 
-    // Check 1: Inactive — not accessed in 90+ days
-    if (accessDate < ninetyDaysAgo) {
+    // Check 1: Inactive — not accessed in OUTDATED_THRESHOLD_DAYS+ days
+    if (accessDate < thresholdAgo) {
       reason = 'inactive';
       const daysSinceAccess = (now - accessDate.getTime()) / DAY_MS;
-      // Score: 0.5 at 90 days, scaling to 1.0 at 365 days
-      score = Math.max(score, Math.min(1.0, 0.5 + (daysSinceAccess - 90) / 550));
+      score = Math.max(score, Math.min(1.0, 0.5 + (daysSinceAccess - OUTDATED_THRESHOLD_DAYS) / 550));
     }
 
     // Check 2: Outdated language in summary + file is old enough (30+ days)
@@ -131,15 +131,15 @@ export function computeStaleScore(
   negativeFeedbackCount: number,
 ): number {
   const now = Date.now();
-  const ninetyDaysAgo = new Date(now - 90 * DAY_MS);
+  const thresholdAgo = new Date(now - OUTDATED_THRESHOLD_DAYS * DAY_MS);
   const thirtyDaysAgo = new Date(now - 30 * DAY_MS);
   const accessDate = lastAccessedAt ?? updatedAt;
   let score = 0;
 
   // Inactive
-  if (accessDate < ninetyDaysAgo) {
+  if (accessDate < thresholdAgo) {
     const daysSinceAccess = (now - accessDate.getTime()) / DAY_MS;
-    score = Math.max(score, Math.min(1.0, 0.5 + (daysSinceAccess - 90) / 550));
+    score = Math.max(score, Math.min(1.0, 0.5 + (daysSinceAccess - OUTDATED_THRESHOLD_DAYS) / 550));
   }
 
   // Outdated language

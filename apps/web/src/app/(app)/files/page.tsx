@@ -51,7 +51,25 @@ function KnowledgePageInner() {
     if (!filterStale) return
     setStaleLoading(true)
     apiFetch("/api/files/stale", { silent: true })
-      .then((data: any) => setStaleFiles(data?.staleFiles || []))
+      .then((data: any) => {
+        const files = data?.staleFiles || []
+        // Filter out files dismissed within 30 days via localStorage
+        const dismissed = JSON.parse(localStorage.getItem('dismissedOutdatedFiles') || '{}')
+        const now = Date.now()
+        const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
+        const filtered = files.filter((f: StaleFile) => {
+          const dismissedAt = dismissed[f.fileId]
+          if (dismissedAt && (now - new Date(dismissedAt).getTime()) < THIRTY_DAYS) return false
+          return true
+        })
+        // Clean up expired dismissals
+        let cleaned = false
+        for (const [id, ts] of Object.entries(dismissed)) {
+          if ((now - new Date(ts as string).getTime()) >= THIRTY_DAYS) { delete dismissed[id]; cleaned = true }
+        }
+        if (cleaned) localStorage.setItem('dismissedOutdatedFiles', JSON.stringify(dismissed))
+        setStaleFiles(filtered)
+      })
       .catch(() => {})
       .finally(() => setStaleLoading(false))
   }, [filterStale])
@@ -59,6 +77,10 @@ function KnowledgePageInner() {
   const handleDismiss = useCallback(async (fileId: string) => {
     try {
       await apiFetch(`/api/files/stale/${fileId}/dismiss`, { method: "POST", silent: true })
+      // Also store in localStorage for 30-day client-side dismiss
+      const dismissed = JSON.parse(localStorage.getItem('dismissedOutdatedFiles') || '{}')
+      dismissed[fileId] = new Date().toISOString()
+      localStorage.setItem('dismissedOutdatedFiles', JSON.stringify(dismissed))
       setStaleFiles((prev) => prev.filter((f) => f.fileId !== fileId))
     } catch {}
   }, [])

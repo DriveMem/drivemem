@@ -442,6 +442,25 @@ export function FileList() {
   const [tagManagerFileId, setTagManagerFileId] = useState<string | null>(null)
   const [tagManagerFileIds, setTagManagerFileIds] = useState<string[]>([])
   const parentRef = useRef<HTMLDivElement>(null)
+  const [staleFileIds, setStaleFileIds] = useState<Set<string>>(new Set())
+
+  // Fetch stale file IDs for inline ⚠️ indicators
+  useEffect(() => {
+    apiFetch("/api/files/stale", { silent: true })
+      .then((data: any) => {
+        const ids = new Set<string>()
+        const dismissed = JSON.parse(localStorage.getItem('dismissedOutdatedFiles') || '{}')
+        const now = Date.now()
+        const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
+        for (const f of (data?.staleFiles || [])) {
+          const dismissedAt = dismissed[f.fileId]
+          if (dismissedAt && (now - new Date(dismissedAt).getTime()) < THIRTY_DAYS) continue
+          ids.add(f.fileId)
+        }
+        setStaleFileIds(ids)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     apiFetch("/api/tags").then((data: any) => setUserTags(Array.isArray(data) ? data : [])).catch(() => {})
@@ -914,6 +933,20 @@ export function FileList() {
                 </div>
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">Updated</span>}
                 {file.archivedAt && <span className="shrink-0 rounded bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">Archived</span>}
+                {staleFileIds.has(file.id) && (
+                  <button
+                    title="This file may be outdated. Click to dismiss for 30 days."
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const dismissed = JSON.parse(localStorage.getItem('dismissedOutdatedFiles') || '{}')
+                      dismissed[file.id] = new Date().toISOString()
+                      localStorage.setItem('dismissedOutdatedFiles', JSON.stringify(dismissed))
+                      setStaleFileIds(prev => { const n = new Set(prev); n.delete(file.id); return n })
+                      apiFetch(`/api/files/stale/${file.id}/dismiss`, { method: "POST", silent: true }).catch(() => {})
+                    }}
+                    className="shrink-0 text-amber-500 hover:text-amber-600 text-xs"
+                  >⚠️</button>
+                )}
                 {(() => {
                   const userTags2 = (file.tags || []).filter((t: any) => !isSystemTag(t))
                   const sysTags2 = (file.tags || []).filter((t: any) => isSystemTag(t))

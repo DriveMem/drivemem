@@ -317,6 +317,9 @@ export default function HomePage() {
   const [resumeBrief, setResumeBrief] = useState<any>(null)
   const [conflicts, setConflicts] = useState<any[]>([])
   const [staleCount, setStaleCount] = useState(0)
+  const [staleFiles, setStaleFiles] = useState<any[]>([])
+  const [refreshState, setRefreshState] = useState<'idle' | 'loading' | 'done'>('idle')
+  const [refreshResult, setRefreshResult] = useState<{ success: number; failed: number } | null>(null)
   const [activityPage, setActivityPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -378,6 +381,7 @@ export default function HomePage() {
     apiFetch("/api/files/stale", { silent: true })
       .then((data: any) => {
         if (data?.count > 0) setStaleCount(data.count)
+        if (data?.staleFiles) setStaleFiles(data.staleFiles)
       })
       .catch(() => {})
   }, [])
@@ -497,14 +501,43 @@ export default function HomePage() {
         {/* Conflict Warning — conditional */}
         {conflicts.length > 0 && <ConflictBanner count={conflicts.length} />}
 
-        {/* Stale Content Warning — conditional */}
-        {staleCount > 0 && (
+        {/* Stale Content Warning — only show when > 3 outdated files */}
+        {staleCount > 3 && (
           <div className="mb-6 flex items-center gap-2 rounded-lg border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20 px-4 py-3 text-sm text-orange-800 dark:text-orange-200">
             <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-            <span>⚠️ {staleCount} {staleCount === 1 ? "file" : "files"} may be outdated</span>
-            <Link href="/files?filter=stale" className="ml-auto text-xs font-medium underline hover:no-underline">
-              Review
-            </Link>
+            <span>{staleCount} {staleCount === 1 ? "file" : "files"} haven&apos;t synced in over 7 days</span>
+            <div className="ml-auto flex items-center gap-2">
+              {refreshState === 'idle' && (
+                <button
+                  onClick={async () => {
+                    setRefreshState('loading')
+                    try {
+                      const data = await apiFetch("/api/files/stale/refresh-all", { method: "POST", silent: true }) as any
+                      setRefreshResult({ success: data?.success ?? 0, failed: data?.failed ?? 0 })
+                      setRefreshState('done')
+                      setTimeout(() => { setStaleCount(0); setRefreshState('idle'); setRefreshResult(null) }, 3000)
+                    } catch {
+                      setRefreshState('idle')
+                    }
+                  }}
+                  className="text-xs font-medium bg-orange-200 dark:bg-orange-800 hover:bg-orange-300 dark:hover:bg-orange-700 px-3 py-1 rounded-md transition-colors"
+                >
+                  Refresh All
+                </button>
+              )}
+              {refreshState === 'loading' && (
+                <span className="text-xs flex items-center gap-1">
+                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                  Refreshing…
+                </span>
+              )}
+              {refreshState === 'done' && refreshResult && (
+                <span className="text-xs">✓ {refreshResult.success} refreshed{refreshResult.failed > 0 ? ` / ${refreshResult.failed} failed` : ''}</span>
+              )}
+              <Link href="/files?filter=stale" className="text-xs font-medium underline hover:no-underline">
+                Review
+              </Link>
+            </div>
           </div>
         )}
 
