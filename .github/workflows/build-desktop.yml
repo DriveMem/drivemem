@@ -31,11 +31,13 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        working-directory: packages/desktop
-        run: npm install
+      - name: Install pnpm
+        run: npm install -g pnpm
 
-      - name: Build
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile || pnpm install
+
+      - name: Build desktop
         working-directory: packages/desktop
         run: npx electron-builder --${{ matrix.target }}
         env:
