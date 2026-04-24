@@ -141,14 +141,18 @@ function ActivityItem({ activity }: { activity: any }) {
     : detail
 
   return (
-    <div className="flex items-center gap-3 py-1.5 md:py-2.5 text-xs md:text-body border-b border-zinc-100 dark:border-zinc-800 last:border-0">
-      <Icon className="h-4 w-4 text-zinc-400 flex-shrink-0" />
-      <span className="text-zinc-500 dark:text-zinc-400 flex-shrink-0 text-xs">{agentName}</span>
-      <div className="min-w-0 flex-1 truncate">
-        <span className="font-medium text-zinc-900 dark:text-zinc-100">{primaryTitle}</span>
-        {secondaryDetail && <span className="ml-1.5 text-sm text-muted-foreground truncate">{secondaryDetail}</span>}
+    <div className="flex items-start gap-3 py-2 md:py-3 text-xs md:text-body border-b border-zinc-100 dark:border-zinc-800 last:border-0">
+      <Icon className="h-4 w-4 text-zinc-400 flex-shrink-0 mt-0.5" />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground/60 flex-shrink-0">{agentName}</span>
+          <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">{primaryTitle}</span>
+        </div>
+        {secondaryDetail && (
+          <p className="mt-0.5 text-xs text-muted-foreground/70 line-clamp-1">{secondaryDetail}</p>
+        )}
       </div>
-      <span className="ml-auto text-micro md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
+      <span className="ml-auto text-micro md:text-caption text-muted-foreground/50 flex-shrink-0 whitespace-nowrap mt-0.5">
         <span className="hidden md:inline">{relativeTime(activity.createdAt)}</span>
         <span className="md:hidden">{shortTime(activity.createdAt)}</span>
       </span>
@@ -302,14 +306,14 @@ function BatchActivityGroup({ group }: { group: any }) {
     <div className="border-b border-zinc-100 dark:border-zinc-800 last:border-0">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-3 py-1.5 md:py-2.5 text-xs md:text-body w-full text-left hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 rounded transition"
+        className="flex items-start gap-3 py-2 md:py-3 text-xs md:text-body w-full text-left hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 rounded transition"
       >
-        <Icon className="h-4 w-4 text-zinc-400 flex-shrink-0" />
-        <span className="font-medium text-zinc-900 dark:text-zinc-100">
+        <Icon className="h-4 w-4 text-zinc-400 flex-shrink-0 mt-0.5" />
+        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
           {group.count} {label.noun} {label.verb}
         </span>
         <ChevronRight className={`h-3.5 w-3.5 text-zinc-400 flex-shrink-0 transition-transform ${expanded ? "rotate-90" : ""}`} />
-        <span className="ml-auto text-micro md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
+        <span className="ml-auto text-micro md:text-caption text-muted-foreground/50 flex-shrink-0 whitespace-nowrap mt-0.5">
           {timeStr}
         </span>
       </button>
