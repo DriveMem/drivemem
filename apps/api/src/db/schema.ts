@@ -21,6 +21,7 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
   onboardingStep: integer('onboarding_step').notNull().default(0),
+  onboardingPath: varchar('onboarding_path', { length: 50 }),
   lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
 });
 

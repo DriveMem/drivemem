@@ -8,6 +8,7 @@ import { InspectorPanel } from "./inspector-panel"
 import { TopNav } from "./top-nav"
 import { CommandPalette } from "./command-palette"
 import { FeedbackButton } from "@/components/feedback/feedback-button"
+import { OnboardingFlow } from "@/components/onboarding/onboarding-flow"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { OfflineBanner } from "@/hooks/use-network-status"
 
@@ -60,6 +61,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <MobileBottomNav />
       <CommandPalette />
       <FeedbackButton />
+      <OnboardingFlow />
       <OfflineBanner />
     </div>
   )

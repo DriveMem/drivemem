@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import { Upload, Copy, Check, Sparkles, FileText, Globe, Code2 } from "lucide-react"
+import { useState, useEffect, useCallback } from "react"
+import { Copy, Check, Upload, Sparkles, Code2, BookOpen } from "lucide-react"
 import { useDropzone } from "react-dropzone"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 
 export function OnboardingFlow() {
   const [step, setStep] = useState(0)
+  const [path, setPath] = useState<"coding" | "knowledge" | null>(null)
   const [completed, setCompleted] = useState(true)
   const [loading, setLoading] = useState(true)
 
@@ -26,7 +27,6 @@ export function OnboardingFlow() {
         const hasFiles = (filesData?.files?.length ?? filesData?.length ?? 0) > 0
 
         if (!alreadyCompleted && hasFiles) {
-          // User already has files — skip onboarding silently
           setCompleted(true)
           apiFetch("/api/users/me/onboarding", {
             method: "PATCH",
@@ -37,16 +37,19 @@ export function OnboardingFlow() {
 
         setCompleted(alreadyCompleted)
         setStep(profile?.onboardingStep ?? 0)
+        if (profile?.onboardingPath) setPath(profile.onboardingPath as any)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
-  const advanceStep = useCallback(async (nextStep: number) => {
+  const advanceStep = useCallback(async (nextStep: number, selectedPath?: string) => {
     setStep(nextStep)
+    const body: any = { step: nextStep }
+    if (selectedPath) body.path = selectedPath
     await apiFetch("/api/users/me/onboarding", {
       method: "PATCH",
-      body: JSON.stringify({ step: nextStep }),
+      body: JSON.stringify(body),
     }).catch(() => {})
   }, [])
 
@@ -80,22 +83,203 @@ export function OnboardingFlow() {
           ))}
         </div>
 
-        {step === 0 && <StepUpload onNext={() => advanceStep(1)} />}
+        {step === 0 && <StepWelcome onNext={() => advanceStep(1)} />}
         {step === 1 && (
-          <StepConnect
-            onNext={() => advanceStep(2)}
-            onSkip={() => advanceStep(2)}
+          <StepChoosePath
+            onSelect={(p) => {
+              setPath(p)
+              advanceStep(2, p)
+            }}
+            onSkip={complete}
           />
         )}
-        {step === 2 && <StepComplete onFinish={complete} />}
+        {step === 2 && (
+          <StepQuickAction
+            path={path}
+            onComplete={complete}
+            onSkip={complete}
+          />
+        )}
       </div>
     </div>
   )
 }
 
-// ─── Step 0: Upload ──────────────────────────────────────────
+// ─── Step 0: Welcome ─────────────────────────────────────────
 
-function StepUpload({ onNext }: { onNext: () => void }) {
+function StepWelcome({ onNext }: { onNext: () => void }) {
+  return (
+    <div className="text-center">
+      <div className="text-5xl mb-4">👋</div>
+      <h2 className="text-2xl font-semibold mb-3">Welcome to DriveMem</h2>
+      <p className="text-sm text-muted-foreground mb-2 max-w-sm mx-auto">
+        Your personal knowledge base that works with your AI tools.
+      </p>
+      <p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">
+        Upload documents, connect AI agents, and let DriveMem give your tools long-term memory.
+      </p>
+      <Button
+        onClick={onNext}
+        className="rounded-xl shadow-soft px-8 active:scale-[0.98] transition-transform"
+      >
+        Get Started
+      </Button>
+    </div>
+  )
+}
+
+// ─── Step 1: Choose Path ─────────────────────────────────────
+
+function StepChoosePath({
+  onSelect,
+  onSkip,
+}: {
+  onSelect: (path: "coding" | "knowledge") => void
+  onSkip: () => void
+}) {
+  return (
+    <div className="text-center">
+      <h2 className="text-xl font-semibold mb-2">How will you use DriveMem?</h2>
+      <p className="text-sm text-muted-foreground mb-6">
+        This helps us show you the most relevant setup steps.
+      </p>
+
+      <div className="space-y-3">
+        <button
+          onClick={() => onSelect("coding")}
+          className="w-full flex items-center gap-4 p-5 rounded-xl border transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 active:scale-[0.98] text-left"
+        >
+          <div className="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+            <Code2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div>
+            <div className="font-semibold text-sm">I use AI coding tools</div>
+            <div className="text-xs text-muted-foreground mt-0.5">
+              Connect Cursor, Claude, or other AI tools via MCP
+            </div>
+          </div>
+        </button>
+
+        <button
+          onClick={() => onSelect("knowledge")}
+          className="w-full flex items-center gap-4 p-5 rounded-xl border transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 active:scale-[0.98] text-left"
+        >
+          <div className="h-12 w-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+            <BookOpen className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div>
+            <div className="font-semibold text-sm">I want to organize knowledge</div>
+            <div className="text-xs text-muted-foreground mt-0.5">
+              Upload documents and build a searchable knowledge base
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <button
+        onClick={onSkip}
+        className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        Skip for now
+      </button>
+    </div>
+  )
+}
+
+// ─── Step 2: Quick Action ────────────────────────────────────
+
+function StepQuickAction({
+  path,
+  onComplete,
+  onSkip,
+}: {
+  path: "coding" | "knowledge" | null
+  onComplete: () => void
+  onSkip: () => void
+}) {
+  if (path === "coding") {
+    return <CodingQuickAction onComplete={onComplete} onSkip={onSkip} />
+  }
+  return <KnowledgeQuickAction onComplete={onComplete} onSkip={onSkip} />
+}
+
+// --- Coding path: copy MCP command ---
+
+const MCP_COMMAND = `npx @anthropic-ai/mcp-server-drivemem`
+
+function CodingQuickAction({
+  onComplete,
+  onSkip,
+}: {
+  onComplete: () => void
+  onSkip: () => void
+}) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(MCP_COMMAND).then(() => {
+      setCopied(true)
+      toast.success("Copied to clipboard!")
+      setTimeout(onComplete, 1500)
+    })
+  }
+
+  return (
+    <div className="text-center">
+      <Sparkles className="h-10 w-10 text-primary mx-auto mb-4" />
+      <h2 className="text-xl font-semibold mb-2">Connect your AI tools</h2>
+      <p className="text-sm text-muted-foreground mb-6">
+        Add this MCP server to your AI tool configuration to give it access to your knowledge base.
+      </p>
+
+      <button
+        onClick={handleCopy}
+        className={cn(
+          "w-full flex items-center gap-3 p-4 rounded-xl border font-mono text-sm transition-all",
+          copied
+            ? "border-primary bg-primary/5"
+            : "hover:border-primary/50 hover:bg-muted/30 active:scale-[0.98]"
+        )}
+      >
+        <code className="flex-1 text-left truncate text-xs">{MCP_COMMAND}</code>
+        {copied ? (
+          <Check className="h-4 w-4 text-primary flex-shrink-0" />
+        ) : (
+          <Copy className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        )}
+      </button>
+
+      <p className="text-xs text-muted-foreground mt-3">
+        Works with Claude Desktop, Cursor, Windsurf, and other MCP-compatible tools.
+      </p>
+
+      <div className="mt-6 flex flex-col items-center gap-2">
+        <Button
+          onClick={onComplete}
+          className="rounded-xl shadow-soft px-8 active:scale-[0.98] transition-transform"
+        >
+          Done
+        </Button>
+        <button
+          onClick={onSkip}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Skip for now
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// --- Knowledge path: upload area ---
+
+function KnowledgeQuickAction({
+  onComplete,
+  onSkip,
+}: {
+  onComplete: () => void
+  onSkip: () => void
+}) {
   const [uploading, setUploading] = useState(false)
   const [success, setSuccess] = useState(false)
   const uploadFile = useUploadFile()
@@ -112,7 +296,7 @@ function StepUpload({ onNext }: { onNext: () => void }) {
           onSuccess: () => {
             setUploading(false)
             setSuccess(true)
-            setTimeout(onNext, 1500)
+            setTimeout(onComplete, 1500)
           },
           onError: () => {
             setUploading(false)
@@ -121,7 +305,7 @@ function StepUpload({ onNext }: { onNext: () => void }) {
         }
       )
     },
-    [uploadFile, onNext]
+    [uploadFile, onComplete]
   )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -142,9 +326,9 @@ function StepUpload({ onNext }: { onNext: () => void }) {
     return (
       <div className="text-center py-8 animate-in fade-in duration-300">
         <Sparkles className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-        <h2 className="text-xl font-semibold mb-2">AI is processing…</h2>
+        <h2 className="text-xl font-semibold mb-2">Processing your file…</h2>
         <p className="text-sm text-muted-foreground">
-          Your file is being indexed. This only takes a moment.
+          DriveMem will auto-summarize and organize it. This only takes a moment.
         </p>
       </div>
     )
@@ -154,7 +338,7 @@ function StepUpload({ onNext }: { onNext: () => void }) {
     <div className="text-center">
       <h2 className="text-xl font-semibold mb-2">Upload your first knowledge</h2>
       <p className="text-sm text-muted-foreground mb-6">
-        Drop a file here — notes, docs, decisions, anything
+        Drop a file here — notes, docs, decisions, anything you want to remember.
       </p>
 
       <div
@@ -184,173 +368,11 @@ function StepUpload({ onNext }: { onNext: () => void }) {
       </div>
 
       <button
-        onClick={(e) => { e.stopPropagation(); onNext(); }}
-        className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors relative z-10"
-      >
-        Skip for now
-      </button>
-    </div>
-  )
-}
-
-// ─── Step 1: Connect Agent ───────────────────────────────────
-
-const CLAUDE_CONFIG = JSON.stringify(
-  {
-    mcpServers: {
-      drivemem: {
-        command: "npx",
-        args: ["-y", "@anthropic-ai/mcp-server-drivemem"],
-        env: { DRIVEMEM_API_KEY: "YOUR_API_KEY" },
-      },
-    },
-  },
-  null,
-  2
-)
-
-const CURSOR_CONFIG = JSON.stringify(
-  {
-    mcpServers: {
-      drivemem: {
-        url: "https://api.drivemem.cloud/mcp",
-        headers: { Authorization: "Bearer YOUR_API_KEY" },
-      },
-    },
-  },
-  null,
-  2
-)
-
-interface AgentCard {
-  name: string
-  icon: typeof FileText
-  action: "copy" | "link"
-  config?: string
-  href?: string
-  description: string
-}
-
-const AGENTS: AgentCard[] = [
-  {
-    name: "Claude Desktop",
-    icon: FileText,
-    action: "copy",
-    config: CLAUDE_CONFIG,
-    description: "Copy MCP config",
-  },
-  {
-    name: "ChatGPT",
-    icon: Globe,
-    action: "link",
-    href: "https://drivemem.cloud/extension",
-    description: "Install browser extension",
-  },
-  {
-    name: "Cursor",
-    icon: Code2,
-    action: "copy",
-    config: CURSOR_CONFIG,
-    description: "Copy MCP config",
-  },
-]
-
-function StepConnect({
-  onNext,
-  onSkip,
-}: {
-  onNext: () => void
-  onSkip: () => void
-}) {
-  const [copiedIdx, setCopiedIdx] = useState<number | null>(null)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
-
-  const handleCopy = useCallback(
-    (config: string, idx: number) => {
-      navigator.clipboard.writeText(config).then(() => {
-        setCopiedIdx(idx)
-        toast.success("Copied!")
-        timerRef.current = setTimeout(onNext, 1500)
-      })
-    },
-    [onNext]
-  )
-
-  useEffect(() => () => clearTimeout(timerRef.current), [])
-
-  return (
-    <div className="text-center">
-      <h2 className="text-xl font-semibold mb-2">Connect your first agent</h2>
-      <p className="text-sm text-muted-foreground mb-6">
-        Pick your favorite tool and connect it to your knowledge base
-      </p>
-
-      <div className="space-y-3">
-        {AGENTS.map((agent, idx) => {
-          const Icon = agent.icon
-          const isCopied = copiedIdx === idx
-          return (
-            <button
-              key={agent.name}
-              onClick={() => {
-                if (agent.action === "copy" && agent.config) {
-                  handleCopy(agent.config, idx)
-                } else if (agent.action === "link" && agent.href) {
-                  window.open(agent.href, "_blank")
-                  setTimeout(onNext, 1500)
-                }
-              }}
-              className={cn(
-                "w-full flex items-center gap-4 p-4 rounded-xl border transition-all duration-200",
-                "hover:border-primary/50 hover:bg-muted/30 active:scale-[0.98]",
-                isCopied && "border-primary bg-primary/5"
-              )}
-            >
-              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                <Icon className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="font-medium text-sm">{agent.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {agent.description}
-                </div>
-              </div>
-              {isCopied ? (
-                <Check className="h-4 w-4 text-primary" />
-              ) : (
-                <Copy className="h-4 w-4 text-muted-foreground/40" />
-              )}
-            </button>
-          )
-        })}
-      </div>
-
-      <button
         onClick={onSkip}
-        className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors relative z-10"
+        className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         Skip for now
       </button>
-    </div>
-  )
-}
-
-// ─── Step 2: Complete ────────────────────────────────────────
-
-function StepComplete({ onFinish }: { onFinish: () => void }) {
-  return (
-    <div className="text-center py-4 animate-in fade-in duration-300">
-      <div className="text-5xl mb-4">🎉</div>
-      <h2 className="text-xl font-semibold mb-2">You're all set!</h2>
-      <p className="text-sm text-muted-foreground mb-8 max-w-sm mx-auto">
-        Your knowledge base is ready. Agents can now access your files.
-      </p>
-      <Button
-        onClick={onFinish}
-        className="rounded-xl shadow-soft px-8 active:scale-[0.98] transition-transform"
-      >
-        Go to Dashboard
-      </Button>
     </div>
   )
 }

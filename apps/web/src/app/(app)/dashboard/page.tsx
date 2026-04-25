@@ -22,6 +22,7 @@ import { ActivationBanner } from "@/components/dashboard/activation-banner"
 import { SampleDataBanner } from "@/components/dashboard/sample-data-banner"
 import { AgentActivityPanel } from "@/components/dashboard/agent-activity-panel"
 import { WelcomeHero, WelcomeBanner } from "@/components/dashboard/welcome-hero"
+import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state"
 import { QuickStartChecklist } from "@/components/dashboard/quick-start-checklist"
 import { computeBlockVisibility, computeChecklist } from "@/hooks/use-dashboard-phase"
 import { useMcpSync } from "@/hooks/use-mcp-sync"
@@ -789,55 +790,9 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Onboarding Guide Cards — show when no projects AND no files */}
+        {/* Dashboard Empty State — show when no files */}
         {projectCount === 0 && fileCount === 0 && (
-          <div className="mb-8">
-            <h2 className="text-micro font-medium text-muted-foreground uppercase tracking-wider mb-4">
-              Get Started
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                onClick={() => { const name = prompt("Project name:"); if (name) { apiFetch("/api/folders", { method: "POST", body: JSON.stringify({ name }) }).then(() => { router.refresh(); window.location.reload(); }).catch(() => {}); } }}
-                className="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition text-left"
-              >
-                <FolderPlus className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Create your first project</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Organize your knowledge files with projects</div>
-                </div>
-              </button>
-              <button
-                onClick={() => setShowUpload(true)}
-                className="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition text-left"
-              >
-                <Upload className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Upload your first file</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Supports documents, PDFs, images and more</div>
-                </div>
-              </button>
-              <button
-                onClick={() => router.push("/chat?new=1")}
-                className="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition text-left"
-              >
-                <MessageCircle className="h-5 w-5 text-violet-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Try AI Chat</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Smart Q&A based on your knowledge base</div>
-                </div>
-              </button>
-              <Link
-                href="/developers"
-                className="flex items-start gap-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition text-left"
-              >
-                <Terminal className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Connect via CLI / MCP</div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Access your knowledge base through CLI or API</div>
-                </div>
-              </Link>
-            </div>
-          </div>
+          <DashboardEmptyState onUpload={() => setShowUpload(true)} />
         )}
 
         {/* Work Items */}

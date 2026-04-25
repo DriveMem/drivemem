@@ -438,20 +438,21 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
   // GET /me/profile — 获取个人档案
   fastify.get('/me/profile', { preHandler: [requireAuth] }, async (request, reply) => {
-    const [user] = await db.select({ profile: users.profile, name: users.name, email: users.email, onboardingCompleted: users.onboardingCompleted, onboardingStep: users.onboardingStep })
+    const [user] = await db.select({ profile: users.profile, name: users.name, email: users.email, onboardingCompleted: users.onboardingCompleted, onboardingStep: users.onboardingStep, onboardingPath: users.onboardingPath })
       .from(users).where(eq(users.id, request.user!.id));
     if (!user) return reply.status(404).send({ error: 'User not found' });
     const profile = (user.profile as Record<string, any>) || {};
-    return reply.send({ ...profile, name: user.name, email: user.email, onboardingCompleted: user.onboardingCompleted, onboardingStep: user.onboardingStep });
+    return reply.send({ ...profile, name: user.name, email: user.email, onboardingCompleted: user.onboardingCompleted, onboardingStep: user.onboardingStep, onboardingPath: user.onboardingPath });
   });
 
   // PATCH /me/onboarding — 更新 onboarding 进度
   fastify.patch("/me/onboarding", { preHandler: [requireAuth] }, async (request, reply) => {
-    const body = request.body as { step?: number; completed?: boolean };
+    const body = request.body as { step?: number; completed?: boolean; path?: string };
     const userId = request.user!.id;
     const updates: Record<string, any> = {};
     if (typeof body.step === "number") updates.onboardingStep = body.step;
     if (typeof body.completed === "boolean") updates.onboardingCompleted = body.completed;
+    if (typeof body.path === "string") updates.onboardingPath = body.path;
     if (Object.keys(updates).length === 0) return reply.code(400).send({ error: "No valid fields" });
     await db.update(users).set({ ...updates, updatedAt: new Date() }).where(eq(users.id, userId));
     return reply.send({ success: true });
