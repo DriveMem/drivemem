@@ -118,7 +118,7 @@ function Nav() {
             onClick={() => trackEvent("signup_click", { source: "nav" })}
             className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-4 py-2 rounded-lg font-medium transition-colors"
           >
-            Get started free
+            Try it free
           </Link>
         </div>
       </div>
@@ -133,7 +133,7 @@ function Nav() {
             <Link href="/developers" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Docs</Link>
             <hr className="border-gray-100" />
             <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Sign in</Link>
-            <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-4 py-2.5 rounded-lg font-medium transition-colors text-center">Get started free</Link>
+            <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-4 py-2.5 rounded-lg font-medium transition-colors text-center">Try it free</Link>
           </div>
         </div>
       )}
@@ -193,8 +193,8 @@ const FEATURES = [
     ),
   },
   {
-    title: "Gets smarter over time",
-    desc: "DriveMem discovers connections, detects conflicts, and learns what matters to you.",
+    title: "Organized automatically",
+    desc: "DriveMem tags, links, and structures your knowledge as it grows — so agents find what they need without you organizing anything.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="16 3 21 3 21 8" />
@@ -218,7 +218,7 @@ const STEPS = [
   {
     num: "2",
     title: "Just work normally",
-    desc: "DriveMem captures valuable knowledge automatically. No manual saving.",
+    desc: "Your agents save what matters as they work.",
   },
   {
     num: "3",
@@ -279,7 +279,7 @@ export default function LandingPage() {
                 onClick={() => trackEvent("signup_click", { source: "hero" })}
                 className="px-6 py-2.5 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors shadow-brand-sm hover:shadow-brand-md"
               >
-                Get started free
+                Try it free
               </Link>
               <Link
                 href="/download"
@@ -358,22 +358,22 @@ export default function LandingPage() {
             <FadeIn delay={0}>
               <div className="bg-white rounded-2xl shadow-soft p-8 h-full flex flex-col">
                 <div className="text-3xl mb-4">🤖</div>
-                <h3 className="text-title font-semibold text-gray-900 mb-2">Your agents remember everything</h3>
+                <h3 className="text-title font-semibold text-gray-900 mb-2">Code review that knows your codebase</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-6">
-                  Every AI session starts from scratch. DriveMem gives your agents persistent memory across sessions.
+                  Your coding agent remembers architecture decisions, past reviews, and team conventions across every PR.
                 </p>
                 <div className="rounded-xl bg-gray-50 p-5 mb-6 space-y-4 flex-1">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Before</p>
                     <p className="text-sm text-gray-400 line-through leading-relaxed">
-                      Copy-paste context every time. Agents forget decisions between sessions.
+                      Re-explain architecture and conventions in every review.
                     </p>
                   </div>
                   <div className="border-t border-gray-200" />
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-brand-500 mb-1.5">After</p>
                     <p className="text-sm text-gray-700 leading-relaxed">
-                      Agents automatically know your project context, past decisions, and ongoing work.
+                      Your agent already knows the codebase — reviews are faster and more consistent.
                     </p>
                   </div>
                 </div>
@@ -391,7 +391,7 @@ export default function LandingPage() {
                 <div className="text-3xl mb-4">🧠</div>
                 <h3 className="text-title font-semibold text-gray-900 mb-2">Ask your documents anything</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-6">
-                  Knowledge scattered across Notion, Google Docs, and local files. Can&#39;t find what you need when you need it.
+                  Drop in specs, meeting notes, research — then query them from any AI tool. No re-uploading.
                 </p>
                 <div className="rounded-xl bg-gray-50 p-5 mb-6 space-y-4 flex-1">
                   <div>
@@ -423,9 +423,9 @@ export default function LandingPage() {
                   Live
                 </span>
                 <div className="text-3xl mb-4">🔄</div>
-                <h3 className="text-title font-semibold text-gray-900 mb-2">Knowledge flows between tools</h3>
+                <h3 className="text-title font-semibold text-gray-900 mb-2">Hand off context, not copy-paste</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-6">
-                  Claude doesn&#39;t know what Cursor decided. Each AI tool is an island.
+                  One agent researches, another writes, a third reviews — all sharing the same memory. No manual bridging.
                 </p>
                 <div className="rounded-xl bg-gray-50 p-5 mb-6 space-y-4 flex-1">
                   <div>
@@ -507,7 +507,7 @@ export default function LandingPage() {
               href="/login"
               className="inline-flex px-8 py-3 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors shadow-brand-md hover:shadow-brand-lg"
             >
-              Get started free
+              Try it free
             </Link>
           </FadeIn>
         </div>
