@@ -277,7 +277,7 @@ function CompileContent() {
               className="block w-full text-left rounded-lg px-3 py-1.5 text-sm hover:bg-muted/50 transition truncate"
             >
               <span className="text-foreground">{h.task}</span>
-              <span className="text-xs text-muted-foreground ml-2">— {relativeTime(h.timestamp)}</span>
+              <span className="text-xs text-muted-foreground ml-2" title={new Date(h.timestamp).toLocaleString(undefined, { year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}>— {relativeTime(h.timestamp)}</span>
             </button>
           ))}
         </div>

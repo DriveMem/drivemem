@@ -221,7 +221,7 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
               ) : (
                 <>
                   <span className="font-medium text-sm">{agent.name}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground" title={new Date(agent.status === "online" ? agent.lastActiveAt : (agent.disconnectedAt || agent.lastActiveAt)).toLocaleString(undefined, { year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}>
                     {agent.status === "online"
                       ? `active ${relativeTime(agent.lastActiveAt)}`
                       : `offline ${relativeTime(agent.disconnectedAt || agent.lastActiveAt)}`}
@@ -333,7 +333,7 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {logs.map((log) => (
                 <div key={log.id} className="flex items-start gap-2 text-sm">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">{relativeTime(log.createdAt)}</span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums" title={new Date(log.createdAt).toLocaleString(undefined, { year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}>{relativeTime(log.createdAt)}</span>
                   <span className="font-medium text-xs bg-muted px-1.5 py-0.5 rounded">{log.action}</span>
                   {log.detail && <span className="text-muted-foreground text-xs truncate">{log.detail.slice(0, 80)}</span>}
                 </div>

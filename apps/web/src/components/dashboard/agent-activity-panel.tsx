@@ -87,9 +87,10 @@ function cleanSummaryText(text: string): string {
 }
 
 function formatTimestamp(dateStr: string): string {
-  const d = new Date(dateStr)
-  const pad = (n: number) => String(n).padStart(2, "0")
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  return new Date(dateStr).toLocaleString(undefined, {
+    year: "numeric", month: "long", day: "numeric",
+    hour: "numeric", minute: "2-digit", second: "2-digit",
+  })
 }
 
 function relativeTime(dateStr: string, now?: Date): string {

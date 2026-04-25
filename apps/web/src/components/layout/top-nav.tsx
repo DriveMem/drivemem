@@ -212,7 +212,7 @@ export function TopNav() {
                       )}>{n.title}</p>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{n.message}</p>
                       <div className="flex items-center justify-between mt-1.5">
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500">{formatRelativeTime(n.createdAt)}</p>
+                        <p className="text-xs text-zinc-400 dark:text-zinc-500" title={new Date(n.createdAt).toLocaleString(undefined, { year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}>{formatRelativeTime(n.createdAt)}</p>
                         {cta && (
                           <button
                             onClick={(e) => { e.stopPropagation() }}

@@ -976,7 +976,7 @@ export function FileList() {
                   </TooltipProvider>
                 )}
                 <StatusIcon status={file.status} error={file.errorMessage} compact />
-                <span className="w-20 text-right text-xs text-zinc-500 dark:text-zinc-400 shrink-0 hidden sm:inline" title={new Date(file.updatedAt || file.createdAt).toLocaleString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })} suppressHydrationWarning>{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
+                <span className="w-20 text-right text-xs text-zinc-500 dark:text-zinc-400 shrink-0 hidden sm:inline" title={new Date(file.updatedAt || file.createdAt).toLocaleString(undefined, { year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })} suppressHydrationWarning>{formatRelativeTime(file.updatedAt || file.createdAt)}</span>
                 <span className="w-16 text-right text-xs text-zinc-500 dark:text-zinc-400 shrink-0 hidden sm:inline">{fmtSize(file.size)}</span>
                 <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
                   <button
