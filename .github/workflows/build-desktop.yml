@@ -53,6 +53,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
+          retention-days: 1
+          overwrite: true
           path: |
             packages/desktop/dist/**/*.dmg
             packages/desktop/dist/**/*.exe
