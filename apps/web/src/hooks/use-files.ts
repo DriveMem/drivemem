@@ -59,7 +59,16 @@ export function useUploadFile() {
         xhr.send(formData)
       })
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['files'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['files'] })
+      // First upload tooltip
+      if (typeof window !== "undefined" && !localStorage.getItem("drivemem_first_upload_seen")) {
+        localStorage.setItem("drivemem_first_upload_seen", "1")
+        import("sonner").then(({ toast }) => {
+          toast("✨ Great! DriveMem will auto-summarize and organize this file. Your AI tools can now access it.", { duration: 5000 })
+        })
+      }
+    },
   })
 }
 

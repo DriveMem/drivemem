@@ -94,6 +94,32 @@ AI 产品是利用人工智能技术为用户提供智能化服务的产品。�
 ];
 
 export default async function onboardingRoutes(fastify: FastifyInstance) {
+  // GET /api/onboarding/status
+  fastify.get('/status', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const [user] = await db.select({
+      onboardingCompleted: schema.users.onboardingCompleted,
+      onboardingPath: schema.users.onboardingPath,
+    }).from(schema.users).where(eq(schema.users.id, userId));
+    return reply.send({
+      onboardingCompleted: user?.onboardingCompleted ?? false,
+      onboardingPath: user?.onboardingPath ?? null,
+    });
+  });
+
+  // PATCH /api/onboarding
+  fastify.patch('/', { preHandler: [requireAuth] }, async (request, reply) => {
+    const userId = request.user!.id;
+    const body = request.body as any;
+    const updates: any = {};
+    if (typeof body.completed === 'boolean') updates.onboardingCompleted = body.completed;
+    if (typeof body.path === 'string') updates.onboardingPath = body.path;
+    if (Object.keys(updates).length > 0) {
+      await db.update(schema.users).set(updates).where(eq(schema.users.id, userId));
+    }
+    return reply.send({ ok: true });
+  });
+
   fastify.post('/demo-files', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;
 

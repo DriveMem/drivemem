@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import { toast } from "sonner"
 
-const STORAGE_KEY = "ai-drive:first-upload-done"
+const STORAGE_KEY = "drivemem_first_upload_seen"
 
 export function FirstUploadGuide({ hasIndexedFile }: { hasIndexedFile: boolean }) {
   useEffect(() => {

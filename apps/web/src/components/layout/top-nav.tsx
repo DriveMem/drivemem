@@ -216,7 +216,7 @@ export function TopNav() {
                         {cta && (
                           <button
                             onClick={(e) => { e.stopPropagation() }}
-                            className="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 dark:hover:text-brand-400 font-medium"
+                            className="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 dark:hover:text-brand-400 font-medium cursor-pointer rounded px-1.5 py-0.5 transition-all duration-150 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 active:scale-95 active:bg-zinc-200 dark:active:bg-zinc-600/60"
                           >
                             {cta.icon}
                             {cta.label}

@@ -13,7 +13,7 @@ export function DashboardEmptyState({ onUpload }: DashboardEmptyStateProps) {
       <div className="text-center mb-8">
         <h2 className="text-xl font-semibold mb-2">Your knowledge base is empty</h2>
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
-          Get started by connecting a source or uploading your first file.
+          Get started by connecting your AI tools or uploading files
         </p>
       </div>
 
