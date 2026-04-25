@@ -206,5 +206,18 @@ export async function syncGoogleDrive(integration: Integration): Promise<SyncRes
     })
     .where(eq(schema.integrations.id, integration.id));
 
+  // Notification: connector sync (knowledge activity push #128)
+  if (result.synced > 0) {
+    try {
+      const { createKnowledgeNotification } = await import('./knowledge-notification.service.js');
+      await createKnowledgeNotification({
+        userId: integration.userId,
+        subtype: 'connector_sync',
+        title: '🔄 New files synced',
+        message: `${result.synced} new file${result.synced > 1 ? 's' : ''} synced from Google Drive`,
+      });
+    } catch { /* non-blocking */ }
+  }
+
   return result;
 }

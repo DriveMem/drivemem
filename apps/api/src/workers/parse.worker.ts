@@ -108,13 +108,16 @@ const worker = new Worker<ParseJobData>(
         await dispatchWebhook(userId, 'file.indexed', { fileId, fileName: file?.name });
       } catch { /* non-blocking */ }
 
-      // Notification: file_indexed — silenced (UX #240 F2: noise reduction)
-      // await db.insert(schema.notifications).values({
-      //   userId,
-      //   type: 'file_indexed',
-      //   title: '📄 文件已索引',
-      //   message: `「${file?.name}」已完成 AI 解析，可以开始提问了`,
-      // });
+      // Notification: file indexed (knowledge activity push #128)
+      try {
+        const { createKnowledgeNotification } = await import('../services/knowledge-notification.service.js');
+        await createKnowledgeNotification({
+          userId,
+          subtype: 'file_indexed',
+          title: '✅ Ready',
+          message: `"${file?.name?.replace(/\.\w+$/, '') || 'File'}" is indexed — ask AI about it`,
+        });
+      } catch { /* non-blocking */ }
 
       // Clear insight cache so it regenerates with new file data
       await db.update(schema.users).set({ insight: null }).where(eq(schema.users.id, userId));

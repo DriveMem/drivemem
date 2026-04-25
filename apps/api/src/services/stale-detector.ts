@@ -117,7 +117,22 @@ export async function detectStaleContent(userId: string): Promise<StaleFile[]> {
     }
   }
 
-  return staleFiles.sort((a, b) => b.staleScore - a.staleScore);
+  const sorted = staleFiles.sort((a, b) => b.staleScore - a.staleScore);
+
+  // Notification: stale files detected (knowledge activity push #128)
+  if (sorted.length > 0) {
+    try {
+      const { createKnowledgeNotification } = await import('./knowledge-notification.service.js');
+      await createKnowledgeNotification({
+        userId,
+        subtype: 'files_stale',
+        title: '⚠️ Files may be outdated',
+        message: `${sorted.length} file${sorted.length > 1 ? 's' : ''} haven't synced in over 7 days`,
+      });
+    } catch { /* non-blocking */ }
+  }
+
+  return sorted;
 }
 
 /**
