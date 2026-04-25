@@ -21,13 +21,25 @@ function relativeTime(dateStr: string): string {
 }
 
 /* ---------- Health Status Helpers ---------- */
-type HealthStatus = "connected" | "degraded" | "disconnected" | "unknown"
+type HealthStatus = "connected" | "degraded" | "disconnected" | "inactive" | "unknown"
+
+function resolveVisualHealth(health: HealthStatus, agent: { status: string; disconnectedAt: string | null; lastActiveAt: string }): HealthStatus {
+  if (health === "connected") return "connected"
+  if (health === "degraded") return "degraded"
+  const offlineSince = agent.disconnectedAt || agent.lastActiveAt
+  if (offlineSince) {
+    const offlineMs = Date.now() - new Date(offlineSince).getTime()
+    if (offlineMs > 24 * 60 * 60 * 1000) return "inactive"
+  }
+  return health
+}
 
 function healthDot(health: HealthStatus) {
   switch (health) {
     case "connected": return "bg-emerald-500"
     case "degraded": return "bg-yellow-400"
-    case "disconnected": return "bg-red-500"
+    case "disconnected": return "bg-amber-500"
+    case "inactive": return "bg-zinc-300"
     default: return "bg-zinc-300"
   }
 }
@@ -36,7 +48,8 @@ function healthLabel(health: HealthStatus) {
   switch (health) {
     case "connected": return "Connected"
     case "degraded": return "Degraded"
-    case "disconnected": return "Disconnected"
+    case "disconnected": return "Recently Offline"
+    case "inactive": return "Inactive"
     default: return "Unknown"
   }
 }
@@ -45,7 +58,8 @@ function healthEmoji(health: HealthStatus) {
   switch (health) {
     case "connected": return "🟢"
     case "degraded": return "🟡"
-    case "disconnected": return "🔴"
+    case "disconnected": return "🟠"
+    case "inactive": return "⚪"
     default: return "⚪"
   }
 }
@@ -186,13 +200,18 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
           <p className="text-sm font-medium mb-1">No agents connected yet</p>
           <p className="text-sm text-muted-foreground">Use the cards below to connect your first agent.</p>
         </div>
-      ) : (
-        <div className="rounded-xl border bg-card divide-y">
-          {agents.map((agent) => {
-            const h = healthMap[agent.name]?.health || (agent.status === "online" ? "connected" : "disconnected")
-            return (
+      ) : (() => {
+        const agentsWithVisual = agents.map(agent => {
+          const rawHealth = healthMap[agent.name]?.health || (agent.status === "online" ? "connected" : "disconnected")
+          return { agent, h: resolveVisualHealth(rawHealth, agent) }
+        })
+        const activeList = agentsWithVisual.filter(a => a.h !== "inactive")
+        const inactiveList = agentsWithVisual.filter(a => a.h === "inactive")
+        const hasOnline = agentsWithVisual.some(a => a.h === "connected")
+
+        const renderRow = (agent: typeof agents[0], h: HealthStatus) => (
             <div key={agent.name}>
-            <div className="flex items-center gap-3 px-5 py-3.5">
+            <div className={`flex items-center gap-3 px-5 py-3.5 ${h === "inactive" ? "opacity-60" : ""}`}>
               <span title={`${healthEmoji(h)} ${healthLabel(h)}`} className={`inline-block h-2.5 w-2.5 rounded-full shrink-0 ${healthDot(h)}`} />
               {renaming === agent.name ? (
                 <form onSubmit={(e) => { e.preventDefault(); handleRename(agent.name) }} className="flex items-center gap-2 flex-1">
@@ -267,9 +286,39 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
               </div>
             )}
             </div>
-          )})}
-        </div>
-      )}
+        )
+
+        return (<>
+          {/* No active agents guidance */}
+          {!hasOnline && (
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/50 p-5 mb-3 text-center">
+              <div className="text-3xl mb-2">💤</div>
+              <p className="text-sm font-medium mb-1">No active agents</p>
+              <p className="text-sm text-muted-foreground mb-3">Connect your AI tools to get started</p>
+              <Link href="/docs/quickstart" className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition">
+                Setup Guide →
+              </Link>
+            </div>
+          )}
+          {activeList.length > 0 && (
+            <div className="rounded-xl border bg-card divide-y">
+              {activeList.map(({ agent, h }) => renderRow(agent, h))}
+            </div>
+          )}
+          {inactiveList.length > 0 && (
+            <details className="mt-3 group">
+              <summary className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer list-none">
+                <ChevronRight className="h-3.5 w-3.5 group-open:rotate-90 transition-transform" />
+                Inactive ({inactiveList.length})
+                <span className="text-xs font-normal">— offline for more than 24 hours</span>
+              </summary>
+              <div className="mt-1 rounded-xl border bg-card/50 divide-y">
+                {inactiveList.map(({ agent, h }) => renderRow(agent, h))}
+              </div>
+            </details>
+          )}
+        </>)
+      })()}
 
       {/* Agent Logs Panel */}
       {logsAgent && (
