@@ -86,6 +86,12 @@ function cleanSummaryText(text: string): string {
     .trim()
 }
 
+function formatTimestamp(dateStr: string): string {
+  const d = new Date(dateStr)
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
 function relativeTime(dateStr: string, now?: Date): string {
   const ref = now ? now.getTime() : Date.now()
   const diff = ref - new Date(dateStr).getTime()
@@ -301,7 +307,7 @@ export function AgentActivityPanel() {
                     </Tooltip>
                   )}
                 </div>
-                <span className="ml-auto text-xs text-muted-foreground/50 flex-shrink-0 whitespace-nowrap mt-0.5" title={new Date(a.createdAt).toLocaleString()}>
+                <span className="ml-auto text-xs text-muted-foreground/50 flex-shrink-0 whitespace-nowrap mt-0.5" title={formatTimestamp(a.createdAt)}>
                   {clientNow ? relativeTime(a.createdAt, clientNow) : ""}
                 </span>
               </div>

@@ -42,6 +42,12 @@ const typeOptions = [
   { value: "insight", label: "💡 Insight" },
 ]
 
+function formatTimestamp(dateStr: string): string {
+  const d = new Date(dateStr)
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
 function relativeTime(dateStr: string, now?: Date): string {
   const ref = now ? now.getTime() : Date.now()
   const diff = ref - new Date(dateStr).getTime()
@@ -332,7 +338,7 @@ export function WorkItemsPanel({ folderId, defaultExpanded = false }: WorkItemsP
                       🤖 {item.sourceAgent.split("-").pop()}
                     </span>
                   )}
-                  <span className="text-xs text-zinc-400 flex-shrink-0">{clientNow ? relativeTime(item.createdAt, clientNow) : ""}</span>
+                  <span className="text-xs text-zinc-400 flex-shrink-0" title={formatTimestamp(item.createdAt)}>{clientNow ? relativeTime(item.createdAt, clientNow) : ""}</span>
                   <button
                     onClick={() => deleteItem(item)}
                     className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-zinc-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
