@@ -212,10 +212,10 @@ export function AgentActivityPanel() {
           Agent Activity
         </h2>
         <div className="py-8 text-center">
-          <Bot className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-3" />
-          <p className="text-sm text-zinc-400 mb-1">No agent activity yet.</p>
+          <span className="text-4xl block mx-auto mb-3">🤖</span>
+          <p className="text-sm text-zinc-400 mb-1">No recent agent activity</p>
           <p className="text-sm text-zinc-400 mb-4">
-            Connect your AI tools to see activity here.
+            Connect an AI tool to see activity here
           </p>
           <Link
             href="/developers"
