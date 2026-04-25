@@ -33,9 +33,14 @@ export interface ApiFetchOptions extends RequestInit {
 
 export async function apiFetch(path: string, options?: ApiFetchOptions) {
   const { silent, ...fetchOptions } = options || {}
+  const method = (fetchOptions.method || "GET").toUpperCase()
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     ...(options?.headers as Record<string, string>),
+  }
+
+  // Only set Content-Type for requests with a body (Fastify 5 rejects empty JSON body)
+  if (fetchOptions.body || method === "GET" || method === "HEAD") {
+    headers["Content-Type"] = headers["Content-Type"] || "application/json"
   }
 
   try {

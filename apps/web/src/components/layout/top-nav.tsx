@@ -108,7 +108,7 @@ export function TopNav() {
     setUnreadCount(0)
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
     try {
-      await apiFetch("/api/notifications/read-all", { method: "POST" })
+      await apiFetch("/api/notifications/read-all", { method: "POST", body: JSON.stringify({}) })
     } catch {
       // Revert on failure
       await Promise.all([fetchNotifications(), fetchUnreadCount()])
