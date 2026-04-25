@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Copy, Check, Upload, Sparkles, Code2, BookOpen } from "lucide-react"
+import { Copy, Check, Upload, Sparkles, Code2, BookOpen, Globe } from "lucide-react"
 import { useDropzone } from "react-dropzone"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -205,7 +205,7 @@ function StepQuickAction({
 
 // --- Coding path: copy MCP command ---
 
-const MCP_COMMAND = `npx @anthropic-ai/mcp-server-drivemem`
+const MCP_COMMAND = `npx drivemem setup`
 
 function CodingQuickAction({
   onComplete,
@@ -336,10 +336,27 @@ function KnowledgeQuickAction({
 
   return (
     <div className="text-center">
-      <h2 className="text-xl font-semibold mb-2">Upload your first knowledge</h2>
+      <h2 className="text-xl font-semibold mb-2">Add your first knowledge</h2>
       <p className="text-sm text-muted-foreground mb-6">
-        Drop a file here — notes, docs, decisions, anything you want to remember.
+        Connect Google Drive or upload a file to get started.
       </p>
+
+      {/* GDrive Connect */}
+      <a
+        href="/settings?tab=connections"
+        onClick={onComplete}
+        className="w-full flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 active:scale-[0.98] text-left mb-4"
+      >
+        <div className="h-10 w-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+          <Globe className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        </div>
+        <div>
+          <div className="font-semibold text-sm">Connect Google Drive</div>
+          <div className="text-xs text-muted-foreground mt-0.5">Sync your files automatically</div>
+        </div>
+      </a>
+
+      <div className="text-xs text-muted-foreground mb-4">— or upload a file —</div>
 
       <div
         {...getRootProps()}
