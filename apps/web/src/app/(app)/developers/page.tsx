@@ -840,7 +840,7 @@ export default function ConnectPage() {
             className="w-full rounded-xl shadow-soft opacity-60 cursor-not-allowed"
             disabled
           >
-            Install Extension <span className="ml-2 text-[10px] font-medium bg-muted px-1.5 py-0.5 rounded-full">Coming Soon</span>
+            Install Extension <span className="ml-2 text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Coming Q3 2026</span>
           </Button>
         </div>
         {/* Any App (Webhook) Card */}
