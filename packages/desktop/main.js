@@ -139,3 +139,4 @@ app.on('window-all-closed', () => {
   // Don't quit on macOS — keep running in tray
   if (process.platform !== 'darwin' && !proxyRunning) app.quit();
 });
+// trigger desktop build
