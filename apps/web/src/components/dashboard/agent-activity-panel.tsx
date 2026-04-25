@@ -2,6 +2,42 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Bot, Search, Save, Brain, MessageCircle, ArrowLeftRight, Terminal } from "lucide-react"
+
+// --- Agent Avatar: deterministic color from name hash ---
+const AVATAR_PALETTE = [
+  "#6366f1", // indigo
+  "#8b5cf6", // violet
+  "#ec4899", // pink
+  "#f43f5e", // rose
+  "#f97316", // orange
+  "#eab308", // yellow
+  "#22c55e", // green
+  "#14b8a6", // teal
+  "#06b6d4", // cyan
+  "#3b82f6", // blue
+]
+
+function agentColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length]
+}
+
+function AgentAvatar({ name, size = 24 }: { name: string; size?: number }) {
+  const bg = agentColor(name)
+  const initial = (name.charAt(0) || "?").toUpperCase()
+  return (
+    <span
+      className="inline-flex items-center justify-center rounded-full flex-shrink-0 font-semibold text-white select-none"
+      style={{ width: size, height: size, backgroundColor: bg, fontSize: size * 0.45, lineHeight: 1 }}
+      title={name}
+    >
+      {initial}
+    </span>
+  )
+}
 import Link from "next/link"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { apiFetch } from "@/lib/api"
@@ -233,7 +269,7 @@ export function AgentActivityPanel() {
                 key={a.id}
                 className="flex items-start gap-3 py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
               >
-                <Icon className={`h-4 w-4 flex-shrink-0 mt-0.5 ${config.color}`} />
+                <AgentAvatar name={displayAgentName(a.agentName)} size={24} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className={`text-xs flex-shrink-0 ${
