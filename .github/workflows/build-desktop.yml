@@ -1,10 +1,6 @@
 name: Build Desktop Client
 
 on:
-  push:
-    paths:
-      - 'packages/desktop/**'
-    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -15,15 +11,14 @@ jobs:
         include:
           - os: macos-latest
             target: mac
-            artifact_name: DriveMem-mac
           - os: windows-latest
             target: win
-            artifact_name: DriveMem-win
           - os: ubuntu-latest
             target: linux
-            artifact_name: DriveMem-linux
 
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -49,55 +44,19 @@ jobs:
         run: ls -laR
         shell: bash
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: ${{ matrix.artifact_name }}
-          retention-days: 1
-          overwrite: true
-          path: |
+          tag_name: v0.1.0
+          name: DriveMem Desktop v0.1.0
+          draft: false
+          generate_release_notes: true
+          files: |
             packages/desktop/dist/**/*.dmg
             packages/desktop/dist/**/*.exe
             packages/desktop/dist/**/*.AppImage
             packages/desktop/dist/*.dmg
             packages/desktop/dist/*.exe
             packages/desktop/dist/*.AppImage
-            !packages/desktop/dist/*-unpacked/**
-            !packages/desktop/dist/mac-universal/**
-            !packages/desktop/dist/mac/**
-            !packages/desktop/dist/linux-unpacked/**
-            !packages/desktop/dist/win-unpacked/**
-          if-no-files-found: warn
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-          merge-multiple: false
-
-      - name: List downloaded artifacts
-        run: find artifacts -type f | head -50
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v0.1.0
-          name: DriveMem Desktop v0.1.0
-          draft: true
-          generate_release_notes: true
-          files: |
-            artifacts/**/*.dmg
-            artifacts/**/*.exe
-            artifacts/**/*.AppImage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
