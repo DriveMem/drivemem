@@ -170,9 +170,9 @@ export function AgentActivityPanel() {
         </h2>
         <div className="py-8 text-center">
           <Bot className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground mb-1">Your agents haven&apos;t done anything yet</p>
-          <p className="text-xs text-muted-foreground/70 mb-4">
-            Connect an agent to see their activity here.
+          <p className="text-sm text-zinc-400 mb-1">No agent activity yet.</p>
+          <p className="text-sm text-zinc-400 mb-4">
+            Connect your AI tools to see activity here.
           </p>
           <Link
             href="/developers"
@@ -265,7 +265,7 @@ export function AgentActivityPanel() {
                     </Tooltip>
                   )}
                 </div>
-                <span className="ml-auto text-xs text-muted-foreground/50 flex-shrink-0 whitespace-nowrap mt-0.5">
+                <span className="ml-auto text-xs text-muted-foreground/50 flex-shrink-0 whitespace-nowrap mt-0.5" title={new Date(a.createdAt).toLocaleString()}>
                   {clientNow ? relativeTime(a.createdAt, clientNow) : ""}
                 </span>
               </div>

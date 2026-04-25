@@ -38,7 +38,7 @@ function healthDot(health: HealthStatus) {
   switch (health) {
     case "connected": return "bg-emerald-500"
     case "degraded": return "bg-yellow-400"
-    case "disconnected": return "bg-amber-500"
+    case "disconnected": return "bg-yellow-400"
     case "inactive": return "bg-zinc-300"
     default: return "bg-zinc-300"
   }
@@ -58,7 +58,7 @@ function healthEmoji(health: HealthStatus) {
   switch (health) {
     case "connected": return "🟢"
     case "degraded": return "🟡"
-    case "disconnected": return "🟠"
+    case "disconnected": return "🟡"
     case "inactive": return "⚪"
     default: return "⚪"
   }
@@ -207,8 +207,6 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
         })
         const activeList = agentsWithVisual.filter(a => a.h !== "inactive")
         const inactiveList = agentsWithVisual.filter(a => a.h === "inactive")
-        const hasOnline = agentsWithVisual.some(a => a.h === "connected")
-
         const renderRow = (agent: typeof agents[0], h: HealthStatus) => (
             <div key={agent.name}>
             <div className={`flex items-center gap-3 px-5 py-3.5 ${h === "inactive" ? "opacity-60" : ""}`}>
@@ -290,11 +288,11 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
 
         return (<>
           {/* No active agents guidance */}
-          {!hasOnline && (
+          {activeList.length === 0 && (
             <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/50 p-5 mb-3 text-center">
               <div className="text-3xl mb-2">💤</div>
-              <p className="text-sm font-medium mb-1">No active agents</p>
-              <p className="text-sm text-muted-foreground mb-3">Connect your AI tools to get started</p>
+              <p className="text-sm font-medium mb-1">No active connections</p>
+              <p className="text-sm text-muted-foreground mb-3">Connect your AI tools to get started.</p>
               <Link href="/docs/quickstart" className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition">
                 Setup Guide →
               </Link>

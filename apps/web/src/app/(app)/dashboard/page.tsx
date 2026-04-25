@@ -127,8 +127,8 @@ function ActivityItem({ activity, now }: { activity: any; now?: Date }) {
           {fileName && <span className="text-zinc-500 dark:text-zinc-400">: &ldquo;{fileName.replace(/\.(md|txt|pdf|docx?)$/i, '')}&rdquo;</span>}
         </span>
         <span className="ml-auto text-micro md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
-          <span className="hidden md:inline">{now ? relativeTime(activity.createdAt, now) : ""}</span>
-          <span className="md:hidden">{now ? shortTime(activity.createdAt, now) : ""}</span>
+          <span className="hidden md:inline" title={new Date(activity.createdAt).toLocaleString()}>{now ? relativeTime(activity.createdAt, now) : ""}</span>
+          <span className="md:hidden" title={new Date(activity.createdAt).toLocaleString()}>{now ? shortTime(activity.createdAt, now) : ""}</span>
         </span>
       </div>
     )
@@ -179,8 +179,8 @@ function ActivityItem({ activity, now }: { activity: any; now?: Date }) {
         )}
       </div>
       <span className="ml-auto text-micro md:text-caption text-muted-foreground/50 flex-shrink-0 whitespace-nowrap mt-0.5">
-        <span className="hidden md:inline">{now ? relativeTime(activity.createdAt, now) : ""}</span>
-        <span className="md:hidden">{now ? shortTime(activity.createdAt, now) : ""}</span>
+        <span className="hidden md:inline" title={new Date(activity.createdAt).toLocaleString()}>{now ? relativeTime(activity.createdAt, now) : ""}</span>
+        <span className="md:hidden" title={new Date(activity.createdAt).toLocaleString()}>{now ? shortTime(activity.createdAt, now) : ""}</span>
       </span>
     </div>
   )
