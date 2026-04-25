@@ -50,14 +50,25 @@ function cleanSummaryText(text: string): string {
     .trim()
 }
 
-function relativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
+function relativeTime(dateStr: string, now?: Date): string {
+  const ref = now ? now.getTime() : Date.now()
+  const diff = ref - new Date(dateStr).getTime()
   if (diff < 60000) return "just now"
   if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
   const days = Math.floor(diff / 86400000)
   if (days < 7) return `${days}d ago`
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
+function useClientNow(intervalMs = 60_000): Date | undefined {
+  const [now, setNow] = useState<Date | undefined>(undefined)
+  useEffect(() => {
+    setNow(new Date())
+    const id = setInterval(() => setNow(new Date()), intervalMs)
+    return () => clearInterval(id)
+  }, [intervalMs])
+  return now
 }
 
 export function AgentActivityPanel() {
@@ -69,6 +80,7 @@ export function AgentActivityPanel() {
   const [agentCount, setAgentCount] = useState(0)
   const [filter, setFilter] = useState<AgentFilter>("all")
   const [tracked, setTracked] = useState(false)
+  const clientNow = useClientNow()
 
   const PAGE_SIZE = 10
 
@@ -254,7 +266,7 @@ export function AgentActivityPanel() {
                   )}
                 </div>
                 <span className="ml-auto text-xs text-muted-foreground/50 flex-shrink-0 whitespace-nowrap mt-0.5">
-                  {relativeTime(a.createdAt)}
+                  {clientNow ? relativeTime(a.createdAt, clientNow) : ""}
                 </span>
               </div>
             )

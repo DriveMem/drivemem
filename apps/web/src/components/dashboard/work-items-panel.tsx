@@ -42,12 +42,23 @@ const typeOptions = [
   { value: "insight", label: "💡 Insight" },
 ]
 
-function relativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
+function relativeTime(dateStr: string, now?: Date): string {
+  const ref = now ? now.getTime() : Date.now()
+  const diff = ref - new Date(dateStr).getTime()
   if (diff < 60000) return "now"
   if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
   return `${Math.floor(diff / 86400000)}d ago`
+}
+
+function useClientNow(intervalMs = 60_000): Date | undefined {
+  const [now, setNow] = useState<Date | undefined>(undefined)
+  useEffect(() => {
+    setNow(new Date())
+    const id = setInterval(() => setNow(new Date()), intervalMs)
+    return () => clearInterval(id)
+  }, [intervalMs])
+  return now
 }
 
 interface WorkItemsPanelProps {
@@ -63,6 +74,7 @@ export function WorkItemsPanel({ folderId, defaultExpanded = false }: WorkItemsP
   const [expanded, setExpanded] = useState(defaultExpanded)
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
+  const clientNow = useClientNow()
   const [newTitle, setNewTitle] = useState("")
   const [newType, setNewType] = useState("todo")
   const [creating, setCreating] = useState(false)
@@ -320,7 +332,7 @@ export function WorkItemsPanel({ folderId, defaultExpanded = false }: WorkItemsP
                       🤖 {item.sourceAgent.split("-").pop()}
                     </span>
                   )}
-                  <span className="text-xs text-zinc-400 flex-shrink-0">{relativeTime(item.createdAt)}</span>
+                  <span className="text-xs text-zinc-400 flex-shrink-0">{clientNow ? relativeTime(item.createdAt, clientNow) : ""}</span>
                   <button
                     onClick={() => deleteItem(item)}
                     className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-zinc-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"

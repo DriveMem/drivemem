@@ -28,14 +28,14 @@ import { useMcpSync } from "@/hooks/use-mcp-sync"
 import { useRecentConversations } from "@/hooks/use-conversations"
 
 // --- helpers ---
-function relativeTime(dateStr: string): string {
+function relativeTime(dateStr: string, now?: Date): string {
   const date = new Date(dateStr)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
+  const ref = now || new Date()
+  const diff = ref.getTime() - date.getTime()
   if (diff < 60000) return "just now"
   const fmt = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-  if (date.toDateString() === now.toDateString()) return fmt(date)
-  const yesterday = new Date(now)
+  if (date.toDateString() === ref.toDateString()) return fmt(date)
+  const yesterday = new Date(ref)
   yesterday.setDate(yesterday.getDate() - 1)
   if (date.toDateString() === yesterday.toDateString()) return `Yesterday ${fmt(date)}`
   const days = Math.floor(diff / 86400000)
@@ -47,16 +47,28 @@ function relativeTime(dateStr: string): string {
 }
 
 // S3: Abbreviated time for mobile
-function shortTime(dateStr: string): string {
+function shortTime(dateStr: string, now?: Date): string {
   const date = new Date(dateStr)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
+  const ref = now || new Date()
+  const diff = ref.getTime() - date.getTime()
   if (diff < 60000) return "now"
   if (diff < 3600000) return `${Math.floor(diff / 60000)}m`
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`
   const days = Math.floor(diff / 86400000)
   if (days < 7) return `${days}d`
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+/** Hook: returns a stable "now" that is undefined during SSR,
+ *  then set to Date on client. Re-ticks every 60s so relative times stay fresh. */
+function useClientNow(intervalMs = 60_000): Date | undefined {
+  const [now, setNow] = useState<Date | undefined>(undefined)
+  useEffect(() => {
+    setNow(new Date())
+    const id = setInterval(() => setNow(new Date()), intervalMs)
+    return () => clearInterval(id)
+  }, [intervalMs])
+  return now
 }
 
 const activityIcons: Record<string, typeof FileText> = {
@@ -69,7 +81,7 @@ const activityIcons: Record<string, typeof FileText> = {
 }
 
 // --- Activity Item ---
-function ActivityItem({ activity }: { activity: any }) {
+function ActivityItem({ activity, now }: { activity: any; now?: Date }) {
   const isRelay = activity.type === 'agent_activity' && activity.metadata?.action === 'relay'
   const Icon = isRelay ? ArrowLeftRight : (activityIcons[activity.type] || Lightbulb)
   const isAgentActivity = activity.type === 'agent_activity'
@@ -115,8 +127,8 @@ function ActivityItem({ activity }: { activity: any }) {
           {fileName && <span className="text-zinc-500 dark:text-zinc-400">: &ldquo;{fileName.replace(/\.(md|txt|pdf|docx?)$/i, '')}&rdquo;</span>}
         </span>
         <span className="ml-auto text-micro md:text-caption text-muted-foreground flex-shrink-0 whitespace-nowrap">
-          <span className="hidden md:inline">{relativeTime(activity.createdAt)}</span>
-          <span className="md:hidden">{shortTime(activity.createdAt)}</span>
+          <span className="hidden md:inline">{now ? relativeTime(activity.createdAt, now) : ""}</span>
+          <span className="md:hidden">{now ? shortTime(activity.createdAt, now) : ""}</span>
         </span>
       </div>
     )
@@ -167,8 +179,8 @@ function ActivityItem({ activity }: { activity: any }) {
         )}
       </div>
       <span className="ml-auto text-micro md:text-caption text-muted-foreground/50 flex-shrink-0 whitespace-nowrap mt-0.5">
-        <span className="hidden md:inline">{relativeTime(activity.createdAt)}</span>
-        <span className="md:hidden">{shortTime(activity.createdAt)}</span>
+        <span className="hidden md:inline">{now ? relativeTime(activity.createdAt, now) : ""}</span>
+        <span className="md:hidden">{now ? shortTime(activity.createdAt, now) : ""}</span>
       </span>
     </div>
   )
@@ -311,11 +323,13 @@ function groupActivitiesByMinuteAndType(activities: any[]) {
 }
 
 // --- Batch Activity Group Component (#99) ---
-function BatchActivityGroup({ group }: { group: any }) {
+function BatchActivityGroup({ group, now }: { group: any; now?: Date }) {
   const [expanded, setExpanded] = useState(false)
   const label = group.label || { verb: 'processed', noun: 'items' }
   const Icon = activityIcons[group.typeKey] || Sparkles
-  const timeStr = new Date(group.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+  const timeStr = now
+    ? new Date(group.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    : ''
   return (
     <div className="border-b border-zinc-100 dark:border-zinc-800 last:border-0">
       <button
@@ -491,11 +505,14 @@ export default function HomePage() {
   const projectCount = folders.length
 
   // --- #66: Dashboard phase-based block visibility ---
+  // Hydration-safe "now": undefined during SSR, set on client
+  const clientNow = useClientNow()
+
   const hasAgentActivity = activities.some((a: any) => a.type === "agent_activity") || connectedAgents.length > 0
   const totalActivityCount = activities.length
   const hasAskedAi = (recentConvsData?.conversations?.length ?? 0) > 0
-  const accountAgeDays = files.length > 0
-    ? Math.floor((Date.now() - new Date(files[files.length - 1]?.createdAt || Date.now()).getTime()) / 86400000)
+  const accountAgeDays = files.length > 0 && clientNow
+    ? Math.floor((clientNow.getTime() - new Date(files[files.length - 1]?.createdAt || clientNow.getTime()).getTime()) / 86400000)
     : 0
 
   const blockVis = computeBlockVisibility({
@@ -865,8 +882,8 @@ export default function HomePage() {
             <div>
               {groupedActivities.map((entry: any, i: number) => (
                 entry.isGroup
-                  ? <BatchActivityGroup key={entry.id} group={entry} />
-                  : <ActivityItem key={entry.id || i} activity={entry} />
+                  ? <BatchActivityGroup key={entry.id} group={entry} now={clientNow} />
+                  : <ActivityItem key={entry.id || i} activity={entry} now={clientNow} />
               ))}
               {hasMore && (
                 <button
