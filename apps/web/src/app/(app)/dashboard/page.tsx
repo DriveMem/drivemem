@@ -762,6 +762,15 @@ export default function HomePage() {
             {folders.map((p: any) => (
               <ProjectChip key={p.id} project={p} />
             ))}
+            {folders.length <= 1 && (
+              <Link
+                href="/files"
+                className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-500 transition flex-shrink-0 min-w-[180px] max-w-[220px] px-4 py-4 gap-1 group"
+              >
+                <span className="text-sm text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition font-medium">+ Create a project</span>
+                <span className="text-xs text-zinc-400 dark:text-zinc-500">Organize your files into projects</span>
+              </Link>
+            )}
             <button
               onClick={() => { const name = prompt("Project name:"); if (name) { apiFetch("/api/folders", { method: "POST", body: JSON.stringify({ name }) }).then(() => { router.refresh(); window.location.reload(); }).catch(() => {}); } }}
               className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-dashed border-zinc-300 dark:border-zinc-600 text-body text-zinc-500 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500 transition whitespace-nowrap flex-shrink-0"

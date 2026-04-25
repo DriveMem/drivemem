@@ -595,7 +595,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
       try {
         const { chat: llmChat } = await import('../services/llm.service.js');
         const generated = await llmChat([
-          { role: 'system', content: 'Generate a short, descriptive title (max 8 words, English) for this note. Return ONLY the title, no quotes.' },
+          { role: 'system', content: 'Generate a short, descriptive title (max 8 words) for this note. Generate the title in the same language as the content. Return ONLY the title, no quotes.' },
           { role: 'user', content: body.content.slice(0, 500) },
         ]);
         title = generated.trim().replace(/^["']|["']$/g, '').slice(0, 80) || body.content.slice(0, 30).replace(/\n/g, ' ');
