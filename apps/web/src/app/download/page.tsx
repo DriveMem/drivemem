@@ -72,7 +72,7 @@ const PLATFORMS: Record<Platform, { label: string; icon: React.ReactNode; req: s
     label: "Linux",
     req: "Ubuntu 20.04+ / Fedora 36+",
     icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587-.003 1.23-.269 2.26-.334.699-.058 1.574.267 2.577.2.025.134.063.198.114.333l.003.003c.391.778 1.113 1.368 1.884 1.43.868.07 1.723-.26 2.456-.594.733-.34 1.455-.678 2.186-.78.731-.1 1.506-.071 2.099-.27.59-.198.977-.735 1.048-1.23.029-.227.002-.443-.048-.618-.05-.174-.134-.3-.218-.427l-.002-.004c-.178-.272-.398-.544-.524-.838-.087-.193-.126-.453-.11-.714.016-.259.084-.527.168-.79.082-.263.178-.513.214-.748.01-.053.015-.107.012-.16-.056-.485-.484-.897-.953-1.085a2.4 2.4 0 00-.505-.134 2.065 2.065 0 00-.655.012c-.288.058-.55.192-.852.312-.301.12-.632.242-.974.181a.994.994 0 01-.282-.101 2.14 2.14 0 01-.267-.178c-.287-.223-.495-.527-.762-.872a4.17 4.17 0 00-1.02-1.05c-.332-.24-.723-.398-1.116-.458a4.137 4.137 0 00-1.148.018L12.9 9.95c-.527-.108-1.09-.136-1.608-.09-.247-.657-.655-1.203-1.167-1.49a2.066 2.066 0 00-.527-.204 2.926 2.926 0 00.195-1.148c.004-.357-.058-.71-.156-1.04-.098-.33-.233-.64-.372-.898-.07-.13-.149-.263-.21-.37a4.99 4.99 0 01-.159-.312c-.154-.34-.266-.722-.255-1.194.012-.53.158-1.166.608-1.878C9.895 1.186 11.028.5 12.504 0z"/></svg>
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489.117.811.504 1.569 1.156 2.08 0 0-.272.543-.396 1.202-.122.651-.09 1.404.378 1.989.308.385.743.593 1.2.693.457.101.928.098 1.35.01.849-.174 1.483-.59 1.8-1.156.156.006.313.01.47.01.157 0 .313-.004.47-.01.316.565.95.982 1.8 1.156.421.089.892.091 1.35-.01.456-.1.891-.308 1.2-.693.467-.585.5-1.338.377-1.989-.124-.659-.396-1.202-.396-1.202.652-.511 1.039-1.269 1.156-2.08.124-.805-.009-1.657-.287-2.489-.589-1.771-1.831-3.47-2.716-4.521-.75-1.067-.974-1.928-1.05-3.02-.065-1.491 1.056-5.965-3.17-6.298A4.028 4.028 0 0012.504 0z"/></svg>
     ),
   },
 }
@@ -105,17 +105,17 @@ export default function DownloadPage() {
     : allPlatforms
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 selection:bg-brand-100">
+    <div className="min-h-screen bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-100 selection:bg-brand-100">
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200/60 shadow-sm">
+      <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-zinc-700/60 shadow-sm">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
               <span className="text-white font-mono text-xs font-bold">D</span>
             </div>
-            <span className="text-gray-900 font-semibold tracking-tight">DriveMem</span>
+            <span className="text-gray-900 dark:text-zinc-100 font-semibold tracking-tight">DriveMem</span>
           </Link>
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+          <Link href="/" className="text-sm text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-zinc-100 transition-colors">
             ← Back to home
           </Link>
         </div>
@@ -123,24 +123,24 @@ export default function DownloadPage() {
 
       {/* Hero */}
       <section
-        className="pt-32 pb-16 md:pt-40 md:pb-24"
+        className="pt-32 pb-16 md:pt-40 md:pb-24 dark:bg-zinc-900"
         style={{ background: "linear-gradient(180deg, #ffffff 0%, #F0F2FF 100%)" }}
       >
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-zinc-100 mb-4">
             Download DriveMem
           </h1>
-          <p className="text-gray-500 text-lg mb-2">
+          <p className="text-gray-500 dark:text-zinc-400 text-lg mb-2">
             Desktop app for macOS, Windows, and Linux
           </p>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-400 dark:text-zinc-500">
             {loading ? "Loading version…" : `Version v${info.version}`}
           </p>
         </div>
       </section>
 
       {/* Download Cards */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-16 md:py-24 bg-white dark:bg-zinc-900">
         <div className="max-w-4xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-6">
             {order.map((platform) => {
@@ -151,8 +151,8 @@ export default function DownloadPage() {
                   key={platform}
                   className={`relative rounded-2xl border p-8 text-center transition-all duration-300 hover:-translate-y-1 ${
                     isPrimary
-                      ? "border-brand-500 shadow-brand-md bg-brand-50/30"
-                      : "border-gray-100 shadow-soft hover:shadow-soft-md"
+                      ? "border-brand-500 shadow-brand-md bg-brand-50/30 dark:bg-brand-950/20"
+                      : "border-gray-100 dark:border-zinc-700 shadow-soft hover:shadow-soft-md dark:bg-zinc-800"
                   }`}
                 >
                   {isPrimary && (
@@ -161,18 +161,18 @@ export default function DownloadPage() {
                     </span>
                   )}
                   <div className={`w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-5 ${
-                    isPrimary ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-600"
+                    isPrimary ? "bg-brand-500 text-white" : "bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-zinc-300"
                   }`}>
                     {p.icon}
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{p.label}</h3>
-                  <p className="text-xs text-gray-400 mb-6">{p.req}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-100 mb-1">{p.label}</h3>
+                  <p className="text-xs text-gray-400 dark:text-zinc-500 mb-6">{p.req}</p>
                   <a
                     href={info.urls[platform]}
                     className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isPrimary
                         ? "bg-brand-500 text-white hover:bg-brand-600 shadow-brand-sm"
-                        : "border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
+                        : "border border-gray-300 dark:border-zinc-600 text-gray-700 dark:text-zinc-300 hover:border-gray-400 dark:hover:border-zinc-500 hover:bg-gray-50 dark:hover:bg-zinc-700"
                     }`}
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -182,7 +182,7 @@ export default function DownloadPage() {
                     </svg>
                     Download .{info.files[platform].split('.').pop()}
                   </a>
-                  <p className="mt-3 text-xs text-gray-400">{info.files[platform]}</p>
+                  <p className="mt-3 text-xs text-gray-400 dark:text-zinc-500">{info.files[platform]}</p>
                 </div>
               )
             })}
@@ -190,7 +190,7 @@ export default function DownloadPage() {
 
           {/* Additional info */}
           <div className="mt-16 text-center">
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-gray-400 dark:text-zinc-500 mb-4">
               All downloads are from{" "}
               <a href="https://github.com/yufuche1/ai-drive/releases" target="_blank" rel="noopener" className="text-brand-500 hover:text-brand-600 transition-colors">
                 GitHub Releases
@@ -207,13 +207,13 @@ export default function DownloadPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 py-8 bg-white">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+      <footer className="border-t border-gray-200 dark:border-zinc-700 py-8 bg-white dark:bg-zinc-900">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400 dark:text-zinc-500">
           <span>© {new Date().getFullYear()} DriveMem</span>
           <div className="flex gap-6">
-            <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>
-            <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms</Link>
+            <Link href="/" className="hover:text-gray-600 dark:hover:text-zinc-300 transition-colors">Home</Link>
+            <Link href="/privacy" className="hover:text-gray-600 dark:hover:text-zinc-300 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-gray-600 dark:hover:text-zinc-300 transition-colors">Terms</Link>
           </div>
         </div>
       </footer>

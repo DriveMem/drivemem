@@ -27,25 +27,7 @@ import { QuickStartChecklist } from "@/components/dashboard/quick-start-checklis
 import { computeBlockVisibility, computeChecklist } from "@/hooks/use-dashboard-phase"
 import { useMcpSync } from "@/hooks/use-mcp-sync"
 import { useRecentConversations } from "@/hooks/use-conversations"
-
-// --- helpers ---
-function relativeTime(dateStr: string, now?: Date): string {
-  const date = new Date(dateStr)
-  const ref = now || new Date()
-  const diff = ref.getTime() - date.getTime()
-  if (diff < 60000) return "just now"
-  const fmt = (d: Date) => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-  if (date.toDateString() === ref.toDateString()) return fmt(date)
-  const yesterday = new Date(ref)
-  yesterday.setDate(yesterday.getDate() - 1)
-  if (date.toDateString() === yesterday.toDateString()) return `Yesterday ${fmt(date)}`
-  const days = Math.floor(diff / 86400000)
-  if (days < 7) {
-    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
-    return `${dayName} ${fmt(date)}`
-  }
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
+import { relativeTime } from "@/lib/relative-time"
 
 // S3: Abbreviated time for mobile
 function shortTime(dateStr: string, now?: Date): string {

@@ -42,6 +42,7 @@ import Link from "next/link"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { apiFetch } from "@/lib/api"
 import { trackEvent } from "@/lib/analytics"
+import { relativeTime } from "@/lib/relative-time"
 
 interface AgentActivity {
   id: string
@@ -91,17 +92,6 @@ function formatTimestamp(dateStr: string): string {
     year: "numeric", month: "long", day: "numeric",
     hour: "numeric", minute: "2-digit", second: "2-digit",
   })
-}
-
-function relativeTime(dateStr: string, now?: Date): string {
-  const ref = now ? now.getTime() : Date.now()
-  const diff = ref - new Date(dateStr).getTime()
-  if (diff < 60000) return "just now"
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
-  const days = Math.floor(diff / 86400000)
-  if (days < 7) return `${days}d ago`
-  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
 function useClientNow(intervalMs = 60_000): Date | undefined {
