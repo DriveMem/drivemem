@@ -28,6 +28,32 @@ interface Notification {
   createdAt: string
 }
 
+type TimeGroup = "Today" | "This Week" | "Earlier"
+
+function getTimeGroup(dateStr: string): TimeGroup {
+  const now = new Date()
+  const date = new Date(dateStr)
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const weekStart = new Date(today)
+  weekStart.setDate(today.getDate() - today.getDay())
+
+  if (date >= today) return "Today"
+  if (date >= weekStart) return "This Week"
+  return "Earlier"
+}
+
+const GROUP_ORDER: TimeGroup[] = ["Today", "This Week", "Earlier"]
+
+function groupNotifications(notifications: Notification[]): { group: TimeGroup; items: Notification[] }[] {
+  const groups = new Map<TimeGroup, Notification[]>()
+  for (const n of notifications) {
+    const g = getTimeGroup(n.createdAt)
+    if (!groups.has(g)) groups.set(g, [])
+    groups.get(g)!.push(n)
+  }
+  return GROUP_ORDER.filter(g => groups.has(g)).map(g => ({ group: g, items: groups.get(g)! }))
+}
+
 function formatRelativeTime(dateStr: string): string {
   const now = Date.now()
   const then = new Date(dateStr).getTime()
@@ -159,7 +185,12 @@ export function TopNav() {
               {notifications.length === 0 ? (
                 <p className="py-8 text-center text-sm text-zinc-400">No notifications</p>
               ) : (
-                notifications.map(n => {
+                groupNotifications(notifications).map(({ group, items }) => (
+                  <div key={group}>
+                    <div className="px-4 pt-3 pb-1 first:pt-2">
+                      <span className="text-xs font-bold uppercase text-zinc-400 dark:text-zinc-500">{group}</span>
+                    </div>
+                    {items.map(n => {
                   const cta = getNotificationCta(n.type)
                   return (
                     <div
@@ -194,7 +225,9 @@ export function TopNav() {
                       </div>
                     </div>
                   )
-                })
+                })}
+                  </div>
+                ))
               )}
             </div>
           </PopoverContent>
