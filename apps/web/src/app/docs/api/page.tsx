@@ -151,22 +151,47 @@ export default function ApiReferencePage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Search & AI API</h2>
           <p className="text-gray-500 mb-6">Semantic search, RAG Q&A, and knowledge storage.</p>
           <div className="space-y-5">
-            <Endpoint method="GET" path="/search" description="Semantic search across your knowledge base. Query params: ?q (required), ?limit, ?scope (project | all).">
-              <CodeBlock code={`curl "https://api.drivemem.cloud/api/v1/search?q=deployment+process&limit=5" \\
+            <Endpoint method="GET" path="/search" description="Semantic search across your knowledge base.">
+              <div className="overflow-x-auto mb-3">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-gray-200 text-left"><th className="py-2 pr-4 font-semibold text-gray-900">Param</th><th className="py-2 pr-4 font-semibold text-gray-900">Type</th><th className="py-2 font-semibold text-gray-900">Description</th></tr></thead>
+                  <tbody className="text-gray-600">
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">q</td><td className="py-2 pr-4">string</td><td className="py-2"><strong>Required.</strong> Search query.</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">limit</td><td className="py-2 pr-4">number</td><td className="py-2">Max results to return (default 5).</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">max_tokens</td><td className="py-2 pr-4">number</td><td className="py-2">Token budget for returned content.</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">format</td><td className="py-2 pr-4">string</td><td className="py-2">Response format: <code className="bg-gray-100 px-1 rounded text-xs">text</code> | <code className="bg-gray-100 px-1 rounded text-xs">structured</code> | <code className="bg-gray-100 px-1 rounded text-xs">summary</code></td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">contextBudget</td><td className="py-2 pr-4">number</td><td className="py-2">Token budget for context window.</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">scope</td><td className="py-2 pr-4">string</td><td className="py-2"><code className="bg-gray-100 px-1 rounded text-xs">project</code> | <code className="bg-gray-100 px-1 rounded text-xs">all</code></td></tr>
+                    <tr><td className="py-2 pr-4 font-mono">projectId</td><td className="py-2 pr-4">string</td><td className="py-2">Scope search to a specific project/folder.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <CodeBlock code={`curl "https://api.drivemem.cloud/api/v1/search?q=deployment+process&scope=all&limit=5&format=text" \\
   -H "Authorization: Bearer ak_YOUR_KEY"`} />
               <CodeBlock lang="json" code={`{
   "results": [
     {
-      "fileId": "file_abc123",
       "fileName": "devops-guide.md",
-      "excerpt": "...the deployment process involves...",
-      "score": 0.92
+      "fileId": "file_abc123",
+      "score": 0.92,
+      "text": "...the deployment process involves..."
     }
   ]
 }`} />
             </Endpoint>
 
             <Endpoint method="POST" path="/ask" description="Ask a question and get an AI-generated answer grounded in your files, with source citations.">
+              <div className="overflow-x-auto mb-3">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-gray-200 text-left"><th className="py-2 pr-4 font-semibold text-gray-900">Body field</th><th className="py-2 pr-4 font-semibold text-gray-900">Type</th><th className="py-2 font-semibold text-gray-900">Description</th></tr></thead>
+                  <tbody className="text-gray-600">
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">question</td><td className="py-2 pr-4">string</td><td className="py-2"><strong>Required.</strong> The question to answer.</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">fileIds</td><td className="py-2 pr-4">string[]</td><td className="py-2">Limit answer to specific files.</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">contextBudget</td><td className="py-2 pr-4">number</td><td className="py-2">Token budget for context.</td></tr>
+                    <tr><td className="py-2 pr-4 font-mono">preferFormat</td><td className="py-2 pr-4">string</td><td className="py-2"><code className="bg-gray-100 px-1 rounded text-xs">text</code> | <code className="bg-gray-100 px-1 rounded text-xs">structured</code> | <code className="bg-gray-100 px-1 rounded text-xs">summary</code></td></tr>
+                  </tbody>
+                </table>
+              </div>
               <CodeBlock code={`curl -X POST "https://api.drivemem.cloud/api/v1/ask" \\
   -H "Authorization: Bearer ak_YOUR_KEY" \\
   -H "Content-Type: application/json" \\
@@ -180,10 +205,72 @@ export default function ApiReferencePage() {
             </Endpoint>
 
             <Endpoint method="POST" path="/store" description="Store a piece of knowledge (decision, note, insight) into your knowledge base.">
+              <div className="overflow-x-auto mb-3">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-gray-200 text-left"><th className="py-2 pr-4 font-semibold text-gray-900">Body field</th><th className="py-2 pr-4 font-semibold text-gray-900">Type</th><th className="py-2 font-semibold text-gray-900">Description</th></tr></thead>
+                  <tbody className="text-gray-600">
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">content</td><td className="py-2 pr-4">string</td><td className="py-2"><strong>Required.</strong> The knowledge content to store.</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">title</td><td className="py-2 pr-4">string</td><td className="py-2">Optional title (auto-generated if omitted).</td></tr>
+                    <tr><td className="py-2 pr-4 font-mono">tags</td><td className="py-2 pr-4">string</td><td className="py-2">Comma-separated tags, e.g. <code className="bg-gray-100 px-1 rounded text-xs">decision,architecture</code></td></tr>
+                  </tbody>
+                </table>
+              </div>
               <CodeBlock code={`curl -X POST "https://api.drivemem.cloud/api/v1/store" \\
   -H "Authorization: Bearer ak_YOUR_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"content": "Decided to use PostgreSQL for the main database", "title": "DB Decision", "tags": "decision,architecture"}'`} />
+              <CodeBlock lang="json" code={`{
+  "id": "file_def456",
+  "title": "DB Decision",
+  "fileName": "db-decision.md"
+}`} />
+            </Endpoint>
+          </div>
+        </section>
+
+        {/* Insights API */}
+        <section>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Insights API</h2>
+          <p className="text-gray-500 mb-6">AI-generated insights discovered across your knowledge base.</p>
+          <div className="space-y-5">
+            <Endpoint method="GET" path="/insights" description="List all AI-generated insights (connections, patterns, and recommendations).">
+              <CodeBlock code={`curl "https://api.drivemem.cloud/api/v1/insights" \\
+  -H "Authorization: Bearer ak_YOUR_KEY"`} />
+              <CodeBlock lang="json" code={`{
+  "insights": [
+    {
+      "id": "ins_abc123",
+      "type": "connection",
+      "title": "Related architecture decisions",
+      "description": "Your auth and database decisions share common scalability assumptions...",
+      "sourceFileId": "file_abc123",
+      "relatedFileId": "file_def456",
+      "createdAt": "2025-02-10T14:00:00Z"
+    }
+  ]
+}`} />
+            </Endpoint>
+          </div>
+        </section>
+
+        {/* Context Packet API */}
+        <section>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Context Packet API</h2>
+          <p className="text-gray-500 mb-6">Compile project context for AI tool integration.</p>
+          <div className="space-y-5">
+            <Endpoint method="GET" path="/context-packet" description="Get a compiled context packet for a project folder.">
+              <div className="overflow-x-auto mb-3">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-gray-200 text-left"><th className="py-2 pr-4 font-semibold text-gray-900">Param</th><th className="py-2 pr-4 font-semibold text-gray-900">Type</th><th className="py-2 font-semibold text-gray-900">Description</th></tr></thead>
+                  <tbody className="text-gray-600">
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">folderId</td><td className="py-2 pr-4">string</td><td className="py-2"><strong>Required.</strong> The project folder to compile.</td></tr>
+                    <tr><td className="py-2 pr-4 font-mono">format</td><td className="py-2 pr-4">string</td><td className="py-2"><code className="bg-gray-100 px-1 rounded text-xs">markdown</code> (default) | <code className="bg-gray-100 px-1 rounded text-xs">json</code></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <CodeBlock code={`curl "https://api.drivemem.cloud/api/v1/context-packet?folderId=folder_xyz&format=markdown" \\
+  -H "Authorization: Bearer ak_YOUR_KEY"`} />
+              <CodeBlock lang="json" code={`"# Project Context: My App\\n\\n## Files\\n- auth-design.md\\n- db-schema.md\\n\\n## Compiled Context\\n..."`} />
             </Endpoint>
           </div>
         </section>
@@ -193,34 +280,66 @@ export default function ApiReferencePage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">User API</h2>
           <p className="text-gray-500 mb-6">Manage user profile.</p>
           <div className="space-y-5">
-            <Endpoint method="GET" path="/users/me/profile" description="Get the current user's profile." >
+            <Endpoint method="GET" path="/users/me/profile" description="Get the current user's profile.">
               <CodeBlock code={`curl "https://api.drivemem.cloud/api/v1/users/me/profile" \\
   -H "Authorization: Bearer ak_YOUR_KEY"`} />
+              <CodeBlock lang="json" code={`{
+  "id": "user_abc123",
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "company": "Acme Inc",
+  "role": "Engineering Lead"
+}`} />
             </Endpoint>
-            <Endpoint method="PATCH" path="/users/me/profile" description="Update the current user's profile." >
+            <Endpoint method="PATCH" path="/users/me/profile" description="Update the current user's profile.">
+              <div className="overflow-x-auto mb-3">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-gray-200 text-left"><th className="py-2 pr-4 font-semibold text-gray-900">Body field</th><th className="py-2 pr-4 font-semibold text-gray-900">Type</th><th className="py-2 font-semibold text-gray-900">Description</th></tr></thead>
+                  <tbody className="text-gray-600">
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">name</td><td className="py-2 pr-4">string</td><td className="py-2">Display name.</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">company</td><td className="py-2 pr-4">string</td><td className="py-2">Company name.</td></tr>
+                    <tr><td className="py-2 pr-4 font-mono">role</td><td className="py-2 pr-4">string</td><td className="py-2">Job title or role.</td></tr>
+                  </tbody>
+                </table>
+              </div>
               <CodeBlock code={`curl -X PATCH "https://api.drivemem.cloud/api/v1/users/me/profile" \\
   -H "Authorization: Bearer ak_YOUR_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"name": "Jane Doe"}'`} />
+  -d '{"name": "Jane Doe", "company": "Acme Inc"}'`} />
             </Endpoint>
           </div>
         </section>
 
-        {/* Other Endpoints */}
+        {/* Timeline API */}
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Other Endpoints</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Timeline API</h2>
+          <p className="text-gray-500 mb-6">Activity feed of recent changes across your knowledge base.</p>
           <div className="space-y-5">
-            <Endpoint method="GET" path="/insights" description="Get AI-generated insights based on your knowledge base." >
-              <CodeBlock code={`curl "https://api.drivemem.cloud/api/v1/insights" \\
+            <Endpoint method="GET" path="/timeline" description="Get a paginated activity timeline.">
+              <div className="overflow-x-auto mb-3">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-gray-200 text-left"><th className="py-2 pr-4 font-semibold text-gray-900">Param</th><th className="py-2 pr-4 font-semibold text-gray-900">Type</th><th className="py-2 font-semibold text-gray-900">Description</th></tr></thead>
+                  <tbody className="text-gray-600">
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">limit</td><td className="py-2 pr-4">number</td><td className="py-2">Results per page (default 20).</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">page</td><td className="py-2 pr-4">number</td><td className="py-2">Page number (default 1).</td></tr>
+                    <tr><td className="py-2 pr-4 font-mono">type</td><td className="py-2 pr-4">string</td><td className="py-2">Filter by event type, e.g. <code className="bg-gray-100 px-1 rounded text-xs">files</code></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <CodeBlock code={`curl "https://api.drivemem.cloud/api/v1/timeline?limit=20&page=1&type=files" \\
   -H "Authorization: Bearer ak_YOUR_KEY"`} />
-            </Endpoint>
-            <Endpoint method="GET" path="/timeline" description="Get activity timeline of recent changes." >
-              <CodeBlock code={`curl "https://api.drivemem.cloud/api/v1/timeline" \\
-  -H "Authorization: Bearer ak_YOUR_KEY"`} />
-            </Endpoint>
-            <Endpoint method="GET" path="/context-packet" description="Get a compiled context packet for AI tool integration." >
-              <CodeBlock code={`curl "https://api.drivemem.cloud/api/v1/context-packet" \\
-  -H "Authorization: Bearer ak_YOUR_KEY"`} />
+              <CodeBlock lang="json" code={`{
+  "events": [
+    {
+      "id": "evt_abc123",
+      "type": "file.created",
+      "fileName": "meeting-notes.md",
+      "fileId": "file_abc123",
+      "createdAt": "2025-02-10T14:00:00Z"
+    }
+  ],
+  "total": 142
+}`} />
             </Endpoint>
           </div>
         </section>
