@@ -34,11 +34,11 @@ function getTimeGroup(dateStr: string): TimeGroup {
   const now = new Date()
   const date = new Date(dateStr)
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const weekStart = new Date(today)
-  weekStart.setDate(today.getDate() - today.getDay())
+  const sevenDaysAgo = new Date(today)
+  sevenDaysAgo.setDate(today.getDate() - 7)
 
   if (date >= today) return "Today"
-  if (date >= weekStart) return "This Week"
+  if (date >= sevenDaysAgo) return "This Week"
   return "Earlier"
 }
 
@@ -185,10 +185,10 @@ export function TopNav() {
               {notifications.length === 0 ? (
                 <p className="py-8 text-center text-sm text-zinc-400">No notifications</p>
               ) : (
-                groupNotifications(notifications).map(({ group, items }) => (
+                groupNotifications(notifications).map(({ group, items }, idx) => (
                   <div key={group}>
-                    <div className="px-4 pt-3 pb-1 first:pt-2">
-                      <span className="text-xs font-bold uppercase text-zinc-400 dark:text-zinc-500">{group}</span>
+                    <div className={cn("px-4 pt-3 pb-1", idx === 0 ? "pt-2" : "border-t border-zinc-200 dark:border-zinc-700/60")}>
+                      <span className="text-xs font-bold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">{group}</span>
                     </div>
                     {items.map(n => {
                   const cta = getNotificationCta(n.type)
