@@ -20,7 +20,7 @@ const nextConfig = {
       },
       {
         source: '/docs',
-        destination: 'https://github.com/yufuche1/ai-drive#readme',
+        destination: '/docs/quickstart',
         permanent: false,
       },
     ]
