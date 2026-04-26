@@ -433,6 +433,8 @@ export function FileList() {
   const [sortKey, setSortKey] = useState<SortKey>("createdAt")
   const [sortDir, setSortDir] = useState<SortDir>("desc")
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [showAllTags, setShowAllTags] = useState(false)
+  const [tagSearch, setTagSearch] = useState("")
   const [showUpload, setShowUpload] = useState(false)
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const [typeFilter, setTypeFilter] = useState<string>("all")
@@ -791,14 +793,31 @@ export function FileList() {
                   {activeTagFilter || "Tags"}
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-48 p-2" align="start">
-                {userTags.map((tag: any) => (
+              <PopoverContent className="w-48 p-2 max-h-64 overflow-y-auto" align="start">
+                {showAllTags && userTags.length > 20 && (
+                  <input
+                    type="text"
+                    placeholder="Search tags..."
+                    className="w-full px-2 py-1.5 text-xs border-b border-zinc-100 dark:border-zinc-800 bg-transparent outline-none text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 mb-1"
+                    value={tagSearch}
+                    onChange={(e) => setTagSearch(e.target.value)}
+                  />
+                )}
+                {(showAllTags ? (tagSearch ? userTags.filter((t: any) => t.name.toLowerCase().includes(tagSearch.toLowerCase())) : userTags) : userTags.slice(0, 10)).map((tag: any) => (
                   <button key={tag.id} onClick={() => setActiveTagFilter(activeTagFilter === tag.name ? null : tag.name)}
                     className="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
                     <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: tag.color || '#6B7280' }} />
                     <span className={activeTagFilter === tag.name ? "font-medium" : ""}>{tag.name}</span>
                   </button>
                 ))}
+                {userTags.length > 10 && (
+                  <button
+                    onClick={() => setShowAllTags(!showAllTags)}
+                    className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 py-1.5 mt-1 border-t border-zinc-100 dark:border-zinc-800"
+                  >
+                    {showAllTags ? 'Show less' : `Show all (${userTags.length})`}
+                  </button>
+                )}
               </PopoverContent>
             </Popover>
           )}
