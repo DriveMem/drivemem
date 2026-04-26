@@ -120,6 +120,7 @@ export default function SignupPage() {
             className="rounded-xl h-12 text-base border-zinc-200 dark:border-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-transparent"
             {...register("password")}
           />
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">At least 8 characters, must include letters and numbers</p>
           {errors.password && (
             <p className="text-sm text-destructive">{errors.password.message}</p>
           )}
@@ -163,11 +164,7 @@ export default function SignupPage() {
         By signing up, you agree to the <Link href="/terms" className="underline hover:text-foreground">Terms of Use</Link> and <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>
       </p>
 
-      <div className="mt-4 text-center">
-        <Link href="/login" className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition underline">
-          Sign in with Demo account →
-        </Link>
-      </div>
+
     </div>
   )
 }

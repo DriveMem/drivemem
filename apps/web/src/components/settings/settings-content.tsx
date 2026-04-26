@@ -1593,11 +1593,12 @@ export default function SettingsContent() {
           <div className="space-y-2">
             <Label htmlFor="newPassword">New password</Label>
             <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="rounded-xl h-12" />
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">At least 8 characters, must include letters and numbers</p>
           </div>
           <Button
             size="sm"
             className="bg-brand-500 hover:bg-brand-600 text-white"
-            disabled={!currentPassword || !newPassword || newPassword.length < 6}
+            disabled={!currentPassword || !newPassword || newPassword.length < 8}
             onClick={async () => {
               try {
                 const { apiFetch } = await import("@/lib/api")
@@ -1610,7 +1611,7 @@ export default function SettingsContent() {
           >
             Change Password
           </Button>
-          {(!currentPassword || !newPassword || newPassword.length < 6) && (
+          {(!currentPassword || !newPassword || newPassword.length < 8) && (
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {!currentPassword && !newPassword
                 ? "Please enter current and new password"
@@ -1618,7 +1619,7 @@ export default function SettingsContent() {
                 ? "Please enter current password"
                 : !newPassword
                 ? "Please enter new password"
-                : "New password must be at least 6 characters"}
+                : "New password must be at least 8 characters"}
             </p>
           )}
         </CardContent>

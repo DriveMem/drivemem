@@ -143,7 +143,7 @@ function LoginForm() {
           }}
           className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition underline"
         >
-          Sign in with Demo account →
+          Try with Demo account →
         </button>
       </div>
     </div>
