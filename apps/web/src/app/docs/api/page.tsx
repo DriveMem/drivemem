@@ -54,7 +54,7 @@ export default function ApiReferencePage() {
           DriveMem REST API
         </h1>
         <p className="text-lg text-gray-500 leading-relaxed">
-          Programmatic access to your knowledge base — upload files, search semantically, and build AI-powered workflows.
+          Programmatic access to your knowledge base — upload files, search semantically, compile context, and build AI-powered workflows.
         </p>
       </div>
 
@@ -253,12 +253,45 @@ export default function ApiReferencePage() {
           </div>
         </section>
 
-        {/* Context Packet API */}
+        {/* Context API */}
         <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Context Packet API</h2>
-          <p className="text-gray-500 mb-6">Compile project context for AI tool integration.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Context API</h2>
+          <p className="text-gray-500 mb-6">Compile relevant context from your knowledge base for AI tool integration.</p>
           <div className="space-y-5">
-            <Endpoint method="GET" path="/context-packet" description="Get a compiled context packet for a project folder.">
+            <Endpoint method="POST" path="/context/compile" description="Compile task-relevant context from your knowledge base. Powers MCP integrations and cross-model handoffs.">
+              <div className="overflow-x-auto mb-3">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-gray-200 text-left"><th className="py-2 pr-4 font-semibold text-gray-900">Body field</th><th className="py-2 pr-4 font-semibold text-gray-900">Type</th><th className="py-2 font-semibold text-gray-900">Description</th></tr></thead>
+                  <tbody className="text-gray-600">
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">task</td><td className="py-2 pr-4">string</td><td className="py-2"><strong>Required.</strong> Description of the current task for context relevance.</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">tokenBudget</td><td className="py-2 pr-4">number</td><td className="py-2">Max tokens for compiled context (default 8000).</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">model</td><td className="py-2 pr-4">string</td><td className="py-2">Target model name (for budget optimization).</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">role</td><td className="py-2 pr-4">string</td><td className="py-2">Agent role hint (auto-detected if omitted).</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">since</td><td className="py-2 pr-4">string</td><td className="py-2">ISO date — only include content after this date.</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">depth</td><td className="py-2 pr-4">number</td><td className="py-2">Context depth level.</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">format</td><td className="py-2 pr-4">string</td><td className="py-2">Output format preference.</td></tr>
+                    <tr><td className="py-2 pr-4 font-mono">hints</td><td className="py-2 pr-4">object</td><td className="py-2">Optional hints: <code className="bg-gray-100 px-1 rounded text-xs">{"{"}&quot;folderId&quot;: &quot;...&quot;, &quot;project&quot;: &quot;...&quot;{"}"}</code></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <CodeBlock code={`curl -X POST "https://api.drivemem.cloud/api/v1/context/compile" \\
+  -H "Authorization: Bearer ak_YOUR_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"task": "Implement user authentication", "tokenBudget": 4000}'`} />
+              <CodeBlock lang="json" code={`{
+  "compiledContext": "Based on your knowledge base...\\n\\n## Auth Design\\n...",
+  "metadata": {
+    "fragmentCount": 12,
+    "totalTokens": 3850,
+    "coverage": 0.87
+  },
+  "sources": [
+    { "fileId": "file_abc123", "fileName": "auth-design.md", "score": 0.94 }
+  ]
+}`} />
+            </Endpoint>
+
+            <Endpoint method="GET" path="/context-packet" description="Get a compiled context packet for a project folder (LLM-generated summary).">
               <div className="overflow-x-auto mb-3">
                 <table className="w-full text-sm">
                   <thead><tr className="border-b border-gray-200 text-left"><th className="py-2 pr-4 font-semibold text-gray-900">Param</th><th className="py-2 pr-4 font-semibold text-gray-900">Type</th><th className="py-2 font-semibold text-gray-900">Description</th></tr></thead>
@@ -270,7 +303,55 @@ export default function ApiReferencePage() {
               </div>
               <CodeBlock code={`curl "https://api.drivemem.cloud/api/v1/context-packet?folderId=folder_xyz&format=markdown" \\
   -H "Authorization: Bearer ak_YOUR_KEY"`} />
-              <CodeBlock lang="json" code={`"# Project Context: My App\\n\\n## Files\\n- auth-design.md\\n- db-schema.md\\n\\n## Compiled Context\\n..."`} />
+              <CodeBlock lang="json" code={`{
+  "format": "markdown",
+  "folderId": "folder_xyz",
+  "fileCount": 8,
+  "insightCount": 3,
+  "packet": "# Project Summary\\n\\n## Current Status\\n..."
+}`} />
+            </Endpoint>
+          </div>
+        </section>
+
+        {/* LLM Proxy API */}
+        <section>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">LLM Proxy API</h2>
+          <p className="text-gray-500 mb-6">OpenAI-compatible chat completions proxy that automatically enriches prompts with your knowledge base context.</p>
+          <div className="space-y-5">
+            <Endpoint method="POST" path="/v1/chat/completions" description="Forward chat completions through DriveMem. Automatically injects relevant knowledge as context, and optionally auto-captures valuable outputs.">
+              <p className="text-sm text-gray-600 mb-3">
+                <strong>Authentication note:</strong> Pass your LLM provider API key in the <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono">Authorization</code> header (e.g. <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono">Bearer sk-...</code>). Pass your DriveMem API key as a query parameter: <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono">?apiKey=ak_YOUR_KEY</code>.
+              </p>
+              <div className="overflow-x-auto mb-3">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-gray-200 text-left"><th className="py-2 pr-4 font-semibold text-gray-900">Body field</th><th className="py-2 pr-4 font-semibold text-gray-900">Type</th><th className="py-2 font-semibold text-gray-900">Description</th></tr></thead>
+                  <tbody className="text-gray-600">
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">model</td><td className="py-2 pr-4">string</td><td className="py-2"><strong>Required.</strong> The model to use (e.g. <code className="bg-gray-100 px-1 rounded text-xs">gpt-4o</code>).</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">messages</td><td className="py-2 pr-4">array</td><td className="py-2"><strong>Required.</strong> OpenAI-format messages array.</td></tr>
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">stream</td><td className="py-2 pr-4">boolean</td><td className="py-2">Enable streaming responses (SSE).</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="overflow-x-auto mb-3">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-gray-200 text-left"><th className="py-2 pr-4 font-semibold text-gray-900">Header</th><th className="py-2 font-semibold text-gray-900">Description</th></tr></thead>
+                  <tbody className="text-gray-600">
+                    <tr className="border-b border-gray-100"><td className="py-2 pr-4 font-mono">Authorization</td><td className="py-2">Your LLM provider key: <code className="bg-gray-100 px-1 rounded text-xs">Bearer sk-...</code></td></tr>
+                    <tr><td className="py-2 pr-4 font-mono">x-llm-base-url</td><td className="py-2">Optional. LLM base URL (default: <code className="bg-gray-100 px-1 rounded text-xs">https://api.openai.com</code>).</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <CodeBlock code={`curl -X POST "https://api.drivemem.cloud/api/v1/chat/completions?apiKey=ak_YOUR_KEY" \\
+  -H "Authorization: Bearer sk-YOUR_LLM_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "gpt-4o",
+    "messages": [
+      {"role": "user", "content": "Summarize our auth architecture decisions"}
+    ]
+  }'`} />
+              <p className="text-xs text-gray-500 mt-2">Response follows the standard OpenAI chat completions format. Knowledge context is automatically injected into the system prompt.</p>
             </Endpoint>
           </div>
         </section>
