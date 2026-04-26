@@ -92,7 +92,6 @@ export default function DownloadPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    document.title = "Download — DriveMem"
     setDetected(detectOS())
     fetchLatestRelease()
       .then(setInfo)
