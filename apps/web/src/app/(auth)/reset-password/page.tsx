@@ -101,6 +101,7 @@ function ResetPasswordForm() {
           <div className="space-y-2">
             <Label htmlFor="password">New password</Label>
             <Input id="password" type="password" placeholder="••••••••" {...register('password')} />
+            <p className="text-xs text-muted-foreground">At least 8 characters, must include letters and numbers</p>
             {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
           </div>
           <div className="space-y-2">
