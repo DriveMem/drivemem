@@ -14,7 +14,8 @@ export default auth((req) => {
   const isPublicPage = req.nextUrl.pathname === "/download" ||
     req.nextUrl.pathname.startsWith("/docs") ||
     req.nextUrl.pathname === "/privacy" ||
-    req.nextUrl.pathname === "/terms"
+    req.nextUrl.pathname === "/terms" ||
+    req.nextUrl.pathname === "/pricing"
 
   // API routes always pass through
   if (isApiRoute) return
