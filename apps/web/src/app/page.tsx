@@ -279,7 +279,7 @@ export default function LandingPage() {
 
         <div className="mt-8 md:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
-                href="/login"
+                href="/signup"
                 onClick={() => trackEvent("signup_click", { source: "hero" })}
                 className="px-6 py-2.5 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors shadow-brand-sm hover:shadow-brand-md"
               >
@@ -505,7 +505,8 @@ export default function LandingPage() {
               Start free — no credit card required
             </p>
             <Link
-              href="/login"
+              href="/signup"
+              onClick={() => trackEvent("signup_click", { source: "bottom_cta" })}
               className="inline-flex px-8 py-3 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors shadow-brand-md hover:shadow-brand-lg"
             >
               Try it free
