@@ -165,35 +165,6 @@ export default function QuickStartPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* ---- Nav ---- */}
-      <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200/60">
-        <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
-              <span className="text-white font-mono text-xs font-bold">D</span>
-            </div>
-            <span className="text-gray-900 font-semibold tracking-tight">
-              DriveMem
-            </span>
-            <span className="text-gray-300 mx-1">/</span>
-            <span className="text-gray-500 text-sm">Docs</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/login"
-              className="text-gray-500 hover:text-gray-900 text-sm transition-colors hidden sm:block"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-4 py-1.5 rounded-lg font-medium transition-colors"
-            >
-              Start free
-            </Link>
-          </div>
-        </div>
-      </nav>
 
       {/* ---- Hero ---- */}
       <header className="pt-16 sm:pt-24 pb-12 px-6">
@@ -359,26 +330,6 @@ export default function QuickStartPage() {
         </div>
       </section>
 
-      {/* ---- Footer ---- */}
-      <footer className="border-t border-gray-100 py-8">
-        <div className="max-w-4xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
-          <span>© 2025 DriveMem</span>
-          <div className="flex gap-6">
-            <Link href="/" className="hover:text-gray-600 transition-colors">
-              Home
-            </Link>
-            <Link href="/developers" className="hover:text-gray-600 transition-colors">
-              Developers
-            </Link>
-            <Link href="/privacy" className="hover:text-gray-600 transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-gray-600 transition-colors">
-              Terms
-            </Link>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
