@@ -39,6 +39,11 @@ export default auth((req) => {
   const appRoutes = ["/dashboard", "/chat", "/settings", "/timeline", "/files", "/search", "/trash"]
   const isAppRoute = appRoutes.some(r => req.nextUrl.pathname.startsWith(r))
 
+  // /developers without auth → redirect to public docs
+  if (!isLoggedIn && req.nextUrl.pathname.startsWith("/developers")) {
+    return Response.redirect(new URL("/docs/quickstart", req.nextUrl))
+  }
+
   // Landing page is public
   if (isLandingPage || isAuthPage) return
 
