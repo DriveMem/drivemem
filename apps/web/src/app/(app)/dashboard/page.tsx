@@ -133,8 +133,8 @@ function ActivityItem({ activity, now }: { activity: any; now?: Date }) {
     const raw = activity.metadata?.fileName
       ? String(activity.metadata.fileName).replace(/\.(md|pdf|docx|txt)$/i, '')
       : activity.title || action
-    // Humanize auto-generated filenames
-    return raw
+    // Humanize auto-generated filenames + strip AI meta-language
+    return cleanSummary(raw)
       .replace(/^session-summary-[\w-]+$/i, 'Session Summary')
       .replace(/^auto-capture-[\w-]+$/i, 'Auto Capture')
       .replace(/^auto-[\w-]+$/i, 'Auto Note')

@@ -126,9 +126,16 @@ const worker = new Worker<ParseJobData>(
     try {
       const { chat } = await import('../services/llm.service.js');
       const chunkTexts = truncateAtBoundary(chunks.map((c: { text: string }) => c.text).join('\n\n'), 3000);
-      const summaryPrompt = 'Generate a concise summary (max 200 words) of this document, covering the main content and key information:\n\n' + chunkTexts;
-      const summary = await chat([{ role: 'user', content: summaryPrompt }]);
+      const summaryPrompt = 'Generate a concise summary (max 200 words) of this document. Start directly with the key content — do NOT begin with phrases like "This document", "Based on the provided document", "Here is a summary", or any meta-commentary. Just state what the document is about:\n\n' + chunkTexts;
+      let summary = await chat([{ role: 'user', content: summaryPrompt }]);
       if (summary) {
+        // Strip common AI meta-language prefixes
+        summary = summary
+          .replace(/^(This (document|file|note|page|article|entry|memo|record|piece) (is about|describes|details|outlines|summarizes|covers|contains|provides|presents|discusses|explains|records|captures|announces|is a)[^.]*?\.\s*)/i, '')
+          .replace(/^(Based on the provided (document|content|text|file)[^.]*?\.\s*)/i, '')
+          .replace(/^(Here is|The following|Below is)[^.]*?\.\s*/i, '')
+          .replace(/^(Summary:?\s*)/i, '')
+          .trim();
         await db.update(files).set({ summary }).where(eq(files.id, fileId));
         console.log('[file-parse] Summary generated for ' + fileId);
 
