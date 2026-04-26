@@ -780,6 +780,157 @@ async function startStdioBridge(apiKey: string) {
   setInterval(() => {}, 60000);
 }
 
+async function hookSessionEnd() {
+  const API_BASE = 'https://api.drivemem.cloud';
+
+  // Read stdin (Claude Code sends JSON payload)
+  let input = '';
+  for await (const chunk of process.stdin) input += chunk;
+
+  let payload: { session_id?: string; transcript_path?: string; cwd?: string };
+  try {
+    payload = JSON.parse(input);
+  } catch {
+    process.exit(0);
+  }
+  const { session_id, transcript_path, cwd } = payload;
+
+  // Get API key from env or config
+  const apiKey = process.argv.find(a => a.startsWith('--api-key='))?.split('=')[1]
+    || process.env.DRIVEMEM_API_KEY
+    || readApiKeyFromExistingConfig();
+
+  if (!apiKey) {
+    process.stderr.write('[drivemem] No API key found. Set DRIVEMEM_API_KEY or run npx drivemem setup.\n');
+    process.exit(0);
+  }
+
+  // Read transcript if available
+  let transcript = '';
+  if (transcript_path) {
+    try {
+      transcript = readFileSync(transcript_path, 'utf-8').slice(-10000);
+    } catch {}
+  }
+
+  if (!transcript) {
+    process.exit(0);
+  }
+
+  // Call DriveMem store API
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/store`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        content: `[Claude Code Session]\nProject: ${cwd}\nSession: ${session_id}\n\n${transcript}`,
+        title: `Claude Code session — ${require('path').basename(cwd || '')}`,
+        tags: 'claude-code,auto-capture',
+      }),
+    });
+
+    if (res.ok) {
+      process.stderr.write(`[drivemem] Session knowledge saved ✅\n`);
+    }
+  } catch (err: any) {
+    process.stderr.write(`[drivemem] Harvest failed (non-blocking): ${err.message}\n`);
+  }
+
+  process.exit(0);
+}
+
+function readApiKeyFromExistingConfig(): string | null {
+  try {
+    const cursorConfig = join(homedir(), '.cursor', 'mcp.json');
+    if (existsSync(cursorConfig)) {
+      const config = JSON.parse(readFileSync(cursorConfig, 'utf-8'));
+      const url = config?.mcpServers?.drivemem?.url || '';
+      const match = url.match(/apiKey=([^&]+)/);
+      if (match) return match[1];
+    }
+    const platform = process.platform;
+    const claudeConfig = platform === 'darwin'
+      ? join(homedir(), 'Library', 'Application Support', 'Claude', 'claude_desktop_config.json')
+      : platform === 'win32'
+      ? join(process.env.APPDATA || '', 'Claude', 'claude_desktop_config.json')
+      : join(homedir(), '.config', 'claude', 'claude_desktop_config.json');
+    if (existsSync(claudeConfig)) {
+      const config = JSON.parse(readFileSync(claudeConfig, 'utf-8'));
+      const args = config?.mcpServers?.drivemem?.args || [];
+      const keyArg = args.find((a: string) => a.startsWith('--api-key='));
+      if (keyArg) return keyArg.split('=')[1];
+    }
+  } catch {}
+  return null;
+}
+
+async function setupClaudeCodeHooks() {
+  console.log('🧠 DriveMem — Setting up Claude Code hooks\n');
+
+  // 1. Check API key
+  const apiKey = process.argv.find(a => a.startsWith('--api-key='))?.split('=')[1]
+    || process.env.DRIVEMEM_API_KEY
+    || readApiKeyFromExistingConfig();
+
+  if (!apiKey) {
+    console.log('⚠️  No API key found. Run `npx drivemem setup` first, or set DRIVEMEM_API_KEY.');
+    process.exit(1);
+  }
+
+  // 2. Read or create ~/.claude/settings.json
+  const claudeDir = join(homedir(), '.claude');
+  const settingsPath = join(claudeDir, 'settings.json');
+
+  mkdirSync(claudeDir, { recursive: true });
+
+  let settings: Record<string, any> = {};
+  if (existsSync(settingsPath)) {
+    try {
+      settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+    } catch {
+      console.log('⚠️  Could not parse existing ~/.claude/settings.json, creating fresh one.');
+    }
+  }
+
+  // 3. Add SessionEnd hook
+  if (!settings.hooks) settings.hooks = {};
+  if (!settings.hooks.SessionEnd) settings.hooks.SessionEnd = [];
+
+  const hookCommand = 'npx -y drivemem hook-session-end';
+
+  // Check if already configured
+  const alreadyConfigured = settings.hooks.SessionEnd.some(
+    (h: any) => h.command && h.command.includes('drivemem')
+  );
+
+  if (alreadyConfigured) {
+    console.log('✅ Claude Code hooks already configured for DriveMem.');
+    console.log(`   Settings: ${settingsPath}`);
+    return;
+  }
+
+  settings.hooks.SessionEnd.push({
+    type: 'command',
+    command: hookCommand,
+  });
+
+  writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+
+  console.log('✅ Claude Code SessionEnd hook configured!');
+  console.log(`   Settings: ${settingsPath}`);
+  console.log(`   Hook: ${hookCommand}`);
+  console.log('');
+  console.log('How it works:');
+  console.log('  • Every time a Claude Code session ends, your conversation');
+  console.log('    knowledge is automatically saved to DriveMem.');
+  console.log('  • All errors are silently handled — Claude Code is never blocked.');
+  console.log('');
+  console.log('To remove: edit ~/.claude/settings.json and remove the DriveMem hook.');
+}
+
 function main() {
   const command = process.argv[2];
 
@@ -834,6 +985,10 @@ function main() {
     }
 
     startProxy(apiKey, port, upstreamUrl, contextBudgetArg).catch(console.error);
+  } else if (command === 'hook-session-end') {
+    hookSessionEnd().catch(() => process.exit(0));
+  } else if (command === 'setup-claude-code' || (command === 'setup' && process.argv[3] === 'claude-code')) {
+    setupClaudeCodeHooks().catch(console.error);
   } else {
     console.error('🧠 DriveMem CLI\n');
     console.error('Usage:');
@@ -843,6 +998,8 @@ function main() {
     console.error('  npx drivemem proxy --api-key=ak_xxx             Start local LLM proxy (recommended)');
     console.error('  npx drivemem proxy --daemon --api-key=ak_xxx    Start as background process');
     console.error('  npx drivemem mcp --api-key=ak_xxx                Stdio MCP bridge for Claude Desktop');
+    console.error('  npx drivemem setup claude-code                   Auto-configure Claude Code hooks');
+    console.error('  npx drivemem hook-session-end                    (internal) SessionEnd hook entry');
     console.error('');
     console.error('More: https://drivemem.cloud/docs');
   }

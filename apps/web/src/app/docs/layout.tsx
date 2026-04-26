@@ -8,6 +8,7 @@ const navItems = [
   { label: "Quick Start", href: "/docs/quickstart" },
   { label: "Concepts", href: "/docs/concepts" },
   { label: "MCP Integration", href: "/docs/mcp" },
+  { label: "Claude Code Hooks", href: "/docs/hooks" },
   { label: "API Reference", href: "/docs/api" },
   { label: "Changelog", href: "/docs/changelog" },
 ]
