@@ -89,10 +89,27 @@ export default function SignupPage() {
 
   return (
     <div className="p-8">
-      {/* Mobile-only header */}
-      <div className="lg:hidden text-center mb-8">
-        <h1 className="text-3xl text-zinc-900 dark:text-white font-serif">DriveMem</h1>
-        <p className="mt-2 text-sm text-zinc-400">Memory for your AI agents</p>
+      {/* Mobile-only header with selling points */}
+      <div className="lg:hidden mb-8">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl text-zinc-900 dark:text-white font-serif">DriveMem</h1>
+          <p className="mt-2 text-sm text-zinc-400">Memory for your AI agents</p>
+        </div>
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-400">
+            <span className="text-brand-500">🧠</span>
+            <span>One memory across all your AI agents</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-400">
+            <span className="text-brand-500">🔌</span>
+            <span>Works with Claude, Cursor, Windsurf & more</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-400">
+            <span className="text-brand-500">⚡</span>
+            <span>Set up in 2 minutes, no config needed</span>
+          </div>
+        </div>
+        <p className="text-center text-xs text-zinc-400">Free to start · No credit card required</p>
       </div>
 
       <h2 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Create account</h2>
