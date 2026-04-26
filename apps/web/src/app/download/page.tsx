@@ -92,6 +92,7 @@ export default function DownloadPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    document.title = "Download — DriveMem"
     setDetected(detectOS())
     fetchLatestRelease()
       .then(setInfo)
@@ -197,7 +198,7 @@ export default function DownloadPage() {
               </a>
             </p>
             <Link
-              href="/login"
+              href="/signup"
               className="inline-flex px-6 py-2.5 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors shadow-brand-sm"
             >
               Or use the web app →
