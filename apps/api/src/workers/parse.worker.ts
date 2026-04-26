@@ -207,8 +207,8 @@ const worker = new Worker<ParseJobData>(
           await createNotificationDeduped({
             userId,
             type: 'file_updated',
-            title: '📄 文件已更新',
-            message: `「${file.name}」更新了 — ${diff.trim().slice(0, 100)}`,
+            title: '📄 File updated',
+            message: `"${file.name}" updated — ${diff.trim().slice(0, 100)}`,
           });
           console.log('[file-parse] Version diff notification created for ' + fileId);
         }
@@ -296,7 +296,7 @@ const worker = new Worker<ParseJobData>(
             userId,
             type: 'knowledge_link_found',
             title: '🔗 发现知识关联',
-            message: `AI 发现「${file?.name}」和其他文件存在关联`,
+            message: `AI found connections between "${file?.name}" and other files`,
           });
         }
       }

@@ -565,7 +565,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       .where(and(eq(schema.files.userId, userId), sql`${schema.files.folderId} IS NULL`, eq(schema.files.status, 'indexed')));
 
     if (rootFiles.length === 0) {
-      return reply.send({ organized: [], created: [], message: '没有需要整理的文件' });
+      return reply.send({ organized: [], created: [], message: 'No files need organizing' });
     }
 
     // For files without suggestedFolder, generate one
@@ -621,7 +621,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
       organized.push({ folderName, fileCount: files.length });
     }
 
-    return reply.send({ organized, created, message: `AI 整理了 ${organized.reduce((s, o) => s + o.fileCount, 0)} 个文件到 ${organized.length} 个文件夹` });
+    return reply.send({ organized, created, message: `AI organized ${organized.reduce((s, o) => s + o.fileCount, 0)} files into ${organized.length} folders` });
   });
 
   // PATCH /:id/archive — 归档文件
@@ -631,7 +631,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     const [file] = await db.select().from(schema.files).where(and(eq(schema.files.id, id), eq(schema.files.userId, userId)));
     if (!file) return reply.status(404).send({ error: 'File not found' });
     await db.update(schema.files).set({ archivedAt: new Date() }).where(eq(schema.files.id, id));
-    return reply.send({ message: '文件已归档' });
+    return reply.send({ message: 'File archived' });
   });
 
   // PATCH /:id/unarchive — 取消归档
@@ -641,7 +641,7 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     const [file] = await db.select().from(schema.files).where(and(eq(schema.files.id, id), eq(schema.files.userId, userId)));
     if (!file) return reply.status(404).send({ error: 'File not found' });
     await db.update(schema.files).set({ archivedAt: null }).where(eq(schema.files.id, id));
-    return reply.send({ message: '文件已取消归档' });
+    return reply.send({ message: 'File unarchived' });
   });
 
   // POST /batch — session-auth batch operations (delete/archive/unarchive)

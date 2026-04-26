@@ -129,7 +129,7 @@ export default async function onboardingRoutes(fastify: FastifyInstance) {
       .where(eq(schema.files.userId, userId));
 
     if (Number(existing?.count || 0) > 0) {
-      return reply.send({ message: '已有文件，跳过示例创建', created: 0 });
+      return reply.send({ message: 'Files already exist, skipping demo creation', created: 0 });
     }
 
     const queue = new Queue('file-parse', { connection: { host: 'localhost', port: 6379 } });
@@ -203,6 +203,6 @@ export default async function onboardingRoutes(fastify: FastifyInstance) {
       await queue.close();
     }
 
-    return reply.status(201).send({ message: `已创建 ${created} 个示例文件`, created });
+    return reply.status(201).send({ message: `Created ${created} demo files`, created });
   });
 }

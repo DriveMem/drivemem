@@ -630,7 +630,7 @@ When using knowledge base content, mention the source file name.
             if (tag) await db.insert(schema.fileTags).values({ fileId, tagId: tag.id });
           } catch { /* skip */ }
 
-          return { content: [{ type: 'text' as const, text: `✅ 对话结论已自动捕获：「${title}」。知识库已更新。` }] };
+          return { content: [{ type: 'text' as const, text: `✅ Conversation conclusions auto-captured: "${title}". Knowledge base updated.` }] };
         }
 
         case 'aidrive_update_file': {
@@ -1452,7 +1452,7 @@ ${insightsSection}
           .orderBy(desc(schema.insights.createdAt))
           .limit(3);
 
-        const briefing = `## 知识库简报\n\n### 最近文件\n${recentFiles.map(f => `- ${f.name}: ${f.summary?.slice(0, 80) || '处理中...'}`).join('\n')}\n\n### AI 洞察\n${recentInsights.map(i => `- ${i.title}: ${i.description?.slice(0, 80)}`).join('\n') || '暂无新洞察'}`;
+        const briefing = `## Knowledge Briefing\n\n### Recent Files\n${recentFiles.map(f => `- ${f.name}: ${f.summary?.slice(0, 80) || 'Processing...'}`).join('\n')}\n\n### AI Insights\n${recentInsights.map(i => `- ${i.title}: ${i.description?.slice(0, 80)}`).join('\n') || 'No new insights yet'}`;
 
         return {
           description: 'Daily knowledge base briefing',
