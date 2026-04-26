@@ -6,6 +6,7 @@ import { useState } from "react"
 
 const navItems = [
   { label: "Quick Start", href: "/docs/quickstart" },
+  { label: "Concepts", href: "/docs/concepts" },
   { label: "MCP Integration", href: "/docs/mcp" },
   { label: "API Reference", href: "/docs/api" },
   { label: "Changelog", href: "/docs/changelog" },
