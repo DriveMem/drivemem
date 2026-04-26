@@ -12,6 +12,7 @@ import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { cn } from "@/lib/utils"
+import { cleanSummary } from "@/lib/text-utils"
 
 function displayFileName(name: string, summary?: string | null, disambiguator?: string): string {
   const bare = name.replace(/\.md$/i, "")
@@ -21,7 +22,8 @@ function displayFileName(name: string, summary?: string | null, disambiguator?: 
   else if (/^auto-capture-[\w-]+$/.test(bare)) label = "Auto Capture"
   else if (/^auto-[\w-]+$/.test(bare)) label = "Auto Note"
   else if (/^\d{4}-\d{2}-\d{2}$/.test(bare) && summary) {
-    const firstSentence = summary.split(/[.。!！?\n]/)[0].trim()
+    const cleaned = cleanSummary(summary)
+    const firstSentence = cleaned.split(/[.。!！?\n]/)[0].trim()
     label = firstSentence.slice(0, 50) || bare
   }
   if (disambiguator) label = `${label} (${disambiguator})`
@@ -34,7 +36,10 @@ function isSystemTag(tag: { isSystem?: boolean; name: string }): boolean {
 }
 
 function fileSubtitle(name: string, summary?: string | null, createdAt?: string): string | null {
-  if (summary) return summary.slice(0, 60) + (summary.length > 60 ? '…' : '')
+  if (summary) {
+    const cleaned = cleanSummary(summary)
+    return cleaned.slice(0, 60) + (cleaned.length > 60 ? '…' : '')
+  }
   const bare = name.replace(/\.md$/i, "")
   const isGenerated = /^note-\d{4}-\d{2}-\d{2}T[\d-]+$/.test(bare)
     || /^session-summary-[\w-]+$/.test(bare)
@@ -1019,7 +1024,7 @@ export function FileList() {
               </HoverCardTrigger>
               {file.summary && (
                 <HoverCardContent side="right" className="w-80">
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{file.summary}</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{cleanSummary(file.summary)}</p>
                   <div className="mt-2 flex items-center gap-3 text-xs text-zinc-500/70 dark:text-zinc-400/70">
                     <span>{fmtSize(file.size)}</span>
                     <span>·</span>

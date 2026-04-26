@@ -10,6 +10,7 @@ import { apiFetch } from "@/lib/api"
 import { Loader2, FileText, ArrowLeft, AlertCircle, Download } from "lucide-react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
+import { cleanSummary } from "@/lib/text-utils"
 
 const MarkdownRenderer = dynamic(() => import("react-markdown").then(mod => mod.default), { ssr: false, loading: () => <div className="animate-pulse h-96 bg-muted rounded" /> })
 
@@ -223,7 +224,7 @@ export default function FilePreviewPage() {
       {file.summary && (
         <div className="rounded-lg bg-blue-500/5 border border-blue-500/20 p-4">
           <h2 className="font-semibold mb-2">🧠 AI Summary</h2>
-          <p className="text-sm leading-relaxed text-muted-foreground">{file.summary}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{cleanSummary(file.summary)}</p>
         </div>
       )}
 

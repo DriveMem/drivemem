@@ -28,6 +28,7 @@ import { computeBlockVisibility, computeChecklist } from "@/hooks/use-dashboard-
 import { useMcpSync } from "@/hooks/use-mcp-sync"
 import { useRecentConversations } from "@/hooks/use-conversations"
 import { relativeTime } from "@/lib/relative-time"
+import { cleanSummary } from "@/lib/text-utils"
 
 // S3: Abbreviated time for mobile
 function shortTime(dateStr: string, now?: Date): string {
@@ -143,11 +144,7 @@ function ActivityItem({ activity, now }: { activity: any; now?: Date }) {
     ? (detail || action)
     : detail
 
-  // Strip low-info prefixes from AI-generated summaries
-  const cleanDetail = secondaryDetail
-    ?.replace(/^This (document|file|note|page|article|entry|memo|record|piece) (is about|describes|details|outlines|summarizes|covers|contains|provides|presents|discusses|explains|records|captures|announces|is a)[^.]*?\.\s*/i, '')
-    ?.replace(/^(Here is|The following|Below is)[^.]*?\.\s*/i, '')
-    ?.trim()
+  const cleanDetail = secondaryDetail ? cleanSummary(secondaryDetail) : undefined
 
   return (
     <div className="flex items-start gap-3 py-2 md:py-3 text-xs md:text-body border-b border-zinc-100 dark:border-zinc-800 last:border-0">
