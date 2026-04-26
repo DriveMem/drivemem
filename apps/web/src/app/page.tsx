@@ -283,7 +283,7 @@ export default function LandingPage() {
                 onClick={() => trackEvent("signup_click", { source: "hero" })}
                 className="px-6 py-2.5 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors shadow-brand-sm hover:shadow-brand-md"
               >
-                Try it free
+                Try It Free →
               </Link>
               <Link
                 href="/download"
@@ -291,7 +291,7 @@ export default function LandingPage() {
                 className="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all flex items-center gap-2"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Download Desktop App
+                Download Desktop
               </Link>
               <a
                 href="#how-it-works"
@@ -423,9 +423,6 @@ export default function LandingPage() {
             {/* Card 3 — Cross-Agent Workflow */}
             <FadeIn delay={200}>
               <div className="relative bg-white rounded-2xl shadow-soft p-8 h-full flex flex-col">
-                <span className="absolute top-4 right-4 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">
-                  Live
-                </span>
                 <div className="text-3xl mb-4">🔄</div>
                 <h3 className="text-title font-semibold text-gray-900 mb-2">Hand off context, not copy-paste</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-6">
