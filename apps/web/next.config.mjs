@@ -18,6 +18,11 @@ const nextConfig = {
         destination: '/developers',
         permanent: false,
       },
+      {
+        source: '/docs',
+        destination: 'https://github.com/yufuche1/ai-drive#readme',
+        permanent: false,
+      },
     ]
   },
   async headers() {
