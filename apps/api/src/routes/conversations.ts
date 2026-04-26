@@ -36,11 +36,16 @@ export default async function conversationRoutes(app: FastifyInstance) {
       .limit(3);
 
     if (recentFiles.length === 0) {
-      return reply.send({ suggestions: ['Upload a file to get started', 'Try dragging files onto the page', 'Supports PDF, Word, TXT, Markdown'] });
+      const allFiles = await db.select({ name: files.name }).from(files).where(eq(files.userId, userId)).limit(10);
+      const hasChinese = allFiles.some(f => /[\u4e00-\u9fff]/.test(f.name));
+      return reply.send({ suggestions: hasChinese
+        ? ['上传文件即可开始', '试试拖拽文件到页面', '支持 PDF、Word、TXT、Markdown']
+        : ['Upload a file to get started', 'Try dragging files onto the page', 'Supports PDF, Word, TXT, Markdown']
+      });
     }
 
     const fileInfo = recentFiles.map(f => `${f.name}: ${f.summary?.substring(0, 100)}`).join('\n');
-    const prompt = `The user has these files:\n${fileInfo}\n\nGenerate 3 questions IN ENGLISH the user might want to ask about their files. Requirements: each question under 60 characters, casual language, one per line, no numbering, MUST be in English.`;
+    const prompt = `The user has these files:\n${fileInfo}\n\nGenerate 3 questions the user might want to ask about their files. Generate questions in the same language as the majority of file names above. Requirements: each question under 60 characters, casual language, one per line, no numbering.`;
 
     try {
       const result = await chat([{ role: 'user', content: prompt }]);
