@@ -78,6 +78,9 @@ function Nav() {
         </Link>
         {/* Mobile menu button */}
         <div className="md:hidden flex items-center gap-3">
+          <a href="https://github.com/niclin/ai-drive" target="_blank" rel="noopener" className="text-gray-400 hover:text-gray-900 transition-colors" aria-label="GitHub">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          </a>
           <Link href="/login" className="text-gray-500 hover:text-gray-900 text-sm">Sign in</Link>
           <Link href="/signup" className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-3 py-1.5 rounded-lg font-medium transition-colors">Start free</Link>
           <button
@@ -122,6 +125,15 @@ function Nav() {
           <Link href="/login" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Sign in
           </Link>
+          <a
+            href="https://github.com/niclin/ai-drive"
+            target="_blank"
+            rel="noopener"
+            className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 transition-colors"
+            aria-label="GitHub"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          </a>
           <Link
             href="/signup"
             onClick={() => trackEvent("signup_click", { source: "nav" })}
@@ -282,6 +294,12 @@ export default function LandingPage() {
       >
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
           <FadeIn>
+            <div className="flex items-center justify-center gap-2 mb-5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 ring-1 ring-emerald-100">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                100% Open Source
+              </span>
+            </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-[1.08]">
               One memory.
               <br />
@@ -298,8 +316,9 @@ export default function LandingPage() {
           <FadeIn delay={200}>
             {/* Trust indicators */}
         <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-400">
-          <a href="https://github.com/yufuche1/ai-drive" target="_blank" rel="noopener" className="flex items-center gap-1.5 hover:text-gray-600 transition-colors">
-            <img src="https://img.shields.io/github/stars/yufuche1/ai-drive?style=social" alt="GitHub Stars" className="h-5" loading="lazy" />
+          <a href="https://github.com/niclin/ai-drive" target="_blank" rel="noopener" className="flex items-center gap-1.5 hover:text-gray-600 transition-colors font-medium">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            Star us on GitHub →
           </a>
           <span className="flex items-center gap-1.5">
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -353,13 +372,13 @@ export default function LandingPage() {
             <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-14">
               {/* GitHub Stars */}
               <a
-                href="https://github.com/yufuche1/ai-drive"
+                href="https://github.com/niclin/ai-drive"
                 target="_blank"
                 rel="noopener"
                 className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
               >
                 <img
-                  src="https://img.shields.io/github/stars/yufuche1/ai-drive?style=flat&logo=github&label=Stars"
+                  src="https://img.shields.io/github/stars/niclin/ai-drive?style=flat&logo=github&label=Stars"
                   alt="GitHub Stars"
                   className="h-5"
                   loading="lazy"
@@ -689,7 +708,8 @@ export default function LandingPage() {
             <Link href="/download" className="hover:text-gray-600 transition-colors">Download</Link>
             <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms</Link>
-            <a href="https://github.com/yufuche1/ai-drive" className="hover:text-gray-600 transition-colors">GitHub</a>
+            <a href="https://github.com/niclin/ai-drive/blob/main/CONTRIBUTING.md" className="hover:text-gray-600 transition-colors">Contributing</a>
+            <a href="https://github.com/niclin/ai-drive" className="hover:text-gray-600 transition-colors">GitHub</a>
           </div>
         </div>
       </footer>
