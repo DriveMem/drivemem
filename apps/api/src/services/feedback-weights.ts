@@ -1,6 +1,16 @@
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, and, inArray, sql, gt } from 'drizzle-orm';
+import { eq, and, inArray, sql, gt, isNotNull } from 'drizzle-orm';
+
+// Signal weights for search feedback scoring
+const SIGNAL_WEIGHTS: Record<string, number> = {
+  click: 0.05,
+  thumbs_up: 0.10,
+  thumbs_down: -0.10,
+  dwell: 0.03,
+  copy: 0.08,
+  reformulation: -0.05,
+};
 
 export async function applyFeedbackWeights<T extends { fileId: string; score: number }>(
   userId: string,
@@ -24,19 +34,25 @@ export async function applyFeedbackWeights<T extends { fileId: string; score: nu
   const feedbackMap: Record<string, string> = {};
   feedbacks.forEach(f => { feedbackMap[f.fileId] = f.rating; });
 
-  // Search feedback boost (click/thumbs_up/thumbs_down)
-  const searchFeedbackCounts = await db.select({
+  // Search feedback boost — weighted scoring per signal type
+  const feedbackScores = await db.select({
     fileId: schema.searchFeedback.fileId,
-    ups: sql<number>`count(*) filter (where ${schema.searchFeedback.signal} = 'thumbs_up' or ${schema.searchFeedback.signal} = 'click')`,
-    downs: sql<number>`count(*) filter (where ${schema.searchFeedback.signal} = 'thumbs_down')`,
+    signal: schema.searchFeedback.signal,
+    count: sql<number>`count(*)::int`,
   }).from(schema.searchFeedback)
     .where(and(
       eq(schema.searchFeedback.userId, userId),
-      inArray(schema.searchFeedback.fileId, fileIds)
+      inArray(schema.searchFeedback.fileId, fileIds),
+      isNotNull(schema.searchFeedback.fileId)
     ))
-    .groupBy(schema.searchFeedback.fileId);
+    .groupBy(schema.searchFeedback.fileId, schema.searchFeedback.signal);
 
-  const boostMap = new Map(searchFeedbackCounts.map(f => [f.fileId, (Number(f.ups) - Number(f.downs) * 2) * 0.05]));
+  const boostMap = new Map<string, number>();
+  for (const row of feedbackScores) {
+    if (!row.fileId) continue;
+    const current = boostMap.get(row.fileId) || 0;
+    boostMap.set(row.fileId, current + (SIGNAL_WEIGHTS[row.signal] || 0) * row.count);
+  }
 
   // Citation boost: files referenced more often rank higher (last 30 days)
   const citationCounts = await db.select({

@@ -409,8 +409,9 @@ export const searchFeedback = pgTable('search_feedback', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   query: text('query').notNull(),
-  fileId: uuid('file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
-  signal: text('signal').notNull(), // 'click' | 'thumbs_up' | 'thumbs_down'
+  fileId: uuid('file_id').references(() => files.id, { onDelete: 'cascade' }),
+  signal: text('signal').notNull(), // 'click' | 'thumbs_up' | 'thumbs_down' | 'dwell' | 'copy' | 'reformulation'
+  metadata: jsonb('metadata'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

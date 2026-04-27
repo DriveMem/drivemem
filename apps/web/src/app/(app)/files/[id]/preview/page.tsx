@@ -1,7 +1,7 @@
 "use client"
 
-import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useParams, useSearchParams } from "next/navigation"
+import { useEffect, useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useFile, useMoveFile } from "@/hooks/use-files"
@@ -11,6 +11,7 @@ import { Loader2, FileText, ArrowLeft, AlertCircle, Download } from "lucide-reac
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { cleanSummary } from "@/lib/text-utils"
+import { useSearchFeedback } from "@/hooks/use-search-feedback"
 
 const MarkdownRenderer = dynamic(() => import("react-markdown").then(mod => mod.default), { ssr: false, loading: () => <div className="animate-pulse h-96 bg-muted rounded" /> })
 
@@ -178,10 +179,25 @@ function ImagePreview({ fileId, fileName }: { fileId: string; fileName: string }
 
 export default function FilePreviewPage() {
   const params = useParams<{ id: string }>()
+  const searchParams = useSearchParams()
   const { data, isLoading, error } = useFile(params.id)
   const moveFile = useMoveFile()
   const { data: foldersData } = useFolders()
   const allFolders = foldersData?.folders || []
+  const { startDwell } = useSearchFeedback()
+
+  // Dwell tracking: if arrived from search, track time spent on page
+  const fromSearchQuery = searchParams.get('from_search')
+  const dwellCleanupRef = useRef<(() => void) | null>(null)
+  useEffect(() => {
+    if (fromSearchQuery && params.id) {
+      dwellCleanupRef.current = startDwell(fromSearchQuery, params.id)
+    }
+    return () => {
+      dwellCleanupRef.current?.()
+      dwellCleanupRef.current = null
+    }
+  }, [fromSearchQuery, params.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle both { file: {...} } and direct object — computed before hooks to keep hook order stable
   const file = (!isLoading && !error) ? (data?.file || data) : null

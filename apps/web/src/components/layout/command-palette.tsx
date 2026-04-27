@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/command"
 import { useFiles } from "@/hooks/use-files"
 import { apiFetch } from "@/lib/api"
+import { useSearchFeedback } from "@/hooks/use-search-feedback"
 import { Sparkles, Search, ThumbsUp, ThumbsDown } from "lucide-react"
 
 interface SearchResult {
@@ -42,6 +43,7 @@ export function CommandPalette() {
   const sendSearchFeedback = useCallback((query: string, fileId: string, signal: 'click' | 'thumbs_up' | 'thumbs_down') => {
     apiFetch('/api/search/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, fileId, signal }) }).catch(() => {})
   }, [])
+  const { trackSearch, trackCopy } = useSearchFeedback()
   const files = Array.isArray(filesData) ? filesData : (filesData?.files || [])
 
   const [inputValue, setInputValue] = useState("")
@@ -71,6 +73,7 @@ export function CommandPalette() {
       return
     }
     const timer = setTimeout(async () => {
+      trackSearch(effectiveQuery)
       setSearching(true)
       try {
         const endpoint = effectiveAiMode
@@ -145,11 +148,12 @@ export function CommandPalette() {
 
         {searchResults.length > 0 && (
           <CommandGroup heading={searchHeading}>
+            <div onCopy={() => { searchResults.forEach(r => trackCopy(effectiveQuery, r.fileId)) }}>
             {searchResults.map((r, i) => (
               <CommandItem
                 key={`search-${r.fileId}-${i}`}
                 value={`search-${r.fileId}-${r.fileName}-${i}`}
-                onSelect={() => { sendSearchFeedback(effectiveQuery, r.fileId, 'click'); navigate(`/files/${r.fileId}/preview`) }}
+                onSelect={() => { sendSearchFeedback(effectiveQuery, r.fileId, 'click'); navigate(`/files/${r.fileId}/preview?from_search=${encodeURIComponent(effectiveQuery)}`) }}
               >
                 <div className="flex flex-1 flex-col gap-0.5">
                   <span className="text-sm">{r.fileName}</span>
@@ -195,6 +199,7 @@ export function CommandPalette() {
                 </div>
               </CommandItem>
             ))}
+            </div>
           </CommandGroup>
         )}
 
