@@ -42,12 +42,27 @@ const PRODUCTION_API = "https://api.drivemem.cloud"
 const isDev = typeof window !== "undefined" && window.location.hostname === "localhost"
 const API_BASE = isDev ? (process.env.NEXT_PUBLIC_API_URL || "") : PRODUCTION_API
 
-const DEFAULT_SUGGESTIONS = [
+const DEFAULT_SUGGESTIONS_EN = [
   "🔍 What are the connections between my files?",
   "💡 What key information is in my files?",
   "📊 Help me analyze my recent uploads",
   "🧠 What decisions have I made recently?",
 ]
+
+const DEFAULT_SUGGESTIONS_ZH = [
+  "🔍 我的文件之间有什么关联？",
+  "💡 我的文件中有哪些关键信息？",
+  "📊 帮我分析最近上传的内容",
+  "🧠 我最近做了哪些决策？",
+]
+
+function getDefaultSuggestions() {
+  if (typeof navigator === "undefined") return DEFAULT_SUGGESTIONS_EN
+  const lang = navigator.language || "en"
+  return lang.startsWith("zh") ? DEFAULT_SUGGESTIONS_ZH : DEFAULT_SUGGESTIONS_EN
+}
+
+const DEFAULT_SUGGESTIONS = getDefaultSuggestions()
 
 const FEATURE_CARDS = [
   { icon: "📄", title: "Files Q&A", desc: "Answer questions based on your file content" },
