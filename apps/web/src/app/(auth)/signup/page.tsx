@@ -41,10 +41,13 @@ export default function SignupPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
   })
+
+  const passwordValue = watch("password", "")
 
   const onSubmit = async (data: SignupForm) => {
     setError(null)
@@ -143,6 +146,17 @@ export default function SignupPage() {
             {...register("password")}
           />
           <p className="text-xs text-zinc-500 dark:text-zinc-400">Minimum 8 characters</p>
+          <div className="space-y-1 mt-1">
+            <p className={`text-xs flex items-center gap-1 ${passwordValue.length >= 8 ? "text-green-600 dark:text-green-400" : "text-zinc-400 dark:text-zinc-500"}`}>
+              {passwordValue.length >= 8 ? "✓" : "✗"} At least 8 characters
+            </p>
+            <p className={`text-xs flex items-center gap-1 ${/[a-zA-Z]/.test(passwordValue) ? "text-green-600 dark:text-green-400" : "text-zinc-400 dark:text-zinc-500"}`}>
+              {/[a-zA-Z]/.test(passwordValue) ? "✓" : "✗"} Contains letters
+            </p>
+            <p className={`text-xs flex items-center gap-1 ${/[0-9]/.test(passwordValue) ? "text-green-600 dark:text-green-400" : "text-zinc-400 dark:text-zinc-500"}`}>
+              {/[0-9]/.test(passwordValue) ? "✓" : "✗"} Contains numbers
+            </p>
+          </div>
           {errors.password && (
             <p className="text-sm text-destructive">{errors.password.message}</p>
           )}
