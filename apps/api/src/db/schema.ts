@@ -425,6 +425,17 @@ export const citationEvents = pgTable('citation_events', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// --- Knowledge Gaps (data flywheel — zero-result tracking) ---
+export const knowledgeGaps = pgTable('knowledge_gaps', {
+  id: serial('id').primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  query: text('query').notNull(),
+  source: text('source').notNull(), // 'search' | 'mcp_search' | 'ask' | 'chat'
+  resultCount: integer('result_count').notNull().default(0),
+  dismissed: boolean('dismissed').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 // --- Proxy Call Events (data flywheel — proxy telemetry) ---
 export const proxyCallEvents = pgTable('proxy_call_events', {
   id: serial('id').primaryKey(),

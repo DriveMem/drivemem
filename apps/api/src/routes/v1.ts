@@ -411,6 +411,9 @@ export default async function v1Routes(fastify: FastifyInstance) {
     recordSearchResults(userId, (request as any).apiKeyId, searchFileIdSet);
     // Agent Loop 4: check if search after compile → negative feedback signal
     checkCompilationFeedback(userId, 'search');
+    // Knowledge gap tracking (fire-and-forget)
+    import('../services/knowledge-gap-tracker.js').then(({ recordKnowledgeGap }) =>
+      recordKnowledgeGap({ userId, query: query.q, source: 'search', resultCount: searchResults.length }));
     return reply.send({
       results: searchResults.map(c => ({
         fileId: c.fileId,
@@ -572,6 +575,9 @@ export default async function v1Routes(fastify: FastifyInstance) {
     resolveImplicitFeedback(userId, (request as any).apiKeyId, askFileIds);
     // Agent Loop 4: check if ask after compile → negative feedback signal
     checkCompilationFeedback(userId, 'ask');
+    // Knowledge gap tracking (fire-and-forget)
+    import('../services/knowledge-gap-tracker.js').then(({ recordKnowledgeGap }) =>
+      recordKnowledgeGap({ userId, query: body.question, source: 'ask', resultCount: finalChunks.length }));
     // Cross-agent relay detection (fire-and-forget)
     detectAndLogRelay(userId, (request as any).apiKeyName, askFileIds, (request as any).apiKeyId);
     // Citation tracking (fire-and-forget)

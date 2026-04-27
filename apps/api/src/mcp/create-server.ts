@@ -363,6 +363,9 @@ When using knowledge base content, mention the source file name.
           // Citation tracking (fire-and-forget)
           import('../services/citation-tracker.js').then(({ recordCitations }) =>
             recordCitations({ userId, fileIds, source: 'mcp_search', query, agentName }));
+          // Knowledge gap tracking (fire-and-forget)
+          import('../services/knowledge-gap-tracker.js').then(({ recordKnowledgeGap }) =>
+            recordKnowledgeGap({ userId, query, source: 'mcp_search', resultCount: results.length }));
           // Phase 2: Contextual hint for sparse/empty search results
           let searchHint = '';
           if (results.length === 0) {
@@ -415,6 +418,9 @@ When using knowledge base content, mention the source file name.
           // Cross-agent relay detection (fire-and-forget)
           logActivity({ userId, agentName, action: 'ask', detail: question, metadata: { sourceCount: chunks.length }, relatedFileIds: askFileIds });
           detectAndLogRelay(userId, agentName, askFileIds);
+          // Knowledge gap tracking (fire-and-forget)
+          import('../services/knowledge-gap-tracker.js').then(({ recordKnowledgeGap }) =>
+            recordKnowledgeGap({ userId, query: question, source: 'ask', resultCount: chunks.length }));
           // Phase 2: Contextual hint for ask — nudge storing conclusions
           const askHint = '\n\n---\n💡 Reminder: If this conversation produced valuable conclusions, call aidrive_harvest to save them.';
           return { content: [{ type: 'text' as const, text: answer + askEnrich + askHint }] };

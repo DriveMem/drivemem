@@ -123,8 +123,10 @@ await app.register(adminRoutes, { prefix: '/api/admin' });
 
 import insightRoutes from './routes/insights.js';
 import citationStatsRoutes from './routes/citation-stats.js';
+import knowledgeGapRoutes from './routes/knowledge-gaps.js';
 await app.register(insightRoutes, { prefix: '/api/insights' });
 await app.register(citationStatsRoutes, { prefix: '/api/citations' });
+await app.register(knowledgeGapRoutes, { prefix: '/api/knowledge-gaps' });
 
 import apiKeyRoutes from './routes/api-keys.js';
 await app.register(apiKeyRoutes, { prefix: '/api/api-keys' });

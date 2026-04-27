@@ -22,6 +22,7 @@ import { ActivationBanner } from "@/components/dashboard/activation-banner"
 import { SampleDataBanner } from "@/components/dashboard/sample-data-banner"
 import { AgentActivityPanel } from "@/components/dashboard/agent-activity-panel"
 import { MostReferencedPanel } from "@/components/dashboard/most-referenced-panel"
+import { KnowledgeGapsPanel } from "@/components/dashboard/knowledge-gaps-panel"
 import { WelcomeHero, WelcomeBanner } from "@/components/dashboard/welcome-hero"
 import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state"
 import { QuickStartChecklist } from "@/components/dashboard/quick-start-checklist"
@@ -795,6 +796,9 @@ export default function HomePage() {
 
         {/* Most Referenced Knowledge — citation tracking */}
         <MostReferencedPanel />
+
+        {/* Knowledge Gaps — zero-result tracking */}
+        <KnowledgeGapsPanel />
 
         {/* Activity Feed — only when total_activity >= 3 (#66) */}
         {blockVis.recentActivity && (<div>
