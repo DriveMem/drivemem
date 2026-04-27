@@ -112,6 +112,11 @@ export default function SignupPage() {
         <p className="text-center text-xs text-zinc-400">Free to start · No credit card required</p>
       </div>
 
+      {/* Trust Signal */}
+      <p className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">
+        Join 1,000+ developers · Open Source · 1,000+ files processed
+      </p>
+
       <h2 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Create account</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
@@ -137,7 +142,7 @@ export default function SignupPage() {
             className="rounded-xl h-12 text-base border-zinc-200 dark:border-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-transparent"
             {...register("password")}
           />
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">At least 8 characters, must include letters and numbers</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">Minimum 8 characters</p>
           {errors.password && (
             <p className="text-sm text-destructive">{errors.password.message}</p>
           )}
@@ -175,6 +180,11 @@ export default function SignupPage() {
         <Link href="/login" className="text-brand-500 hover:underline">
           Sign in
         </Link>
+      </p>
+
+      {/* Security Promise */}
+      <p className="mt-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
+        🔒 Encrypted · No credit card required · Your data stays yours
       </p>
 
       <p className="mt-3 text-center text-xs text-muted-foreground/60">
