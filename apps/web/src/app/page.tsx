@@ -213,6 +213,18 @@ const FEATURES = [
       </svg>
     ),
   },
+  {
+    title: "Automatic knowledge capture",
+    desc: "Claude Code sessions are captured automatically via Hooks — no manual saving needed. Your coding context flows into your knowledge base.",
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2v6l3-3" />
+        <path d="M12 8l-3-3" />
+        <circle cx="12" cy="18" r="4" />
+        <path d="M12 14v-2" />
+      </svg>
+    ),
+  },
 ]
 
 /* ---------- Steps Data ---------- */
@@ -226,7 +238,7 @@ const STEPS = [
   {
     num: "2",
     title: "Just work normally",
-    desc: "Your agents save what matters as they work.",
+    desc: "MCP syncs knowledge in real time. Claude Code Hooks capture session insights automatically. No manual saving.",
   },
   {
     num: "3",

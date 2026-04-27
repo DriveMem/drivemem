@@ -14,6 +14,7 @@ const FEATURES = [
   { label: "MCP Integration", value: "Unlimited agents", included: true },
   { label: "API Access", value: "Full API", included: true },
   { label: "Desktop App", value: "All platforms", included: true },
+  { label: "Claude Code Hooks", value: "Auto-capture", included: true },
   { label: "Connectors", value: "Google Drive (more coming)", included: true },
 ]
 
