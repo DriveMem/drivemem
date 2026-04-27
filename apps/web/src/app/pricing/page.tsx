@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { WaitlistForm } from "./waitlist-form"
 
 export const metadata: Metadata = {
   title: "Pricing - DriveMem",
@@ -137,6 +138,7 @@ export default function PricingPage() {
           <p className="text-gray-500 text-base max-w-md mx-auto">
             More storage, team features, and priority support.
           </p>
+          <WaitlistForm />
         </div>
       </section>
 
