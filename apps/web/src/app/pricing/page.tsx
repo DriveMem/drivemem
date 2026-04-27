@@ -112,6 +112,11 @@ export default function PricingPage() {
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 mb-3">
             Pro Plan
           </h2>
+          <div className="flex items-baseline justify-center gap-1 mb-3">
+            <span className="text-4xl font-bold text-gray-900">$9.9</span>
+            <span className="text-gray-400 text-lg">/ month</span>
+          </div>
+          <p className="text-sm text-brand-500 font-medium mb-3">Starting at $9.9/mo when available</p>
           <p className="text-gray-500 text-base max-w-md mx-auto">
             More storage, team features, and priority support.
           </p>
