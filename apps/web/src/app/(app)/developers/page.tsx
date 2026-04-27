@@ -473,6 +473,7 @@ function DataSources() {
   const [loading, setLoading] = useState(false)
   const [syncing, setSyncing] = useState<string | null>(null)
   const [oauthStatus, setOauthStatus] = useState<{ notion: boolean; github: boolean; googleDrive: boolean }>({ notion: true, github: true, googleDrive: true })
+  const [showDataSources, setShowDataSources] = useState(false)
 
   const fetchIntegrations = useCallback(async () => {
     setLoading(true)
@@ -535,8 +536,6 @@ function DataSources() {
     const token = session?.accessToken || ''
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/github/connect?token=${token}`
   }
-
-  const [showDataSources, setShowDataSources] = useState(false)
 
   return (
     <div className="mt-10 mb-14">
