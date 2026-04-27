@@ -116,6 +116,9 @@ function Nav() {
           <Link href="/download" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Download
           </Link>
+          <Link href="/changelog" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
+            Changelog
+          </Link>
           <Link href="/login" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Sign in
           </Link>
@@ -139,6 +142,7 @@ function Nav() {
             <Link href="/docs" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Docs</Link>
             <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Pricing</Link>
             <Link href="/download" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Download</Link>
+            <Link href="/changelog" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Changelog</Link>
             <hr className="border-gray-100" />
             <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Sign in</Link>
             <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-4 py-2.5 rounded-lg font-medium transition-colors text-center">Try it free</Link>
@@ -539,6 +543,7 @@ export default function LandingPage() {
             <Link href="/docs/quickstart" className="hover:text-gray-600 transition-colors">Quick Start</Link>
             <Link href="/docs" className="hover:text-gray-600 transition-colors">Docs</Link>
             <Link href="/pricing" className="hover:text-gray-600 transition-colors">Pricing</Link>
+            <Link href="/changelog" className="hover:text-gray-600 transition-colors">Changelog</Link>
             <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms</Link>
             <a href="https://github.com/yufuche1/ai-drive" className="hover:text-gray-600 transition-colors">GitHub</a>
