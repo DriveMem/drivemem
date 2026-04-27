@@ -229,6 +229,21 @@ const FEATURES = [
       </svg>
     ),
   },
+  {
+    title: "Gets smarter over time",
+    desc: "Your knowledge base learns from every interaction — better search, better answers, better suggestions.",
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+        <polyline points="17 6 23 6 23 12" />
+      </svg>
+    ),
+    bullets: [
+      "Search improves as you use it — query patterns refine ranking",
+      "AI answers get more accurate with citation feedback",
+      "Knowledge gaps auto-detected and flagged",
+    ],
+  },
 ]
 
 /* ---------- Steps Data ---------- */
@@ -402,6 +417,16 @@ export default function LandingPage() {
                   <p className="text-gray-500 text-body leading-relaxed">
                     {f.desc}
                   </p>
+                  {f.bullets && (
+                    <ul className="mt-4 space-y-2">
+                      {f.bullets.map((b: string) => (
+                        <li key={b} className="flex items-start gap-2 text-sm text-gray-500 leading-relaxed">
+                          <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-brand-400 shrink-0" />
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </FadeIn>
             ))}
