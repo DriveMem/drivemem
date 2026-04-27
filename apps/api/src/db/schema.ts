@@ -403,3 +403,13 @@ export const agentProfiles = pgTable('agent_profiles', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+// --- Search Feedback (data flywheel v1) ---
+export const searchFeedback = pgTable('search_feedback', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  query: text('query').notNull(),
+  fileId: uuid('file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  signal: text('signal').notNull(), // 'click' | 'thumbs_up' | 'thumbs_down'
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});

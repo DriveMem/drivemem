@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/command"
 import { useFiles } from "@/hooks/use-files"
 import { apiFetch } from "@/lib/api"
-import { Sparkles, Search } from "lucide-react"
+import { Sparkles, Search, ThumbsUp, ThumbsDown } from "lucide-react"
 
 interface SearchResult {
   type: "file" | "chunk"
@@ -38,6 +38,10 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false)
   const router = useRouter()
   const { data: filesData } = useFiles()
+
+  const sendSearchFeedback = useCallback((query: string, fileId: string, signal: 'click' | 'thumbs_up' | 'thumbs_down') => {
+    apiFetch('/api/search/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, fileId, signal }) }).catch(() => {})
+  }, [])
   const files = Array.isArray(filesData) ? filesData : (filesData?.files || [])
 
   const [inputValue, setInputValue] = useState("")
@@ -145,7 +149,7 @@ export function CommandPalette() {
               <CommandItem
                 key={`search-${r.fileId}-${i}`}
                 value={`search-${r.fileId}-${r.fileName}-${i}`}
-                onSelect={() => navigate(`/files/${r.fileId}/preview`)}
+                onSelect={() => { sendSearchFeedback(effectiveQuery, r.fileId, 'click'); navigate(`/files/${r.fileId}/preview`) }}
               >
                 <div className="flex flex-1 flex-col gap-0.5">
                   <span className="text-sm">{r.fileName}</span>
@@ -168,6 +172,20 @@ export function CommandPalette() {
                       {Math.round(r.score * 100)}%
                     </span>
                   )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); sendSearchFeedback(effectiveQuery, r.fileId, 'thumbs_up') }}
+                    className="rounded p-0.5 text-muted-foreground hover:text-green-500 hover:bg-green-500/10 transition"
+                    title="Helpful result"
+                  >
+                    <ThumbsUp className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); sendSearchFeedback(effectiveQuery, r.fileId, 'thumbs_down') }}
+                    className="rounded p-0.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition"
+                    title="Not helpful"
+                  >
+                    <ThumbsDown className="h-3 w-3" />
+                  </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate(`/chat?q=Questions about ${encodeURIComponent(r.fileName)}`) }}
                     className="rounded bg-brand-500 px-1.5 py-0.5 text-[10px] text-white hover:bg-brand-600 transition"
