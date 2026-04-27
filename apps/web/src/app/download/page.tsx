@@ -80,6 +80,8 @@ const PLATFORMS: Record<Platform, { label: string; icon: React.ReactNode; req: s
 function detectOS(): Platform | null {
   if (typeof navigator === "undefined") return null
   const ua = navigator.userAgent.toLowerCase()
+  // Mobile devices — don't recommend desktop downloads
+  if (/iphone|ipad|ipod|android/.test(ua)) return null
   if (ua.includes("mac")) return "mac"
   if (ua.includes("win")) return "win"
   if (ua.includes("linux")) return "linux"
