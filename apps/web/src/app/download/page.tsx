@@ -188,6 +188,29 @@ export default function DownloadPage() {
             })}
           </div>
 
+          {/* macOS installation note */}
+          {detected === "mac" && (
+            <details className="mt-8 rounded-xl border border-gray-100 dark:border-zinc-700 bg-gray-50/50 dark:bg-zinc-800/50 px-6 py-4">
+              <summary className="cursor-pointer text-sm font-medium text-gray-600 dark:text-zinc-300 select-none">
+                macOS: First launch instructions
+              </summary>
+              <div className="mt-3 text-xs text-zinc-500 dark:text-zinc-400 space-y-2">
+                <p>Since the app isn&apos;t code-signed yet, macOS may block it on first launch.</p>
+                <p className="font-medium text-zinc-600 dark:text-zinc-300">To open:</p>
+                <ol className="list-decimal list-inside space-y-1 ml-1">
+                  <li>Download and open the <code className="px-1 py-0.5 rounded bg-gray-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-[11px]">.dmg</code></li>
+                  <li>Drag DriveMem to Applications</li>
+                  <li>Right-click the app → <strong>Open</strong> (not double-click)</li>
+                  <li>Click &quot;Open&quot; in the security dialog</li>
+                </ol>
+                <p>Or run in Terminal:</p>
+                <code className="block px-3 py-2 rounded bg-gray-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-[11px]">
+                  xattr -d com.apple.quarantine /Applications/DriveMem.app
+                </code>
+              </div>
+            </details>
+          )}
+
           {/* Additional info */}
           <div className="mt-16 text-center">
             <p className="text-sm text-gray-400 dark:text-zinc-500 mb-4">
