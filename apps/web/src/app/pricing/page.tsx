@@ -53,6 +53,23 @@ function Check() {
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-white text-gray-900 selection:bg-brand-100">
+      {/* ── Nav Bar ── */}
+      <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200/60 shadow-sm">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
+              <span className="text-white font-mono text-xs font-bold">D</span>
+            </div>
+            <span className="text-gray-900 font-semibold tracking-tight">DriveMem</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/docs/quickstart" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Docs</Link>
+            <Link href="/download" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Download</Link>
+            <Link href="/signup" className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-4 py-2 rounded-lg font-medium transition-colors">Try it free</Link>
+          </div>
+        </div>
+      </nav>
+
       {/* ── Header ── */}
       <section
         className="pt-32 pb-16 md:pt-40 md:pb-20 text-center"
@@ -177,6 +194,8 @@ export default function PricingPage() {
             <Link href="/pricing" className="hover:text-gray-600 transition-colors">Pricing</Link>
             <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms</Link>
+            <Link href="/download" className="hover:text-gray-600 transition-colors">Download</Link>
+            <Link href="/changelog" className="hover:text-gray-600 transition-colors">Changelog</Link>
             <a href="https://github.com/yufuche1/ai-drive" className="hover:text-gray-600 transition-colors">GitHub</a>
           </div>
         </div>
