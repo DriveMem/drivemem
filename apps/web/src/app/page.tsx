@@ -544,6 +544,7 @@ export default function LandingPage() {
             <Link href="/docs" className="hover:text-gray-600 transition-colors">Docs</Link>
             <Link href="/pricing" className="hover:text-gray-600 transition-colors">Pricing</Link>
             <Link href="/changelog" className="hover:text-gray-600 transition-colors">Changelog</Link>
+            <Link href="/download" className="hover:text-gray-600 transition-colors">Download</Link>
             <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms</Link>
             <a href="https://github.com/yufuche1/ai-drive" className="hover:text-gray-600 transition-colors">GitHub</a>
