@@ -1,11 +1,11 @@
 "use client"
 import { KnowledgeFeedback } from "@/components/feedback/knowledge-feedback"
 
-import { useState, useMemo, useCallback, useRef, useEffect } from "react"
+import { useState, useMemo, useCallback, useRef, useEffect, useDeferredValue } from "react"
 import { useRouter } from "next/navigation"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FileText, Loader2, CheckCircle2, XCircle, ArrowUpDown, Upload, AlertCircle, FolderPlus, Folder, ChevronRight, MessageSquare, LayoutGrid, List, Download, Share2, MoreHorizontal, BotMessageSquare, Link2, Info, X, Sparkles } from "lucide-react"
-import { Lightbulb, Tag } from "lucide-react"
+import { Lightbulb, Tag, Search } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Link from "next/link"
@@ -438,6 +438,10 @@ export function FileList() {
   const [showUpload, setShowUpload] = useState(false)
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "documents" | "notes" | "connectors">("all")
+  const [searchQuery, setSearchQuery] = useState("")
+  const deferredSearch = useDeferredValue(searchQuery)
+  const [pageSort, setPageSort] = useState<"recent" | "name-asc" | "name-desc">("recent")
   const [userTags, setUserTags] = useState<any[]>([])
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null)
   const [drawerTags, setDrawerTags] = useState<any[]>([])
@@ -551,7 +555,45 @@ export function FileList() {
     { key: "image", label: "Image" },
   ]
 
-  const typeFiltered = typeFilter === "all" ? files : files.filter((f: any) => {
+  // Category classification helpers
+  const isNote = useCallback((f: FileItem) => {
+    const bare = f.name.replace(/\.md$/i, "")
+    return /^note-\d{4}-\d{2}-\d{2}T[\d-]+$/.test(bare)
+      || /^session-summary-[\w-]+$/.test(bare)
+      || /^auto-capture-[\w-]+$/.test(bare)
+      || /^auto-[\w-]+$/.test(bare)
+      || f.tags?.some((t: any) => ["ai-note", "session-summary"].includes(t.name.toLowerCase()))
+  }, [])
+
+  const isConnector = useCallback((f: FileItem) => {
+    return f.tags?.some((t: any) => ["mcp-stored", "imported", "connector"].includes(t.name.toLowerCase()))
+  }, [])
+
+  // Search filter (name + summary)
+  const searchFiltered = useMemo(() => {
+    if (!deferredSearch.trim()) return files
+    const q = deferredSearch.toLowerCase()
+    return files.filter((f) => {
+      const name = (f.name || "").toLowerCase()
+      const summary = (f.summary || "").toLowerCase()
+      return name.includes(q) || summary.includes(q)
+    })
+  }, [files, deferredSearch])
+
+  // Category filter
+  const categoryFiltered = useMemo(() => {
+    if (categoryFilter === "all") return searchFiltered
+    return searchFiltered.filter((f) => {
+      switch (categoryFilter) {
+        case "notes": return isNote(f)
+        case "connectors": return isConnector(f)
+        case "documents": return !isNote(f) && !isConnector(f)
+        default: return true
+      }
+    })
+  }, [searchFiltered, categoryFilter, isNote, isConnector])
+
+  const typeFiltered = typeFilter === "all" ? categoryFiltered : categoryFiltered.filter((f: any) => {
     const ext = (f.name || f.originalName || "").split(".").pop()?.toLowerCase()
     const mime = f.mimeType || ""
     switch (typeFilter) {
@@ -572,7 +614,19 @@ export function FileList() {
 
   const disambiguators = useMemo(() => buildDisambiguators(filteredFiles), [filteredFiles])
 
-  const virt = useVirtualizer({ count: filteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 52, overscan: 5 })
+  // Page-level sort override
+  const sortedFilteredFiles = useMemo(() => {
+    if (pageSort === "recent") return filteredFiles
+    return [...filteredFiles].sort((a, b) => {
+      if (pageSort === "name-asc") return a.name.localeCompare(b.name)
+      if (pageSort === "name-desc") return b.name.localeCompare(a.name)
+      return 0
+    })
+  }, [filteredFiles, pageSort])
+
+  const searchMatchCount = deferredSearch.trim() ? sortedFilteredFiles.length : null
+
+  const virt = useVirtualizer({ count: sortedFilteredFiles.length, getScrollElement: () => parentRef.current, estimateSize: () => 52, overscan: 5 })
 
   const toggleSort = (k: SortKey) => { if (sortKey === k) setSortDir((d) => d === "asc" ? "desc" : "asc"); else { setSortKey(k); setSortDir("asc") } }
 
@@ -611,19 +665,19 @@ export function FileList() {
       const tag = (document.activeElement?.tagName || "").toLowerCase()
       if (tag === "input" || tag === "textarea" || tag === "select") return
       if ((document.activeElement as HTMLElement)?.isContentEditable) return
-      if (!filteredFiles?.length) return
+      if (!sortedFilteredFiles?.length) return
 
-      const currentIdx = filteredFiles.findIndex((f: any) => f.id === selectedFileId)
+      const currentIdx = sortedFilteredFiles.findIndex((f: any) => f.id === selectedFileId)
 
       if (e.key === "ArrowDown") {
         e.preventDefault()
-        const nextIdx = currentIdx < 0 ? 0 : Math.min(currentIdx + 1, filteredFiles.length - 1)
-        openInspector(filteredFiles[nextIdx].id)
+        const nextIdx = currentIdx < 0 ? 0 : Math.min(currentIdx + 1, sortedFilteredFiles.length - 1)
+        openInspector(sortedFilteredFiles[nextIdx].id)
       }
       if (e.key === "ArrowUp") {
         e.preventDefault()
         const prevIdx = currentIdx < 0 ? 0 : Math.max(currentIdx - 1, 0)
-        openInspector(filteredFiles[prevIdx].id)
+        openInspector(sortedFilteredFiles[prevIdx].id)
       }
       if (e.key === "Enter" && selectedFileId) {
         e.preventDefault()
@@ -640,7 +694,7 @@ export function FileList() {
     }
     window.addEventListener("keydown", handleKeyNav)
     return () => window.removeEventListener("keydown", handleKeyNav)
-  }, [filteredFiles, selectedFileId, router, openInspector])
+  }, [sortedFilteredFiles, selectedFileId, router, openInspector])
 
   const handleClick = useCallback((id: string, e: React.MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
@@ -760,13 +814,65 @@ export function FileList() {
 
   return (
     <div className="flex h-full flex-col" onDragOver={(e) => { e.preventDefault() }} onDrop={(e) => { e.preventDefault(); setShowUpload(true) }}>
+      {/* Search & Category bar */}
+      <div className="flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-700 px-4 py-2">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Search files..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-8 pl-8 pr-16 text-xs bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+          />
+          {searchMatchCount !== null && (
+            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">
+              {searchMatchCount} found
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {(["all", "documents", "notes", "connectors"] as const).map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCategoryFilter(cat)}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs transition capitalize",
+                categoryFilter === cat
+                  ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                  : "bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+              )}
+            >
+              {cat === "all" ? "All" : cat.charAt(0).toUpperCase() + cat.slice(1)}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-1 ml-auto">
+          {(["recent", "name-asc", "name-desc"] as const).map((s) => {
+            const labels: Record<string, string> = { recent: "Recent", "name-asc": "A→Z", "name-desc": "Z→A" }
+            return (
+              <button
+                key={s}
+                onClick={() => setPageSort(s)}
+                className={cn(
+                  "rounded-md px-2 py-1 text-xs transition",
+                  pageSort === s
+                    ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium"
+                    : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                )}
+              >
+                {labels[s]}
+              </button>
+            )
+          })}
+        </div>
+      </div>
       {/* Toolbar: filters left, actions right */}
       <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700 px-4 py-2 gap-2">
         <div className="flex items-center gap-1 overflow-x-auto min-w-0">
           <Checkbox
-            checked={filteredFiles.length > 0 && filteredFiles.every(f => selected.has(f.id))}
+            checked={sortedFilteredFiles.length > 0 && sortedFilteredFiles.every(f => selected.has(f.id))}
             onCheckedChange={(checked) => {
-              if (checked) setSelected(new Set(filteredFiles.map(f => f.id)))
+              if (checked) setSelected(new Set(sortedFilteredFiles.map(f => f.id)))
               else setSelected(new Set())
             }}
             className="mr-2"
@@ -880,7 +986,7 @@ export function FileList() {
                 <span className={cn("cursor-pointer hover:text-foreground", i === path.length - 1 && "text-foreground font-medium")} onClick={() => setCurrentFolder(i === path.length - 1 ? p.id : p.id)}>
                   {p.name}
                 </span>
-                {i === path.length - 1 && <span className="text-xs text-zinc-400 ml-1">({filteredFiles.length})</span>}
+                {i === path.length - 1 && <span className="text-xs text-zinc-400 ml-1">({sortedFilteredFiles.length})</span>}
               </span>
             ))
           })()}
@@ -931,7 +1037,7 @@ export function FileList() {
       <div ref={parentRef} className="flex-1 overflow-auto">
         <div style={{ height: virt.getTotalSize() + "px", width: "100%", position: "relative" }}>
           {virt.getVirtualItems().map((row) => {
-            const file = filteredFiles[row.index]
+            const file = sortedFilteredFiles[row.index]
             const isSel = selected.has(file.id) || selectedFileId === file.id
             return (
               <HoverCard openDelay={400} closeDelay={100} key={file.id}>
@@ -1059,7 +1165,7 @@ export function FileList() {
       ) : (
         <div className="flex-1 overflow-auto">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 p-5">
-            {filteredFiles.map((file) => {
+            {sortedFilteredFiles.map((file) => {
               const isSel = selected.has(file.id) || selectedFileId === file.id
               return (
                 <div
@@ -1208,7 +1314,7 @@ export function FileList() {
         </div>
       )}
       <FirstUploadGuide hasIndexedFile={files.some((f: any) => f.status === "indexed")} />
-      {filteredFiles.length < 5 && filteredFiles.length > 0 && (
+      {sortedFilteredFiles.length < 5 && sortedFilteredFiles.length > 0 && (
         <div className="border-t border-zinc-200/50 dark:border-zinc-700/50 px-6 py-6">
           <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">Quick start</h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
