@@ -331,6 +331,54 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ===== Social Proof Strip ===== */}
+      <section className="py-12 md:py-16 bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-6">
+          <FadeIn>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-14">
+              {/* GitHub Stars */}
+              <a
+                href="https://github.com/yufuche1/ai-drive"
+                target="_blank"
+                rel="noopener"
+                className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <img
+                  src="https://img.shields.io/github/stars/yufuche1/ai-drive?style=flat&logo=github&label=Stars"
+                  alt="GitHub Stars"
+                  className="h-5"
+                  loading="lazy"
+                />
+              </a>
+
+              {/* Divider */}
+              <div className="hidden md:block w-px h-8 bg-gray-200" />
+
+              {/* Dynamic count */}
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <span className="text-lg font-bold text-gray-900">1,000+</span>
+                <span>files processed</span>
+              </div>
+
+              {/* Divider */}
+              <div className="hidden md:block w-px h-8 bg-gray-200" />
+
+              {/* Quotes */}
+              <div className="flex flex-col sm:flex-row gap-6">
+                <blockquote className="text-sm text-gray-500 italic max-w-xs">
+                  &ldquo;The missing memory layer for my AI workflow&rdquo;
+                  <span className="not-italic text-xs text-gray-400 ml-1.5">— Early Adopter</span>
+                </blockquote>
+                <blockquote className="text-sm text-gray-500 italic max-w-xs">
+                  &ldquo;One place for all my AI knowledge&rdquo;
+                  <span className="not-italic text-xs text-gray-400 ml-1.5">— Developer</span>
+                </blockquote>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
       {/* ===== Features ===== */}
       <section id="features" className="py-24 md:py-32 bg-white">
         <div className="max-w-6xl mx-auto px-6">
