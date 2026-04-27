@@ -309,7 +309,7 @@ export default function LandingPage() {
 
           <FadeIn delay={100}>
             <p className="mt-6 md:mt-8 text-body md:text-xl text-gray-500 max-w-xl mx-auto leading-relaxed">
-              Your AI tools forget everything between sessions. DriveMem gives them a shared brain — so they remember what matters.
+              Your AI knowledge base that gets smarter the more you use it
             </p>
           </FadeIn>
 
