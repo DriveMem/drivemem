@@ -180,7 +180,7 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
   if (!isLoggedIn) return null
 
   return (
-    <div className="mb-10">
+    <div className="mb-14">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold tracking-tight">Connected Agents</h2>
         {agents.length > 0 && (
@@ -423,8 +423,20 @@ function LLMProxySection({ copied, copyText }: { copied: string | null; copyText
     },
   ]
 
+  const [showLLMProxy, setShowLLMProxy] = useState(false)
+
   return (
-    <div className="mb-10">
+    <div className="mb-14">
+      <button
+        onClick={() => setShowLLMProxy(!showLLMProxy)}
+        className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
+      >
+        {showLLMProxy ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        Universal LLM Proxy
+        <span className="text-[10px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-wider">Beta</span>
+        <span className="text-xs font-normal ml-1">— use your knowledge with any LLM</span>
+      </button>
+      {showLLMProxy && (<>
       <div className="flex items-center gap-3 mb-4">
         <h2 className="text-lg font-semibold tracking-tight">Universal LLM Proxy</h2>
         <span className="text-[10px] font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase tracking-wider">Beta</span>
@@ -448,6 +460,7 @@ function LLMProxySection({ copied, copyText }: { copied: string | null; copyText
       <p className="text-xs text-muted-foreground mt-4">
         🔒 Your API key passes through securely and is never stored.
       </p>
+      </>)}
     </div>
   )
 }
@@ -523,9 +536,19 @@ function DataSources() {
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "https://api.drivemem.cloud"}/api/integrations/github/connect?token=${token}`
   }
 
+  const [showDataSources, setShowDataSources] = useState(false)
+
   return (
-    <div className="mt-10 mb-10">
-      <h2 className="text-lg font-semibold tracking-tight mb-4">Data Sources</h2>
+    <div className="mt-10 mb-14">
+      <button
+        onClick={() => setShowDataSources(!showDataSources)}
+        className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
+      >
+        {showDataSources ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        Data Sources
+        <span className="text-xs font-normal ml-1">— connect Notion, Google Drive, GitHub</span>
+      </button>
+      {showDataSources && (
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Notion Card */}
         <div className="rounded-2xl border shadow-soft p-6 flex flex-col">
@@ -658,6 +681,7 @@ function DataSources() {
           )}
         </div>
       </div>
+      )}
     </div>
   )
 }
@@ -720,13 +744,13 @@ export default function ConnectPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 page-enter">
       <h1 className="text-2xl font-bold tracking-tight">Connect your agents</h1>
-      <p className="text-muted-foreground mt-2 mb-8">Pick your tool and connect in under 2 minutes</p>
+      <p className="text-muted-foreground mt-2 mb-10">Pick your tool and connect in under 2 minutes</p>
 
       <ConnectedAgents onAgentCountChange={(c) => setAgentCount(c)} />
       <EmptyKBWarning />
 
       {/* Quick Setup — always visible */}
-      <div className="mb-10 rounded-2xl border-2 border-primary/20 bg-primary/[0.03] p-6 md:p-8">
+      <div className="mb-14 rounded-2xl border-2 border-primary/20 bg-primary/[0.03] p-6 md:p-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
             <Terminal className="h-5 w-5 text-primary" />
@@ -752,7 +776,7 @@ export default function ConnectPage() {
       </div>
 
       {/* Manual Setup (collapsible) */}
-      <div className="mb-10">
+      <div className="mb-14">
         <button
           onClick={() => setShowManual(!showManual)}
           className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
