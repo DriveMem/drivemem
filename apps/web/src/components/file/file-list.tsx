@@ -1033,7 +1033,22 @@ export function FileList() {
           ))}
         </div>
       )}
-      {viewMode === "list" ? (
+      {/* Empty state when search/filter yields no results */}
+      {sortedFilteredFiles.length === 0 && files.length > 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Search className="h-8 w-8 text-muted-foreground mb-3 opacity-40" />
+          <p className="text-sm text-muted-foreground">No files match your search</p>
+          {(deferredSearch.trim() || categoryFilter !== "all" || typeFilter !== "all") && (
+            <button
+              onClick={() => { setSearchQuery(""); setCategoryFilter("all"); setTypeFilter("all") }}
+              className="mt-2 text-xs text-brand-500 hover:underline"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+      )}
+      {sortedFilteredFiles.length === 0 ? null : viewMode === "list" ? (
       <div ref={parentRef} className="flex-1 overflow-auto">
         <div style={{ height: virt.getTotalSize() + "px", width: "100%", position: "relative" }}>
           {virt.getVirtualItems().map((row) => {
