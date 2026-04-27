@@ -319,10 +319,10 @@ export default function QuickStartPage() {
             Ready to give your AI a memory?
           </h2>
           <p className="text-gray-500 mb-6">
-            Free tier includes 100 files and 1,000 searches/month.
+            Free plan includes 50 files, unlimited searches, and full API access.
           </p>
           <Link
-            href="/register"
+            href="/signup"
             className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white px-8 py-3 rounded-xl font-semibold text-base transition-colors shadow-brand-md hover:shadow-brand-lg"
           >
             Start Free →
