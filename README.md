@@ -1,155 +1,180 @@
+<div align="center">
+
 # DriveMem
 
 **One memory. Every agent.**
 
-DriveMem gives all your AI tools a shared brain — so they remember what you care about.
+The open-source memory layer for AI tools. Give your AI agents persistent, cross-tool knowledge.
 
-> Your AI tools forget everything between sessions. DriveMem changes that. Knowledge captured by one agent is instantly available to all others.
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+[![npm](https://img.shields.io/npm/v/drivemem)](https://www.npmjs.com/package/drivemem)
+[![npm downloads](https://img.shields.io/npm/dm/drivemem)](https://www.npmjs.com/package/drivemem)
 
-## ✨ Features
+[Website](https://drivemem.cloud) · [Docs](https://drivemem.cloud/docs/quickstart) · [API Reference](https://drivemem.cloud/docs/api) · [Discord](https://discord.gg/drivemem)
 
-- **🧠 Shared Memory** — Knowledge persists across sessions, models, and tools
-- **🔄 Cross-Agent Flow** — What Claude learns, Cursor knows. Switch tools without repeating yourself
-- **✨ Gets Smarter Over Time** — Discovers connections, detects conflicts, learns what matters to you
-- **🔌 Connect Any Agent** — One URL. Works with Cursor, Claude Desktop, ChatGPT, and any MCP-compatible tool
+</div>
 
-## 🚀 Quick Start
+---
 
-### 1. Create an account
+## What is DriveMem?
 
-Sign up at [drivemem.cloud](https://drivemem.cloud)
+DriveMem is a persistent knowledge layer that connects all your AI tools. Upload files, have conversations, and every AI agent you use — Cursor, Claude, Windsurf, or any MCP client — automatically gets the context it needs.
 
-### 2. Connect your agents (one command)
+**Think of it as iCloud for your AI agents.** One knowledge base, seamless continuity across every tool.
+
+## Why DriveMem?
+
+| Feature | DriveMem | Mem0 | Claude Projects |
+|---------|----------|------|-----------------|
+| Open source | ✅ AGPL-3.0 | ✅ Apache-2.0 | ❌ |
+| Self-hostable | ✅ | ✅ | ❌ |
+| MCP native | ✅ One URL, any client | ❌ SDK only | ❌ |
+| Cross-tool memory | ✅ Any MCP client | ✅ API only | ❌ Single tool |
+| File sync (Drive/Notion) | ✅ | ❌ | ❌ |
+| LLM API Proxy | ✅ Auto-inject context | ❌ | ❌ |
+| Claude Code Hooks | ✅ Auto-capture sessions | ❌ | ❌ |
+| Self-learning search | ✅ Feedback + citations | ❌ | ❌ |
+
+## Quick Start
+
+### Connect to DriveMem Cloud (fastest)
 
 ```bash
 npx drivemem setup
 ```
 
-This automatically detects and configures **Cursor**, **Claude Desktop**, **Windsurf**, and more. Requires Node.js 18+.
+One command configures Cursor, Claude Desktop, and Windsurf. Get your API key at [drivemem.cloud/settings](https://drivemem.cloud/settings).
 
-### Manual setup (alternative)
-
-Get your API Key from **Settings → Developer**, then:
-
-**Cursor / Windsurf:**
-```json
-{
-  "mcpServers": {
-    "drivemem": {
-      "url": "https://api.drivemem.cloud/mcp?apiKey=YOUR_API_KEY"
-    }
-  }
-}
-```
-
-**Claude Desktop:**
-Add to `claude_desktop_config.json`:
-```json
-{
-  "mcpServers": {
-    "drivemem": {
-      "url": "https://api.drivemem.cloud/mcp?apiKey=YOUR_API_KEY"
-    }
-  }
-}
-```
-
-**OpenClaw:**
-```bash
-openclaw config set mcp.servers.drivemem.url "https://api.drivemem.cloud/mcp/sse?apiKey=YOUR_API_KEY"
-```
-
-### 4. Try it
-
-Once connected, your agent automatically has access to your knowledge base. Try:
-- Asking questions about your files
-- Storing decisions and notes
-- Getting context-aware briefings
-
-## 🔧 REST API
+### Self-Host
 
 ```bash
-# Search knowledge
-curl -X GET 'https://api.drivemem.cloud/api/v1/search?q=database+decision' \
-  -H 'Authorization: Bearer YOUR_API_KEY'
-
-# Store knowledge
-curl -X POST 'https://api.drivemem.cloud/api/v1/store' \
-  -H 'Authorization: Bearer YOUR_API_KEY' \
-  -H 'Content-Type: application/json' \
-  -d '{"content": "Decided to use PostgreSQL", "title": "DB Decision", "tags": "decision"}'
-
-# RAG Q&A
-curl -X POST 'https://api.drivemem.cloud/api/v1/ask' \
-  -H 'Authorization: Bearer YOUR_API_KEY' \
-  -H 'Content-Type: application/json' \
-  -d '{"question": "What database did we choose?"}'
-
-# Compile context briefing
-curl -X POST 'https://api.drivemem.cloud/api/v1/context/compile' \
-  -H 'Authorization: Bearer YOUR_API_KEY' \
-  -H 'Content-Type: application/json' \
-  -d '{"task": "Sprint planning for Q2"}'
+git clone https://github.com/DriveMem/drivemem.git
+cd drivemem
+cp apps/api/.env.example apps/api/.env
+# Edit .env with your database and LLM API credentials
+pnpm install
+pnpm run dev
 ```
 
-## 📦 SDK
+Requirements: Node.js 18+, PostgreSQL 15+, an embedding API key (OpenAI, DashScope, or compatible).
+
+## How It Works
+
+```
+Your AI Tools (Cursor, Claude, Windsurf, any MCP client)
+        ↕ MCP Protocol / API Proxy
+    ┌─────────────────────────┐
+    │       DriveMem          │
+    │  ┌─────────────────┐    │
+    │  │ Knowledge Base   │    │
+    │  │ Files + Chunks   │    │
+    │  │ Vector Embeddings│    │
+    │  └─────────────────┘    │
+    │  ┌─────────────────┐    │
+    │  │ Context Compiler │    │
+    │  │ 9-step pipeline  │    │
+    │  │ Model-aware      │    │
+    │  └─────────────────┘    │
+    │  ┌─────────────────┐    │
+    │  │ Data Flywheel    │    │
+    │  │ Search feedback  │    │
+    │  │ Citation tracking│    │
+    │  │ Usage patterns   │    │
+    │  └─────────────────┘    │
+    └─────────────────────────┘
+```
+
+## Features
+
+- **📁 Knowledge Base** — Upload files (PDF, Word, Markdown, TXT). Auto-parsed, chunked, and embedded.
+- **🔍 Semantic Search** — Find anything in your knowledge base with natural language.
+- **🤖 MCP Server** — Connect any MCP-compatible AI tool with one URL.
+- **🔌 LLM API Proxy** — Auto-inject context into any OpenAI/Anthropic API call.
+- **🪝 Claude Code Hooks** — Auto-capture session knowledge after every coding session.
+- **📊 Self-Learning** — Search gets better with usage. Feedback, citations, and usage patterns improve ranking.
+- **🔄 Connectors** — Sync from Google Drive, with more coming.
+- **💻 Desktop App** — Available for macOS, Windows, and Linux.
+
+## Integrations
+
+| Tool | Method | Setup |
+|------|--------|-------|
+| **Cursor** | MCP (native) | `npx drivemem setup` |
+| **Claude Desktop** | MCP (stdio bridge) | `npx drivemem setup` |
+| **Windsurf** | MCP (native) | `npx drivemem setup` |
+| **Claude Code** | Hooks (auto-capture) | `npx drivemem setup claude-code` |
+| **Any LLM API** | Proxy | `npx drivemem proxy --api-key=...` |
+| **REST API** | HTTP | [API docs](https://drivemem.cloud/docs/api) |
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React 19, Tailwind CSS
+- **Backend**: Fastify, TypeScript, Drizzle ORM
+- **Database**: PostgreSQL + pgvector
+- **Embedding**: text-embedding-v3 (DashScope/OpenAI compatible)
+- **MCP**: @modelcontextprotocol/sdk (SSE + Streamable HTTP)
+- **Desktop**: Electron
+
+## Project Structure
+
+```
+drivemem/
+├── apps/
+│   ├── api/          # Backend API (Fastify)
+│   └── web/          # Frontend (Next.js)
+├── packages/
+│   ├── sdk/          # CLI + MCP bridge + Proxy (MIT licensed)
+│   ├── shared/       # Shared types and utilities
+│   └── desktop/      # Electron desktop app
+└── docs/             # Deployment guides
+```
+
+## SDK (MIT Licensed)
+
+The DriveMem SDK (`packages/sdk/`) is licensed under MIT for maximum compatibility. Use it freely in any project:
 
 ```bash
 npm install drivemem
 ```
 
-```typescript
-import { DriveMem } from 'drivemem'
+```javascript
+// Setup MCP for all AI tools
+npx drivemem setup --api-key=ak_xxx
 
-const dm = new DriveMem({ apiKey: 'YOUR_API_KEY' })
+// Start LLM API Proxy
+npx drivemem proxy --api-key=ak_xxx
 
-// Search
-const results = await dm.search('database architecture')
-
-// Store
-await dm.store({ content: 'Chose PostgreSQL', title: 'DB Decision' })
-
-// Ask
-const answer = await dm.ask('What did we decide about the database?')
+// Configure Claude Code hooks
+npx drivemem setup claude-code
 ```
 
-## 🏗️ How It Works
+## Contributing
 
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+```bash
+# Clone and setup
+git clone https://github.com/DriveMem/drivemem.git
+cd drivemem
+pnpm install
+
+# Start development
+pnpm run dev  # Starts API + Web in dev mode
 ```
-Agent works → Knowledge captured automatically
-       ↓
-DriveMem indexes, discovers connections, detects conflicts
-       ↓
-Next agent gets full context — no manual setup needed
-```
 
-**9-Step Context Compiler Pipeline:**
-Retrieval → Project Boost → Feedback Weights → Knowledge Graph → Role Routing → Behavior Learning → Freshness Decay → Re-ranking → Token Budget
+## License
 
-**4 Self-Learning Loops:**
-1. Implicit Feedback — unused search results get downweighted
-2. Behavior Learning — adapts to each agent's usage patterns
-3. Freshness Decay — old unused knowledge fades
-4. Compilation Quality — tracks and optimizes briefing effectiveness
+- **SDK/CLI** (`packages/sdk/`): [MIT](packages/sdk/LICENSE)
+- **Everything else**: [AGPL-3.0](LICENSE)
 
-## 🔌 Integrations
+## Cloud vs Self-Host
 
-| Channel | Type | Status |
-|---------|------|--------|
-| MCP Protocol | Agent connection | ✅ Live |
-| REST API | Programmatic access | ✅ Live |
-| Webhook | Zapier/Make/n8n | ✅ Live |
-| Email Forward | Email to knowledge | ✅ Live |
-| Notion | Pull sync | ✅ Live |
-| GitHub | Issues/PRs sync | ✅ Live |
-| Google Drive | Document sync | ✅ Live |
-| Browser Extension | Web clipper | ✅ v2 |
+| | DriveMem Cloud | Self-Host |
+|---|---|---|
+| Setup | 1 command | Deploy yourself |
+| Data flywheel | ✅ Cross-user learning | ❌ Single-user only |
+| Model profiles | ✅ Auto-optimized | ❌ Static defaults |
+| Updates | Automatic | Manual |
+| Price | Free tier available | Free forever |
 
-## 📄 License
-
-MIT
-
-## 🔗 Links
-
-- **Website**: [drivemem.cloud](https://drivemem.cloud)
-- **Docs**: [drivemem.cloud/developers](https://drivemem.cloud/developers)
+[Try DriveMem Cloud →](https://drivemem.cloud)

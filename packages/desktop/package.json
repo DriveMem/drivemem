@@ -5,7 +5,7 @@
   "author": "DriveMem <hello@drivemem.cloud>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yufuche1/ai-drive.git"
+    "url": "https://github.com/DriveMem/drivemem.git"
   },
   "main": "main.js",
   "scripts": {
