@@ -1,6 +1,26 @@
-export const metadata = {
-  title: "Claude Code Hooks — DriveMem Docs",
-  description: "Automatically capture knowledge from every Claude Code session with DriveMem hooks.",
+"use client"
+
+import { useState } from "react"
+
+function CodeBlock({ code, lang = "bash" }: { code: string; lang?: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <div className="relative group">
+      <pre className="mt-4 bg-gray-900 text-gray-100 rounded-xl p-4 text-sm overflow-x-auto">
+        <code className={`language-${lang}`}>{code}</code>
+      </pre>
+      <button
+        onClick={() => {
+          navigator.clipboard?.writeText(code)
+          setCopied(true)
+          setTimeout(() => setCopied(false), 2000)
+        }}
+        className="absolute top-6 right-2 text-xs text-zinc-400 hover:text-zinc-200 bg-zinc-800 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        {copied ? "Copied!" : "Copy"}
+      </button>
+    </div>
+  )
 }
 
 export default function HooksPage() {
@@ -35,9 +55,7 @@ export default function HooksPage() {
           One command — that&apos;s it. Make sure you&apos;ve already run{" "}
           <code className="text-sm bg-gray-100 px-1.5 py-0.5 rounded">npx drivemem setup</code> first.
         </p>
-        <pre className="mt-4 bg-gray-900 text-gray-100 rounded-xl p-4 text-sm overflow-x-auto">
-          <code>npx drivemem setup claude-code</code>
-        </pre>
+        <CodeBlock code="npx drivemem setup claude-code" />
         <p className="mt-3 text-sm text-gray-500">
           This adds a <code className="bg-gray-100 px-1 py-0.5 rounded">SessionEnd</code> hook to{" "}
           <code className="bg-gray-100 px-1 py-0.5 rounded">~/.claude/settings.json</code>.
@@ -51,8 +69,7 @@ export default function HooksPage() {
           If you prefer to configure manually, add the following to{" "}
           <code className="text-sm bg-gray-100 px-1.5 py-0.5 rounded">~/.claude/settings.json</code>:
         </p>
-        <pre className="mt-4 bg-gray-900 text-gray-100 rounded-xl p-4 text-sm overflow-x-auto">
-          <code>{`{
+        <CodeBlock code={`{
   "hooks": {
     "SessionEnd": [
       {
@@ -61,8 +78,7 @@ export default function HooksPage() {
       }
     ]
   }
-}`}</code>
-        </pre>
+}`} lang="json" />
         <p className="mt-3 text-sm text-gray-500">
           Make sure <code className="bg-gray-100 px-1 py-0.5 rounded">DRIVEMEM_API_KEY</code> is set in your
           environment, or that you&apos;ve already configured DriveMem via{" "}
