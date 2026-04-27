@@ -107,7 +107,7 @@ function Nav() {
           <Link href="/docs/quickstart" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Quick Start
           </Link>
-          <Link href="/developers" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
+          <Link href="/docs" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Docs
           </Link>
           <Link href="/pricing" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
@@ -136,7 +136,7 @@ function Nav() {
             <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">How it works</a>
             <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Use Cases</a>
             <Link href="/docs/quickstart" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Quick Start</Link>
-            <Link href="/developers" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Docs</Link>
+            <Link href="/docs" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Docs</Link>
             <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Pricing</Link>
             <Link href="/download" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Download</Link>
             <hr className="border-gray-100" />
@@ -537,7 +537,7 @@ export default function LandingPage() {
           <span>© {new Date().getFullYear()} DriveMem</span>
           <div className="flex gap-6">
             <Link href="/docs/quickstart" className="hover:text-gray-600 transition-colors">Quick Start</Link>
-            <Link href="/developers" className="hover:text-gray-600 transition-colors">Docs</Link>
+            <Link href="/docs" className="hover:text-gray-600 transition-colors">Docs</Link>
             <Link href="/pricing" className="hover:text-gray-600 transition-colors">Pricing</Link>
             <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms</Link>

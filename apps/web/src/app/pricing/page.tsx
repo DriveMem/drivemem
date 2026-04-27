@@ -168,7 +168,7 @@ export default function PricingPage() {
           <span>© {new Date().getFullYear()} DriveMem</span>
           <div className="flex gap-6">
             <Link href="/docs/quickstart" className="hover:text-gray-600 transition-colors">Quick Start</Link>
-            <Link href="/developers" className="hover:text-gray-600 transition-colors">Docs</Link>
+            <Link href="/docs" className="hover:text-gray-600 transition-colors">Docs</Link>
             <Link href="/pricing" className="hover:text-gray-600 transition-colors">Pricing</Link>
             <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms</Link>
