@@ -376,6 +376,54 @@ function ConnectedAgents({ onAgentCountChange }: { onAgentCountChange?: (count: 
   )
 }
 
+/* ---------- Model Intelligence Section ---------- */
+function ModelIntelligenceSection() {
+  const [profiles, setProfiles] = useState<Record<string, any> | null>(null)
+
+  useEffect(() => {
+    fetch("/api/v1/model-profiles")
+      .then(r => r.json())
+      .then(data => setProfiles(data.profiles || {}))
+      .catch(() => {})
+  }, [])
+
+  if (!profiles) return null
+
+  const dataDriven = Object.entries(profiles).filter(
+    ([k, v]: [string, any]) => v.dataPoints && v.dataPoints >= 10 && k !== '_default'
+  )
+
+  if (dataDriven.length === 0) return null
+
+  return (
+    <div className="mt-8 rounded-2xl border p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Zap className="h-5 w-5 text-amber-500" />
+        <h2 className="text-lg font-semibold tracking-tight">Model Intelligence</h2>
+        <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full">Auto-tuned</span>
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">
+        Context budgets optimized from your actual usage data. Models with 📊 have data-driven overrides.
+      </p>
+      <div className="grid gap-2">
+        {dataDriven.map(([name, p]: [string, any]) => (
+          <div key={name} className="flex items-center justify-between rounded-lg border px-4 py-2 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="font-mono font-medium">{name}</span>
+              <span className="text-xs text-amber-600 dark:text-amber-400">📊 Data-driven</span>
+            </div>
+            <div className="flex items-center gap-4 text-muted-foreground text-xs tabular-nums">
+              <span>{p.tokenBudget?.toLocaleString()} tokens</span>
+              {p.successRate != null && <span>{(p.successRate * 100).toFixed(1)}% success</span>}
+              <span>{p.dataPoints} samples</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /* ---------- LLM Proxy Section ---------- */
 function LLMProxySection({ copied, copyText }: { copied: string | null; copyText: (text: string, label: string) => void }) {
   const proxyBaseUrl = "https://api.drivemem.cloud/proxy/v1"
@@ -895,6 +943,9 @@ export default function ConnectPage() {
 
       {/* LLM Proxy */}
       <LLMProxySection copied={copied} copyText={copyText} />
+
+      {/* Model Intelligence */}
+      <ModelIntelligenceSection />
 
       {/* Data Sources */}
       <DataSources />

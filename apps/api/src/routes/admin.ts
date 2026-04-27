@@ -2,8 +2,30 @@ import { FastifyInstance } from 'fastify';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { sql } from 'drizzle-orm';
+import { runModelProfileAggregation } from '../services/model-profile-tuner.js';
 
 export default async function adminRoutes(fastify: FastifyInstance) {
+  // POST /tune-models — trigger model profile aggregation
+  fastify.post('/tune-models', async (request, reply) => {
+    const adminToken = process.env.ADMIN_TOKEN;
+    const auth = request.headers.authorization?.replace('Bearer ', '');
+    if (!adminToken || auth !== adminToken) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+    const result = await runModelProfileAggregation();
+    return reply.send(result);
+  });
+
+  // GET /model-profiles — view all overrides (admin)
+  fastify.get('/model-profiles', async (request, reply) => {
+    const adminToken = process.env.ADMIN_TOKEN;
+    const auth = request.headers.authorization?.replace('Bearer ', '');
+    if (!adminToken || auth !== adminToken) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+    const overrides = await db.select().from(schema.modelProfileOverrides);
+    return reply.send({ overrides });
+  });
   // GET /stats — 运营统计（admin token 认证）
   fastify.get('/stats', async (request, reply) => {
     const adminToken = process.env.ADMIN_TOKEN;

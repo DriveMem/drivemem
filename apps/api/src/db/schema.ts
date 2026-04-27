@@ -449,3 +449,14 @@ export const proxyCallEvents = pgTable('proxy_call_events', {
   success: boolean('success').default(true),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+// --- Model Profile Overrides (data flywheel — proxy auto-tuning) ---
+export const modelProfileOverrides = pgTable('model_profile_overrides', {
+  id: serial('id').primaryKey(),
+  modelName: text('model_name').notNull().unique(),
+  optimalContextTokens: integer('optimal_context_tokens'),
+  avgResponseTimeMs: integer('avg_response_time_ms'),
+  successRate: real('success_rate'),
+  sampleCount: integer('sample_count'),
+  lastUpdated: timestamp('last_updated').notNull().defaultNow(),
+});

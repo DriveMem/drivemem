@@ -3,6 +3,9 @@ import cors from '@fastify/cors';
 import sensible from '@fastify/sensible';
 import errorHandler from './plugins/error-handler.js';
 import { config } from './lib/config.js';
+import { db } from './db/index.js';
+import * as schema from './db/schema.js';
+import { maybeAutoTune } from './services/model-profile-tuner.js';
 
 const app = Fastify({
   logger: {
@@ -137,7 +140,8 @@ await app.register(v1Routes, { prefix: '/api/v1' });
 // Public endpoints (no auth)
 await app.register(async function publicRoutes(pub) {
   pub.get('/model-profiles', async (request, reply) => {
-    const profiles = {
+    // Static profiles
+    const profiles: Record<string, any> = {
       'claude-opus-4': { tokenBudget: 3000, threshold: 0.65, mode: 'full' },
       'claude-sonnet-4': { tokenBudget: 2000, threshold: 0.68, mode: 'full' },
       'claude-haiku-3.5': { tokenBudget: 1000, threshold: 0.72, mode: 'summary' },
@@ -163,6 +167,23 @@ await app.register(async function publicRoutes(pub) {
       'minimax-m2.7': { tokenBudget: 3000, threshold: 0.63, mode: 'full' },
       '_default': { tokenBudget: 800, threshold: 0.75, mode: 'summary' },
     };
+
+    // Merge data-driven overrides on top of static profiles
+    try {
+      const overrides = await db.select().from(schema.modelProfileOverrides);
+      for (const o of overrides) {
+        if (o.sampleCount && o.sampleCount >= 10) {
+          const existing = profiles[o.modelName] || profiles['_default'];
+          profiles[o.modelName] = {
+            ...existing,
+            tokenBudget: o.optimalContextTokens || existing.tokenBudget,
+            dataPoints: o.sampleCount,
+            successRate: o.successRate,
+          };
+        }
+      }
+    } catch (_e) { /* table may not exist yet */ }
+
     reply.header('Cache-Control', 'public, max-age=86400');
     return reply.send({ profiles, version: '2026-04-23', count: Object.keys(profiles).length });
   });
@@ -236,6 +257,9 @@ try {
   }, 60 * 60 * 1000); // 1 hour
   // Run once on startup after a short delay
   setTimeout(() => runNudgeScheduler().catch(err => app.log.error(err, '[nudge] Initial run error')), 10_000);
+
+  // Auto-tune model profiles if stale (> 7 days)
+  setTimeout(() => maybeAutoTune().catch(err => app.log.error(err, '[model-tuner] Auto-tune error')), 15_000);
 
   // Start weekly digest scheduler — checks every hour, sends on Monday 9am UTC
   const { runWeeklyDigest } = await import('./services/digest.service.js');
