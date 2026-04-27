@@ -401,6 +401,9 @@ export default async function v1Routes(fastify: FastifyInstance) {
         .where(inArray(schema.files.id, searchFileIdSet))
         .catch(() => {});
     }
+    // Citation tracking (fire-and-forget)
+    import('../services/citation-tracker.js').then(({ recordCitations }) =>
+      recordCitations({ userId, fileIds: searchFileIdSet, source: 'search', query: query.q, agentName: (request as any).apiKeyName }));
     logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'search', detail: query.q, metadata: { resultCount: searchResults.length, format }, relatedFileIds: searchFileIdSet });
     // Cross-agent relay detection (fire-and-forget)
     detectAndLogRelay(userId, (request as any).apiKeyName, searchFileIdSet, (request as any).apiKeyId);
@@ -571,6 +574,9 @@ export default async function v1Routes(fastify: FastifyInstance) {
     checkCompilationFeedback(userId, 'ask');
     // Cross-agent relay detection (fire-and-forget)
     detectAndLogRelay(userId, (request as any).apiKeyName, askFileIds, (request as any).apiKeyId);
+    // Citation tracking (fire-and-forget)
+    import('../services/citation-tracker.js').then(({ recordCitations }) =>
+      recordCitations({ userId, fileIds: askFileIds, source: 'ask', query: body.question, agentName: (request as any).apiKeyName }));
     logActivity({ userId, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'ask', detail: body.question, metadata: { sourceCount: finalChunks.length } });
     return reply.send({
       answer,
@@ -862,6 +868,9 @@ ${insightsSection}
     const compileFileIds = (result as any).sources?.map((s: any) => s.fileId).filter(Boolean) || [];
     // Agent Loop 1: resolve implicit feedback for files referenced in compile
     resolveImplicitFeedback(request.user!.id, (request as any).apiKeyId, [...new Set(compileFileIds)] as string[]);
+    // Citation tracking for compile (fire-and-forget)
+    import('../services/citation-tracker.js').then(({ recordCitations }) =>
+      recordCitations({ userId: request.user!.id, fileIds: [...new Set(compileFileIds)] as string[], source: 'compile', query: body.task, agentName: (request as any).apiKeyName }));
     logActivity({ userId: request.user!.id, apiKeyId: (request as any).apiKeyId, agentName: (request as any).apiKeyName, action: 'compile', detail: body.task, relatedFileIds: [...new Set(compileFileIds)] as string[] });
     return reply.send(result);
   });

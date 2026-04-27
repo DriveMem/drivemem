@@ -122,7 +122,9 @@ import adminRoutes from './routes/admin.js';
 await app.register(adminRoutes, { prefix: '/api/admin' });
 
 import insightRoutes from './routes/insights.js';
+import citationStatsRoutes from './routes/citation-stats.js';
 await app.register(insightRoutes, { prefix: '/api/insights' });
+await app.register(citationStatsRoutes, { prefix: '/api/citations' });
 
 import apiKeyRoutes from './routes/api-keys.js';
 await app.register(apiKeyRoutes, { prefix: '/api/api-keys' });

@@ -360,6 +360,9 @@ When using knowledge base content, mention the source file name.
           // Cross-agent relay detection (fire-and-forget)
           logActivity({ userId, agentName, action: 'search', detail: query, metadata: { resultCount: results.length }, relatedFileIds: fileIds });
           detectAndLogRelay(userId, agentName, fileIds);
+          // Citation tracking (fire-and-forget)
+          import('../services/citation-tracker.js').then(({ recordCitations }) =>
+            recordCitations({ userId, fileIds, source: 'mcp_search', query, agentName }));
           // Phase 2: Contextual hint for sparse/empty search results
           let searchHint = '';
           if (results.length === 0) {

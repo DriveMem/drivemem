@@ -1,6 +1,6 @@
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { eq, and, inArray, sql } from 'drizzle-orm';
+import { eq, and, inArray, sql, gt } from 'drizzle-orm';
 
 export async function applyFeedbackWeights<T extends { fileId: string; score: number }>(
   userId: string,
@@ -38,6 +38,21 @@ export async function applyFeedbackWeights<T extends { fileId: string; score: nu
 
   const boostMap = new Map(searchFeedbackCounts.map(f => [f.fileId, (Number(f.ups) - Number(f.downs) * 2) * 0.05]));
 
+  // Citation boost: files referenced more often rank higher (last 30 days)
+  const citationCounts = await db.select({
+    fileId: schema.citationEvents.fileId,
+    count: sql<number>`count(*)::int`,
+  }).from(schema.citationEvents)
+    .where(and(
+      eq(schema.citationEvents.userId, userId),
+      inArray(schema.citationEvents.fileId, fileIds),
+      gt(schema.citationEvents.createdAt, sql`now() - interval '30 days'`)
+    ))
+    .groupBy(schema.citationEvents.fileId);
+
+  const maxCitations = Math.max(...citationCounts.map(c => c.count), 1);
+  const citationMap = new Map(citationCounts.map(c => [c.fileId, (c.count / maxCitations) * 0.1]));
+
   return results.map(r => {
     const rating = feedbackMap[r.fileId];
     let multiplier = 1.0;
@@ -45,6 +60,7 @@ export async function applyFeedbackWeights<T extends { fileId: string; score: nu
     else if (rating === 'not_useful') multiplier = 0.3;
 
     const boost = boostMap.get(r.fileId) || 0;
-    return { ...r, score: r.score * multiplier + boost };
+    const citationBoost = citationMap.get(r.fileId) || 0;
+    return { ...r, score: r.score * multiplier + boost + citationBoost };
   }).sort((a, b) => b.score - a.score);
 }

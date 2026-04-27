@@ -21,6 +21,7 @@ import { DashboardSkeleton } from "@/components/ui/skeleton-loader"
 import { ActivationBanner } from "@/components/dashboard/activation-banner"
 import { SampleDataBanner } from "@/components/dashboard/sample-data-banner"
 import { AgentActivityPanel } from "@/components/dashboard/agent-activity-panel"
+import { MostReferencedPanel } from "@/components/dashboard/most-referenced-panel"
 import { WelcomeHero, WelcomeBanner } from "@/components/dashboard/welcome-hero"
 import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state"
 import { QuickStartChecklist } from "@/components/dashboard/quick-start-checklist"
@@ -791,6 +792,9 @@ export default function HomePage() {
 
         {/* Agent Activity — only when has agent activity (#66) */}
         {blockVis.agentActivity && <AgentActivityPanel />}
+
+        {/* Most Referenced Knowledge — citation tracking */}
+        <MostReferencedPanel />
 
         {/* Activity Feed — only when total_activity >= 3 (#66) */}
         {blockVis.recentActivity && (<div>

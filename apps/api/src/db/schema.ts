@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, bigint, integer, timestamp, pgEnum, jsonb, boolean, real } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, bigint, integer, timestamp, pgEnum, jsonb, boolean, real, serial } from 'drizzle-orm/pg-core';
 
 export const authProviderEnum = pgEnum('auth_provider', ['credentials', 'google', 'github']);
 
@@ -412,4 +412,15 @@ export const searchFeedback = pgTable('search_feedback', {
   fileId: uuid('file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
   signal: text('signal').notNull(), // 'click' | 'thumbs_up' | 'thumbs_down'
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// --- Citation Events (data flywheel — citation tracking) ---
+export const citationEvents = pgTable('citation_events', {
+  id: serial('id').primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  fileId: uuid('file_id').notNull().references(() => files.id, { onDelete: 'cascade' }),
+  source: text('source').notNull(), // 'compile' | 'search' | 'ask' | 'mcp_search'
+  query: text('query'),
+  agentName: text('agent_name'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
