@@ -1512,7 +1512,7 @@ export default function SettingsContent() {
             </div>
             {!["developer","designer","pm","researcher","writer","general"].includes(profileRole) && (
               <Input
-                placeholder="e.g., Software Engineer or Product Manager"
+                placeholder="e.g., Product Manager, Researcher"
                 value={profileRole}
                 onChange={(e) => setProfileRole(e.target.value)}
               />
@@ -1520,15 +1520,15 @@ export default function SettingsContent() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="goal">Current goal</Label>
-            <Input id="goal" placeholder="e.g., Help me organize and recall my technical knowledge" value={profileGoal} onChange={(e) => setProfileGoal(e.target.value)} />
+            <Input id="goal" placeholder="e.g., Help me organize research papers and find insights" value={profileGoal} onChange={(e) => setProfileGoal(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="background">Background</Label>
-            <Input id="background" placeholder="e.g., I work on web applications using React and Node.js" value={profileBg} onChange={(e) => setProfileBg(e.target.value)} />
+            <Input id="background" placeholder="e.g., 5 years in AI/ML, working on NLP projects" value={profileBg} onChange={(e) => setProfileBg(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="prefs">AI Preferences</Label>
-            <Input id="prefs" placeholder="e.g., I prefer concise answers with code examples" value={profilePrefs} onChange={(e) => setProfilePrefs(e.target.value)} />
+            <Input id="prefs" placeholder="e.g., Respond in Chinese, keep answers concise" value={profilePrefs} onChange={(e) => setProfilePrefs(e.target.value)} />
           </div>
           <Button size="sm" className="bg-brand-500 hover:bg-brand-600 text-white" onClick={saveProfile} disabled={profileSaving}>
             {profileSaving ? "Saving..." : "Save Profile"}
