@@ -452,6 +452,29 @@ export const proxyCallEvents = pgTable('proxy_call_events', {
 });
 
 // --- Model Profile Overrides (data flywheel — proxy auto-tuning) ---
+// --- Anonymous Search Signals (cross-user anonymous learning) ---
+export const anonymousSearchSignals = pgTable('anonymous_search_signals', {
+  id: serial('id').primaryKey(),
+  queryHash: text('query_hash').notNull(),
+  queryCategory: text('query_category'),
+  resultCount: integer('result_count').notNull(),
+  hadClick: boolean('had_click').default(false),
+  hadFeedback: boolean('had_feedback').default(false),
+  source: text('source').notNull(), // 'web_search' | 'mcp_search' | 'mcp_ask'
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// --- Popular Query Patterns (aggregated from anonymous signals) ---
+export const popularQueryPatterns = pgTable('popular_query_patterns', {
+  id: serial('id').primaryKey(),
+  pattern: text('pattern').notNull().unique(),
+  frequency: integer('frequency').notNull(),
+  avgResultCount: real('avg_result_count'),
+  avgClickRate: real('avg_click_rate'),
+  lastSeen: timestamp('last_seen'),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 export const modelProfileOverrides = pgTable('model_profile_overrides', {
   id: serial('id').primaryKey(),
   modelName: text('model_name').notNull().unique(),

@@ -411,6 +411,9 @@ export default async function v1Routes(fastify: FastifyInstance) {
     recordSearchResults(userId, (request as any).apiKeyId, searchFileIdSet);
     // Agent Loop 4: check if search after compile → negative feedback signal
     checkCompilationFeedback(userId, 'search');
+    // Anonymous cross-user learning signal (fire-and-forget)
+    import('../services/anonymous-search-recorder.js').then(({ recordAnonymousSearchSignal }) =>
+      recordAnonymousSearchSignal({ query: query.q, resultCount: searchResults.length, hadClick: false, source: 'web_search' }));
     // Knowledge gap tracking (fire-and-forget)
     import('../services/knowledge-gap-tracker.js').then(({ recordKnowledgeGap }) =>
       recordKnowledgeGap({ userId, query: query.q, source: 'search', resultCount: searchResults.length }));

@@ -366,6 +366,9 @@ When using knowledge base content, mention the source file name.
           // Knowledge gap tracking (fire-and-forget)
           import('../services/knowledge-gap-tracker.js').then(({ recordKnowledgeGap }) =>
             recordKnowledgeGap({ userId, query, source: 'mcp_search', resultCount: results.length }));
+          // Anonymous cross-user learning signal (fire-and-forget)
+          import('../services/anonymous-search-recorder.js').then(({ recordAnonymousSearchSignal }) =>
+            recordAnonymousSearchSignal({ query, resultCount: results.length, hadClick: false, source: 'mcp_search' }));
           // Phase 2: Contextual hint for sparse/empty search results
           let searchHint = '';
           if (results.length === 0) {
@@ -421,6 +424,9 @@ When using knowledge base content, mention the source file name.
           // Knowledge gap tracking (fire-and-forget)
           import('../services/knowledge-gap-tracker.js').then(({ recordKnowledgeGap }) =>
             recordKnowledgeGap({ userId, query: question, source: 'ask', resultCount: chunks.length }));
+          // Anonymous cross-user learning signal (fire-and-forget)
+          import('../services/anonymous-search-recorder.js').then(({ recordAnonymousSearchSignal }) =>
+            recordAnonymousSearchSignal({ query: question, resultCount: chunks.length, hadClick: false, source: 'mcp_ask' }));
           // Phase 2: Contextual hint for ask — nudge storing conclusions
           const askHint = '\n\n---\n💡 Reminder: If this conversation produced valuable conclusions, call aidrive_harvest to save them.';
           return { content: [{ type: 'text' as const, text: answer + askEnrich + askHint }] };

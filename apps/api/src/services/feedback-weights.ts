@@ -69,6 +69,18 @@ export async function applyFeedbackWeights<T extends { fileId: string; score: nu
   const maxCitations = Math.max(...citationCounts.map(c => c.count), 1);
   const citationMap = new Map(citationCounts.map(c => [c.fileId, (c.count / maxCitations) * 0.1]));
 
+  // Cross-user popular pattern micro-boost (anonymous learning)
+  let popularBoost = 0;
+  try {
+    const popularPatterns = await db.select()
+      .from(schema.popularQueryPatterns)
+      .where(gt(schema.popularQueryPatterns.frequency, 5));
+    if (popularPatterns.length > 0) {
+      const avgClickRate = popularPatterns.reduce((s, p) => s + (p.avgClickRate || 0), 0) / popularPatterns.length;
+      if (avgClickRate > 0.3) popularBoost = 0.02;
+    }
+  } catch { /* non-blocking */ }
+
   return results.map(r => {
     const rating = feedbackMap[r.fileId];
     let multiplier = 1.0;
@@ -77,6 +89,6 @@ export async function applyFeedbackWeights<T extends { fileId: string; score: nu
 
     const boost = boostMap.get(r.fileId) || 0;
     const citationBoost = citationMap.get(r.fileId) || 0;
-    return { ...r, score: r.score * multiplier + boost + citationBoost };
+    return { ...r, score: r.score * multiplier + boost + citationBoost + popularBoost };
   }).sort((a, b) => b.score - a.score);
 }
