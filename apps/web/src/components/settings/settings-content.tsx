@@ -17,6 +17,59 @@ import {
 } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
+function ProxyAnalyticsCard() {
+  const [stats, setStats] = useState<{ totalCalls: number; avgResponseMs: number; contextInjectionRate: number; topModels: { name: string; calls: number }[] } | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const { apiFetch } = await import("@/lib/api")
+        const data = await apiFetch("/api/proxy/stats")
+        setStats(data)
+      } catch { /* ignore */ }
+      setLoading(false)
+    }
+    fetchStats()
+  }, [])
+
+  if (loading) return null
+  if (!stats || stats.totalCalls === 0) return null
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>📡 Proxy Analytics</CardTitle>
+        <CardDescription>Usage statistics from your AI Drive proxy</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="rounded-lg border p-3">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Total Calls</p>
+            <p className="text-2xl font-bold">{stats.totalCalls.toLocaleString()}</p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Context Injection</p>
+            <p className="text-2xl font-bold">{stats.contextInjectionRate}%</p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Avg Response</p>
+            <p className="text-2xl font-bold">{stats.avgResponseMs ? `${(stats.avgResponseMs / 1000).toFixed(1)}s` : '—'}</p>
+          </div>
+          <div className="rounded-lg border p-3">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Top Models</p>
+            <div className="text-sm font-medium">
+              {stats.topModels.length > 0 ? stats.topModels.map(m => (
+                <div key={m.name} className="truncate">{m.name} ({m.calls})</div>
+              )) : <span className="text-zinc-400">—</span>}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 function ApiKeysCard() {
   const [keys, setKeys] = useState<any[]>([])
   const [keyName, setKeyName] = useState("")
@@ -1553,6 +1606,7 @@ export default function SettingsContent() {
       </Card>
 
       {/* AI Memory */}
+      <ProxyAnalyticsCard />
       <Card>
         <CardHeader>
           <CardTitle>🧠 AI Memory</CardTitle>

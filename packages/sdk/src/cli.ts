@@ -344,6 +344,7 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
       let body = '';
       req.on('data', (chunk: Buffer) => { body += chunk; });
       req.on('end', async () => {
+        const reqStartTime = Date.now();
         try {
           const data = JSON.parse(body);
           const messages: Array<{ role: string; content: string }> = data.messages || [];
@@ -467,6 +468,21 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
                 body: JSON.stringify({ content: `Q: ${query.slice(0, 200)}\n\nA: ${fullResponse.slice(0, 2000)}`, title: query.slice(0, 60), tags: ['proxy-captured'], source: 'proxy' })
               }).catch(() => {});
             }
+
+            // Proxy telemetry — fire-and-forget
+            fetch(`${DRIVEMEM_API}/api/proxy/event`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${driveMemApiKey}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                modelName: data.model || 'unknown',
+                provider: 'openai',
+                contextTokens: contextSnippet ? Math.round(contextSnippet.length / 4) : 0,
+                totalTokens: null,
+                responseTimeMs: Date.now() - reqStartTime,
+                injectedContext: !!contextSnippet,
+                success: true,
+              }),
+            }).catch(() => {});
           } else {
             const responseData = await llmRes.text();
             res.writeHead(llmRes.status, { 'Content-Type': 'application/json' });
@@ -484,11 +500,38 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
                 }).catch(() => {});
               }
             } catch { /* ignore */ }
+
+            // Proxy telemetry — fire-and-forget
+            fetch(`${DRIVEMEM_API}/api/proxy/event`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${driveMemApiKey}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                modelName: data.model || 'unknown',
+                provider: 'openai',
+                contextTokens: contextSnippet ? Math.round(contextSnippet.length / 4) : 0,
+                totalTokens: null,
+                responseTimeMs: Date.now() - reqStartTime,
+                injectedContext: !!contextSnippet,
+                success: true,
+              }),
+            }).catch(() => {});
           }
         } catch (err: unknown) {
           console.error('  ❌ Proxy error:', (err as Error).message);
           res.writeHead(502);
           res.end(JSON.stringify({ error: { message: 'Proxy error', type: 'proxy_error' } }));
+          // Proxy telemetry — error
+          fetch(`${DRIVEMEM_API}/api/proxy/event`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${driveMemApiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              modelName: 'unknown',
+              provider: 'openai',
+              responseTimeMs: Date.now() - reqStartTime,
+              injectedContext: false,
+              success: false,
+            }),
+          }).catch(() => {});
         }
       });
     } else if (req.method === 'POST' && req.url?.startsWith('/v1/messages')) {
@@ -496,6 +539,7 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
       let body = '';
       req.on('data', (chunk: Buffer) => { body += chunk; });
       req.on('end', async () => {
+        const reqStartTime = Date.now();
         try {
           const data = JSON.parse(body);
           
@@ -618,6 +662,21 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
               }).catch(() => {});
             }
             
+            // Proxy telemetry — fire-and-forget
+            fetch(`${DRIVEMEM_API}/api/proxy/event`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${driveMemApiKey}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                modelName: data.model || 'unknown',
+                provider: 'anthropic',
+                contextTokens: contextSnippet ? Math.round(contextSnippet.length / 4) : 0,
+                totalTokens: null,
+                responseTimeMs: Date.now() - reqStartTime,
+                injectedContext: !!contextSnippet,
+                success: true,
+              }),
+            }).catch(() => {});
+
             return;
           }
           
@@ -639,11 +698,38 @@ async function startProxy(driveMemApiKey: string, port: number, defaultUpstreamU
               }).catch(() => {});
             }
           } catch {}
+
+          // Proxy telemetry — fire-and-forget
+          fetch(`${DRIVEMEM_API}/api/proxy/event`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${driveMemApiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              modelName: data.model || 'unknown',
+              provider: 'anthropic',
+              contextTokens: contextSnippet ? Math.round(contextSnippet.length / 4) : 0,
+              totalTokens: null,
+              responseTimeMs: Date.now() - reqStartTime,
+              injectedContext: !!contextSnippet,
+              success: true,
+            }),
+          }).catch(() => {});
           
         } catch (err: any) {
           console.error('  ❌ Anthropic proxy error:', err.message);
           res.writeHead(502);
           res.end(JSON.stringify({ error: { type: 'proxy_error', message: 'Proxy error' } }));
+          // Proxy telemetry — error
+          fetch(`${DRIVEMEM_API}/api/proxy/event`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${driveMemApiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              modelName: 'unknown',
+              provider: 'anthropic',
+              responseTimeMs: Date.now() - reqStartTime,
+              injectedContext: false,
+              success: false,
+            }),
+          }).catch(() => {});
         }
       });
     } else if (req.method === 'GET' && req.url === '/health') {

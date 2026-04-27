@@ -424,3 +424,17 @@ export const citationEvents = pgTable('citation_events', {
   agentName: text('agent_name'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+// --- Proxy Call Events (data flywheel — proxy telemetry) ---
+export const proxyCallEvents = pgTable('proxy_call_events', {
+  id: serial('id').primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  modelName: text('model_name').notNull(),
+  provider: text('provider').notNull(), // 'openai' | 'anthropic'
+  contextTokens: integer('context_tokens'),
+  totalTokens: integer('total_tokens'),
+  responseTimeMs: integer('response_time_ms'),
+  injectedContext: boolean('injected_context').default(false),
+  success: boolean('success').default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
