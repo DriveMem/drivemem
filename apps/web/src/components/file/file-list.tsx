@@ -24,7 +24,7 @@ function displayFileName(name: string, summary?: string | null, disambiguator?: 
   else if (/^\d{4}-\d{2}-\d{2}$/.test(bare) && summary) {
     const cleaned = cleanSummary(summary)
     const firstSentence = cleaned.split(/[.。!！?\n]/)[0].trim()
-    label = firstSentence.slice(0, 50) || bare
+    label = firstSentence.slice(0, 80) || bare
   }
   if (disambiguator) label = `${label} (${disambiguator})`
   return label
@@ -1072,7 +1072,7 @@ export function FileList() {
                   className="shrink-0"
                 />
                 <TypeIcon type={file.type} name={file.name} />
-                <div className="truncate flex-1 min-w-0">
+                <div className="truncate flex-1 min-w-0 sm:min-w-[280px]">
                   <span className="truncate text-sm block" title={displayFileName(file.name, file.summary, disambiguators.get(file.id))}>{displayFileName(file.name, file.summary, disambiguators.get(file.id))}</span>
                   {fileSubtitle(file.name, file.summary, file.createdAt) && <span className="block text-xs text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name, file.summary, file.createdAt)}</span>}
                 </div>
@@ -1100,6 +1100,9 @@ export function FileList() {
                       {userTags2.slice(0, 2).map((tag: any) => (
                         <span key={tag.name} className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
                       ))}
+                      {userTags2.length > 2 && (
+                        <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400" title={userTags2.slice(2).map((t: any) => t.name).join(', ')}>+{userTags2.length - 2}</span>
+                      )}
                       {sysTags2.length > 0 && <CollapsibleSystemTags tags={sysTags2} />}
                     </>
                   )
@@ -1202,9 +1205,12 @@ export function FileList() {
 
                   {file.tags && file.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {(file.tags || []).filter((t: any) => !isSystemTag(t)).slice(0, 2).map((tag: any) => (
-                        <span key={tag.name} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
-                      ))}
+                      {(() => { const ut = (file.tags || []).filter((t: any) => !isSystemTag(t)); return (<>
+                        {ut.slice(0, 2).map((tag: any) => (
+                          <span key={tag.name} className="rounded-full px-1.5 py-0.5 text-[9px] font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
+                        ))}
+                        {ut.length > 2 && <span className="rounded-full px-1.5 py-0.5 text-[9px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400" title={ut.slice(2).map((t: any) => t.name).join(', ')}>+{ut.length - 2}</span>}
+                      </>)})()}
                       {(file.tags || []).filter((t: any) => isSystemTag(t)).length > 0 && (
                         <CollapsibleSystemTags tags={(file.tags || []).filter((t: any) => isSystemTag(t))} />
                       )}
