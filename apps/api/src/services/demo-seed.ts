@@ -19,11 +19,15 @@ const DEMO_FILES: DemoFile[] = [
 
 DriveMem is your AI agents' shared memory. Everything stored here is automatically available to all your AI tools.
 
-## What you can do:
-- Ask questions about your knowledge in Chat
-- Connect Cursor, Claude, or ChatGPT via MCP
-- Upload documents, notes, and decisions
-- Watch as DriveMem discovers connections between your knowledge
+## Try it now
+1. **Ask a question** — Go to Chat and ask "What decisions have been made?" DriveMem will search these sample files and give you an AI-powered answer.
+2. **Upload a file** — Drop a meeting note, decision log, or any document. DriveMem indexes it instantly.
+3. **Connect an AI tool** — Add your MCP connection string to Cursor, Claude, or ChatGPT. They'll have access to everything here.
+
+## How it works
+- You upload files or AI agents store knowledge via MCP/API
+- DriveMem indexes, links, and makes everything searchable
+- Any connected AI tool can search and retrieve your knowledge
 `,
   },
   {

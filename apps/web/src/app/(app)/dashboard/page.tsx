@@ -598,9 +598,9 @@ export default function HomePage() {
           <div className="space-y-4 mb-8">
             {/* Try asking */}
             <div className="rounded-2xl border shadow-soft p-6">
-              <h3 className="font-semibold mb-2">Try asking DriveMem</h3>
+              <h3 className="font-semibold mb-2">💬 Try asking DriveMem</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Your knowledge base has sample files to explore. Ask a question to see how it works.
+                We&apos;ve added sample files so you can try it now. Click a question below to see DriveMem in action.
               </p>
               <div className="flex flex-wrap gap-2 items-center">
                 {quickPromptsLoading ? (
@@ -638,9 +638,9 @@ export default function HomePage() {
 
             {/* Upload real files */}
             <div className="rounded-2xl border shadow-soft p-6">
-              <h3 className="font-semibold mb-2">Add your own knowledge</h3>
+              <h3 className="font-semibold mb-2">📄 Add your own knowledge</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Upload your first real document to start building your personal knowledge base.
+                Upload a real document — meeting notes, a decision log, or project spec — and watch DriveMem make it searchable by AI.
               </p>
               <Button
                 onClick={() => setShowUpload(true)}
@@ -656,7 +656,7 @@ export default function HomePage() {
             <div className="rounded-xl border p-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                  Connect your AI tools to start building your real knowledge base
+                  Connect your AI tools (Cursor, Claude, ChatGPT) to give them shared memory
                 </p>
                 <Link
                   href="/developers"
