@@ -92,6 +92,9 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
       {scopeHint && (
         <p className="text-xs text-muted-foreground/70 text-center mb-2">🔍 {scopeHint}</p>
       )}
+      {value.length > 3000 && (
+        <p className={cn("text-xs text-right mb-1 transition-colors", value.length > 4000 ? "text-red-500" : "text-muted-foreground/70")}>{value.length.toLocaleString()} / 4,000</p>
+      )}
       <div className="flex items-center gap-2 rounded-2xl shadow-soft-md bg-background border border-border/50 px-4 py-3 transition-all duration-300 focus-within:shadow-soft-lg focus-within:border-primary/20">
         <textarea
           ref={textareaRef}
