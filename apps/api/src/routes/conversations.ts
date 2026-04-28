@@ -515,7 +515,7 @@ ${citationSources.length > 0 ? citationSources.join('\n\n') : userFileCount > 0 
             reply.raw.write(`event: title\ndata: ${JSON.stringify({ title })}\n\n`);
           } else {
             const titleResponse = await chat([
-              { role: 'system', content: 'Generate a short title (max 6 words) for this conversation based on the user message. Generate the title in the same language as the user\'s message. Output only the title, no quotes, no explanation. If the message is unclear, use the first few words.' },
+              { role: 'system', content: 'Generate a short title (max 6 words) for this conversation based on the user message. IMPORTANT: The title MUST be in the SAME language as the user\'s message. If the user writes in Chinese, the title must be in Chinese. If the user writes in English, the title must be in English. Output only the title, no quotes, no explanation. If the message is unclear, use the first few words.' },
               { role: 'user', content: userContent },
             ]);
             const cleaned = titleResponse.slice(0, 50).trim().replace(/^["'「」《》]+|["'「」《》]+$/g, '');
