@@ -397,7 +397,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
           </Tooltip>
         </TooltipProvider>
         <Button variant={scope === "all" ? "secondary" : "ghost"} size="sm" onClick={() => { setScope("all"); setScopeId(undefined); setScopeLabel(undefined); toast("Memory scope: All files", { duration: 1500 }) }} className="gap-1 text-xs rounded-full">
-          <Files className="h-3 w-3" />All Files{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}
+          <Files className="h-3 w-3" /><span className="hidden sm:inline">All Files</span><span className="sm:hidden">All</span>{scope === "all" && indexedCount > 0 && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">{indexedCount}</span>}
         </Button>
         {scope !== "all" && scopeLabel && (
           <span className="rounded-full bg-brand-500/10 px-2 py-0.5 text-[10px] text-brand-500 font-medium">
@@ -408,7 +408,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant={scope === "folder" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs rounded-full">
-              <Folder className="h-3 w-3" />{scope === "folder" && scopeLabel ? scopeLabel : "Specified folder"}{scope === "folder" && scopeId && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
+              <Folder className="h-3 w-3" /><span className="hidden sm:inline">{scope === "folder" && scopeLabel ? scopeLabel : "Specified folder"}</span><span className="sm:hidden">Folder</span>{scope === "folder" && scopeId && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
@@ -425,7 +425,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant={scope === "file" ? "secondary" : "ghost"} size="sm" className="gap-1 text-xs rounded-full">
-              <FileText className="h-3 w-3" />{scope === "file" && scopeLabel ? scopeLabel : "Specified files"}{scope === "file" && scopeId && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
+              <FileText className="h-3 w-3" /><span className="hidden sm:inline">{scope === "file" && scopeLabel ? scopeLabel : "Specified files"}</span><span className="sm:hidden">File</span>{scope === "file" && scopeId && <span className="ml-1 rounded-full bg-brand-500 text-white text-[10px] px-1.5 py-0 leading-4 font-medium">1</span>}<ChevronDown className="h-3 w-3 ml-0.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="max-h-60 overflow-y-auto">
