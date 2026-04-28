@@ -385,7 +385,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
         </div>
       )}
       <div className="flex items-center gap-2 border-b border-border px-3 md:px-4 py-2 overflow-x-auto scrollbar-none">
-        <span className="text-xs text-muted-foreground">AI Memory scope: </span>
+        <span className="text-xs text-muted-foreground"><span className="hidden sm:inline">AI Memory scope:</span><span className="sm:hidden">Scope:</span> </span>
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>
