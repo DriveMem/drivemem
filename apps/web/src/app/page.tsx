@@ -415,7 +415,7 @@ export default function LandingPage() {
           </FadeIn>
 
           <div className="flex flex-wrap justify-center gap-6">
-            {FEATURES.map((f, i) => (
+            {FEATURES.slice(0, 3).map((f, i) => (
               <FadeIn key={f.title} delay={i * 100} className="w-full md:w-[calc(33.333%-1rem)]">
                 <div className="group rounded-2xl bg-white border border-gray-100 p-8 transition-all duration-300 hover:-translate-y-1 shadow-soft hover:shadow-soft-md h-full">
                   <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center text-brand-500 mb-6">
