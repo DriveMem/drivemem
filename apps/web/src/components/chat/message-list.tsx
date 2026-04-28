@@ -73,7 +73,16 @@ const markdownComponents = {
 
 function formatTime(dateStr: string): string {
   const d = new Date(dateStr)
-  return d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false })
+  const now = new Date()
+  const time = d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false })
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const yesterday = new Date(today.getTime() - 86400000)
+  const msgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+
+  if (msgDay.getTime() === today.getTime()) return time
+  if (msgDay.getTime() === yesterday.getTime()) return `Yesterday ${time}`
+  return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${time}`
 }
 
 function formatFullTime(dateStr: string): string {
