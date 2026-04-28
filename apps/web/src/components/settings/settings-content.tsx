@@ -17,6 +17,27 @@ import {
 } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
+function formatFriendlyDate(dateStr: string): string {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const dayMs = 86400000
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+
+  if (dateStart === todayStart) return "Today"
+  if (todayStart - dateStart === dayMs) return "Yesterday"
+  if (diff < 7 * dayMs) {
+    const days = Math.floor((todayStart - dateStart) / dayMs)
+    return `${days} days ago`
+  }
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+  if (date.getFullYear() === now.getFullYear()) {
+    return `${months[date.getMonth()]} ${date.getDate()}`
+  }
+  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
+}
+
 function ProxyAnalyticsCard() {
   const [stats, setStats] = useState<{ totalCalls: number; avgResponseMs: number; contextInjectionRate: number; topModels: { name: string; calls: number }[] } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -1287,7 +1308,8 @@ export default function SettingsContent() {
   }, [])
 
   const [memories, setMemories] = useState<any[]>([])
-
+  const [memorySearch, setMemorySearch] = useState("")
+  const [memoryDisplayCount, setMemoryDisplayCount] = useState(20)
   // Profile state
   const [profileRole, setProfileRole] = useState("")
   const [profileGoal, setProfileGoal] = useState("")
@@ -1613,24 +1635,50 @@ export default function SettingsContent() {
           <p className="text-sm text-zinc-500 dark:text-zinc-400">AI Preferences and interests learned from your conversations</p>
         </CardHeader>
         <CardContent>
+          {memories.length > 0 && (
+            <div className="mb-4">
+              <Input
+                placeholder="Search memories..."
+                value={memorySearch}
+                onChange={(e) => setMemorySearch(e.target.value)}
+                className="rounded-xl h-10"
+              />
+            </div>
+          )}
           {memories.length === 0 ? (
             <p className="text-sm text-zinc-500 dark:text-zinc-400">AI is learning your preferences. Chat more and insights will appear here ✨</p>
-          ) : (
-            <ul className="space-y-3">
-              {memories.map(m => (
-                <li key={m.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
-                  <div>
-                    <p className="text-sm font-medium">{m.key}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{m.value}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400/50 mt-1">{new Date(m.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => handleDeleteMemory(m.id)}>
-                    ✕
+          ) : (() => {
+            const q = memorySearch.toLowerCase().trim()
+            const filtered = q
+              ? memories.filter(m => (m.key || '').toLowerCase().includes(q) || (m.value || '').toLowerCase().includes(q))
+              : memories
+            const displayed = filtered.slice(0, memoryDisplayCount)
+            return filtered.length === 0 ? (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">No memories match &quot;{memorySearch}&quot;</p>
+            ) : (
+              <>
+                <ul className="space-y-3">
+                  {displayed.map(m => (
+                    <li key={m.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
+                      <div>
+                        <p className="text-sm font-medium">{m.key}</p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{m.value}</p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400/50 mt-1">{formatFriendlyDate(m.createdAt)}</p>
+                      </div>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => handleDeleteMemory(m.id)}>
+                        ✕
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+                {filtered.length > displayed.length && (
+                  <Button variant="ghost" className="w-full mt-3 text-sm" onClick={() => setMemoryDisplayCount(prev => prev + 20)}>
+                    Show more ({filtered.length - displayed.length} remaining)
                   </Button>
-                </li>
-              ))}
-            </ul>
-          )}
+                )}
+              </>
+            )
+          })()}
         </CardContent>
       </Card>
 
