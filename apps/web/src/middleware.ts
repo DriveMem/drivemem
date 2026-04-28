@@ -38,6 +38,16 @@ export default auth((req) => {
 
   // Known app routes that require auth
   const appRoutes = ["/dashboard", "/chat", "/settings", "/timeline", "/files", "/search", "/trash"]
+
+  // /knowledge → redirect to /dashboard (knowledge lives there)
+  if (req.nextUrl.pathname.startsWith("/knowledge")) {
+    if (isLoggedIn) {
+      return Response.redirect(new URL("/dashboard", req.nextUrl))
+    }
+    const loginUrl = new URL("/login", req.nextUrl)
+    loginUrl.searchParams.set("returnUrl", "/dashboard")
+    return Response.redirect(loginUrl)
+  }
   const isAppRoute = appRoutes.some(r => req.nextUrl.pathname.startsWith(r))
 
   // /developers without auth → redirect to public docs
