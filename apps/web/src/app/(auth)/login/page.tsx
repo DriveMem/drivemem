@@ -133,19 +133,21 @@ function LoginForm() {
         </Link>
       </p>
 
-      <div className="mt-4 text-center">
-        <button
-          type="button"
-          onClick={() => {
-            setValue("email", "demo@ai-drive.com")
-            setValue("password", "demo123")
-            handleSubmit(onSubmit)()
-          }}
-          className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition underline"
-        >
-          Try with Demo account →
-        </button>
-      </div>
+      {process.env.NEXT_PUBLIC_SHOW_DEMO === 'true' && (
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setValue("email", "demo@ai-drive.com")
+              setValue("password", "demo123")
+              handleSubmit(onSubmit)()
+            }}
+            className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition underline"
+          >
+            Try Demo →
+          </button>
+        </div>
+      )}
     </div>
   )
 }
