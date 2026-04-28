@@ -77,6 +77,11 @@ const PLATFORMS: Record<Platform, { label: string; icon: React.ReactNode; req: s
   },
 }
 
+function isMobileDevice(): boolean {
+  if (typeof navigator === "undefined") return false
+  return /iphone|ipad|ipod|android/i.test(navigator.userAgent)
+}
+
 function detectOS(): Platform | null {
   if (typeof navigator === "undefined") return null
   const ua = navigator.userAgent.toLowerCase()
@@ -90,11 +95,13 @@ function detectOS(): Platform | null {
 
 export default function DownloadPage() {
   const [detected, setDetected] = useState<Platform | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const [info, setInfo] = useState<DownloadInfo>(makeFallback)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setDetected(detectOS())
+    setIsMobile(isMobileDevice())
     fetchLatestRelease()
       .then(setInfo)
       .catch(() => {/* keep fallback */})
@@ -144,6 +151,13 @@ export default function DownloadPage() {
       {/* Download Cards */}
       <section className="py-16 md:py-24 bg-white dark:bg-zinc-900">
         <div className="max-w-4xl mx-auto px-6">
+          {isMobile && (
+            <div className="mb-8 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20 px-6 py-5 text-center">
+              <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+                DriveMem Desktop is available for macOS, Windows, and Linux. Visit this page on your computer to download.
+              </p>
+            </div>
+          )}
           <div className="grid md:grid-cols-3 gap-6">
             {order.map((platform) => {
               const p = PLATFORMS[platform]
