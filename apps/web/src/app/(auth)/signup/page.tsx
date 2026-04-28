@@ -12,19 +12,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { trackEvent } from "@/lib/analytics"
 
-const signupSchema = z
-  .object({
+const signupSchema = z.object({
     email: z.string().email("Please enter a valid email address"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
       .regex(/[a-zA-Z]/, "Password must contain letters")
       .regex(/[0-9]/, "Password must contain numbers"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
   })
 
 type SignupForm = z.infer<typeof signupSchema>
@@ -159,20 +153,6 @@ export default function SignupPage() {
           </div>
           {errors.password && (
             <p className="text-sm text-destructive">{errors.password.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm password</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            placeholder="Re-enter password"
-            className="rounded-xl h-12 text-base border-zinc-200 dark:border-zinc-700 placeholder:text-zinc-400 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-transparent"
-            {...register("confirmPassword")}
-          />
-          {errors.confirmPassword && (
-            <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
           )}
         </div>
 

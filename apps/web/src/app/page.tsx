@@ -293,7 +293,9 @@ export default function LandingPage() {
 
           <FadeIn delay={100}>
             <p className="mt-6 md:mt-8 text-body md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-              Your AI knowledge base that gets smarter the more you use it
+              Your AI knowledge base that gets smarter the more you use it.
+              <br className="hidden sm:block" />
+              Works with Cursor, Claude, Windsurf — any MCP client.
             </p>
           </FadeIn>
 
@@ -341,6 +343,24 @@ export default function LandingPage() {
                 Download Desktop
               </Link>
 
+            </div>
+
+            {/* Inline quick-start command */}
+            <div className="mt-6 flex items-center justify-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-gray-300 font-mono text-sm">
+                <span className="text-gray-500">$</span>
+                <span>npx drivemem setup</span>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText("npx drivemem setup")
+                    trackEvent("copy_setup_cmd", { source: "hero" })
+                  }}
+                  className="ml-2 text-gray-500 hover:text-white transition-colors"
+                  aria-label="Copy command"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                </button>
+              </div>
             </div>
           </FadeIn>
 

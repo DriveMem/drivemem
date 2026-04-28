@@ -63,7 +63,7 @@ export function DashboardEmptyState({ onUpload }: DashboardEmptyStateProps) {
 
       <div className="text-center mt-6">
         <Link
-          href="/docs/getting-started"
+          href="/docs/quickstart"
           className="text-sm text-muted-foreground hover:text-primary transition"
         >
           Learn more →

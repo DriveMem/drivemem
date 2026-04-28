@@ -12,7 +12,20 @@ The open-source memory layer for AI tools. Give your AI agents persistent, cross
 
 [Website](https://drivemem.cloud) · [Docs](https://drivemem.cloud/docs/quickstart) · [API Reference](https://drivemem.cloud/docs/api) · [Discord](https://discord.gg/drivemem)
 
+[**Try DriveMem Cloud Free →**](https://drivemem.cloud/signup)
+
 </div>
+
+---
+
+## ⚡ 30-Second Start
+
+```bash
+# Sign up at drivemem.cloud, then:
+npx drivemem setup
+```
+
+That's it. Cursor, Claude Desktop, and Windsurf are now connected to your knowledge base.
 
 ---
 
