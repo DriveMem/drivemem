@@ -97,20 +97,11 @@ function Nav() {
             </svg>
           </button>
         </div>
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6">
           <a href="#features" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Features
           </a>
-          <a href="#how-it-works" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
-            How it works
-          </a>
-          <a href="#use-cases" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
-            Use Cases
-          </a>
           <Link href="/docs/quickstart" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
-            Quick Start
-          </Link>
-          <Link href="/docs" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Docs
           </Link>
           <Link href="/pricing" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
@@ -118,9 +109,6 @@ function Nav() {
           </Link>
           <Link href="/download" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Download
-          </Link>
-          <Link href="/changelog" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
-            Changelog
           </Link>
           <Link href="/login" className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
             Sign in
@@ -148,13 +136,9 @@ function Nav() {
         <div className="md:hidden bg-white border-t border-gray-200/60 shadow-sm">
           <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col gap-3">
             <a href="#features" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Features</a>
-            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">How it works</a>
-            <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Use Cases</a>
-            <Link href="/docs/quickstart" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Quick Start</Link>
-            <Link href="/docs" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Docs</Link>
+            <Link href="/docs/quickstart" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Docs</Link>
             <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Pricing</Link>
             <Link href="/download" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Download</Link>
-            <Link href="/changelog" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Changelog</Link>
             <hr className="border-gray-100" />
             <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="text-gray-500 hover:text-gray-900 text-sm py-2 transition-colors">Sign in</Link>
             <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="text-sm text-white bg-brand-500 hover:bg-brand-600 px-4 py-2.5 rounded-lg font-medium transition-colors text-center">Try it free</Link>
