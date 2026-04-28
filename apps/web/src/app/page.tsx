@@ -292,7 +292,7 @@ export default function LandingPage() {
           </FadeIn>
 
           <FadeIn delay={100}>
-            <p className="mt-6 md:mt-8 text-body md:text-xl text-gray-500 max-w-xl mx-auto leading-relaxed">
+            <p className="mt-6 md:mt-8 text-body md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
               Your AI knowledge base that gets smarter the more you use it
             </p>
           </FadeIn>
@@ -340,12 +340,7 @@ export default function LandingPage() {
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Download Desktop
               </Link>
-              <a
-                href="#how-it-works"
-                className="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all"
-              >
-                See how it works
-              </a>
+
             </div>
           </FadeIn>
 
