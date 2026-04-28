@@ -414,42 +414,31 @@ export default function LandingPage() {
             </div>
           </FadeIn>
 
-          <div className="flex flex-wrap justify-center gap-6">
-            {FEATURES.slice(0, 3).map((f, i) => (
-              <FadeIn key={f.title} delay={i * 100} className="w-full md:w-[calc(33.333%-1rem)]">
+          {/* Row 1: 2 large feature cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {FEATURES.slice(0, 2).map((f, i) => (
+              <FadeIn key={f.title} delay={i * 100}>
                 <div className="group rounded-2xl bg-white border border-gray-100 p-8 transition-all duration-300 hover:-translate-y-1 shadow-soft hover:shadow-soft-md h-full">
                   <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center text-brand-500 mb-6">
                     {f.icon}
                   </div>
                   <h3 className="text-title font-semibold text-gray-900 mb-2">{f.title}</h3>
-                  <p className="text-gray-500 text-body leading-relaxed">
-                    {f.desc}
-                  </p>
-                  {f.bullets && (
-                    <ul className="mt-4 space-y-2">
-                      {f.bullets.map((b: string) => (
-                        <li key={b} className="flex items-start gap-2 text-sm text-gray-500 leading-relaxed">
-                          <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-brand-400 shrink-0" />
-                          {b}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <p className="text-gray-500 text-body leading-relaxed">{f.desc}</p>
                 </div>
               </FadeIn>
             ))}
           </div>
-          <div className="flex flex-col sm:flex-row justify-center gap-6 mt-6">
-            {FEATURES.slice(3).map((f, i) => (
-              <FadeIn key={f.title} delay={(i + 3) * 100}>
-                <div className="group rounded-2xl bg-white border border-gray-100 p-8 transition-all duration-300 hover:-translate-y-1 shadow-soft hover:shadow-soft-md sm:w-80 lg:w-96">
+
+          {/* Row 2: 3 regular feature cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {FEATURES.slice(2).map((f, i) => (
+              <FadeIn key={f.title} delay={(i + 2) * 100}>
+                <div className="group rounded-2xl bg-white border border-gray-100 p-8 transition-all duration-300 hover:-translate-y-1 shadow-soft hover:shadow-soft-md h-full">
                   <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center text-brand-500 mb-6">
                     {f.icon}
                   </div>
                   <h3 className="text-title font-semibold text-gray-900 mb-2">{f.title}</h3>
-                  <p className="text-gray-500 text-body leading-relaxed">
-                    {f.desc}
-                  </p>
+                  <p className="text-gray-500 text-body leading-relaxed">{f.desc}</p>
                   {f.bullets && (
                     <ul className="mt-4 space-y-2">
                       {f.bullets.map((b: string) => (
