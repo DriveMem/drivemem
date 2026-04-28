@@ -815,8 +815,8 @@ export function FileList() {
   return (
     <div className="flex h-full flex-col" onDragOver={(e) => { e.preventDefault() }} onDrop={(e) => { e.preventDefault(); setShowUpload(true) }}>
       {/* Search & Category bar */}
-      <div className="flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-700 px-4 py-2">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-b border-zinc-200 dark:border-zinc-700 px-4 py-2">
+        <div className="relative w-full sm:w-auto sm:flex-1 sm:max-w-sm">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             placeholder="Search files..."
@@ -830,13 +830,13 @@ export function FileList() {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 overflow-x-auto">
           {(["all", "documents", "notes", "connectors"] as const).map((cat) => (
             <button
               key={cat}
               onClick={() => setCategoryFilter(cat)}
               className={cn(
-                "rounded-full px-3 py-1 text-xs transition capitalize",
+                "rounded-full px-3 py-1 text-xs transition capitalize whitespace-nowrap",
                 categoryFilter === cat
                   ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
                   : "bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700"
@@ -854,7 +854,7 @@ export function FileList() {
                 key={s}
                 onClick={() => setPageSort(s)}
                 className={cn(
-                  "rounded-md px-2 py-1 text-xs transition",
+                  "rounded-md px-2 py-1 text-xs transition whitespace-nowrap",
                   pageSort === s
                     ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium"
                     : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700"
@@ -867,7 +867,7 @@ export function FileList() {
         </div>
       </div>
       {/* Toolbar: filters left, actions right */}
-      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-700 px-4 py-2 gap-2">
+      <div className="flex flex-wrap items-center justify-between border-b border-zinc-200 dark:border-zinc-700 px-4 py-2 gap-2">
         <div className="flex items-center gap-1 overflow-x-auto min-w-0">
           <Checkbox
             checked={sortedFilteredFiles.length > 0 && sortedFilteredFiles.every(f => selected.has(f.id))}
@@ -945,22 +945,54 @@ export function FileList() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="flex items-center gap-1 shrink-0 flex-wrap sm:flex-nowrap">
-          <Button size="sm" onClick={async () => {
-            try {
-              const { toast } = await import("sonner")
-              toast.info("AI Organizing files...")
-              const data = await apiFetch("/api/files/auto-organize", { method: "POST" })
-              toast.success(data?.message || "Organization complete")
-              queryClient.invalidateQueries({ queryKey: ["files"] })
-              queryClient.invalidateQueries({ queryKey: ["folders"] })
-            } catch (e: any) { const { toast } = await import("sonner"); toast.error(e.message || "Organization failed") }
-          }} variant="outline" className="gap-1">
-              <TooltipProvider><Tooltip><TooltipTrigger asChild><span className="hidden sm:inline">✨ One-click organize</span><span className="sm:hidden">✨</span></TooltipTrigger><TooltipContent><p>AI will automatically organize your files into folders</p></TooltipContent></Tooltip></TooltipProvider>
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Desktop: show all buttons inline */}
+          <div className="hidden sm:flex items-center gap-1">
+            <Button size="sm" onClick={async () => {
+              try {
+                toast.info("AI Organizing files...")
+                const data = await apiFetch("/api/files/auto-organize", { method: "POST" })
+                toast.success(data?.message || "Organization complete")
+                queryClient.invalidateQueries({ queryKey: ["files"] })
+                queryClient.invalidateQueries({ queryKey: ["folders"] })
+              } catch (e: any) { toast.error(e.message || "Organization failed") }
+            }} variant="outline" className="gap-1">
+              ✨ One-click organize
             </Button>
-          <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" /><span className="hidden sm:inline">New folder</span></Button>
-          <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-brand-500 hover:bg-brand-600 text-white"><Upload className="h-3.5 w-3.5" /><span className="hidden sm:inline">Quick Note</span></Button>
-          <div className="flex items-center rounded-md border border-zinc-200 dark:border-zinc-700 ml-2">
+            <Button size="sm" onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }} variant="outline" className="gap-1"><FolderPlus className="h-3.5 w-3.5" />New folder</Button>
+            <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1 bg-brand-500 hover:bg-brand-600 text-white"><Upload className="h-3.5 w-3.5" />Quick Note</Button>
+          </div>
+          {/* Mobile: collapse action buttons into dropdown menu */}
+          <div className="sm:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-1">
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                  Actions
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={async () => {
+                  try {
+                    toast.info("AI Organizing files...")
+                    const data = await apiFetch("/api/files/auto-organize", { method: "POST" })
+                    toast.success(data?.message || "Organization complete")
+                    queryClient.invalidateQueries({ queryKey: ["files"] })
+                    queryClient.invalidateQueries({ queryKey: ["folders"] })
+                  } catch (e: any) { toast.error(e.message || "Organization failed") }
+                }}>
+                  ✨ One-click organize
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { setNewFolderName(""); setFolderDialogOpen(true) }}>
+                  <FolderPlus className="h-4 w-4 mr-2" />New folder
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowUpload(true)}>
+                  <Upload className="h-4 w-4 mr-2" />Quick Note
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="flex items-center rounded-md border border-zinc-200 dark:border-zinc-700 ml-1 sm:ml-2">
             <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-r-none", viewMode === "list" && "bg-zinc-100 dark:bg-zinc-800")} onClick={() => setViewMode("list")}><List className="h-3.5 w-3.5" /></Button>
             <Button variant="ghost" size="icon" className={cn("h-7 w-7 rounded-l-none", viewMode === "grid" && "bg-zinc-100 dark:bg-zinc-800")} onClick={() => setViewMode("grid")}><LayoutGrid className="h-3.5 w-3.5" /></Button>
           </div>
