@@ -1072,7 +1072,7 @@ export function FileList() {
                   className="shrink-0"
                 />
                 <TypeIcon type={file.type} name={file.name} />
-                <div className="truncate flex-1 min-w-0 sm:min-w-[280px]">
+                <div className="truncate flex-1 min-w-[140px] sm:min-w-[280px]">
                   <span className="truncate text-sm block" title={displayFileName(file.name, file.summary, disambiguators.get(file.id))}>{displayFileName(file.name, file.summary, disambiguators.get(file.id))}</span>
                   {fileSubtitle(file.name, file.summary, file.createdAt) && <span className="block text-xs text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name, file.summary, file.createdAt)}</span>}
                 </div>
@@ -1095,15 +1095,17 @@ export function FileList() {
                 {(() => {
                   const userTags2 = (file.tags || []).filter((t: any) => !isSystemTag(t))
                   const sysTags2 = (file.tags || []).filter((t: any) => isSystemTag(t))
+                  // On mobile (< sm), show max 1 tag; on desktop show 2
+                  const maxVisibleTags = typeof window !== 'undefined' && window.innerWidth < 640 ? 1 : 2
                   return (
                     <>
-                      {userTags2.slice(0, 2).map((tag: any) => (
+                      {userTags2.slice(0, maxVisibleTags).map((tag: any) => (
                         <span key={tag.name} className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: (tag.color || '#4F5BD5') + '20', color: tag.color || '#4F5BD5' }}>{tag.name}</span>
                       ))}
-                      {userTags2.length > 2 && (
-                        <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400" title={userTags2.slice(2).map((t: any) => t.name).join(', ')}>+{userTags2.length - 2}</span>
+                      {userTags2.length > maxVisibleTags && (
+                        <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400" title={userTags2.slice(maxVisibleTags).map((t: any) => t.name).join(', ')}>+{userTags2.length - maxVisibleTags}</span>
                       )}
-                      {sysTags2.length > 0 && <CollapsibleSystemTags tags={sysTags2} />}
+                      {sysTags2.length > 0 && <span className="hidden sm:inline-flex"><CollapsibleSystemTags tags={sysTags2} /></span>}
                     </>
                   )
                 })()}
