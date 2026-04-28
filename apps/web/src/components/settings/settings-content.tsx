@@ -1695,12 +1695,26 @@ export default function SettingsContent() {
           <div className="space-y-2">
             <Label htmlFor="newPassword">New password</Label>
             <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="rounded-xl h-12" />
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">At least 8 characters, must include letters and numbers</p>
+            {newPassword ? (
+              <div className="space-y-1 mt-1">
+                <p className={`text-xs flex items-center gap-1 ${newPassword.length >= 8 ? "text-green-600 dark:text-green-400" : "text-zinc-400 dark:text-zinc-500"}`}>
+                  {newPassword.length >= 8 ? "✓" : "✗"} At least 8 characters
+                </p>
+                <p className={`text-xs flex items-center gap-1 ${/[a-zA-Z]/.test(newPassword) ? "text-green-600 dark:text-green-400" : "text-zinc-400 dark:text-zinc-500"}`}>
+                  {/[a-zA-Z]/.test(newPassword) ? "✓" : "✗"} Contains letters
+                </p>
+                <p className={`text-xs flex items-center gap-1 ${/[0-9]/.test(newPassword) ? "text-green-600 dark:text-green-400" : "text-zinc-400 dark:text-zinc-500"}`}>
+                  {/[0-9]/.test(newPassword) ? "✓" : "✗"} Contains numbers
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">At least 8 characters, must include letters and numbers</p>
+            )}
           </div>
           <Button
             size="sm"
             className="bg-brand-500 hover:bg-brand-600 text-white"
-            disabled={!currentPassword || !newPassword || newPassword.length < 8}
+            disabled={!currentPassword || !newPassword || newPassword.length < 8 || !/[a-zA-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)}
             onClick={async () => {
               try {
                 const { apiFetch } = await import("@/lib/api")

@@ -120,7 +120,7 @@ export default function DownloadPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
-              <span className="text-white font-mono text-xs font-bold">dm</span>
+              <span className="text-white font-mono text-xs font-bold">D</span>
             </div>
             <span className="text-gray-900 dark:text-zinc-100 font-semibold tracking-tight">DriveMem</span>
           </Link>
