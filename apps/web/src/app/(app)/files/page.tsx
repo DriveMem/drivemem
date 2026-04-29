@@ -234,8 +234,8 @@ function KnowledgePageInner() {
           </div>
         )}
         </div>
-        {/* Preview panel */}
-        <div className="hidden lg:flex w-[45%] border-l border-border flex-col">
+        {/* Preview panel — Obsidian-style content preview */}
+        <div className="hidden lg:flex w-[480px] shrink-0 border-l border-border flex-col">
           <PreviewPanel />
         </div>
         </div>
@@ -245,23 +245,33 @@ function KnowledgePageInner() {
 }
 
 function PreviewPanel() {
-  const { selectedFileId } = useLayoutStore()
+  const { selectedFileId, closeInspector } = useLayoutStore()
   const { data: file } = useFile(selectedFileId || '')
   const [content, setContent] = useState<string | null>(null)
+  const [imgUrl, setImgUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  const isImage = file?.mimeType?.startsWith("image/") || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(file?.name || "")
+
   useEffect(() => {
-    if (!selectedFileId) { setContent(null); return }
+    if (!selectedFileId) { setContent(null); setImgUrl(null); return }
     let cancelled = false
     setLoading(true)
     ;(async () => {
       try {
-        const res = await apiFetch(`/api/files/${selectedFileId}/preview-url`) as { previewUrl: string }
+        const res = await apiFetch(`/api/files/${selectedFileId}/preview-url`) as any
         if (cancelled) return
-        const textRes = await fetch(res.previewUrl)
-        if (!textRes.ok) throw new Error('fetch failed')
-        const text = await textRes.text()
-        if (!cancelled) setContent(text.length > 50000 ? text.slice(0, 50000) + '\n\n…' : text)
+        if (res.content) {
+          // Store-created note — content returned directly
+          setContent(res.content)
+        } else if (isImage && res.previewUrl) {
+          setImgUrl(res.previewUrl)
+        } else if (res.previewUrl) {
+          const textRes = await fetch(res.previewUrl)
+          if (!textRes.ok) throw new Error('fetch failed')
+          const text = await textRes.text()
+          if (!cancelled) setContent(text.length > 80000 ? text.slice(0, 80000) + '\n\n…(Content truncated)' : text)
+        }
       } catch {
         if (!cancelled) setContent(null)
       } finally {
@@ -269,7 +279,7 @@ function PreviewPanel() {
       }
     })()
     return () => { cancelled = true }
-  }, [selectedFileId])
+  }, [selectedFileId, isImage])
 
   if (!selectedFileId) {
     return (
@@ -282,18 +292,28 @@ function PreviewPanel() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="px-4 py-3 border-b border-border">
-        <h3 className="text-sm font-semibold truncate">{file?.name || 'Loading...'}</h3>
-        {file && <p className="text-xs text-muted-foreground mt-0.5">{file.mimeType} · {file.size ? (file.size < 1024 ? file.size + ' B' : (file.size / 1024).toFixed(1) + ' KB') : ''}</p>}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-semibold truncate">{file?.name || 'Loading...'}</h3>
+          {file && <p className="text-xs text-muted-foreground mt-0.5">{file.mimeType} · {file.size ? (file.size < 1024 ? file.size + ' B' : (file.size / 1024).toFixed(1) + ' KB') : ''}</p>}
+        </div>
+        <button onClick={closeInspector} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition shrink-0 ml-2">
+          <X className="h-3.5 w-3.5" />
+        </button>
       </div>
       <div className="flex-1 overflow-y-auto p-4">
         {loading && <div className="flex items-center justify-center py-12"><div className="h-5 w-5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" /></div>}
-        {!loading && content && (
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <MarkdownContent content={content} />
+        {!loading && imgUrl && (
+          <div className="flex items-center justify-center">
+            <img src={imgUrl} alt={file?.name || "Preview"} className="max-w-full max-h-[70vh] rounded-lg" />
           </div>
         )}
-        {!loading && !content && selectedFileId && (
+        {!loading && content && (
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <MarkdownContent>{content}</MarkdownContent>
+          </div>
+        )}
+        {!loading && !content && !imgUrl && selectedFileId && (
           <p className="text-sm text-muted-foreground text-center py-8">Unable to preview this file</p>
         )}
       </div>

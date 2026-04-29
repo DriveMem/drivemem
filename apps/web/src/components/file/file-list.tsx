@@ -1540,14 +1540,14 @@ export function FileList() {
 
       {/* File Detail Drawer Backdrop */}
       {drawerFileId && (
-        <div className="fixed inset-0 z-40 bg-black/20" onClick={() => closeDrawer()} />
+        <div className="fixed inset-0 z-40 bg-black/20 lg:hidden" onClick={() => closeDrawer()} />
       )}
       {/* File Detail Drawer */}
       {(() => {
         const drawerFile = rawFiles?.find((f: any) => f.id === drawerFileId)
         if (!drawerFile) return null
         return (
-          <div className="fixed inset-y-0 right-0 z-50 w-[520px] border-l bg-background shadow-soft-lg rounded-l-2xl flex flex-col">
+          <div className="fixed inset-y-0 right-0 z-50 w-[520px] border-l bg-background shadow-soft-lg rounded-l-2xl flex flex-col lg:hidden">
             <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="text-sm font-semibold">File Details</h3>
               <button onClick={() => closeDrawer()} className="h-8 w-8 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center">
