@@ -253,7 +253,7 @@ const STEPS = [
   {
     num: "2",
     title: "Just work normally",
-    desc: "MCP syncs knowledge in real time. Claude Code Hooks capture session insights automatically. No manual saving.",
+    desc: "Your agents save what matters as they work. MCP syncs knowledge in real time. Claude Code Hooks capture session insights automatically.",
   },
   {
     num: "3",
@@ -330,18 +330,17 @@ export default function LandingPage() {
               <Link
                 href="/signup"
                 onClick={() => trackEvent("signup_click", { source: "hero" })}
-                className="px-6 py-2.5 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors shadow-brand-sm hover:shadow-brand-md"
+                className="w-full sm:w-auto px-6 py-2.5 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors shadow-brand-sm hover:shadow-brand-md text-center"
               >
                 Try It Free →
               </Link>
-              <Link
-                href="/download"
-                onClick={() => trackEvent("desktop_download", { source: "hero" })}
-                className="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all flex items-center gap-2"
+              <a
+                href="#how-it-works"
+                onClick={() => trackEvent("see_how_it_works", { source: "hero" })}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Download Desktop
-              </Link>
+                ↓ See How It Works
+              </a>
 
             </div>
 
@@ -370,6 +369,76 @@ export default function LandingPage() {
         <div className="mt-16 md:mt-20">
           <FadeIn delay={400}>
             <ProductPreview />
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ===== How it Works (moved up per spec) ===== */}
+      <section id="how-it-works" className="py-20 md:py-28 bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-6">
+          <FadeIn>
+            <div className="text-center mb-16">
+              <p className="text-sm font-medium text-brand-500 mb-3">How it works</p>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
+                Three steps to agent memory
+              </h2>
+            </div>
+          </FadeIn>
+
+          <div className="relative">
+            <div className="hidden md:block absolute top-10 left-[16%] right-[16%] h-px bg-gray-200" />
+            <div className="grid md:grid-cols-3 gap-12 md:gap-8">
+              {STEPS.map((step, i) => (
+                <FadeIn key={step.num} delay={i * 120}>
+                  <div className="relative text-center">
+                    <div className="w-20 h-20 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center mx-auto mb-6 relative z-10 shadow-soft">
+                      <span className="text-2xl font-bold text-brand-500">{step.num}</span>
+                    </div>
+                    <h3 className="text-title font-semibold text-gray-900 mb-2">{step.title}</h3>
+                    <p className="text-gray-500 text-body leading-relaxed max-w-xs mx-auto">
+                      {step.desc}
+                    </p>
+                  </div>
+                </FadeIn>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA after How it Works */}
+          <FadeIn delay={400}>
+            <div className="text-center mt-12">
+              <Link
+                href="/signup"
+                onClick={() => trackEvent("signup_click", { source: "how_it_works" })}
+                className="inline-flex px-8 py-3 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors shadow-brand-sm hover:shadow-brand-md"
+              >
+                Try it free →
+              </Link>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ===== Tool Compatibility ===== */}
+      <section className="py-12 md:py-16 bg-[#FAFAFA] border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <FadeIn>
+            <p className="text-sm font-medium text-gray-400 mb-6">Works with the tools you already use</p>
+            <div className="flex items-center justify-center gap-8 md:gap-12 flex-wrap">
+              {[
+                { name: "Cursor", icon: "⚡" },
+                { name: "Claude Desktop", icon: "🤖" },
+                { name: "ChatGPT", icon: "💬" },
+                { name: "VS Code", icon: "📝" },
+                { name: "Windsurf", icon: "🏄" },
+              ].map((tool) => (
+                <div key={tool.name} className="flex flex-col items-center gap-2">
+                  <span className="text-2xl">{tool.icon}</span>
+                  <span className="text-xs text-gray-500 font-medium">{tool.name}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray-400 mt-4">Any MCP-compatible client works out of the box</p>
           </FadeIn>
         </div>
       </section>
@@ -588,40 +657,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===== How it Works ===== */}
-      <section id="how-it-works" className="py-24 md:py-32 bg-white">
-        <div className="max-w-5xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-16">
-              <p className="text-sm font-medium text-brand-500 mb-3">How it works</p>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
-                Three steps to agent memory
-              </h2>
-            </div>
-          </FadeIn>
-
-          <div className="relative">
-            {/* Connecting line */}
-            <div className="hidden md:block absolute top-10 left-[16%] right-[16%] h-px bg-gray-200" />
-
-            <div className="grid md:grid-cols-3 gap-12 md:gap-8">
-              {STEPS.map((step, i) => (
-                <FadeIn key={step.num} delay={i * 120}>
-                  <div className="relative text-center">
-                    <div className="w-20 h-20 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center mx-auto mb-6 relative z-10 shadow-soft">
-                      <span className="text-2xl font-bold text-brand-500">{step.num}</span>
-                    </div>
-                    <h3 className="text-title font-semibold text-gray-900 mb-2">{step.title}</h3>
-                    <p className="text-gray-500 text-body leading-relaxed max-w-xs mx-auto">
-                      {step.desc}
-                    </p>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ===== Social Proof / Testimonials ===== */}
       <section className="py-20 md:py-28 bg-white">
