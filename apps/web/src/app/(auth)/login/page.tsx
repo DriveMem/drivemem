@@ -70,7 +70,7 @@ function LoginForm() {
         <p className="mt-2 text-sm text-zinc-400">Memory for your AI agents</p>
       </div>
 
-      <h2 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Sign in</h2>
+      <h2 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Welcome back</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>

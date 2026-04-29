@@ -114,7 +114,7 @@ export default function SignupPage() {
         Join 1,000+ developers · Open Source · 1,000+ files processed
       </p>
 
-      <h2 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Create account</h2>
+      <h2 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Get started</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
