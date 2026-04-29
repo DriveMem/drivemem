@@ -280,6 +280,11 @@ function getDrawerFileType(name: string, mimeType?: string): string {
   if (ext === "txt") return "txt"
   if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "image"
   if (mimeType?.startsWith("image/")) return "image"
+  // Fallback: check mimeType for text-based files without recognized extension
+  if (mimeType === "text/markdown" || mimeType === "text/x-markdown") return "md"
+  if (mimeType === "text/plain" || mimeType?.startsWith("text/")) return "txt"
+  // Auto-notes and harvested files are always markdown-compatible
+  if (name?.endsWith(".md")) return "md"
   return "other"
 }
 
