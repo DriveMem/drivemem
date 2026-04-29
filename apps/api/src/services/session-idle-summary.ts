@@ -13,6 +13,7 @@ import { eq, and } from 'drizzle-orm';
 import { uploadObject } from './s3.service.js';
 import { randomUUID } from 'crypto';
 import { logActivity } from './activity-logger.js';
+import { generateAutoNoteTitle } from '../utils/auto-note-title.js';
 
 const IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 const MIN_TOOL_CALLS = 3;
@@ -126,8 +127,9 @@ ${historyLines.join('\n')}`;
     if (!result || result.trim().toUpperCase() === 'SKIP') return;
 
     // Store as a note in the knowledge base
-    const title = `Session Summary — ${state.agentName || 'unknown'} (${new Date().toISOString().slice(0, 10)})`;
-    const mdContent = `# ${title}\n\n${result}\n\n---\n_Auto-generated from ${state.toolCalls.length} tool calls. Trigger: ${trigger}._`;
+    const displayTitle = generateAutoNoteTitle(result);
+    const mdTitle = `Session Summary — ${state.agentName || 'unknown'} (${new Date().toISOString().slice(0, 10)})`;
+    const mdContent = `# ${mdTitle}\n\n${result}\n\n---\n_Auto-generated from ${state.toolCalls.length} tool calls. Trigger: ${trigger}._`;
 
     const fileId = randomUUID();
     const filename = `session-summary-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.md`;
@@ -138,7 +140,7 @@ ${historyLines.join('\n')}`;
 
     await db.insert(schema.files).values({
       id: fileId,
-      name: filename,
+      name: displayTitle,
       originalName: filename,
       mimeType: 'text/markdown',
       size: buffer.length,

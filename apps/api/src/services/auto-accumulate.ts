@@ -14,6 +14,7 @@ import * as schema from '../db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { Queue } from 'bullmq';
+import { generateAutoNoteTitle } from '../utils/auto-note-title.js';
 
 // --- Rate limiting: per-user daily cap ---
 const dailyCounters = new Map<string, { date: string; count: number }>();
@@ -84,7 +85,7 @@ async function isDuplicate(userId: string, insight: string): Promise<boolean> {
 
 // --- Store logic (mirrors aidrive_store in create-server.ts) ---
 async function storeInsight(userId: string, insight: string): Promise<void> {
-  const title = insight.slice(0, 50).replace(/\n/g, ' ');
+  const title = generateAutoNoteTitle(insight);
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const filename = `auto-${timestamp}.md`;
   const mdContent = `# ${title}\n\n${insight}\n\n---\n_Auto-accumulated: ${new Date().toLocaleString('zh-CN')}_`;
@@ -97,7 +98,7 @@ async function storeInsight(userId: string, insight: string): Promise<void> {
 
   await db.insert(schema.files).values({
     id: fileId,
-    name: filename,
+    name: title,
     originalName: filename,
     mimeType: 'text/markdown',
     size: buffer.length,
