@@ -157,6 +157,7 @@ export default async function onboardingRoutes(fastify: FastifyInstance) {
           userId,
           s3Key,
           createdAt,
+          source: 'sample',
         });
 
         await queue.add('parse', { fileId, userId, s3Key, mimeType: demo.mimeType });

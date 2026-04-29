@@ -131,6 +131,7 @@ export async function autoCapture(
       userId,
       s3Key,
       folderId: options?.projectId || null,
+      source: 'auto-note',
     });
 
     // Queue for parsing/embedding

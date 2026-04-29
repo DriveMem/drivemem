@@ -66,6 +66,7 @@ export const files = pgTable('files', {
   lastAccessedAt: timestamp('last_accessed_at', { withTimezone: true }),
   staleScore: real('stale_score').notNull().default(0),
   isSample: boolean('is_sample').notNull().default(false),
+  source: varchar('source', { length: 50 }).notNull().default('upload'),
 });
 
 // --- Conversation scope enum ---

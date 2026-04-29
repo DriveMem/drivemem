@@ -529,6 +529,7 @@ When using knowledge base content, mention the source file name.
           await db.insert(schema.files).values({
             id: fileId, name: filename, originalName: filename,
             mimeType, size: buffer.length, status: 'parsing', userId, s3Key,
+            source: 'chat-store',
           });
 
           const { Queue } = await import('bullmq');
@@ -562,6 +563,7 @@ When using knowledge base content, mention the source file name.
           await db.insert(schema.files).values({
             id: fileId, name: title, originalName: filename,
             mimeType: 'text/markdown', size: buffer.length, status: 'parsing', userId, s3Key,
+            source: 'chat-store',
             ...(detectedProjectId ? { folderId: detectedProjectId } : {}),
           });
 
@@ -631,6 +633,7 @@ When using knowledge base content, mention the source file name.
           await db.insert(schema.files).values({
             id: fileId, name: title, originalName: filename,
             mimeType: 'text/markdown', size: buffer.length, status: 'parsing', userId, s3Key,
+            source: 'auto-note',
           });
 
           const { Queue } = await import('bullmq');
@@ -937,6 +940,7 @@ ${insightsSection}
           await db.insert(schema.files).values({
             id: harvestFileId, name: `Harvest: ${summary.slice(0, 40)}`, originalName: filename,
             mimeType: 'text/markdown', size: buffer.length, status: 'parsing', userId, s3Key,
+            source: 'harvest',
             ...(detectedProjectId ? { folderId: detectedProjectId } : {}),
           });
 

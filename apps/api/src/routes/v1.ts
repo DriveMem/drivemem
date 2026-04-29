@@ -514,6 +514,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
       userId,
       s3Key,
       previousVersionId,
+      source: 'upload',
     });
 
     // Update storage
@@ -644,6 +645,7 @@ export default async function v1Routes(fastify: FastifyInstance) {
       mimeType: 'text/markdown', size: buffer.length,
       status: 'parsing', userId, s3Key,
       folderId: detection.projectId,
+      source: 'chat-store',
     });
     
     const { Queue } = await import('bullmq');

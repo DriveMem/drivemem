@@ -145,6 +145,7 @@ ${historyLines.join('\n')}`;
       status: 'parsing',
       userId: state.userId,
       s3Key,
+      source: 'auto-note',
     });
 
     // Enqueue for parsing/indexing

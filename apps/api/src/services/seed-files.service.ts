@@ -137,6 +137,7 @@ export async function seedFilesForUser(userId: string): Promise<void> {
         status: 'parsing',
         userId,
         s3Key,
+        source: 'sample',
       });
 
       // Trigger parse worker for embedding generation

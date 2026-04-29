@@ -118,6 +118,7 @@ export async function seedDemoProject(userId: string): Promise<void> {
         s3Key,
         createdAt,
         isSample: true,
+        source: 'sample',
       });
 
       await fileParseQueue.add(

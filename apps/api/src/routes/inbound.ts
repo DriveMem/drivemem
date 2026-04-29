@@ -73,6 +73,7 @@ export default async function inboundRoutes(fastify: FastifyInstance) {
       userId,
       s3Key,
       folderId: detection.projectId,
+      source: 'chat-store',
     });
 
     // Enqueue parse job

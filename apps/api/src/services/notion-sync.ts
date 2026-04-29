@@ -145,6 +145,7 @@ export async function syncNotionPages(integration: Integration): Promise<SyncRes
         status: 'parsing',
         userId: integration.userId,
         s3Key,
+        source: 'connector',
       });
 
       await parseQueue.add('parse', { fileId, userId: integration.userId, s3Key, mimeType: 'text/markdown' });

@@ -104,6 +104,7 @@ async function storeInsight(userId: string, insight: string): Promise<void> {
     status: 'parsing',
     userId,
     s3Key,
+    source: 'auto-note',
   });
 
   // Tag with auto-accumulated
