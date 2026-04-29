@@ -18,14 +18,14 @@ export function WelcomeHero({ onUpload }: WelcomeHeroProps) {
       </div>
 
       <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
-        Welcome to AI Drive
+        Welcome to DriveMem
       </h1>
       <p className="text-lg text-primary/80 font-medium mb-1">
         Your AI&apos;s Memory
       </p>
       <p className="text-sm text-muted-foreground max-w-md mb-8">
-        Upload your first file or connect an AI tool to get started.
-        AI Drive remembers everything so your AI tools don&apos;t have to.
+        Upload a file and ask AI about it — or connect Cursor / Claude in 30 seconds
+        with <code className="text-xs bg-muted px-1.5 py-0.5 rounded">npx drivemem setup</code>
       </p>
 
       {/* CTAs */}

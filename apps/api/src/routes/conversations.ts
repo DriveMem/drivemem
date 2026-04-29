@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { eq, and, desc, asc, sql, isNotNull, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import { conversations, messages, users, files } from '../db/schema.js';
+import { conversations, messages, users, files, apiKeys, nudgeState, apiActivityLogs } from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
 import { AppError, ErrorCodes } from '../lib/errors.js';
 import { searchSimilar } from '../services/vector.service.js';
@@ -25,34 +25,58 @@ const messageSchema = z.object({
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function conversationRoutes(app: FastifyInstance) {
-  // GET /suggestions — AI 推荐问题
+  // GET /suggestions — AI 推荐问题 (Phase 2: user segmentation + personalized)
   app.get('/suggestions', { preHandler: [requireAuth] }, async (request, reply) => {
     const userId = request.user!.id;
 
-    const recentFiles = await db.select({ name: files.name, summary: files.summary })
-      .from(files)
-      .where(and(eq(files.userId, userId), isNotNull(files.summary)))
-      .orderBy(desc(files.createdAt))
-      .limit(3);
+    // --- User type detection ---
+    const [apiKeyCount, nudge, apiUploadedCount, recentFiles, allFiles] = await Promise.all([
+      db.select({ count: sql<number>`count(*)::int` }).from(apiKeys).where(eq(apiKeys.userId, userId)).then(r => r[0]?.count ?? 0),
+      db.select({ mcpConnectAt: nudgeState.mcpConnectAt }).from(nudgeState).where(eq(nudgeState.userId, userId)).then(r => r[0]),
+      db.select({ count: sql<number>`count(*)::int` }).from(apiActivityLogs).where(eq(apiActivityLogs.userId, userId)).then(r => r[0]?.count ?? 0),
+      db.select({ name: files.name, summary: files.summary }).from(files).where(and(eq(files.userId, userId), isNotNull(files.summary))).orderBy(desc(files.createdAt)).limit(5),
+      db.select({ name: files.name }).from(files).where(eq(files.userId, userId)).limit(10),
+    ]);
 
-    if (recentFiles.length === 0) {
-      const allFiles = await db.select({ name: files.name }).from(files).where(eq(files.userId, userId)).limit(10);
+    const hasMcp = !!(nudge?.mcpConnectAt);
+    const hasApiKeys = apiKeyCount > 0;
+    const hasApiActivity = apiUploadedCount > 0;
+    const isDeveloper = hasMcp || hasApiKeys || hasApiActivity;
+    const userType: 'developer' | 'knowledge_manager' | 'new' = recentFiles.length === 0 && allFiles.length === 0
+      ? 'new'
+      : isDeveloper ? 'developer' : 'knowledge_manager';
+
+    // --- New user: role-appropriate onboarding ---
+    if (userType === 'new') {
       const hasChinese = allFiles.some(f => /[\u4e00-\u9fff]/.test(f.name));
-      return reply.send({ suggestions: hasChinese
+      if (isDeveloper) {
+        return reply.send({ userType, suggestions: hasChinese
+          ? ['通过 MCP 同步你的代码笔记', '上传技术文档开始提问', '试试用 API 自动存储知识']
+          : ['Sync your code notes via MCP', 'Upload tech docs to start asking', 'Try storing knowledge via API']
+        });
+      }
+      return reply.send({ userType, suggestions: hasChinese
         ? ['上传文件即可开始', '试试拖拽文件到页面', '支持 PDF、Word、TXT、Markdown']
         : ['Upload a file to get started', 'Try dragging files onto the page', 'Supports PDF, Word, TXT, Markdown']
       });
     }
 
+    // --- Has files: generate personalized suggestions ---
     const fileInfo = recentFiles.map(f => `${f.name}: ${f.summary?.substring(0, 100)}`).join('\n');
-    const prompt = `The user has these files:\n${fileInfo}\n\nGenerate 3 questions the user might want to ask about their files. Generate questions in the same language as the majority of file names above. Requirements: each question under 60 characters, casual language, one per line, no numbering.`;
+
+    let prompt: string;
+    if (userType === 'developer') {
+      prompt = `The user is a developer who uses AI Drive via MCP/API integrations. They have these files:\n${fileInfo}\n\nGenerate 3 questions a developer would ask about their knowledge base — e.g. cross-referencing docs, summarizing technical decisions, finding code-related notes. Generate questions in the same language as the majority of file names above. Requirements: each question under 60 characters, casual language, one per line, no numbering.`;
+    } else {
+      prompt = `The user is a knowledge manager who manually uploads documents. They have these files:\n${fileInfo}\n\nGenerate 3 questions about organizing, comparing, or extracting insights from their documents. Generate questions in the same language as the majority of file names above. Requirements: each question under 60 characters, casual language, one per line, no numbering.`;
+    }
 
     try {
       const result = await chat([{ role: 'user', content: prompt }]);
       const suggestions = result.split('\n').filter((s: string) => s.trim()).slice(0, 3);
-      return reply.send({ suggestions });
+      return reply.send({ userType, suggestions });
     } catch {
-      return reply.send({ suggestions: recentFiles.map(f => `Summarize the key points of ${f.name}`) });
+      return reply.send({ userType, suggestions: recentFiles.map(f => `Summarize the key points of ${f.name}`) });
     }
   });
 

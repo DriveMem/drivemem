@@ -539,9 +539,13 @@ export default function HomePage() {
         <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-primary/5 border border-primary/10 mb-6">
           <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
           <span className="text-body text-muted-foreground">
-            DriveMem is active
-            {fileCount > 0 && <> · {fileCount} {fileCount === 1 ? "file" : "files"}</>}
-            {insightCount > 0 ? <> · {insightCount} {insightCount === 1 ? "insight" : "insights"}</> : fileCount > 0 ? <> · Upload more files to discover insights</> : null}
+            {fileCount === 0
+              ? "Ready to go — upload your first file or try asking a question"
+              : <>DriveMem is active
+                {fileCount > 0 && <> · {fileCount} {fileCount === 1 ? "file" : "files"}</>}
+                {insightCount > 0 ? <> · {insightCount} {insightCount === 1 ? "insight" : "insights"}</> : fileCount > 0 ? <> · Upload more files to discover insights</> : null}
+              </>
+            }
           </span>
         </div>
 
@@ -593,8 +597,8 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Zero-config onboarding cards — show when user has few files */}
-        {fileCount <= 5 && (
+        {/* Zero-config onboarding cards — show when user has 1-5 files (skip Phase 1 to avoid duplication with WelcomeHero) */}
+        {fileCount >= 1 && fileCount <= 5 && (
           <div className="space-y-4 mb-8">
             {/* Try asking */}
             <div className="rounded-2xl border shadow-soft p-6">
@@ -783,8 +787,8 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Dashboard Empty State — show when no files */}
-        {projectCount === 0 && fileCount === 0 && (
+        {/* Dashboard Empty State — show when no files AND welcome hero is not shown (avoid duplication) */}
+        {projectCount === 0 && fileCount === 0 && !blockVis.welcomeHero && (
           <DashboardEmptyState onUpload={() => setShowUpload(true)} />
         )}
 
