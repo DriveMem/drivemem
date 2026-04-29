@@ -3,8 +3,8 @@
 import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useState } from 'react'
-import { toast } from 'sonner'
 import { classifyError } from '@/components/ui/network-error'
+import { showErrorToast } from '@/components/ui/error-toast'
 
 let lastQueryErrorToastAt = 0
 
@@ -20,7 +20,7 @@ function handleGlobalError(error: unknown) {
     server: "Service temporarily unavailable, please try again later",
     timeout: "Request timed out. Please check your network and try again",
   }
-  toast.error(messages[type] || "Request failed, please try again")
+  showErrorToast(messages[type] || "Request failed, please try again")
 }
 
 function makeQueryClient() {

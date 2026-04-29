@@ -22,8 +22,8 @@ async function showNetworkToast(msg: string) {
   if (now - lastNetworkToastAt < 3000) return // no repeat within 3s
   lastNetworkToastAt = now
   if (typeof window === "undefined") return
-  const { toast } = await import("sonner")
-  toast.error(msg)
+  const { showErrorToast } = await import("@/components/ui/error-toast")
+  showErrorToast(msg)
 }
 
 export interface ApiFetchOptions extends RequestInit {
@@ -75,8 +75,8 @@ export async function apiFetch(path: string, options?: ApiFetchOptions) {
     const errMsg = errBody?.error?.message || res.statusText
 
     if (res.status === 403 && errBody?.error?.code === "DEMO_READONLY") {
-      const { toast } = await import("sonner")
-      toast.error("Demo account is read-only. Sign up for full access.")
+      const { showErrorToast } = await import("@/components/ui/error-toast")
+      showErrorToast("Demo account is read-only. Sign up for full access.", { level: "warning" })
     }
 
     // 5xx server error → toast (unless silent)
