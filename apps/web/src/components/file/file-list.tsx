@@ -287,7 +287,7 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
           const textRes = await fetch(res.previewUrl)
           if (!textRes.ok) throw new Error("fetch failed")
           const text = await textRes.text()
-          if (!cancelled) setContent(text.length > 5000 ? text.slice(0, 5000) + "\n\n…（Contentis too long. Please click full preview to view)" : text)
+          if (!cancelled) setContent(text.length > 50000 ? text.slice(0, 50000) + "\n\n…（Content is too long. Click full preview to view the rest)" : text)
         }
       } catch {
         if (!cancelled) setError(true)
@@ -364,9 +364,9 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
 
   if ((fileType === "md" || fileType === "txt") && content !== null) {
     return (
-      <div className="rounded-lg border bg-background p-3 max-h-[300px] overflow-auto">
+      <div className="rounded-lg border bg-background p-3 overflow-auto">
         {fileType === "md" ? (
-          <div className="prose prose-sm dark:prose-invert max-w-none text-xs">
+          <div className="prose prose-sm dark:prose-invert max-w-none">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
           </div>
         ) : (
@@ -1501,62 +1501,69 @@ export function FileList() {
         const drawerFile = rawFiles?.find((f: any) => f.id === drawerFileId)
         if (!drawerFile) return null
         return (
-          <div className="fixed inset-y-0 right-0 z-50 w-[400px] border-l bg-background shadow-soft-lg rounded-l-2xl">
+          <div className="fixed inset-y-0 right-0 z-50 w-[520px] border-l bg-background shadow-soft-lg rounded-l-2xl flex flex-col">
             <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="text-sm font-semibold">File Details</h3>
               <button onClick={() => closeDrawer()} className="h-8 w-8 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center">
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="overflow-auto p-4 space-y-4" style={{ height: "calc(100vh - 56px)" }}>
-              <div className="flex justify-center py-4">
-                <TypeIcon type={drawerFile.type} name={drawerFile.name} className="h-16 w-16" />
-              </div>
-              <h2 className="text-lg font-semibold text-center truncate" title={displayFileName(drawerFile.name, drawerFile.summary)}>{displayFileName(drawerFile.name, drawerFile.summary)}</h2>
-              <div className="flex justify-center">
+            {/* File name + meta info */}
+            <div className="px-4 pt-3 pb-2 border-b border-zinc-200 dark:border-zinc-700">
+              <h2 className="text-base font-semibold truncate text-left" title={displayFileName(drawerFile.name, drawerFile.summary)}>{displayFileName(drawerFile.name, drawerFile.summary)}</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">{fmtSize(drawerFile.size)} · {formatFileType(drawerFile.mimeType, drawerFile.name)} · {drawerFile.status === "indexed" ? "Indexed" : drawerFile.status}</p>
+            </div>
+            {/* Main content area — inline preview */}
+            <div className="flex-1 overflow-auto p-4">
+              <DrawerInlinePreview fileId={drawerFile.id} fileName={drawerFile.name} mimeType={drawerFile.mimeType} />
+            </div>
+            {/* Collapsible details section */}
+            <div className="border-t border-zinc-200 dark:border-zinc-700 px-4 py-3 space-y-2 max-h-[35vh] overflow-auto">
+              {drawerFile.summary && (
+                <details className="group">
+                  <summary className="text-xs font-medium text-zinc-500 dark:text-zinc-400 cursor-pointer select-none hover:text-foreground transition">🧠 AI Summary</summary>
+                  <p className="text-sm mt-1.5 pl-1">{drawerFile.summary}</p>
+                </details>
+              )}
+              <details className="group">
+                <summary className="text-xs font-medium text-zinc-500 dark:text-zinc-400 cursor-pointer select-none hover:text-foreground transition">🏷️ Tags</summary>
+                <div className="mt-1.5">
+                  <DrawerTagSection fileId={drawerFile.id} drawerTags={drawerTags} setDrawerTags={setDrawerTags} />
+                </div>
+              </details>
+              <details className="group">
+                <summary className="text-xs font-medium text-zinc-500 dark:text-zinc-400 cursor-pointer select-none hover:text-foreground transition">📋 File info</summary>
+                <div className="mt-1.5 space-y-1.5 pl-1">
+                  <div className="flex justify-between text-sm"><span className="text-zinc-500 dark:text-zinc-400">Size</span><span>{fmtSize(drawerFile.size)}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-zinc-500 dark:text-zinc-400">Type</span><span>{formatFileType(drawerFile.mimeType, drawerFile.name)}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-zinc-500 dark:text-zinc-400">Upload time</span><span>{new Date(drawerFile.createdAt).toLocaleDateString("zh-CN")}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-zinc-500 dark:text-zinc-400">Status</span><span>{drawerFile.status === "indexed" ? "✅ Indexed" : drawerFile.status}</span></div>
+                </div>
+              </details>
+              <div className="flex justify-center pt-1">
                 <KnowledgeFeedback fileId={drawerFileId!} />
               </div>
-              {drawerFile.summary && (
-                <div className="rounded-lg border p-3">
-                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">🧠 AI Summary</p>
-                  <p className="text-sm">{drawerFile.summary}</p>
-                </div>
-              )}
-              {/* Tags management */}
-              <DrawerTagSection fileId={drawerFile.id} drawerTags={drawerTags} setDrawerTags={setDrawerTags} />
-              <div className="rounded-lg border p-3 space-y-2">
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">📋 File info</p>
-                <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500 dark:text-zinc-400">Size</span>
-                  <span>{fmtSize(drawerFile.size)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500 dark:text-zinc-400">Type</span>
-                  <span>{formatFileType(drawerFile.mimeType, drawerFile.name)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500 dark:text-zinc-400">Upload time</span>
-                  <span>{new Date(drawerFile.createdAt).toLocaleDateString("zh-CN")}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500 dark:text-zinc-400">Status</span>
-                  <span>{drawerFile.status === "indexed" ? "✅ Indexed" : drawerFile.status}</span>
-                </div>
-              </div>
+            </div>
+            {/* Bottom action buttons */}
+            <div className="border-t border-zinc-200 dark:border-zinc-700 px-4 py-3 flex items-center gap-2">
               <Link
                 href={`/chat?fileIds=${drawerFile.id}`}
-                className="flex items-center justify-center gap-2 w-full rounded-lg bg-brand-500 hover:bg-brand-600 text-white py-2.5 text-sm transition"
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white py-2 text-sm transition"
               >
-                💬 Ask AI about this file
+                💬 Ask AI
               </Link>
-              {/* Inline Preview */}
-              <DrawerInlinePreview fileId={drawerFile.id} fileName={drawerFile.name} mimeType={drawerFile.mimeType} />
               <Link
                 href={`/files/${drawerFile.id}/preview`}
-                className="flex items-center justify-center gap-2 w-full rounded-lg border hover:bg-zinc-100 dark:hover:bg-zinc-800 py-2.5 text-sm transition"
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border hover:bg-zinc-100 dark:hover:bg-zinc-800 py-2 text-sm transition"
               >
-                👁️ View full preview
+                👁️ Full preview
               </Link>
+              <button
+                onClick={() => handleDownload(drawerFile.id)}
+                className="flex items-center justify-center gap-1.5 rounded-lg border hover:bg-zinc-100 dark:hover:bg-zinc-800 py-2 px-3 text-sm transition"
+              >
+                <Download className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
         )
