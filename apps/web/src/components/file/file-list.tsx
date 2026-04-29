@@ -1124,7 +1124,7 @@ export function FileList() {
         </div>
       )}
       {sortedFilteredFiles.length === 0 ? null : viewMode === "list" ? (
-      <div ref={parentRef} className="flex-1 overflow-auto">
+      <div ref={parentRef} className={`flex-1 overflow-auto ${selected.size > 0 ? 'pb-20' : ''}`}>
         <div style={{ height: virt.getTotalSize() + "px", width: "100%", position: "relative" }}>
           {virt.getVirtualItems().map((row) => {
             const file = sortedFilteredFiles[row.index]
