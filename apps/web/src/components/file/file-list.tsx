@@ -296,7 +296,6 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    if (fileType === "other") return
     let cancelled = false
     setLoading(true)
     setError(false)
@@ -324,7 +323,7 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
     return () => { cancelled = true }
   }, [fileId, fileType])
 
-  if (fileType === "other") {
+  if (fileType === "other" && !content && !loading) {
     return (
       <div className="rounded-lg border p-4 text-center text-sm text-zinc-500 dark:text-zinc-400 space-y-3">
         <p>Preview not supported, please download to view</p>
@@ -388,7 +387,7 @@ function DrawerInlinePreview({ fileId, fileName, mimeType }: { fileId: string; f
     )
   }
 
-  if ((fileType === "md" || fileType === "txt") && content !== null) {
+  if ((fileType === "md" || fileType === "txt" || fileType === "other") && content !== null) {
     return (
       <div className="rounded-lg border bg-background p-3 overflow-auto">
         {fileType === "md" ? (
