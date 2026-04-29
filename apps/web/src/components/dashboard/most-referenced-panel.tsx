@@ -18,7 +18,12 @@ export function MostReferencedPanel() {
 
   useEffect(() => {
     apiFetch("/api/citations/top")
-      .then((res: any) => setFiles(res.topReferenced || []))
+      .then((res: any) => {
+        const filtered = (res.topReferenced || []).filter((f: CitedFile) =>
+          !/(e2e|test|sample|demo|中文测试)/i.test(f.fileName)
+        )
+        setFiles(filtered)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
