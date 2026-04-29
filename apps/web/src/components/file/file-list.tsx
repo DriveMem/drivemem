@@ -51,8 +51,13 @@ function SourceBadge({ source }: { source?: string | null }) {
 }
 
 const SYSTEM_TAGS = new Set(['test', 'report', 'auto-generated', 'ai-note', 'session-summary', 'imported', 'mcp-stored', 'conversation', 'knowledge'])
+const SYSTEM_TAG_PREFIXES = ['type:', 'source:', 'format:', 'lang:', 'mime:', 'ext:', 'status:']
 function isSystemTag(tag: { isSystem?: boolean; name: string }): boolean {
-  return tag.isSystem === true || SYSTEM_TAGS.has(tag.name.toLowerCase())
+  if (tag.isSystem === true) return true
+  const lower = tag.name.toLowerCase()
+  if (SYSTEM_TAGS.has(lower)) return true
+  if (SYSTEM_TAG_PREFIXES.some(prefix => lower.startsWith(prefix))) return true
+  return false
 }
 
 function fileSubtitle(name: string, summary?: string | null, createdAt?: string): string | null {
@@ -1142,7 +1147,7 @@ export function FileList() {
                   className="shrink-0"
                 />
                 <TypeIcon type={file.type} name={file.name} />
-                <div className="truncate flex-1 min-w-[140px] sm:min-w-[280px]">
+                <div className="truncate flex-1 min-w-[200px] sm:min-w-[360px]">
                   <span className="truncate text-sm flex items-center gap-1.5" title={displayFileName(file.name, file.summary, disambiguators.get(file.id))}>{displayFileName(file.name, file.summary, disambiguators.get(file.id))}<SourceBadge source={file.source} /></span>
                   {fileSubtitle(file.name, file.summary, file.createdAt) && <span className="block text-xs text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name, file.summary, file.createdAt)}</span>}
                 </div>
@@ -1166,7 +1171,7 @@ export function FileList() {
                   const userTags2 = (file.tags || []).filter((t: any) => !isSystemTag(t))
                   const sysTags2 = (file.tags || []).filter((t: any) => isSystemTag(t))
                   // On mobile (< sm), show max 1 tag; on desktop show 2
-                  const maxVisibleTags = typeof window !== 'undefined' && window.innerWidth < 640 ? 1 : 2
+                  const maxVisibleTags = typeof window !== 'undefined' && window.innerWidth < 640 ? 2 : 3
                   return (
                     <>
                       {userTags2.slice(0, maxVisibleTags).map((tag: any) => (
