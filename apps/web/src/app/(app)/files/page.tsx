@@ -12,8 +12,10 @@ import { useLayoutStore } from "@/stores/layout-store"
 import { List, Network, AlertTriangle, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { KnowledgeSkeleton } from "@/components/ui/skeleton-loader"
-import { useFiles } from "@/hooks/use-files"
+import { useFiles, useFile } from "@/hooks/use-files"
 import { apiFetch } from "@/lib/api"
+
+const MarkdownContent = dynamic(() => import("react-markdown").then(m => m.default), { ssr: false, loading: () => <div className="animate-pulse h-32 bg-muted rounded" /> })
 
 const GraphEmbed = dynamic(() => import("@/app/(app)/graph/page"), { ssr: false })
 
@@ -97,6 +99,29 @@ function KnowledgePageInner() {
           <p className="text-micro uppercase tracking-wider text-muted-foreground font-medium mb-2">Projects</p>
           <FolderTree />
         </div>
+        <div className="border-t border-border p-3">
+          <p className="text-micro uppercase tracking-wider text-muted-foreground font-medium mb-2">Source</p>
+          <div className="space-y-0.5">
+            {[
+              { key: null, label: 'All Files' },
+              { key: 'files', label: 'My Files' },
+              { key: 'agent', label: 'Agent Notes' },
+              { key: 'insights', label: 'Insights' },
+              { key: 'synced', label: 'Synced' },
+            ].map(item => (
+              <button
+                key={item.key || 'all'}
+                onClick={() => setActiveSourceFilter(item.key)}
+                className={cn(
+                  "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-xs transition-colors",
+                  activeSourceFilter === item.key ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
         {tags.length > 0 && (
           <div className="border-t border-border p-3">
             <p className="text-micro uppercase tracking-wider text-muted-foreground font-medium mb-2">Tags</p>
@@ -130,24 +155,6 @@ function KnowledgePageInner() {
         <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-border min-w-0">
           <h1 className="text-body font-medium shrink-0">Knowledge</h1>
           <div className="flex items-center gap-2 min-w-0">
-            <div className="flex items-center gap-1 bg-muted rounded-md p-0.5 overflow-x-auto scrollbar-hide min-w-0">
-              {([
-                { key: null, label: 'All', mobileLabel: 'All' },
-                { key: 'files', label: '📄 Files', mobileLabel: '📄' },
-                { key: 'agent', label: '🤖 Agent', mobileLabel: '🤖' },
-                { key: 'insights', label: '💡 Insights', mobileLabel: '💡' },
-                { key: 'synced', label: '🔗 Synced', mobileLabel: '🔗' },
-              ] as const).map(({ key, label, mobileLabel }) => (
-                <button
-                  key={label}
-                  onClick={() => setActiveSourceFilter(key)}
-                  className={cn("px-2.5 py-1 text-caption rounded whitespace-nowrap shrink-0", activeSourceFilter === key ? "bg-background shadow-sm font-medium" : "text-muted-foreground")}
-                >
-                  <span className="hidden sm:inline">{label}</span>
-                  <span className="sm:hidden">{mobileLabel}</span>
-                </button>
-              ))}
-            </div>
             <div className="flex items-center gap-1 bg-muted rounded-md p-0.5 shrink-0">
             <button
               onClick={() => setView("list")}
@@ -168,6 +175,8 @@ function KnowledgePageInner() {
         </div>
 
         {/* Content */}
+        <div className="flex flex-1 min-h-0">
+        <div className="flex-1 min-w-0 flex flex-col">
         {filterStale ? (
           <div className="flex-1 min-h-0 overflow-y-auto">
             {/* Stale banner */}
@@ -223,6 +232,69 @@ function KnowledgePageInner() {
           <div className="flex-1 min-h-0">
             <GraphEmbed />
           </div>
+        )}
+        </div>
+        {/* Preview panel */}
+        <div className="hidden lg:flex w-[45%] border-l border-border flex-col">
+          <PreviewPanel />
+        </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PreviewPanel() {
+  const { selectedFileId } = useLayoutStore()
+  const { data: file } = useFile(selectedFileId || '')
+  const [content, setContent] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!selectedFileId) { setContent(null); return }
+    let cancelled = false
+    setLoading(true)
+    ;(async () => {
+      try {
+        const res = await apiFetch(`/api/files/${selectedFileId}/preview-url`) as { previewUrl: string }
+        if (cancelled) return
+        const textRes = await fetch(res.previewUrl)
+        if (!textRes.ok) throw new Error('fetch failed')
+        const text = await textRes.text()
+        if (!cancelled) setContent(text.length > 50000 ? text.slice(0, 50000) + '\n\n…' : text)
+      } catch {
+        if (!cancelled) setContent(null)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [selectedFileId])
+
+  if (!selectedFileId) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
+        <svg className="h-12 w-12 mb-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <p className="text-sm">Select a file to preview</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="px-4 py-3 border-b border-border">
+        <h3 className="text-sm font-semibold truncate">{file?.name || 'Loading...'}</h3>
+        {file && <p className="text-xs text-muted-foreground mt-0.5">{file.mimeType} · {file.size ? (file.size < 1024 ? file.size + ' B' : (file.size / 1024).toFixed(1) + ' KB') : ''}</p>}
+      </div>
+      <div className="flex-1 overflow-y-auto p-4">
+        {loading && <div className="flex items-center justify-center py-12"><div className="h-5 w-5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" /></div>}
+        {!loading && content && (
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <MarkdownContent content={content} />
+          </div>
+        )}
+        {!loading && !content && selectedFileId && (
+          <p className="text-sm text-muted-foreground text-center py-8">Unable to preview this file</p>
         )}
       </div>
     </div>
