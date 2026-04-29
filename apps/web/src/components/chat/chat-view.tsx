@@ -107,7 +107,7 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
 
       {/* Suggestion chips */}
       <div className="w-full max-w-lg mb-6">
-        <p className="text-xs font-medium text-muted-foreground mb-2 text-center">Try asking: </p>
+        <p className="text-xs font-medium text-muted-foreground mb-2 text-center">{suggestions?.some(s => /[\u4e00-\u9fff]/.test(s)) ? '试试问：' : 'Try asking:'} </p>
         <div className="flex flex-wrap justify-center gap-2">
           {chips.map((q, i) => (
             <button key={i} onClick={() => onSend(q)}

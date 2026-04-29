@@ -115,7 +115,7 @@ const worker = new Worker<ParseJobData>(
           userId,
           subtype: 'file_indexed',
           title: '✅ Ready',
-          message: `"${file?.name?.replace(/\.\w+$/, '') || 'File'}" is indexed — ask AI about it`,
+          message: `"${file?.name?.startsWith('auto-') ? (file?.summary?.slice(0, 50) || file?.originalName || file?.name)?.replace(/\.\w+$/, '') : (file?.originalName || file?.name)?.replace(/\.\w+$/, '') || 'File'}" is indexed — ask AI about it`,
         });
       } catch { /* non-blocking */ }
 
@@ -302,7 +302,7 @@ const worker = new Worker<ParseJobData>(
           await createNotificationDeduped({
             userId,
             type: 'knowledge_link_found',
-            title: '🔗 发现知识关联',
+            title: '🔗 Knowledge connections found',
             message: `AI found connections between "${file?.name}" and other files`,
           });
         }
