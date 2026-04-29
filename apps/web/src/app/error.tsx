@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, RefreshCw, Trash2 } from "lucide-react"
+import { FullPageError } from "@/components/ui/full-page-error"
 
 const RELOAD_KEY = "chunk-reload-count"
 const RELOAD_TS_KEY = "chunk-reload-ts"
@@ -75,7 +76,12 @@ async function clearCacheAndReload() {
   window.location.reload()
 }
 
-function ErrorFallbackUI() {
+function ErrorFallbackUI({ statusCode }: { statusCode?: number }) {
+  // Use FullPageError for 503 and other status codes
+  if (statusCode === 503) {
+    return <FullPageError statusCode={503} />
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background text-foreground p-6">
       <AlertTriangle className="h-12 w-12 text-amber-500" />
@@ -103,8 +109,17 @@ function ErrorFallbackUI() {
 export default function Error({ error }: { error: Error; reset: () => void }) {
   const [showManual, setShowManual] = useState(false)
   const [isChunkError, setIsChunkError] = useState(false)
+  const [statusCode, setStatusCode] = useState<number | undefined>(undefined)
 
   useEffect(() => {
+    // Detect status code from error
+    const msg = error?.message || ""
+    if (msg.includes("503") || msg.toLowerCase().includes("service unavailable")) {
+      setStatusCode(503)
+      setShowManual(true)
+      return
+    }
+
     if (isChunkLoadError(error)) {
       const count = getReloadCount()
       if (count < MAX_RELOADS) {
@@ -124,5 +139,5 @@ export default function Error({ error }: { error: Error; reset: () => void }) {
     return null
   }
 
-  return <ErrorFallbackUI />
+  return <ErrorFallbackUI statusCode={statusCode} />
 }

@@ -27,6 +27,8 @@ import { useConversation } from "@/hooks/use-conversations"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { NetworkError, classifyError } from "@/components/ui/network-error"
+import { InlineError, ChatTimeoutError } from "@/components/ui/inline-error"
+import { showErrorToast } from "@/components/ui/error-toast"
 
 type ScopeType = "all" | "folder" | "file"
 
@@ -155,6 +157,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
   const [followUpSuggestions, setFollowUpSuggestions] = useState<string[]>([])
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isTimeout, setIsTimeout] = useState(false)
   const lastUserMessageRef = useRef<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -191,6 +194,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
   const handleSend = useCallback(async (content: string) => {
     lastUserMessageRef.current = content
     setError(null)
+    setIsTimeout(false)
     setFollowUpSuggestions([])
     const isFirstMessage = messages.length === 0
     const userMsg: ChatMessage = { id: "u-" + Date.now(), role: "user", content, createdAt: new Date().toISOString() }
@@ -316,7 +320,13 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
       // Refresh conversation list (title may have been auto-generated)
       queryClient.invalidateQueries({ queryKey: ["conversations"] })
     } catch (err: any) {
-      setError(err.message || "Network error")
+      const msg = err.message || "Network error"
+      const isTimeoutErr = msg.toLowerCase().includes("timeout") || msg.toLowerCase().includes("aborted")
+      setIsTimeout(isTimeoutErr)
+      setError(msg)
+      if (!isTimeoutErr) {
+        showErrorToast(msg)
+      }
       setStreaming(undefined)
       setSending(false)
     }
@@ -477,12 +487,18 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
 
       {error && (
         <div className="px-4 py-2 border-b border-border">
-          <NetworkError
-            mode="inline"
-            type={classifyError(error)}
-            message={error}
-            onRetry={lastUserMessageRef.current ? () => { const msg = lastUserMessageRef.current; if (msg) handleSend(msg) } : undefined}
-          />
+          {isTimeout ? (
+            <ChatTimeoutError
+              onRetry={() => { const msg = lastUserMessageRef.current; if (msg) { setError(null); setIsTimeout(false); handleSend(msg) } }}
+              onCancel={() => { setError(null); setIsTimeout(false) }}
+            />
+          ) : (
+            <InlineError
+              message={error}
+              onRetry={lastUserMessageRef.current ? () => { const msg = lastUserMessageRef.current; if (msg) handleSend(msg) } : undefined}
+              onDismiss={() => setError(null)}
+            />
+          )}
         </div>
       )}
 
