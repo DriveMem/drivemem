@@ -167,6 +167,7 @@ export function ConversationList() {
                 ) : (
                   <p
                     className="truncate text-body font-medium"
+                    title={c.title || "New conversation"}
                     onDoubleClick={(e) => {
                       e.stopPropagation()
                       setEditingId(c.id)
