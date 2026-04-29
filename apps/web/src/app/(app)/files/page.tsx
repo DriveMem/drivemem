@@ -127,38 +127,41 @@ function KnowledgePageInner() {
       {/* Right panel — File List or Graph */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Top bar with view toggle */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-          <h1 className="text-body font-medium">Knowledge</h1>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+        <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-border min-w-0">
+          <h1 className="text-body font-medium shrink-0">Knowledge</h1>
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-1 bg-muted rounded-md p-0.5 overflow-x-auto scrollbar-hide min-w-0">
               {([
-                { key: null, label: 'All' },
-                { key: 'files', label: '📄 Files' },
-                { key: 'agent', label: '🤖 Agent' },
-                { key: 'insights', label: '💡 Insights' },
-                { key: 'synced', label: '🔗 Synced' },
-              ] as const).map(({ key, label }) => (
+                { key: null, label: 'All', mobileLabel: 'All' },
+                { key: 'files', label: '📄 Files', mobileLabel: '📄' },
+                { key: 'agent', label: '🤖 Agent', mobileLabel: '🤖' },
+                { key: 'insights', label: '💡 Insights', mobileLabel: '💡' },
+                { key: 'synced', label: '🔗 Synced', mobileLabel: '🔗' },
+              ] as const).map(({ key, label, mobileLabel }) => (
                 <button
                   key={label}
                   onClick={() => setActiveSourceFilter(key)}
-                  className={cn("px-2.5 py-1 text-caption rounded whitespace-nowrap", activeSourceFilter === key ? "bg-background shadow-sm font-medium" : "text-muted-foreground")}
+                  className={cn("px-2.5 py-1 text-caption rounded whitespace-nowrap shrink-0", activeSourceFilter === key ? "bg-background shadow-sm font-medium" : "text-muted-foreground")}
                 >
-                  {label}
+                  <span className="hidden sm:inline">{label}</span>
+                  <span className="sm:hidden">{mobileLabel}</span>
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+            <div className="flex items-center gap-1 bg-muted rounded-md p-0.5 shrink-0">
             <button
               onClick={() => setView("list")}
               className={cn("px-2.5 py-1 text-caption rounded", view === "list" ? "bg-background shadow-sm font-medium" : "text-muted-foreground")}
+              title="List view"
             >
-              <List className="h-3.5 w-3.5 inline mr-1" />List
+              <List className="h-3.5 w-3.5 inline sm:mr-1" /><span className="hidden sm:inline">List</span>
             </button>
             <button
               onClick={() => setView("graph")}
               className={cn("px-2.5 py-1 text-caption rounded", view === "graph" ? "bg-background shadow-sm font-medium" : "text-muted-foreground")}
+              title="Graph view"
             >
-              <Network className="h-3.5 w-3.5 inline mr-1" />Graph
+              <Network className="h-3.5 w-3.5 inline sm:mr-1" /><span className="hidden sm:inline">Graph</span>
             </button>
           </div>
           </div>
