@@ -30,6 +30,26 @@ function displayFileName(name: string, summary?: string | null, disambiguator?: 
   return label
 }
 
+function SourceBadge({ source }: { source?: string | null }) {
+  let emoji: string, label: string, colorClass: string
+  switch (source) {
+    case 'harvest':
+    case 'auto-note':
+      emoji = '🤖'; label = 'Agent'; colorClass = 'bg-emerald-50 text-emerald-700'; break
+    case 'chat-store':
+      emoji = '💡'; label = 'Insight'; colorClass = 'bg-purple-50 text-purple-700'; break
+    case 'connector':
+      emoji = '🔗'; label = 'Sync'; colorClass = 'bg-blue-50 text-blue-700'; break
+    default:
+      emoji = '📄'; label = 'File'; colorClass = 'bg-zinc-100 text-zinc-600'; break
+  }
+  return (
+    <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${colorClass}`}>
+      {emoji} {label}
+    </span>
+  )
+}
+
 const SYSTEM_TAGS = new Set(['test', 'report', 'auto-generated', 'ai-note', 'session-summary', 'imported', 'mcp-stored', 'conversation', 'knowledge'])
 function isSystemTag(tag: { isSystem?: boolean; name: string }): boolean {
   return tag.isSystem === true || SYSTEM_TAGS.has(tag.name.toLowerCase())
@@ -135,6 +155,7 @@ interface FileItem {
   previousVersionId?: string | null
   archivedAt?: string | null
   tags?: { name: string; color?: string }[]
+  source?: string | null
 }
 
 function fmtSize(b: number) { return !b ? "—" : b < 1024 ? "< 1 KB" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB" }
@@ -409,7 +430,7 @@ function StatusIcon({ status, error, compact }: { status: string; error?: string
 }
 
 export function FileList() {
-  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId, activeTagFilter, setActiveTagFilter, drawerFileId, openDrawer, closeDrawer } = useLayoutStore()
+  const { currentFolderId, setCurrentFolder, openInspector, selectedFileId, activeTagFilter, setActiveTagFilter, activeSourceFilter, drawerFileId, openDrawer, closeDrawer } = useLayoutStore()
   const router = useRouter()
   const { data, isLoading, error } = useFiles(currentFolderId)
   const deleteFile = useDeleteFile()
@@ -608,9 +629,22 @@ export function FileList() {
     }
   })
 
-  const filteredFiles = activeTagFilter
+  const tagFiltered = activeTagFilter
     ? typeFiltered.filter((f: any) => f.tags?.some((t: any) => t.name === activeTagFilter))
     : typeFiltered
+
+  const filteredFiles = activeSourceFilter
+    ? tagFiltered.filter((f: any) => {
+        const s = f.source || 'upload'
+        switch (activeSourceFilter) {
+          case 'files': return s === 'upload' || s === 'sample'
+          case 'agent': return s === 'harvest' || s === 'auto-note'
+          case 'insights': return s === 'chat-store'
+          case 'synced': return s === 'connector'
+          default: return true
+        }
+      })
+    : tagFiltered
 
   const disambiguators = useMemo(() => buildDisambiguators(filteredFiles), [filteredFiles])
 
@@ -1105,7 +1139,7 @@ export function FileList() {
                 />
                 <TypeIcon type={file.type} name={file.name} />
                 <div className="truncate flex-1 min-w-[140px] sm:min-w-[280px]">
-                  <span className="truncate text-sm block" title={displayFileName(file.name, file.summary, disambiguators.get(file.id))}>{displayFileName(file.name, file.summary, disambiguators.get(file.id))}</span>
+                  <span className="truncate text-sm flex items-center gap-1.5" title={displayFileName(file.name, file.summary, disambiguators.get(file.id))}>{displayFileName(file.name, file.summary, disambiguators.get(file.id))}<SourceBadge source={file.source} /></span>
                   {fileSubtitle(file.name, file.summary, file.createdAt) && <span className="block text-xs text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name, file.summary, file.createdAt)}</span>}
                 </div>
                 {file.previousVersionId && <span className="shrink-0 rounded bg-green-500/10 px-1.5 py-0.5 text-[10px] text-green-500">Updated</span>}
@@ -1233,7 +1267,10 @@ export function FileList() {
                     <TypeIcon type={file.type} name={file.name} className="h-14 w-14" />
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <p className="text-sm font-medium truncate flex-1" title={displayFileName(file.name, file.summary, disambiguators.get(file.id))}>{displayFileName(file.name, file.summary, disambiguators.get(file.id))}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-medium truncate flex-1" title={displayFileName(file.name, file.summary, disambiguators.get(file.id))}>{displayFileName(file.name, file.summary, disambiguators.get(file.id))}</p>
+                      <SourceBadge source={file.source} />
+                    </div>
                     {fileSubtitle(file.name, file.summary, file.createdAt) && <p className="text-[11px] text-zinc-400 dark:text-zinc-500 truncate">{fileSubtitle(file.name, file.summary, file.createdAt)}</p>}
                   </div>
 
@@ -1511,7 +1548,7 @@ export function FileList() {
             {/* File name + meta info */}
             <div className="px-4 pt-3 pb-2 border-b border-zinc-200 dark:border-zinc-700">
               <h2 className="text-base font-semibold truncate text-left" title={displayFileName(drawerFile.name, drawerFile.summary)}>{displayFileName(drawerFile.name, drawerFile.summary)}</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">{fmtSize(drawerFile.size)} · {formatFileType(drawerFile.mimeType, drawerFile.name)} · {drawerFile.status === "indexed" ? "Indexed" : drawerFile.status}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">{fmtSize(drawerFile.size)} · {formatFileType(drawerFile.mimeType, drawerFile.name)} · {drawerFile.status === "indexed" ? "Indexed" : drawerFile.status} <SourceBadge source={drawerFile.source} /></p>
             </div>
             {/* Main content area — inline preview */}
             <div className="flex-1 overflow-auto p-4">

@@ -36,7 +36,7 @@ export default function KnowledgePage() {
 
 function KnowledgePageInner() {
   const [view, setView] = useState<"list" | "graph">("list")
-  const { activeTagFilter, setActiveTagFilter, currentFolderId } = useLayoutStore()
+  const { activeTagFilter, setActiveTagFilter, currentFolderId, activeSourceFilter, setActiveSourceFilter } = useLayoutStore()
   const { data: tags = [], isLoading: tagsLoading } = useTags()
   const { isLoading: filesLoading } = useFiles(currentFolderId)
   const searchParams = useSearchParams()
@@ -129,7 +129,25 @@ function KnowledgePageInner() {
         {/* Top bar with view toggle */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-border">
           <h1 className="text-body font-medium">Knowledge</h1>
-          <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+              {([
+                { key: null, label: 'All' },
+                { key: 'files', label: '📄 Files' },
+                { key: 'agent', label: '🤖 Agent' },
+                { key: 'insights', label: '💡 Insights' },
+                { key: 'synced', label: '🔗 Synced' },
+              ] as const).map(({ key, label }) => (
+                <button
+                  key={label}
+                  onClick={() => setActiveSourceFilter(key)}
+                  className={cn("px-2.5 py-1 text-caption rounded whitespace-nowrap", activeSourceFilter === key ? "bg-background shadow-sm font-medium" : "text-muted-foreground")}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
             <button
               onClick={() => setView("list")}
               className={cn("px-2.5 py-1 text-caption rounded", view === "list" ? "bg-background shadow-sm font-medium" : "text-muted-foreground")}
@@ -142,6 +160,7 @@ function KnowledgePageInner() {
             >
               <Network className="h-3.5 w-3.5 inline mr-1" />Graph
             </button>
+          </div>
           </div>
         </div>
 

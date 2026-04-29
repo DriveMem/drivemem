@@ -7,6 +7,7 @@ interface LayoutState {
   currentFolderId: string | null
   mobileSidebarOpen: boolean
   activeTagFilter: string | null
+  activeSourceFilter: string | null
   drawerFileId: string | null
   toggleSidebar: () => void
   openInspector: (fileId: string) => void
@@ -15,6 +16,7 @@ interface LayoutState {
   setMobileSidebarOpen: (open: boolean) => void
   toggleMobileSidebar: () => void
   setActiveTagFilter: (tagId: string | null) => void
+  setActiveSourceFilter: (source: string | null) => void
   openDrawer: (fileId: string) => void
   closeDrawer: () => void
 }
@@ -26,6 +28,7 @@ export const useLayoutStore = create<LayoutState>((set) => ({
   currentFolderId: null,
   mobileSidebarOpen: false,
   activeTagFilter: null,
+  activeSourceFilter: null,
   drawerFileId: null,
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   openInspector: (fileId) => set({ inspectorOpen: true, selectedFileId: fileId }),
@@ -34,6 +37,7 @@ export const useLayoutStore = create<LayoutState>((set) => ({
   setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
   toggleMobileSidebar: () => set((s) => ({ mobileSidebarOpen: !s.mobileSidebarOpen })),
   setActiveTagFilter: (tagId) => set({ activeTagFilter: tagId }),
+  setActiveSourceFilter: (source) => set({ activeSourceFilter: source }),
   openDrawer: (fileId) => set({ drawerFileId: fileId }),
   closeDrawer: () => set({ drawerFileId: null }),
 }))
