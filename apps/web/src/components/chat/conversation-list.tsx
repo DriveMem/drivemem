@@ -131,7 +131,7 @@ export function ConversationList() {
                 {g.items.map((c: Conversation) => (
             <li
               key={c.id}
-              className={`group flex cursor-pointer items-center justify-between rounded-xl mx-2 px-3 py-2.5 transition-colors duration-200 hover:bg-muted/50 ${
+              className={`group flex cursor-pointer items-center justify-between rounded-xl mx-2 px-3 py-2.5 overflow-hidden transition-colors duration-200 hover:bg-muted/50 ${
                 activeId === c.id ? "bg-primary/5 border-l-2 border-primary" : ""
               }`}
               onClick={() => router.push(`/chat/${c.id}`)}
