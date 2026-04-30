@@ -73,7 +73,7 @@ const worker = new Worker<ParseJobData>(
       const buffer = await getObject(s3Key);
       const text = await parseDocument(buffer, mimeType);
 
-      const [file] = await db.select({ name: files.name, folderId: files.folderId, previousVersionId: files.previousVersionId })
+      const [file] = await db.select({ name: files.name, folderId: files.folderId, previousVersionId: files.previousVersionId, summary: files.summary, originalName: files.originalName })
         .from(files).where(eq(files.id, fileId));
 
       const chunks = chunkText(text, file?.name ?? 'unknown');
