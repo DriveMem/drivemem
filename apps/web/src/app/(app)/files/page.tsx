@@ -126,9 +126,15 @@ function PreviewPanel() {
 
   if (!selectedFileId) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
-        <svg className="h-12 w-12 mb-3 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <p className="text-sm">Click a file to start reading</p>
+      <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8">
+        <svg className="h-12 w-12 mb-4 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <h3 className="text-lg font-semibold text-foreground mb-2">Your Knowledge Base</h3>
+        <p className="text-sm text-center max-w-sm mb-6">Upload files, create notes, or connect data sources. AI automatically understands and organizes your knowledge.</p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button onClick={() => openInspector("")} className="px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors">Upload a file</button>
+          <a href="/chat" className="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors text-center">Try AI Chat</a>
+          <a href="/settings#developer" className="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors text-center">Connect MCP</a>
+        </div>
       </div>
     )
   }
