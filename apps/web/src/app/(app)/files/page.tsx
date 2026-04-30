@@ -46,11 +46,30 @@ function FileTreeList() {
 }
 
 function KnowledgePageInner() {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   useEffect(() => { document.title = "Knowledge — DriveMem" }, [])
 
   return (
     <div className="flex h-full page-enter">
-      {/* Left: File tree */}
+      {/* Mobile sidebar toggle */}
+      <button onClick={() => setMobileSidebarOpen(true)} className="md:hidden fixed top-16 left-4 z-30 p-2 rounded-lg bg-background border border-border shadow-sm" aria-label="Open file tree">
+        <FileText className="h-4 w-4" />
+      </button>
+      {/* Mobile sidebar overlay */}
+      {mobileSidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-40">
+          <div className="absolute inset-0 bg-black/20" onClick={() => setMobileSidebarOpen(false)} />
+          <aside className="absolute left-0 top-0 bottom-0 w-72 bg-background border-r border-border flex flex-col z-50 shadow-lg">
+            <div className="flex items-center justify-between p-3 border-b border-border">
+              <p className="text-micro uppercase tracking-wider text-muted-foreground font-medium">Files</p>
+              <button onClick={() => setMobileSidebarOpen(false)} className="p-1 rounded hover:bg-muted"><X className="h-4 w-4" /></button>
+            </div>
+            <div className="p-3"><FolderTree /></div>
+            <div className="flex-1 overflow-y-auto border-t border-border" onClick={() => setMobileSidebarOpen(false)}><FileTreeList /></div>
+          </aside>
+        </div>
+      )}
+      {/* Left: File tree (desktop) */}
       <aside className="hidden md:flex w-60 flex-col border-r border-border shrink-0">
         <div className="p-3">
           <p className="text-micro uppercase tracking-wider text-muted-foreground font-medium mb-2">Projects</p>
