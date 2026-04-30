@@ -54,7 +54,42 @@ interface AgentActivity {
   createdAt: string
 }
 
+type AggregatedActivity = AgentActivity & { count?: number }
 type AgentFilter = string // "all" or agent name
+
+/** Collapse consecutive same-agent same-action entries within 5min window */
+function aggregateActivities(raw: AgentActivity[]): AggregatedActivity[] {
+  if (!raw.length) return raw
+  const result: AggregatedActivity[] = []
+  let current: AggregatedActivity = { ...raw[0], count: 1 }
+
+  for (let i = 1; i < raw.length; i++) {
+    const prev = raw[i - 1]
+    const curr = raw[i]
+    const timeDiff = new Date(prev.createdAt).getTime() - new Date(curr.createdAt).getTime()
+
+    if (curr.agentName === current.agentName && curr.action === current.action && timeDiff < 5 * 60 * 1000) {
+      current.count = (current.count || 1) + 1
+    } else {
+      result.push(current)
+      current = { ...curr, count: 1 }
+    }
+  }
+  result.push(current)
+  return result
+}
+
+/** Human-readable action description */
+function humanizeAction(a: AgentActivity): string {
+  const query = (a.summary || '').slice(0, 30)
+  switch (a.action) {
+    case 'search': case 'mcp_search': return `Searched: "${query}"`
+    case 'ask': case 'mcp_ask': return `Asked: "${query}"`
+    case 'compile': return 'Compiled context for agent'
+    case 'store': case 'mcp_store': case 'auto_capture': case 'capture': return `Saved: "${query}"`
+    default: return a.action?.replace(/_/g, ' ') || 'activity'
+  }
+}
 
 const ACTION_CONFIG: Record<string, { icon: typeof Bot; color: string; emoji: string }> = {
   store: { icon: Save, color: "text-emerald-500", emoji: "💾" },
@@ -176,8 +211,11 @@ export function AgentActivityPanel() {
     )
   ).sort((a, b) => a[1].localeCompare(b[1]))
 
+  // Aggregate consecutive same-agent same-action entries
+  const aggregated = aggregateActivities(activities)
+
   // Filter out noisy/system entries users can't understand
-  const filteredActivities = activities.filter(a => {
+  const filteredActivities = aggregated.filter(a => {
     // Apply agent name filter
     if (filter !== "all" && a.agentName !== filter) return false
     // Filter out idle session summaries
@@ -282,8 +320,13 @@ export function AgentActivityPanel() {
                       </span>
                     )}
                     <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
-                      {a.action?.replace(/_/g, ' ') || 'activity'}
+                      {humanizeAction(a)}
                     </span>
+                    {(a.count || 1) > 1 && (
+                      <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded-full flex-shrink-0 font-medium">
+                        × {a.count}
+                      </span>
+                    )}
                   </div>
                   {cleanedSummary && (
                     <Tooltip>
