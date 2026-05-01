@@ -370,6 +370,13 @@ export default function LandingPage() {
               </a>
 
             </div>
+            <p className="mt-3 text-xs text-gray-400 text-center">Free forever for individuals · No credit card required</p>
+            <div className="mt-4 flex items-center justify-center">
+              <a href="https://github.com/DriveMem/drivemem" target="_blank" rel="noopener" className="inline-flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                <img src="https://img.shields.io/github/stars/DriveMem/drivemem?style=social" alt="GitHub Stars" className="h-5" />
+                <span>Star us on GitHub</span>
+              </a>
+            </div>
 
             {/* Inline quick-start command */}
             <div className="mt-6 flex items-center justify-center">

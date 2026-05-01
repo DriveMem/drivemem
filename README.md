@@ -7,6 +7,7 @@
 The open-source memory layer for AI tools. Give your AI agents persistent, cross-tool knowledge.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/DriveMem/drivemem?style=social)](https://github.com/DriveMem/drivemem)
 [![npm](https://img.shields.io/npm/v/drivemem)](https://www.npmjs.com/package/drivemem)
 [![npm downloads](https://img.shields.io/npm/dm/drivemem)](https://www.npmjs.com/package/drivemem)
 
