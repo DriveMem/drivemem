@@ -25,10 +25,16 @@ function FileTreeList() {
   const { currentFolderId, selectedFileId, openInspector } = useLayoutStore()
   const { data: filesData } = useFiles(currentFolderId)
   const files = filesData?.files || []
+  const [search, setSearch] = useState("")
+  const filtered = search.trim() ? files.filter((f: any) => f.name?.toLowerCase().includes(search.toLowerCase())) : files
 
   return (
     <div className="py-1">
-      {files.map((file: any) => (
+      <div className="px-2 pb-2">
+        <input type="text" placeholder="Search files..." value={search} onChange={e => setSearch(e.target.value)}
+          className="w-full px-2 py-1.5 text-xs rounded-md border border-border bg-background placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-brand-500/30" />
+      </div>
+      {filtered.map((file: any) => (
         <button
           key={file.id}
           onClick={() => openInspector(file.id)}
