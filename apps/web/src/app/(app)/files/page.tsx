@@ -131,7 +131,7 @@ function PreviewPanel() {
         <h3 className="text-lg font-semibold text-foreground mb-2">Your Knowledge Base</h3>
         <p className="text-sm text-center max-w-sm mb-6">Upload files, create notes, or connect data sources. AI automatically understands and organizes your knowledge.</p>
         <div className="flex flex-col sm:flex-row gap-3">
-          <button onClick={() => openInspector("")} className="px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors">Upload a file</button>
+          <a href="/files" className="px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors">Upload a file</a>
           <a href="/chat" className="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors text-center">Try AI Chat</a>
           <a href="/settings#developer" className="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors text-center">Connect MCP</a>
         </div>
