@@ -320,9 +320,9 @@ export default function LandingPage() {
 
           <FadeIn delay={100}>
             <p className="mt-6 md:mt-8 text-body md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-              Your AI knowledge base that gets smarter the more you use it.
+              Your AI finally remembers. Every tool, every session, every insight — connected.
               <br className="hidden sm:block" />
-              Works with Cursor, Claude, Windsurf — any MCP client.
+              Works with Cursor, Claude, ChatGPT, VS Code, Windsurf — any MCP client.
             </p>
           </FadeIn>
 
