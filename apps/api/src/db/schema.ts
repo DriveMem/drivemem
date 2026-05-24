@@ -23,6 +23,7 @@ export const users = pgTable('users', {
   onboardingStep: integer('onboarding_step').notNull().default(0),
   onboardingPath: varchar('onboarding_path', { length: 50 }),
   lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
+  webhookUrl: text('webhook_url'),
 });
 
 // --- File status enum ---
@@ -67,6 +68,7 @@ export const files = pgTable('files', {
   staleScore: real('stale_score').notNull().default(0),
   isSample: boolean('is_sample').notNull().default(false),
   source: varchar('source', { length: 50 }).notNull().default('upload'),
+  workspaceId: uuid('workspace_id').references(() => workspaces.id, { onDelete: 'set null' }),
 });
 
 // --- Conversation scope enum ---
@@ -474,6 +476,46 @@ export const popularQueryPatterns = pgTable('popular_query_patterns', {
   avgClickRate: real('avg_click_rate'),
   lastSeen: timestamp('last_seen'),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// --- Workspace role enum ---
+export const workspaceRoleEnum = pgEnum('workspace_role', ['owner', 'admin', 'member', 'viewer']);
+
+// --- Workspaces ---
+export const workspaces = pgTable('workspaces', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: varchar('name', { length: 100 }).notNull(),
+  slug: varchar('slug', { length: 100 }).notNull().unique(),
+  ownerId: uuid('owner_id').notNull().references(() => users.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// --- Workspace Members ---
+export const workspaceMembers = pgTable('workspace_members', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  role: workspaceRoleEnum('role').notNull().default('member'),
+  invitedAt: timestamp('invited_at', { withTimezone: true }).notNull().defaultNow(),
+  joinedAt: timestamp('joined_at', { withTimezone: true }),
+});
+
+// --- Handoff status enum ---
+export const handoffStatusEnum = pgEnum('handoff_status', ['draft', 'sent', 'received', 'request_more', 'supplementing', 'accepted', 'rejected', 'expired']);
+
+// --- Handoffs ---
+export const handoffs = pgTable('handoffs', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+  fromUserId: uuid('from_user_id').notNull().references(() => users.id),
+  toUserId: uuid('to_user_id').notNull().references(() => users.id),
+  status: handoffStatusEnum('status').notNull().default('draft'),
+  contextPack: jsonb('context_pack').notNull().default({}),
+  supplementRequests: jsonb('supplement_requests').default([]),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
 });
 
 export const modelProfileOverrides = pgTable('model_profile_overrides', {

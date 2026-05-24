@@ -137,6 +137,9 @@ await app.register(apiKeyRoutes, { prefix: '/api/api-keys' });
 import v1Routes from './routes/v1.js';
 await app.register(v1Routes, { prefix: '/api/v1' });
 
+import handoffRoutes from './routes/handoffs.js';
+await app.register(handoffRoutes, { prefix: '/api/handoffs' });
+
 // Public endpoints (no auth)
 await app.register(async function publicRoutes(pub) {
   pub.get('/model-profiles', async (request, reply) => {
@@ -225,6 +228,11 @@ await app.register(digestRoutes, { prefix: '/api/v1/digest' });
 
 import nudgeRoutes from './routes/nudge.js';
 await app.register(nudgeRoutes, { prefix: '/api/v1' });
+
+import workspaceRoutes from './routes/workspaces.js';
+import workspaceMemberRoutes from './routes/workspace-members.js';
+await app.register(workspaceRoutes, { prefix: '/api/workspaces' });
+await app.register(workspaceMemberRoutes, { prefix: '/api/workspaces' });
 
 import llmProxyRoutes from './routes/llm-proxy.js';
 import desktopRoutes from './routes/desktop.js';

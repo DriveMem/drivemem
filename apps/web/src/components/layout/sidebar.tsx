@@ -1,9 +1,10 @@
 "use client"
 
-import { Home, BookOpen, MessageCircle, Plug, Settings, PanelLeftClose, PanelLeft } from "lucide-react"
+import { Home, BookOpen, MessageCircle, Plug, Settings, PanelLeftClose, PanelLeft, Inbox } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useLayoutStore } from "@/stores/layout-store"
+import { useUnreadHandoffs } from "@/hooks/use-unread-handoffs"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -11,6 +12,7 @@ import { cn } from "@/lib/utils"
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Home" },
   { href: "/files", icon: BookOpen, label: "Knowledge" },
+  { href: "/inbox", icon: Inbox, label: "Inbox" },
   { href: "/developers", icon: Plug, label: "Connect" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ] as const
@@ -24,6 +26,8 @@ function isNavActive(pathname: string | null, href: string): boolean {
       return pathname.startsWith("/files") || pathname.startsWith("/graph")
     case "/chat":
       return pathname.startsWith("/chat")
+    case "/inbox":
+      return pathname === "/inbox" || pathname.startsWith("/inbox/")
     case "/developers":
       return pathname === "/developers" || pathname.startsWith("/developers/")
     case "/settings":
@@ -36,6 +40,7 @@ function isNavActive(pathname: string | null, href: string): boolean {
 export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar, setMobileSidebarOpen } = useLayoutStore()
   const pathname = usePathname()
+  const unreadCount = useUnreadHandoffs()
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -63,7 +68,14 @@ export function Sidebar() {
                 asChild
               >
                 <Link href={item.href} onClick={() => setMobileSidebarOpen(false)}>
-                  <item.icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-brand-500" : "")} />
+                  <span className="relative">
+                    <item.icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-brand-500" : "")} />
+                    {item.href === "/inbox" && unreadCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
+                  </span>
                   {!sidebarCollapsed && <span>{item.label}</span>}
                 </Link>
               </Button>
