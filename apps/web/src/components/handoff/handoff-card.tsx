@@ -12,6 +12,8 @@ interface HandoffData {
   id: string
   sender_name?: string
   sender_avatar?: string
+  from_user_name?: string
+  from_user_avatar?: string
   context_pack?: {
     task?: string
     key_facts?: string[]
@@ -103,7 +105,7 @@ export function HandoffCard({ handoff, onStatusChange }: HandoffCardProps) {
           <div className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden flex-shrink-0">
             {handoff.sender_avatar && <img src={handoff.sender_avatar} alt="" className="h-full w-full object-cover" />}
           </div>
-          <span className="text-sm font-medium">Handoff from {handoff.sender_name ?? "Unknown"}</span>
+          <span className="text-sm font-medium">Handoff from {handoff.sender_name ?? handoff.from_user_name ?? "Unknown"}</span>
         </div>
         <span className="text-xs text-zinc-400">{relativeTime(handoff.created_at)}</span>
       </div>

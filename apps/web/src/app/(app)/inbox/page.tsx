@@ -6,6 +6,21 @@ import { relativeTime } from "@/lib/relative-time"
 import { cn } from "@/lib/utils"
 import { HandoffCard } from "@/components/handoff/handoff-card"
 
+interface HandoffRaw {
+  id: string
+  from_user_name?: string
+  from_user_avatar?: string
+  to_user_name?: string
+  to_user_avatar?: string
+  context_pack?: {
+    task?: string
+    key_facts?: string[]
+    next_steps?: string[]
+  }
+  status: string
+  created_at: string
+}
+
 interface Handoff {
   id: string
   sender_name?: string
@@ -19,6 +34,16 @@ interface Handoff {
   }
   status: string
   created_at: string
+}
+
+function mapHandoff(raw: HandoffRaw): Handoff {
+  return {
+    ...raw,
+    sender_name: raw.from_user_name,
+    sender_avatar: raw.from_user_avatar,
+    recipient_name: raw.to_user_name,
+    recipient_avatar: raw.to_user_avatar,
+  }
 }
 
 type Tab = "received" | "sent"
@@ -43,7 +68,10 @@ export default function InboxPage() {
     const role = tab === "received" ? "to" : "from"
     apiFetch(`/handoffs?role=${role}`)
       .then((res) => res.json())
-      .then((data) => setHandoffs(Array.isArray(data) ? data : data?.items ?? []))
+      .then((data) => {
+        const items: HandoffRaw[] = Array.isArray(data) ? data : data?.items ?? []
+        setHandoffs(items.map(mapHandoff))
+      })
       .catch(() => setHandoffs([]))
       .finally(() => setLoading(false))
   }, [tab])
@@ -132,7 +160,10 @@ export default function InboxPage() {
             const role = tab === "received" ? "to" : "from"
             apiFetch(`/handoffs?role=${role}`)
               .then((res) => res.json())
-              .then((data) => setHandoffs(Array.isArray(data) ? data : data?.items ?? []))
+              .then((data) => {
+                const items: HandoffRaw[] = Array.isArray(data) ? data : data?.items ?? []
+                setHandoffs(items.map(mapHandoff))
+              })
           }} />
         </div>
       )}
