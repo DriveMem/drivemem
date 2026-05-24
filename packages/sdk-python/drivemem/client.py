@@ -81,3 +81,51 @@ class DriveMem:
             return True
         except Exception:
             return False
+
+    # --- Handoff methods ---
+
+    def handoff_send(self, to_user_email: str, workspace_id: str, task: str, next_steps: List[str],
+                     decisions: Optional[List[Dict[str, Any]]] = None,
+                     key_facts: Optional[List[str]] = None,
+                     notes: Optional[str] = None) -> Dict[str, Any]:
+        """Send a handoff to another user."""
+        body: Dict[str, Any] = {
+            "toUserEmail": to_user_email,
+            "workspaceId": workspace_id,
+            "task": task,
+            "nextSteps": next_steps,
+        }
+        if decisions is not None:
+            body["decisions"] = decisions
+        if key_facts is not None:
+            body["keyFacts"] = key_facts
+        if notes is not None:
+            body["notes"] = notes
+        return self._request("POST", "/api/v1/handoffs", json=body)
+
+    def handoff_accept(self, handoff_id: str) -> Dict[str, Any]:
+        """Accept a handoff."""
+        return self._request("POST", f"/api/v1/handoffs/{handoff_id}/accept", json={})
+
+    def handoff_request_more(self, handoff_id: str, questions: List[str]) -> Dict[str, Any]:
+        """Request more information on a handoff."""
+        return self._request("POST", f"/api/v1/handoffs/{handoff_id}/request-more", json={"questions": questions})
+
+    def handoff_list(self, role: Optional[str] = None, status: Optional[str] = None,
+                     workspace_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """List handoffs."""
+        params: Dict[str, str] = {}
+        if role:
+            params["role"] = role
+        if status:
+            params["status"] = status
+        if workspace_id:
+            params["workspaceId"] = workspace_id
+        qs = "&".join(f"{k}={requests.utils.quote(v)}" for k, v in params.items())
+        path = f"/api/v1/handoffs?{qs}" if qs else "/api/v1/handoffs"
+        data = self._request("GET", path)
+        return data.get("handoffs", [])
+
+    def handoff_get(self, handoff_id: str) -> Dict[str, Any]:
+        """Get a single handoff by ID."""
+        return self._request("GET", f"/api/v1/handoffs/{handoff_id}")

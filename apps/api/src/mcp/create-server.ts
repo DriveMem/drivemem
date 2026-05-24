@@ -8,6 +8,7 @@ import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { eq, desc, and, inArray, sql, gt } from 'drizzle-orm';
 import { inferRole } from '../services/context-compiler/agent-profiles.js';
+import { handoffTools, handleHandoffTool } from './tools/handoff.js';
 import { compileContext } from '../services/context-compiler/index.js';
 import type { DetectedCapabilities } from '../services/capability-detector.js';
 import { maybeAccumulate } from '../services/auto-accumulate.js';
@@ -182,6 +183,8 @@ When using knowledge base content, mention the source file name.
           required: [],
         },
       },
+      // === HANDOFF TOOLS ===
+      ...handoffTools,
       // === REMOVED FROM MCP (kept as internal services) ===
       // aidrive_list_files → merged into aidrive_get_context
       // aidrive_file_detail → merged into search results
@@ -1010,6 +1013,12 @@ ${insightsSection}
 
           const summary = `${ctxResult.compiledContext}${fileList}${insightText}\n\n---\n_Context: ${ctxResult.metadata.fragmentCount} fragments, ${ctxResult.metadata.totalTokens} tokens, ${recentFiles.length} files_`;
           return { content: [{ type: 'text' as const, text: summary }] };
+        }
+
+        case 'handoff_send':
+        case 'handoff_accept':
+        case 'handoff_request_more': {
+          return await handleHandoffTool(name, args as Record<string, unknown>, userId);
         }
 
                 default:

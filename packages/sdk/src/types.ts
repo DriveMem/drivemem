@@ -32,6 +32,21 @@ export interface CompileResponse {
   }
 }
 
+export interface Handoff {
+  id: string
+  fromUserEmail: string
+  toUserEmail: string
+  workspaceId: string
+  task: string
+  nextSteps: string[]
+  decisions?: { decision: string; reason: string }[]
+  keyFacts?: string[]
+  notes?: string
+  status: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface FileInfo {
   id: string
   name: string

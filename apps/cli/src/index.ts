@@ -394,12 +394,73 @@ switch (command) {
   }
 
   case 'handoff': {
-    const folderId = args[0];
-    if (!folderId) { console.error('Usage: aidrive handoff <folder-id> [--json]'); break; }
-    const format = jsonMode ? 'json' : 'markdown';
-    const data = await apiCall(`/context-packet?folderId=${folderId}&format=${format}`);
-    if (jsonMode) { console.log(JSON.stringify(data, null, 2)); }
-    else { console.log(data.packet || data.content || JSON.stringify(data)); }
+    const subCmd = args[0];
+    if (subCmd === 'send') {
+      const toIdx = args.indexOf('--to');
+      const wsIdx = args.indexOf('--workspace');
+      const taskIdx = args.indexOf('--task');
+      const nsIdx = args.indexOf('--next-steps');
+      const kfIdx = args.indexOf('--key-facts');
+      const notesIdx = args.indexOf('--notes');
+      const toEmail = toIdx > -1 ? args[toIdx + 1] : undefined;
+      const workspaceId = wsIdx > -1 ? args[wsIdx + 1] : undefined;
+      const task = taskIdx > -1 ? args[taskIdx + 1] : undefined;
+      const nextSteps = nsIdx > -1 ? args[nsIdx + 1]?.split(',').map(s => s.trim()) : undefined;
+      const keyFacts = kfIdx > -1 ? args[kfIdx + 1]?.split(',').map(s => s.trim()) : undefined;
+      const notes = notesIdx > -1 ? args[notesIdx + 1] : undefined;
+      if (!toEmail || !workspaceId || !task || !nextSteps) {
+        console.error('Usage: aidrive handoff send --to <email> --workspace <id> --task "..." --next-steps "step1,step2" [--key-facts "f1,f2"] [--notes "..."]');
+        break;
+      }
+      // Step 1: lookup user by email
+      const userData = await apiCall(`/users/lookup?email=${encodeURIComponent(toEmail)}`);
+      const toUserId = userData.id || userData.userId;
+      if (!toUserId) { console.error(`Error: User with email "${toEmail}" not found.`); break; }
+      // Step 2: create handoff
+      const contextPack: Record<string, unknown> = { task, next_steps: nextSteps };
+      if (keyFacts) contextPack.key_facts = keyFacts;
+      if (notes) contextPack.notes = notes;
+      const createBody = { workspace_id: workspaceId, to_user_id: toUserId, context_pack: contextPack };
+      const created = await apiCall('/handoffs', { method: 'POST', body: JSON.stringify(createBody) });
+      // Step 3: send
+      const data = await apiCall(`/handoffs/${created.id}/send`, { method: 'POST' });
+      output(data, `✅ Handoff sent! ID: ${data.id || created.id}\n   To: ${toEmail}\n   Task: ${task}`);
+    } else if (subCmd === 'accept') {
+      const handoffId = args[1];
+      if (!handoffId) { console.error('Usage: aidrive handoff accept <handoff_id>'); break; }
+      const data = await apiCall(`/handoffs/${handoffId}/accept`, { method: 'POST' });
+      output(data, `✅ Handoff accepted! ID: ${handoffId}`);
+    } else if (subCmd === 'request-more') {
+      const handoffId = args[1];
+      const qIdx = args.indexOf('--questions');
+      const questions = qIdx > -1 ? args[qIdx + 1]?.split(',').map(s => s.trim()) : undefined;
+      if (!handoffId || !questions) { console.error('Usage: aidrive handoff request-more <handoff_id> --questions "q1,q2"'); break; }
+      const data = await apiCall(`/handoffs/${handoffId}/request-more`, { method: 'POST', body: JSON.stringify({ questions }) });
+      output(data, `✅ More info requested! ID: ${handoffId}\n   Questions: ${questions.join(', ')}`);
+    } else if (subCmd === 'list') {
+      const roleIdx = args.indexOf('--role');
+      const statusIdx = args.indexOf('--status');
+      const params = new URLSearchParams();
+      if (roleIdx > -1 && args[roleIdx + 1]) params.set('role', args[roleIdx + 1]);
+      if (statusIdx > -1 && args[statusIdx + 1]) params.set('status', args[statusIdx + 1]);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const data = await apiCall(`/handoffs${qs}`);
+      const items = Array.isArray(data) ? data : data.handoffs || [];
+      if (jsonMode) { console.log(JSON.stringify(items, null, 2)); break; }
+      if (items.length === 0) { console.log('📭 No handoffs found'); break; }
+      for (const h of items) {
+        const dir = h.from_user_name ? `${h.from_user_name} → ${h.to_user_name}` : `${h.fromUserId?.slice(0,8)} → ${h.toUserId?.slice(0,8)}`;
+        const task = (h.contextPack as any)?.task || '';
+        console.log(`📤 [${h.status}] ${dir} — ${task.slice(0, 60)} (${h.id})`);
+      }
+      console.log(`\n共 ${items.length} 个 handoff`);
+    } else {
+      console.log('Usage: aidrive handoff <send|accept|request-more|list>');
+      console.log('  aidrive handoff send --to <email> --workspace <id> --task "..." --next-steps "s1,s2"');
+      console.log('  aidrive handoff accept <handoff_id>');
+      console.log('  aidrive handoff request-more <handoff_id> --questions "q1,q2"');
+      console.log('  aidrive handoff list [--role from|to] [--status sent|received|accepted]');
+    }
     break;
   }
 

@@ -43,7 +43,17 @@ function levenshteinSimilarity(a: string, b: string): number {
 export default async function v1Routes(fastify: FastifyInstance) {
   fastify.addHook('preHandler', requireApiKey);
 
-  // GET /users/me/profile
+  // GET /users/lookup?email=...
+  fastify.get('/users/lookup', async (request, reply) => {
+    const { email } = request.query as { email?: string };
+    if (!email) return reply.code(400).send({ error: 'email query parameter required' });
+    const [user] = await db.select({ id: schema.users.id, name: schema.users.name, email: schema.users.email })
+      .from(schema.users).where(eq(schema.users.email, email));
+    if (!user) return reply.code(404).send({ error: 'User not found' });
+    return user;
+  });
+
+  // GET /users/me/profile (original)
   fastify.get('/users/me/profile', async (request, reply) => {
     const userId = request.user!.id;
     const [user] = await db.select({ profile: schema.users.profile, name: schema.users.name, email: schema.users.email, onboardingCompleted: schema.users.onboardingCompleted, onboardingStep: schema.users.onboardingStep })
