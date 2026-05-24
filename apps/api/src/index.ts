@@ -236,9 +236,11 @@ await app.register(handoffsRoutes, { prefix: '/api/v1/handoffs' });
 import llmProxyRoutes from './routes/llm-proxy.js';
 import desktopRoutes from './routes/desktop.js';
 import proxyAnalyticsRoutes from './routes/proxy-analytics.js';
+import eventRoutes from './routes/events.js';
 await app.register(llmProxyRoutes, { prefix: '/proxy' });
 await app.register(desktopRoutes, { prefix: '/api/desktop' });
 await app.register(proxyAnalyticsRoutes, { prefix: '/api/proxy' });
+await app.register(eventRoutes, { prefix: '/api/events' });
 
 // Health check endpoint
 app.get('/api/health', async (_request, reply) => {

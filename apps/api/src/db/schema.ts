@@ -515,6 +515,15 @@ export const handoffs = pgTable('handoffs', {
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
 });
 
+// --- Events (analytics) ---
+export const events = pgTable('events', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  event: varchar('event', { length: 255 }).notNull(),
+  properties: jsonb('properties').default({}),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const modelProfileOverrides = pgTable('model_profile_overrides', {
   id: serial('id').primaryKey(),
   modelName: text('model_name').notNull().unique(),
