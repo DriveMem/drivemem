@@ -1,8 +1,14 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+<<<<<<< HEAD
 import { eq, and, or } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { handoffs, users, workspaceMembers } from '../db/schema.js';
+=======
+import { eq, and, or, sql, aliasedTable } from 'drizzle-orm';
+import { db } from '../db/index.js';
+import { handoffs, workspaceMembers, users } from '../db/schema.js';
+>>>>>>> 2e221bb (fix: align frontend interface with API contract (from_user_name/avatar fields))
 import { requireAuth } from '../plugins/auth.js';
 import { validateContextPack } from '../services/handoff-validator.js';
 import { notifyHandoffRecipient } from '../services/handoff-webhook.js';
@@ -228,6 +234,7 @@ export default async function handoffsRoutes(app: FastifyInstance) {
   app.get('/:id', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
 
+<<<<<<< HEAD
     const results = await db
       .select()
       .from(handoffs)
@@ -240,6 +247,117 @@ export default async function handoffsRoutes(app: FastifyInstance) {
     const [toUser] = await db.select({ name: users.name, email: users.email }).from(users).where(eq(users.id, h.toUserId));
 
     return { ...h, from_user_name: fromUser?.name, to_user_name: toUser?.name };
+=======
+    const fromUser = aliasedTable(users, 'from_user');
+    const toUser = aliasedTable(users, 'to_user');
+
+    const [row] = await db
+      .select({
+        handoff: handoffs,
+        from_user_name: fromUser.name,
+        from_user_avatar: fromUser.avatarUrl,
+        to_user_name: toUser.name,
+        to_user_avatar: toUser.avatarUrl,
+      })
+      .from(handoffs)
+      .leftJoin(fromUser, eq(handoffs.fromUserId, fromUser.id))
+      .leftJoin(toUser, eq(handoffs.toUserId, toUser.id))
+      .where(eq(handoffs.id, id));
+
+    if (!row) return reply.code(404).send({ error: 'Not found' });
+    const handoff = row.handoff;
+    if (handoff.fromUserId !== user.id && handoff.toUserId !== user.id) {
+      return reply.code(403).send({ error: 'Forbidden' });
+    }
+
+    // Auto-transition: sent → received when to_user first GETs
+    if (handoff.status === 'sent' && handoff.toUserId === user.id) {
+      const [updated] = await db
+        .update(handoffs)
+        .set({ status: 'received', updatedAt: new Date() })
+        .where(eq(handoffs.id, id))
+        .returning();
+      return {
+        ...updated,
+        from_user_name: row.from_user_name,
+        from_user_avatar: row.from_user_avatar,
+        to_user_name: row.to_user_name,
+        to_user_avatar: row.to_user_avatar,
+      };
+    }
+
+    return {
+      ...handoff,
+      from_user_name: row.from_user_name,
+      from_user_avatar: row.from_user_avatar,
+      to_user_name: row.to_user_name,
+      to_user_avatar: row.to_user_avatar,
+    };
+  });
+
+  // GET / — list handoffs
+  app.get('/', { preHandler: [requireAuth] }, async (request, reply) => {
+    const user = request.user!;
+    const query = request.query as { workspace_id?: string; status?: string; role?: string };
+
+    const conditions: any[] = [];
+
+    if (query.workspace_id) {
+      // Verify user is workspace member
+      const [membership] = await db
+        .select()
+        .from(workspaceMembers)
+        .where(and(eq(workspaceMembers.workspaceId, query.workspace_id), eq(workspaceMembers.userId, user.id)));
+      if (!membership) return reply.code(403).send({ error: 'Not a workspace member' });
+
+      conditions.push(eq(handoffs.workspaceId, query.workspace_id));
+
+      if (query.role === 'from') {
+        conditions.push(eq(handoffs.fromUserId, user.id));
+      } else if (query.role === 'to') {
+        conditions.push(eq(handoffs.toUserId, user.id));
+      } else {
+        conditions.push(or(eq(handoffs.fromUserId, user.id), eq(handoffs.toUserId, user.id)));
+      }
+    } else {
+      // No workspace_id: filter by current user's role
+      if (query.role === 'from') {
+        conditions.push(eq(handoffs.fromUserId, user.id));
+      } else if (query.role === 'to') {
+        conditions.push(eq(handoffs.toUserId, user.id));
+      } else {
+        conditions.push(or(eq(handoffs.fromUserId, user.id), eq(handoffs.toUserId, user.id)));
+      }
+    }
+
+    if (query.status) {
+      conditions.push(eq(handoffs.status, query.status as any));
+    }
+
+    const fromUser = aliasedTable(users, 'from_user');
+    const toUser = aliasedTable(users, 'to_user');
+
+    const rows = await db
+      .select({
+        handoff: handoffs,
+        from_user_name: fromUser.name,
+        from_user_avatar: fromUser.avatarUrl,
+        to_user_name: toUser.name,
+        to_user_avatar: toUser.avatarUrl,
+      })
+      .from(handoffs)
+      .leftJoin(fromUser, eq(handoffs.fromUserId, fromUser.id))
+      .leftJoin(toUser, eq(handoffs.toUserId, toUser.id))
+      .where(and(...conditions));
+
+    return rows.map((r) => ({
+      ...r.handoff,
+      from_user_name: r.from_user_name,
+      from_user_avatar: r.from_user_avatar,
+      to_user_name: r.to_user_name,
+      to_user_avatar: r.to_user_avatar,
+    }));
+>>>>>>> 2e221bb (fix: align frontend interface with API contract (from_user_name/avatar fields))
   });
 
   // List
