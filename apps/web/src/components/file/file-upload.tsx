@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useUploadFile } from "@/hooks/use-files"
 import { useUploadStore } from "@/lib/stores/upload-store"
-import { trackEvent } from "@/lib/analytics"
+import { trackEvent as trackAnalytics } from "@/lib/analytics"
+import { trackEvent } from "@/lib/tracking"
 import { toast } from "sonner"
 
 const ACCEPTED = {
@@ -44,7 +45,12 @@ export function FileUpload({ onClose, folderId }: { onClose: () => void; folderI
         {
           onSuccess: () => {
             updateEntry(itemId, { status: "done", progress: 100 })
-            trackEvent("file_upload")
+            trackAnalytics("file_upload")
+            // Track first upload
+            if (typeof window !== "undefined" && !localStorage.getItem("dm-first-upload-tracked")) {
+              localStorage.setItem("dm-first-upload-tracked", "true")
+              trackEvent("onboarding.first_upload", { file_type: file.type })
+            }
             toast.success(`AI understood ${file.name}`, {
               description: "Try asking a question about it",
               action: {

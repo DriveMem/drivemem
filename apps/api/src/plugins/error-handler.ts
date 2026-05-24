@@ -32,6 +32,18 @@ const errorHandler: FastifyPluginAsync = async (fastify) => {
       });
     }
 
+    // Fastify built-in errors (e.g. JSON parse failure, content-type issues)
+    if (error instanceof Error && 'statusCode' in error) {
+      const statusCode = (error as any).statusCode || 400;
+      return reply.status(statusCode).send({
+        error: {
+          code: 'REQUEST_ERROR',
+          message: error.message,
+          status: statusCode,
+        },
+      });
+    }
+
     // Unknown errors
     fastify.log.error(error);
     const isDev = config.NODE_ENV === 'development';

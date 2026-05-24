@@ -1,10 +1,11 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Brain, ChevronLeft, ChevronRight, FolderPlus, UserPen } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
+import { trackEvent } from "@/lib/tracking"
 import { toast } from "sonner"
 
 const personas = [
@@ -24,6 +25,7 @@ const personaConfig: Record<string, { uploadHint: string; question: string }> = 
 export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState(0) // 0: persona, 1: profile, 2: project
+  const startTimeRef = useRef<number>(Date.now())
   const [persona, setPersona] = useState<string | null>(null)
   const [role, setRole] = useState("")
   const [currentGoal, setCurrentGoal] = useState("")
@@ -33,11 +35,19 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
   useEffect(() => {
     if (typeof window !== "undefined" && !localStorage.getItem("ai-drive-onboarded")) {
       setOpen(true)
+      startTimeRef.current = Date.now()
     }
   }, [])
 
+  useEffect(() => {
+    if (open) {
+      trackEvent("onboarding.welcome_step", { step, userId: "anonymous" })
+    }
+  }, [step, open])
+
   const handleSkip = () => {
     localStorage.setItem("ai-drive-onboarded", "true")
+    trackEvent("onboarding.welcome_skip", { skipped_at_step: step })
     setOpen(false)
   }
 
@@ -46,6 +56,7 @@ export function WelcomeModal({ onUpload }: { onUpload: () => void }) {
     if (persona) {
       localStorage.setItem("ai-drive-persona", persona)
     }
+    trackEvent("onboarding.welcome_complete", { userId: "anonymous", duration_ms: Date.now() - startTimeRef.current })
     setOpen(false)
   }
 

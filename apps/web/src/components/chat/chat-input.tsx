@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, type KeyboardEvent } from "react"
 import { Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { trackEvent } from "@/lib/tracking"
 
 export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, fileCount = 0, hasConversations = false }: { onSend: (message: string) => void; disabled?: boolean; dailyLimitReached?: boolean; scopeHint?: string; fileCount?: number; hasConversations?: boolean }) {
   const [value, setValue] = useState("")
@@ -76,6 +77,11 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
     const trimmed = value.trim()
     if (!trimmed || disabled || dailyLimitReached) return
     onSend(trimmed)
+    // Track first chat
+    if (typeof window !== "undefined" && !localStorage.getItem("dm-first-chat-tracked")) {
+      localStorage.setItem("dm-first-chat-tracked", "true")
+      trackEvent("onboarding.first_chat", {})
+    }
     setValue("")
   }
 
