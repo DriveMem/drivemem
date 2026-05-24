@@ -6,6 +6,7 @@ import { relativeTime } from "@/lib/relative-time"
 import { cn } from "@/lib/utils"
 import { HandoffCard } from "@/components/handoff/handoff-card"
 
+<<<<<<< HEAD
 interface HandoffRaw {
   id: string
   from_user_name?: string
@@ -21,6 +22,8 @@ interface HandoffRaw {
   created_at: string
 }
 
+=======
+>>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
 interface Handoff {
   id: string
   sender_name?: string
@@ -36,6 +39,7 @@ interface Handoff {
   created_at: string
 }
 
+<<<<<<< HEAD
 function mapHandoff(raw: HandoffRaw): Handoff {
   return {
     ...raw,
@@ -46,6 +50,8 @@ function mapHandoff(raw: HandoffRaw): Handoff {
   }
 }
 
+=======
+>>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
 type Tab = "received" | "sent"
 
 const statusBadge: Record<string, { label: string; className: string }> = {
@@ -68,10 +74,14 @@ export default function InboxPage() {
     const role = tab === "received" ? "to" : "from"
     apiFetch(`/handoffs?role=${role}`)
       .then((res) => res.json())
+<<<<<<< HEAD
       .then((data) => {
         const items: HandoffRaw[] = Array.isArray(data) ? data : data?.items ?? []
         setHandoffs(items.map(mapHandoff))
       })
+=======
+      .then((data) => setHandoffs(Array.isArray(data) ? data : data?.items ?? []))
+>>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
       .catch(() => setHandoffs([]))
       .finally(() => setLoading(false))
   }, [tab])
@@ -160,10 +170,14 @@ export default function InboxPage() {
             const role = tab === "received" ? "to" : "from"
             apiFetch(`/handoffs?role=${role}`)
               .then((res) => res.json())
+<<<<<<< HEAD
               .then((data) => {
                 const items: HandoffRaw[] = Array.isArray(data) ? data : data?.items ?? []
                 setHandoffs(items.map(mapHandoff))
               })
+=======
+              .then((data) => setHandoffs(Array.isArray(data) ? data : data?.items ?? []))
+>>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
           }} />
         </div>
       )}

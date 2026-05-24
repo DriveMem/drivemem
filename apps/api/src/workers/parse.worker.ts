@@ -94,6 +94,22 @@ const worker = new Worker<ParseJobData>(
         embeddings,
       });
 
+      // Sync to PG search_chunks for full-text search
+      try {
+        const { sql } = await import('drizzle-orm');
+        // Delete old chunks for this file
+        await db.execute(sql`DELETE FROM search_chunks WHERE file_id = ${fileId}`);
+        // Insert new chunks (trigger auto-generates tsvector)
+        for (const chunk of chunks) {
+          await db.execute(sql`
+            INSERT INTO search_chunks (user_id, file_id, chunk_index, content)
+            VALUES (${userId}, ${fileId}, ${chunk.index}, ${chunk.text})
+          `);
+        }
+      } catch (e) {
+        console.warn('[file-parse] search_chunks sync failed (non-blocking):', e);
+      }
+
       await db.update(files).set({
         status: 'indexed',
         chunkCount: chunks.length,

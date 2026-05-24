@@ -478,9 +478,16 @@ export const popularQueryPatterns = pgTable('popular_query_patterns', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+<<<<<<< HEAD
 // --- Workspaces ---
 export const workspaceRoleEnum = pgEnum('workspace_role', ['owner', 'admin', 'member', 'viewer']);
 
+=======
+// --- Workspace role enum ---
+export const workspaceRoleEnum = pgEnum('workspace_role', ['owner', 'admin', 'member', 'viewer']);
+
+// --- Workspaces ---
+>>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
 export const workspaces = pgTable('workspaces', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),
@@ -490,6 +497,10 @@ export const workspaces = pgTable('workspaces', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+<<<<<<< HEAD
+=======
+// --- Workspace Members ---
+>>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
 export const workspaceMembers = pgTable('workspace_members', {
   id: uuid('id').defaultRandom().primaryKey(),
   workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
@@ -499,9 +510,16 @@ export const workspaceMembers = pgTable('workspace_members', {
   joinedAt: timestamp('joined_at', { withTimezone: true }),
 });
 
+<<<<<<< HEAD
 // --- Handoffs ---
 export const handoffStatusEnum = pgEnum('handoff_status', ['draft', 'sent', 'received', 'request_more', 'supplementing', 'accepted', 'rejected', 'expired']);
 
+=======
+// --- Handoff status enum ---
+export const handoffStatusEnum = pgEnum('handoff_status', ['draft', 'sent', 'received', 'request_more', 'supplementing', 'accepted', 'rejected', 'expired']);
+
+// --- Handoffs ---
+>>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
 export const handoffs = pgTable('handoffs', {
   id: uuid('id').defaultRandom().primaryKey(),
   workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),

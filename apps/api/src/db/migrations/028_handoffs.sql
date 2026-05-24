@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+-- Phase 2: Handoff Engine
+>>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
 CREATE TYPE handoff_status AS ENUM ('draft','sent','received','request_more','supplementing','accepted','rejected','expired');
 
 CREATE TABLE handoffs (
@@ -17,3 +21,9 @@ CREATE INDEX idx_handoffs_workspace ON handoffs(workspace_id);
 CREATE INDEX idx_handoffs_to_user ON handoffs(to_user_id);
 CREATE INDEX idx_handoffs_from_user ON handoffs(from_user_id);
 CREATE INDEX idx_handoffs_status ON handoffs(status);
+<<<<<<< HEAD
+=======
+
+-- Add webhook_url to users for handoff notifications
+ALTER TABLE users ADD COLUMN webhook_url text;
+>>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
