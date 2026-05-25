@@ -1,9 +1,11 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { apiFetch } from "@/lib/api"
-import { FileText, Search } from "lucide-react"
+import { FileText, Search, ExternalLink, MessageCircle } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { KnowledgeFeedback } from "@/components/feedback/knowledge-feedback"
 
 interface SearchResult {
@@ -54,13 +56,37 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   )
 }
 
-export function SearchResults({ query }: { query: string }) {
+function SkeletonCard() {
+  return (
+    <div className="rounded-lg border p-4 animate-pulse">
+      <div className="flex items-center gap-2">
+        <div className="h-4 w-4 rounded bg-muted" />
+        <div className="h-4 w-40 rounded bg-muted" />
+        <div className="ml-auto h-4 w-16 rounded bg-muted" />
+      </div>
+      <div className="mt-3 space-y-2">
+        <div className="h-3 w-full rounded bg-muted" />
+        <div className="h-3 w-3/4 rounded bg-muted" />
+      </div>
+    </div>
+  )
+}
+
+interface SearchResultsProps {
+  query: string
+  inputRef?: React.RefObject<HTMLInputElement | null>
+}
+
+export function SearchResults({ query, inputRef }: SearchResultsProps) {
+  const router = useRouter()
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasMore, setHasMore] = useState(false)
   const [total, setTotal] = useState(0)
+  const [duration, setDuration] = useState<number | null>(null)
+  const [activeIndex, setActiveIndex] = useState(-1)
   const offsetRef = useRef(0)
   const LIMIT = 20
 
@@ -69,13 +95,16 @@ export function SearchResults({ query }: { query: string }) {
       setResults([])
       setHasMore(false)
       setTotal(0)
+      setDuration(null)
       return
     }
 
     let cancelled = false
     setLoading(true)
     setError(null)
+    setActiveIndex(-1)
     offsetRef.current = 0
+    const startTime = performance.now()
 
     apiFetch(`/api/search?q=${encodeURIComponent(query)}&limit=${LIMIT}&offset=0`)
       .then((data: any) => {
@@ -83,6 +112,7 @@ export function SearchResults({ query }: { query: string }) {
           setResults(normalizeResults(data))
           setHasMore(!!data?.hasMore)
           setTotal(data?.total ?? 0)
+          setDuration(performance.now() - startTime)
           offsetRef.current = LIMIT
         }
       })
@@ -96,6 +126,32 @@ export function SearchResults({ query }: { query: string }) {
     return () => { cancelled = true }
   }, [query])
 
+  // Keyboard navigation
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (results.length === 0) return
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      setActiveIndex(prev => prev >= results.length - 1 ? 0 : prev + 1)
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault()
+      setActiveIndex(prev => prev <= 0 ? results.length - 1 : prev - 1)
+    } else if (e.key === "Enter" && activeIndex >= 0) {
+      e.preventDefault()
+      const result = results[activeIndex]
+      if (result) router.push(`/files/${result.fileId}/preview`)
+    } else if (e.key === "Escape") {
+      setActiveIndex(-1)
+    }
+  }, [results, activeIndex, router])
+
+  useEffect(() => {
+    const el = inputRef?.current
+    if (!el) return
+    el.addEventListener("keydown", handleKeyDown as any)
+    return () => el.removeEventListener("keydown", handleKeyDown as any)
+  }, [inputRef, handleKeyDown])
+
   const loadMore = async () => {
     if (loadingMore || !hasMore) return
     setLoadingMore(true)
@@ -105,7 +161,7 @@ export function SearchResults({ query }: { query: string }) {
       setResults(prev => [...prev, ...newResults])
       setHasMore(!!data?.hasMore)
       offsetRef.current += LIMIT
-    } catch (err: any) {
+    } catch {
       // silently fail on load more
     } finally {
       setLoadingMore(false)
@@ -123,8 +179,12 @@ export function SearchResults({ query }: { query: string }) {
 
   if (loading) {
     return (
-      <div className="py-16 text-center text-sm text-muted-foreground">
-        Search...
+      <div className="space-y-3">
+        <div className="h-4 w-32 rounded bg-muted animate-pulse mb-4" />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
       </div>
     )
   }
@@ -157,14 +217,17 @@ export function SearchResults({ query }: { query: string }) {
   return (
     <div>
       <p className="mb-4 text-sm text-muted-foreground">
-        Found {results.length} results
+        Found {results.length} results{duration != null && ` in ${(duration / 1000).toFixed(1)}s`}
       </p>
       <ul className="space-y-3">
         {results.map((r, i) => (
           <li key={`${r.fileId}-${r.chunkIndex ?? i}`}>
             <Link
               href={`/files/${r.fileId}/preview`}
-              className="block rounded-lg border p-4 transition hover:bg-accent"
+              className={cn(
+                "group block rounded-lg border p-4 transition hover:bg-accent relative",
+                activeIndex === i && "ring-2 ring-brand-500"
+              )}
             >
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -185,9 +248,26 @@ export function SearchResults({ query }: { query: string }) {
               </div>
               {r.text && r.text !== r.fileName && (
                 <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
-                  <HighlightText text={r.text} query={query} />
+                  <HighlightText text={r.text.slice(0, 150)} query={query} />
                 </p>
               )}
+              {/* Quick actions - visible on hover */}
+              <div className="absolute bottom-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span
+                  className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Preview
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); router.push(`/chat?new=1&fileId=${r.fileId}`) }}
+                  className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition"
+                >
+                  <MessageCircle className="h-3 w-3" />
+                  Chat about this
+                </button>
+              </div>
             </Link>
           </li>
         ))}
