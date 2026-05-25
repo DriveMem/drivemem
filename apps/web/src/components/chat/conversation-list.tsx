@@ -12,7 +12,7 @@ import {
 import { useConversations, useDeleteConversation } from "@/hooks/use-conversations"
 import { useQueryClient } from "@tanstack/react-query"
 import { apiFetch } from "@/lib/api"
-import { Loader2, Pin, Search, MessageCircle } from "lucide-react"
+import { Loader2, Pin, Search, MessageCircle, Pencil } from "lucide-react"
 
 interface Conversation {
   id: string
@@ -159,6 +159,7 @@ export function ConversationList() {
                   <input
                     ref={editInputRef}
                     value={editValue}
+                    maxLength={100}
                     onChange={(e) => setEditValue(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
@@ -166,6 +167,7 @@ export function ConversationList() {
                         const trimmed = editValue.trim()
                         if (trimmed && trimmed !== c.title) {
                           apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ title: trimmed }) })
+                            .then(() => queryClient.invalidateQueries({ queryKey: ["conversations"] }))
                         }
                         setEditingId(null)
                       } else if (e.key === "Escape") {
@@ -176,6 +178,7 @@ export function ConversationList() {
                       const trimmed = editValue.trim()
                       if (trimmed && trimmed !== c.title) {
                         apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ title: trimmed }) })
+                          .then(() => queryClient.invalidateQueries({ queryKey: ["conversations"] }))
                       }
                       setEditingId(null)
                     }}
@@ -201,6 +204,18 @@ export function ConversationList() {
                 <p className="text-caption text-muted-foreground/70 truncate mt-0.5">{formatTime(c.updatedAt)}</p>
               </div>
               {c.isPinned && <Pin className="h-3 w-3 text-blue-400 shrink-0" />}
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setEditingId(c.id)
+                  setEditValue(c.title || "New conversation")
+                }}
+              >
+                <Pencil className="h-3 w-3" />
+              </Button>
               <Button
                 size="icon"
                 variant="ghost"

@@ -289,6 +289,38 @@ export default async function conversationRoutes(app: FastifyInstance) {
     return reply.send(updated);
   });
 
+  // PATCH /:id/pin — pin or unpin conversation
+  app.patch('/:id/pin', { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    if (!UUID_RE.test(id)) return reply.status(400).send({ error: "Invalid conversation ID" });
+    const user = request.user!;
+    const body = request.body as { pinned: boolean };
+
+    if (typeof body.pinned !== 'boolean') {
+      return reply.status(400).send({ error: 'pinned must be a boolean' });
+    }
+
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(and(eq(conversations.id, id), eq(conversations.userId, user.id)));
+
+    if (!conversation) {
+      return reply.status(404).send({ error: { code: 'NOT_FOUND', message: 'Conversation not found', status: 404 } });
+    }
+
+    const [updated] = await db.update(conversations)
+      .set({
+        isPinned: body.pinned,
+        pinnedAt: body.pinned ? new Date() : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(conversations.id, id))
+      .returning();
+
+    return reply.send(updated);
+  });
+
   // DELETE /:id/pin — unpin conversation
   app.delete('/:id/pin', { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = request.params as { id: string };
