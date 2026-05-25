@@ -15,7 +15,7 @@ import { OfflineBanner } from "@/hooks/use-network-status"
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { sidebarCollapsed, inspectorOpen, mobileSidebarOpen, setMobileSidebarOpen } = useLayoutStore()
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen h-[100dvh] overflow-hidden bg-background">
       {/* Desktop sidebar */}
       <motion.aside
         initial={false}

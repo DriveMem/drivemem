@@ -6,6 +6,7 @@ import { handoffs, users, workspaceMembers } from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
 import { validateContextPack } from '../services/handoff-validator.js';
 import { notifyHandoffRecipient } from '../services/handoff-webhook.js';
+import { assessContextPack } from '../services/handoff-intelligence.js';
 
 const createSchema = z.object({
   workspace_id: z.string().uuid(),
@@ -94,23 +95,105 @@ export default async function handoffsRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: 'context pack incomplete', missing: validation.missing });
     }
 
-    const [updated] = await db.update(handoffs)
-      .set({ status: 'sent', updatedAt: new Date() })
-      .where(eq(handoffs.id, id))
-      .returning();
+    // LLM quality assessment
+    const assessment = await assessContextPack(handoff.contextPack);
+    const currentAutoCount = (handoff as any).autoSupplementCount ?? 0;
 
-    // Notify recipient
-    const [recipient] = await db.select({ webhookUrl: users.webhookUrl }).from(users).where(eq(users.id, handoff.toUserId));
-    await notifyHandoffRecipient(recipient?.webhookUrl, {
-      event: 'handoff.sent',
-      handoff_id: updated.id,
-      from_user_id: updated.fromUserId,
-      to_user_id: updated.toUserId,
-      summary: (updated.contextPack as any)?.task || '',
-      timestamp: new Date().toISOString(),
-    });
+    if (assessment.score >= 70 && assessment.sufficient) {
+      // Quality sufficient — send
+      const [updated] = await db.update(handoffs)
+        .set({ status: 'sent', qualityScore: assessment.score, updatedAt: new Date() })
+        .where(eq(handoffs.id, id))
+        .returning();
 
-    return updated;
+      const [recipient] = await db.select({ webhookUrl: users.webhookUrl }).from(users).where(eq(users.id, handoff.toUserId));
+      await notifyHandoffRecipient(recipient?.webhookUrl, {
+        event: 'handoff.sent',
+        handoff_id: updated.id,
+        from_user_id: updated.fromUserId,
+        to_user_id: updated.toUserId,
+        summary: (updated.contextPack as any)?.task || '',
+        timestamp: new Date().toISOString(),
+      });
+
+      return updated;
+    } else if (currentAutoCount < 3) {
+      // Request auto-supplement
+      const supplementRequests = [
+        ...((handoff.supplementRequests as any[]) || []),
+        { source: 'auto', questions: assessment.missing, timestamp: new Date().toISOString() },
+      ];
+
+      const [updated] = await db.update(handoffs)
+        .set({
+          status: 'request_more',
+          autoSupplementCount: currentAutoCount + 1,
+          qualityScore: assessment.score,
+          supplementRequests,
+          updatedAt: new Date(),
+        })
+        .where(eq(handoffs.id, id))
+        .returning();
+
+      // Notify sender about auto-supplement needed
+      const [sender] = await db.select({ webhookUrl: users.webhookUrl }).from(users).where(eq(users.id, handoff.fromUserId));
+      await notifyHandoffRecipient(sender?.webhookUrl, {
+        event: 'handoff.auto_supplement_needed',
+        handoff_id: updated.id,
+        from_user_id: updated.fromUserId,
+        to_user_id: updated.toUserId,
+        missing: assessment.missing,
+        score: assessment.score,
+        reasoning: assessment.reasoning,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Schedule force-send after 5 minutes
+      setTimeout(async () => {
+        try {
+          const [current] = await db.select().from(handoffs).where(eq(handoffs.id, id));
+          if (current && current.status === 'request_more') {
+            const warning = `Information completeness: ${assessment.score}/100. Missing: ${assessment.missing.join(', ')}`;
+            await db.update(handoffs)
+              .set({ status: 'sent', qualityWarning: warning, updatedAt: new Date() })
+              .where(eq(handoffs.id, id));
+
+            const [rec] = await db.select({ webhookUrl: users.webhookUrl }).from(users).where(eq(users.id, current.toUserId));
+            await notifyHandoffRecipient(rec?.webhookUrl, {
+              event: 'handoff.sent',
+              handoff_id: current.id,
+              from_user_id: current.fromUserId,
+              to_user_id: current.toUserId,
+              summary: (current.contextPack as any)?.task || '',
+              quality_warning: warning,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        } catch { /* timeout force-send failed silently */ }
+      }, 5 * 60 * 1000);
+
+      return reply.status(202).send({ ...updated, assessment: { score: assessment.score, missing: assessment.missing, reasoning: assessment.reasoning } });
+    } else {
+      // 3 rounds exhausted — force send with warning
+      const warning = `Information completeness: ${assessment.score}/100. Missing: ${assessment.missing.join(', ')}`;
+      const [updated] = await db.update(handoffs)
+        .set({ status: 'sent', qualityScore: assessment.score, qualityWarning: warning, updatedAt: new Date() })
+        .where(eq(handoffs.id, id))
+        .returning();
+
+      const [recipient] = await db.select({ webhookUrl: users.webhookUrl }).from(users).where(eq(users.id, handoff.toUserId));
+      await notifyHandoffRecipient(recipient?.webhookUrl, {
+        event: 'handoff.sent',
+        handoff_id: updated.id,
+        from_user_id: updated.fromUserId,
+        to_user_id: updated.toUserId,
+        summary: (updated.contextPack as any)?.task || '',
+        quality_warning: warning,
+        timestamp: new Date().toISOString(),
+      });
+
+      return updated;
+    }
   });
 
   // Accept: received → accepted

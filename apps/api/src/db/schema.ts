@@ -513,6 +513,9 @@ export const handoffs = pgTable('handoffs', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  autoSupplementCount: integer('auto_supplement_count').notNull().default(0),
+  qualityScore: integer('quality_score'),
+  qualityWarning: text('quality_warning'),
 });
 
 export const modelProfileOverrides = pgTable('model_profile_overrides', {

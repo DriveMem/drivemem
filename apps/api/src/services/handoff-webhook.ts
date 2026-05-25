@@ -3,8 +3,12 @@ export interface WebhookPayload {
   handoff_id: string;
   from_user_id: string;
   to_user_id: string;
-  summary: string;
+  summary?: string;
   timestamp: string;
+  missing?: string[];
+  score?: number;
+  reasoning?: string;
+  quality_warning?: string;
 }
 
 export async function notifyHandoffRecipient(
