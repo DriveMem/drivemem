@@ -292,8 +292,21 @@ const STEPS = [
 /* ---------- Main Page ---------- */
 
 export default function LandingPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "DriveMem",
+    "url": "https://drivemem.cloud",
+    "description": "Memory for your AI agents. One knowledge base, every tool, seamless continuity.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "publisher": { "@type": "Organization", "name": "DriveMem", "url": "https://drivemem.cloud" }
+  }
+
   return (
     <div className="min-h-screen bg-white text-gray-900 selection:bg-brand-100">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Nav />
 
       {/* ===== Hero ===== */}

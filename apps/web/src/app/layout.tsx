@@ -11,6 +11,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const instrumentSerif = Instrument_Serif({ weight: '400', subsets: ['latin'], variable: '--font-instrument-serif', style: ['normal', 'italic'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://drivemem.cloud'),
   title: "DriveMem — Memory for your AI agents",
   description: "DriveMem gives every AI agent the context it needs. One knowledge base, seamless continuity.",
   keywords: ["DriveMem", "AI agent memory", "agent context", "knowledge base", "MCP server", "RAG", "multi-agent collaboration"],
