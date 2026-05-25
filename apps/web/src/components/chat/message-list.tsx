@@ -12,6 +12,7 @@ import type { ChatMessage } from "@/lib/mock-chat"
 import { Citation } from "./citation"
 import { MessageTOC, shouldShowTOC } from "./message-toc"
 import { apiFetch } from "@/lib/api"
+import { MessageFeedback } from "./message-feedback"
 
 function CodeBlock({ children, ...props }: any) {
   const ref = useRef<HTMLPreElement>(null)
@@ -220,6 +221,7 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
                   </details>
                 )}
                 {!msg.id.startsWith("a-") && <MessageRating conversationId={conversationId} messageId={msg.id} />}
+                {msg.role === "assistant" && msg.id && <MessageFeedback messageId={msg.id} />}
                 {!msg.id.startsWith("a-") && <MessageActions content={msg.content} />}
                 {msg.createdAt && (
                   <p className="text-[10px] text-muted-foreground/50 mt-1 text-right" title={formatFullTime(msg.createdAt)}>

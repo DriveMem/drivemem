@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { eq, and, or, sql, aliasedTable } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { handoffs, workspaceMembers, users } from '../db/schema.js';
+import { assessContextPack } from '../services/handoff-intelligence.js';
 import { requireAuth } from '../plugins/auth.js';
 import { validateContextPack } from '../services/handoff-validator.js';
 import { notifyHandoffRecipient } from '../services/handoff-webhook.js';
@@ -90,7 +91,7 @@ export default async function handoffRoutes(app: FastifyInstance) {
     const [handoff] = await db.select().from(handoffs).where(eq(handoffs.id, id));
     if (!handoff) return reply.code(404).send({ error: 'Not found' });
     if (handoff.fromUserId !== user.id) return reply.code(403).send({ error: 'Forbidden' });
-    if (!['draft', 'supplementing'].includes(handoff.status)) {
+    if (!['draft', 'supplementing', 'request_more'].includes(handoff.status)) {
       return reply.code(409).send({ error: 'Cannot modify in current status' });
     }
 
@@ -132,20 +133,73 @@ export default async function handoffRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: 'incomplete_context_pack', missing: validation.missing });
     }
 
-    const [updated] = await db
-      .update(handoffs)
-      .set({ status: 'sent', updatedAt: new Date() })
-      .where(eq(handoffs.id, id))
-      .returning();
+    // LLM-based quality assessment (second layer)
+    const assessment = await assessContextPack(handoff.contextPack);
 
-    // Fire webhook (non-blocking)
-    notifyHandoffRecipient(
-      { id: updated.id, from_user_id: updated.fromUserId, to_user_id: updated.toUserId, context_pack: updated.contextPack },
-      updated.toUserId,
-      'handoff.received'
-    );
+    if (assessment.confidence === 0 || (assessment.score >= 70 && assessment.sufficient)) {
+      // Quality sufficient — send normally
+      const [updated] = await db
+        .update(handoffs)
+        .set({ status: 'sent', qualityScore: assessment.score, updatedAt: new Date() })
+        .where(eq(handoffs.id, id))
+        .returning();
 
-    return updated;
+      // Fire webhook (non-blocking)
+      notifyHandoffRecipient(
+        { id: updated.id, from_user_id: updated.fromUserId, to_user_id: updated.toUserId, context_pack: updated.contextPack },
+        updated.toUserId,
+        'handoff.received'
+      );
+
+      return updated;
+    } else if ((handoff.autoSupplementCount ?? 0) < 3) {
+      // Auto-request supplement
+      const newCount = (handoff.autoSupplementCount ?? 0) + 1;
+      const supplementEntry = {
+        source: 'auto',
+        questions: assessment.missing,
+        timestamp: new Date().toISOString(),
+      };
+      const currentRequests = Array.isArray(handoff.supplementRequests) ? handoff.supplementRequests : [];
+
+      const [updated] = await db
+        .update(handoffs)
+        .set({
+          status: 'request_more',
+          autoSupplementCount: newCount,
+          qualityScore: assessment.score,
+          supplementRequests: [...currentRequests, supplementEntry],
+          updatedAt: new Date(),
+        })
+        .where(eq(handoffs.id, id))
+        .returning();
+
+      // Notify sender that supplement is needed
+      notifyHandoffRecipient(
+        { id: updated.id, from_user_id: updated.fromUserId, to_user_id: updated.toUserId, context_pack: updated.contextPack },
+        updated.fromUserId,
+        'handoff.request_more'
+      );
+
+      return reply.send({ ...updated, auto_supplement: true, missing: assessment.missing });
+    } else {
+      // 3 rounds exhausted — force send with warning
+      const warning = `Information completeness: ${assessment.score}/100. Missing: ${assessment.missing.join(', ')}`;
+      const [updated] = await db
+        .update(handoffs)
+        .set({ status: 'sent', qualityScore: assessment.score, qualityWarning: warning, updatedAt: new Date() })
+        .where(eq(handoffs.id, id))
+        .returning();
+
+      // Fire webhook with warning
+      notifyHandoffRecipient(
+        { id: updated.id, from_user_id: updated.fromUserId, to_user_id: updated.toUserId, context_pack: updated.contextPack },
+        updated.toUserId,
+        'handoff.received'
+      );
+
+      return updated;
+    }
   });
 
   // POST /:id/supplement — supplementing → sent
