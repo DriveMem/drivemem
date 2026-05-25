@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,6 +19,14 @@ interface Conversation {
   title: string
   updatedAt: string
   isPinned?: boolean
+  previewSnippet?: string
+}
+
+function HighlightText({ text, query }: { text: string; query: string }) {
+  if (!query.trim() || !text) return <>{text}</>
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi")
+  const parts = text.split(regex)
+  return <>{parts.map((part, i) => regex.test(part) ? <mark key={i} className="bg-yellow-200 dark:bg-yellow-900/40 rounded-sm px-0.5">{part}</mark> : <span key={i}>{part}</span>)}</>
 }
 
 export function ConversationList() {
@@ -33,7 +41,13 @@ export function ConversationList() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedQuery, setDebouncedQuery] = useState("")
   const editInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 200)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   useEffect(() => {
     if (editingId && editInputRef.current) editInputRef.current.focus()
@@ -58,8 +72,12 @@ export function ConversationList() {
     const sorted = (() => {
     const list = Array.isArray(conversations) ? conversations : (conversations?.conversations || [])
     const s = [...list].sort((a: Conversation, b: Conversation) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    if (!searchQuery.trim()) return s
-    return s.filter((c: Conversation) => c.title?.toLowerCase().includes(searchQuery.toLowerCase()))
+    if (!debouncedQuery.trim()) return s
+    const q = debouncedQuery.toLowerCase()
+    return s.filter((c: Conversation) => 
+      c.title?.toLowerCase().includes(q) || 
+      c.previewSnippet?.toLowerCase().includes(q)
+    )
   })()
 
   return (
@@ -173,7 +191,12 @@ export function ConversationList() {
                       setEditingId(c.id)
                       setEditValue(c.title || "New conversation")
                     }}
-                  >{c.title || "New conversation"}</p>
+                  >{debouncedQuery ? <HighlightText text={c.title || "New conversation"} query={debouncedQuery} /> : (c.title || "New conversation")}</p>
+                )}
+                {debouncedQuery && c.previewSnippet && c.previewSnippet.toLowerCase().includes(debouncedQuery.toLowerCase()) && (
+                  <p className="text-xs text-muted-foreground/80 truncate mt-0.5">
+                    <HighlightText text={c.previewSnippet.length > 80 ? c.previewSnippet.slice(0, 80) + "…" : c.previewSnippet} query={debouncedQuery} />
+                  </p>
                 )}
                 <p className="text-caption text-muted-foreground/70 truncate mt-0.5">{formatTime(c.updatedAt)}</p>
               </div>
