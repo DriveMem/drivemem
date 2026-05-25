@@ -13,6 +13,7 @@ import { Citation } from "./citation"
 import { MessageTOC, shouldShowTOC } from "./message-toc"
 import { apiFetch } from "@/lib/api"
 import { MessageFeedback } from "./message-feedback"
+import { ContextChips } from "./context-chips"
 
 function CodeBlock({ children, ...props }: any) {
   const ref = useRef<HTMLPreElement>(null)
@@ -210,6 +211,9 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
           <div className={cn("text-body", msg.role === "user" ? "ml-auto max-w-[70%] bg-brand-500 text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-soft" : "mr-auto w-full bg-muted/30 rounded-2xl rounded-bl-sm px-4 py-4 border border-border/30")}>
             {msg.role === "assistant" ? (
               <div className="prose prose-sm dark:prose-invert prose-p:my-1 prose-headings:my-2 max-w-none">
+                {msg.citations && msg.citations.length > 0 && (
+                  <ContextChips sources={msg.citations} />
+                )}
                 {shouldShowTOC(msg.content) && <MessageTOC content={msg.content} />}
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight, rehypeRaw]} components={markdownComponents}>{transformCitations(msg.content)}</ReactMarkdown>
                 {msg.citations && msg.citations.length > 0 && /[¹²³⁴⁵⁶⁷⁸⁹⁰]/.test(msg.content) && (
