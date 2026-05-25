@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { MessageList } from "@/components/chat/message-list"
 import { trackEvent } from "@/lib/analytics"
 import { ChatInput } from "@/components/chat/chat-input"
+import { ConversationStarters } from "@/components/chat/conversation-starters"
 import { useFiles } from "@/hooks/use-files"
 import { useFolders } from "@/hooks/use-folders"
 import {
@@ -73,17 +74,6 @@ const FEATURE_CARDS = [
 ]
 
 function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (msg: string) => void }) {
-  const [suggestions, setSuggestions] = useState<string[]>([])
-
-  useEffect(() => {
-    apiFetch("/api/conversations/suggestions", { silent: true })
-      .then((data: any) => {
-        if (data?.suggestions?.length) setSuggestions(data.suggestions.slice(0, 4))
-      })
-      .catch(() => {/* fallback to defaults */})
-  }, [])
-
-  const chips = suggestions.length > 0 ? suggestions : DEFAULT_SUGGESTIONS
 
   return (
     <div className="flex flex-1 flex-col items-center px-4 pt-8 pb-4 overflow-y-auto">
@@ -105,17 +95,9 @@ function EmptyState({ indexedCount, onSend }: { indexedCount: number; onSend: (m
         )}
       </div>
 
-      {/* Suggestion chips */}
+      {/* Conversation starters */}
       <div className="w-full max-w-lg mb-6">
-        <p className="text-xs font-medium text-muted-foreground mb-2 text-center">{suggestions?.some(s => /[\u4e00-\u9fff]/.test(s)) ? '试试问：' : 'Try asking:'} </p>
-        <div className="flex flex-wrap justify-center gap-2">
-          {chips.map((q, i) => (
-            <button key={i} onClick={() => onSend(q)}
-              className="rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-foreground/80 hover:bg-primary/10 hover:shadow-sm hover:scale-[1.02] transition-all duration-200 cursor-pointer">
-              {suggestions.length > 0 ? `✨ ${q}` : q}
-            </button>
-          ))}
-        </div>
+        <ConversationStarters onSelect={onSend} />
       </div>
 
       {/* Feature cards */}
