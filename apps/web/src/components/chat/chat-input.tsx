@@ -1,13 +1,19 @@
 "use client"
 import { useState, useRef, useEffect, type KeyboardEvent } from "react"
 import { Send } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { trackEvent } from "@/lib/analytics"
+import { SlashCommands } from "./slash-commands"
 
 export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, fileCount = 0, hasConversations = false }: { onSend: (message: string) => void; disabled?: boolean; dailyLimitReached?: boolean; scopeHint?: string; fileCount?: number; hasConversations?: boolean }) {
   const [value, setValue] = useState("")
+  const [slashOpen, setSlashOpen] = useState(false)
+  const [slashQuery, setSlashQuery] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   // S4: Mobile keyboard adaptation — shift input above virtual keyboard
   useEffect(() => {
@@ -16,7 +22,6 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
     const onResize = () => {
       const el = containerRef.current
       if (!el) return
-      // When viewport height shrinks (keyboard open), offset the container
       const offset = window.innerHeight - vv.height
       el.style.transform = offset > 50 ? `translateY(-${offset}px)` : ""
     }
@@ -66,15 +71,45 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
   }, [value])
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if (slashOpen) return // let SlashCommands handle keys
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       handleSend()
     }
   }
 
+  const handleSlashSelect = (cmd: { action: string }) => {
+    setSlashOpen(false)
+    setValue("")
+    trackEvent("slash_command.select", { command: cmd.action })
+    switch (cmd.action) {
+      case "search": {
+        const searchQuery = slashQuery.replace(/^search\s*/i, "").trim()
+        router.push(searchQuery ? `/search?q=${encodeURIComponent(searchQuery)}` : "/search")
+        break
+      }
+      case "upload":
+        router.push("/files")
+        break
+      case "new":
+        router.push("/chat?new=" + Date.now())
+        break
+      case "help":
+        break
+    }
+  }
+
   function handleSend() {
     const trimmed = value.trim()
     if (!trimmed || disabled || dailyLimitReached) return
+    if (trimmed.startsWith("/")) {
+      const parts = trimmed.split(/\s+/)
+      const cmdName = parts[0].toLowerCase()
+      if (cmdName === "/search") { router.push(`/search?q=${encodeURIComponent(parts.slice(1).join(" "))}`); setValue(""); return }
+      if (cmdName === "/upload") { router.push("/files"); setValue(""); return }
+      if (cmdName === "/new") { router.push("/chat?new=" + Date.now()); setValue(""); return }
+      if (cmdName === "/help") { setValue(""); return }
+    }
     onSend(trimmed)
     setValue("")
   }
@@ -95,20 +130,38 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
       {value.length > 3000 && (
         <p className={cn("text-xs text-right mb-1 transition-colors", value.length > 4000 ? "text-red-500" : "text-muted-foreground/70")}>{value.length.toLocaleString()} / 4,000</p>
       )}
-      <div className="flex items-center gap-2 rounded-2xl shadow-soft-md bg-background border border-border/50 px-4 py-3 transition-all duration-300 focus-within:shadow-soft-lg focus-within:border-primary/20">
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          disabled={disabled}
-          rows={1}
-          className="flex-1 bg-transparent resize-none outline-none text-body min-h-[48px] placeholder-muted-foreground/60 disabled:cursor-not-allowed disabled:opacity-50"
+      <div className="relative">
+        <SlashCommands
+          query={slashQuery}
+          onSelect={handleSlashSelect}
+          onClose={() => setSlashOpen(false)}
+          visible={slashOpen}
         />
-        <button onClick={handleSend} disabled={disabled || !value.trim()} className="rounded-xl w-10 h-10 bg-brand-500 hover:bg-brand-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 active:scale-[0.95] transition-all duration-200 shadow-soft flex items-center justify-center">
-          <Send className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-2 rounded-2xl shadow-soft-md bg-background border border-border/50 px-4 py-3 transition-all duration-300 focus-within:shadow-soft-lg focus-within:border-primary/20">
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => {
+              const newValue = e.target.value
+              setValue(newValue)
+              if (newValue.startsWith("/")) {
+                setSlashOpen(true)
+                setSlashQuery(newValue.slice(1))
+              } else {
+                setSlashOpen(false)
+                setSlashQuery("")
+              }
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            disabled={disabled}
+            rows={1}
+            className="flex-1 bg-transparent resize-none outline-none text-body min-h-[48px] placeholder-muted-foreground/60 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+          <button onClick={handleSend} disabled={disabled || !value.trim()} className="rounded-xl w-10 h-10 bg-brand-500 hover:bg-brand-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 active:scale-[0.95] transition-all duration-200 shadow-soft flex items-center justify-center">
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   )
