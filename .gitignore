@@ -9,3 +9,6 @@ coverage/
 apps/monitor-web/.astro/
 packages/sdk/*.tgz
 .env.production
+
+test-results/
+playwright-report/
