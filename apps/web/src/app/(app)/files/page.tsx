@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { KnowledgeSkeleton } from "@/components/ui/skeleton-loader"
 import { useFiles, useFile } from "@/hooks/use-files"
 import { apiFetch } from "@/lib/api"
+import { EmptyKnowledge } from "@/components/onboarding/empty-knowledge"
 
 const MarkdownContent = dynamic(() => import("react-markdown").then(m => m.default), { ssr: false, loading: () => <div className="animate-pulse h-32 bg-muted rounded" /> })
 
@@ -96,6 +97,9 @@ function KnowledgePageInner() {
 
 function PreviewPanel() {
   const { selectedFileId, closeInspector } = useLayoutStore()
+  const { currentFolderId } = useLayoutStore()
+  const { data: filesData } = useFiles(currentFolderId)
+  const totalFiles = filesData?.files?.length ?? 0
   const { data: file } = useFile(selectedFileId || '')
   const [content, setContent] = useState<string | null>(null)
   const [imgUrl, setImgUrl] = useState<string | null>(null)
@@ -131,6 +135,9 @@ function PreviewPanel() {
   }, [selectedFileId, isImage])
 
   if (!selectedFileId) {
+    if (totalFiles === 0) {
+      return <EmptyKnowledge />
+    }
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8">
         <svg className="h-12 w-12 mb-4 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>

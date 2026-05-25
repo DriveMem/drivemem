@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { ChatView } from "@/components/chat/chat-view"
 import { useConversations } from "@/hooks/use-conversations"
 import { ChatSkeleton } from "@/components/ui/skeleton-loader"
+import { EmptyChat } from "@/components/onboarding/empty-chat"
 
 function ChatPageInner() {
   useEffect(() => { document.title = "Chat — DriveMem" }, [])
@@ -19,13 +20,19 @@ function ChatPageInner() {
   const isNewChat = !!searchParams.get("new")
   const { data: convsData, isLoading } = useConversations()
 
+  const convs = Array.isArray(convsData) ? convsData : (convsData?.conversations || [])
+
   useEffect(() => {
     if (isLoading || fileId || fileIds || folderId || presetQuestion || isNewChat) return
-    const convs = Array.isArray(convsData) ? convsData : (convsData?.conversations || [])
     if (convs.length > 0 && convs[0].id) {
       router.replace("/chat/" + convs[0].id)
     }
   }, [convsData, isLoading, fileId, fileIds, folderId, presetQuestion, isNewChat, router])
+
+  // Show onboarding empty state when no conversations and no intent to start one
+  if (!isLoading && convs.length === 0 && !fileId && !fileIds && !folderId && !presetQuestion && !isNewChat) {
+    return <EmptyChat />
+  }
 
   const resolvedFileScope = fileIds ? `files:${fileIds}` : fileId
   const chatKey = searchParams.get("new") || resolvedFileScope || folderId || "default"

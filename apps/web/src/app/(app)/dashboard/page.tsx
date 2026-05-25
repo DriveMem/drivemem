@@ -25,6 +25,7 @@ import { MostReferencedPanel } from "@/components/dashboard/most-referenced-pane
 import { KnowledgeGapsPanel } from "@/components/dashboard/knowledge-gaps-panel"
 import { WelcomeHero, WelcomeBanner } from "@/components/dashboard/welcome-hero"
 import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state"
+import { EmptyDashboard } from "@/components/onboarding/empty-dashboard"
 import { QuickStartChecklist } from "@/components/dashboard/quick-start-checklist"
 import { computeBlockVisibility, computeChecklist } from "@/hooks/use-dashboard-phase"
 import { useMcpSync } from "@/hooks/use-mcp-sync"
@@ -789,7 +790,7 @@ export default function HomePage() {
 
         {/* Dashboard Empty State — show when no files AND welcome hero is not shown (avoid duplication) */}
         {projectCount === 0 && fileCount === 0 && !blockVis.welcomeHero && (
-          <DashboardEmptyState onUpload={() => setShowUpload(true)} />
+          !hasAskedAi ? <EmptyDashboard /> : <DashboardEmptyState onUpload={() => setShowUpload(true)} />
         )}
 
         {/* Work Items */}
