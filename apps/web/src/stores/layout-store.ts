@@ -9,6 +9,9 @@ interface LayoutState {
   activeTagFilter: string | null
   activeSourceFilter: string | null
   drawerFileId: string | null
+  citationPanelOpen: boolean
+  citationFileId: string | null
+  citationChunkIndex: number | null
   toggleSidebar: () => void
   openInspector: (fileId: string) => void
   closeInspector: () => void
@@ -19,6 +22,8 @@ interface LayoutState {
   setActiveSourceFilter: (source: string | null) => void
   openDrawer: (fileId: string) => void
   closeDrawer: () => void
+  openCitationPanel: (fileId: string, chunkIndex: number) => void
+  closeCitationPanel: () => void
 }
 
 export const useLayoutStore = create<LayoutState>((set) => ({
@@ -30,6 +35,9 @@ export const useLayoutStore = create<LayoutState>((set) => ({
   activeTagFilter: null,
   activeSourceFilter: null,
   drawerFileId: null,
+  citationPanelOpen: false,
+  citationFileId: null,
+  citationChunkIndex: null,
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   openInspector: (fileId) => set({ inspectorOpen: true, selectedFileId: fileId }),
   closeInspector: () => set({ inspectorOpen: false, selectedFileId: null }),
@@ -40,4 +48,6 @@ export const useLayoutStore = create<LayoutState>((set) => ({
   setActiveSourceFilter: (source) => set({ activeSourceFilter: source }),
   openDrawer: (fileId) => set({ drawerFileId: fileId }),
   closeDrawer: () => set({ drawerFileId: null }),
+  openCitationPanel: (fileId, chunkIndex) => set({ citationPanelOpen: true, citationFileId: fileId, citationChunkIndex: chunkIndex }),
+  closeCitationPanel: () => set({ citationPanelOpen: false, citationFileId: null, citationChunkIndex: null }),
 }))

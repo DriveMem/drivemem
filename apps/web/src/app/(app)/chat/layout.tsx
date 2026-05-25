@@ -1,6 +1,7 @@
 "use client"
 
 import { ConversationList } from "@/components/chat/conversation-list"
+import { CitationPanel } from "@/components/chat/citation-panel"
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
         <ConversationList />
       </aside>
       <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
+      <CitationPanel />
     </div>
   )
 }

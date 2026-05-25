@@ -1,7 +1,7 @@
 "use client"
 import { FileText } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import Link from "next/link"
+import { useLayoutStore } from "@/stores/layout-store"
 
 interface CitationData { index?: number; filename?: string; snippet?: string; fileId?: string; fileName?: string; chunkIndex?: number; text?: string }
 
@@ -10,6 +10,14 @@ export function Citation({ citation, idx }: { citation: CitationData; idx?: numb
   const displayName = citation.filename || citation.fileName || "Unknown file"
   const displaySnippet = citation.snippet || citation.text || ""
   const fileId = citation.fileId
+  const chunkIndex = citation.chunkIndex ?? 0
+  const openCitationPanel = useLayoutStore((s) => s.openCitationPanel)
+
+  const handleClick = () => {
+    if (fileId) {
+      openCitationPanel(fileId, chunkIndex)
+    }
+  }
 
   const inner = (
     <span className="inline-flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer">
@@ -22,11 +30,7 @@ export function Citation({ citation, idx }: { citation: CitationData; idx?: numb
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
-          {fileId ? (
-            <Link href={`/files/${fileId}/preview`}>{inner}</Link>
-          ) : (
-            <button>{inner}</button>
-          )}
+          <button onClick={handleClick} type="button">{inner}</button>
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs">
           <p className="text-xs font-medium mb-1">{displayName}</p>
