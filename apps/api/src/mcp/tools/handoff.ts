@@ -132,15 +132,7 @@ export async function handleHandoffTool(
         .returning();
 
       // Notify recipient
-      const [recipientUser] = await db.select({ webhookUrl: schema.users.webhookUrl }).from(schema.users).where(eq(schema.users.id, sent.toUserId));
-      notifyHandoffRecipient(recipientUser?.webhookUrl, {
-        event: 'handoff.received',
-        handoff_id: sent.id,
-        from_user_id: sent.fromUserId,
-        to_user_id: sent.toUserId,
-        summary: task,
-        timestamp: new Date().toISOString(),
-      });
+      notifyHandoffRecipient({ id: sent.id, from_user_id: sent.fromUserId, to_user_id: sent.toUserId, context_pack: sent.contextPack } as any, sent.toUserId, 'handoff.received');
 
       return {
         content: [{ type: 'text', text: `✅ Handoff sent successfully!\n\nHandoff ID: ${sent.id}\nTo: ${toEmail}\nStatus: sent\nTask: ${task}\nNext steps: ${nextSteps.join(', ')}` }],
@@ -209,15 +201,7 @@ export async function handleHandoffTool(
         .where(eq(schema.handoffs.id, handoffId))
         .returning();
 
-      const [senderUser] = await db.select({ webhookUrl: schema.users.webhookUrl }).from(schema.users).where(eq(schema.users.id, updated.fromUserId));
-      notifyHandoffRecipient(senderUser?.webhookUrl, {
-        event: 'handoff.request_more',
-        handoff_id: updated.id,
-        from_user_id: updated.fromUserId,
-        to_user_id: updated.toUserId,
-        summary: questions.join('; '),
-        timestamp: new Date().toISOString(),
-      });
+      notifyHandoffRecipient({ id: updated.id, from_user_id: updated.fromUserId, to_user_id: updated.toUserId, context_pack: updated.contextPack } as any, updated.fromUserId, 'handoff.request_more');
 
       return {
         content: [{ type: 'text', text: `✅ More information requested!\n\nHandoff ID: ${updated.id}\nStatus: request_more\nQuestions:\n${questions.map((q, i) => `  ${i + 1}. ${q}`).join('\n')}` }],

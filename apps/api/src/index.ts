@@ -229,19 +229,10 @@ await app.register(digestRoutes, { prefix: '/api/v1/digest' });
 import nudgeRoutes from './routes/nudge.js';
 await app.register(nudgeRoutes, { prefix: '/api/v1' });
 
-<<<<<<< HEAD
-import workspacesRoutes from './routes/workspaces.js';
-import workspaceMembersRoutes from './routes/workspace-members.js';
-import handoffsRoutes from './routes/handoffs.js';
-await app.register(workspacesRoutes, { prefix: '/api/v1/workspaces' });
-await app.register(workspaceMembersRoutes, { prefix: '/api/v1/workspaces' });
-await app.register(handoffsRoutes, { prefix: '/api/v1/handoffs' });
-=======
 import workspaceRoutes from './routes/workspaces.js';
 import workspaceMemberRoutes from './routes/workspace-members.js';
 await app.register(workspaceRoutes, { prefix: '/api/workspaces' });
 await app.register(workspaceMemberRoutes, { prefix: '/api/workspaces' });
->>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
 
 import llmProxyRoutes from './routes/llm-proxy.js';
 import desktopRoutes from './routes/desktop.js';

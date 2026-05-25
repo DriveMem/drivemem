@@ -1,6 +1,5 @@
 "use client"
 
-<<<<<<< HEAD
 import { Home, BookOpen, MessageCircle, Plug, Settings, PanelLeftClose, PanelLeft, Inbox, Users, SlidersHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -8,13 +7,6 @@ import { useLayoutStore } from "@/stores/layout-store"
 import { useWorkspaceStore } from "@/stores/workspace-store"
 import { useUnreadHandoffs } from "@/hooks/use-unread-handoffs"
 import { WorkspaceSwitcher } from "@/components/layout/workspace-switcher"
-=======
-import { Home, BookOpen, MessageCircle, Plug, Settings, PanelLeftClose, PanelLeft, Inbox } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useLayoutStore } from "@/stores/layout-store"
-import { useUnreadHandoffs } from "@/hooks/use-unread-handoffs"
->>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -61,10 +53,7 @@ export function Sidebar() {
   const { currentWorkspace } = useWorkspaceStore()
   const pathname = usePathname()
   const unreadCount = useUnreadHandoffs()
-<<<<<<< HEAD
   const showWorkspaceNav = currentWorkspace?.type === "team"
-=======
->>>>>>> ae3ca82 (feat: Phase 3 Handoff Recipient UX (WS3.1-3.4))
 
   return (
     <TooltipProvider delayDuration={0}>
