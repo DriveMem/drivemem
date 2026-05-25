@@ -6,6 +6,8 @@ import { useState } from "react"
 
 const navItems = [
   { label: "Quick Start", href: "/docs/quickstart" },
+  { label: "Team Workspace", href: "/docs/team-workspace" },
+  { label: "Agent Handoff", href: "/docs/agent-handoff" },
   { label: "Concepts", href: "/docs/concepts" },
   { label: "MCP Integration", href: "/docs/mcp" },
   { label: "Claude Code Hooks", href: "/docs/hooks" },
