@@ -9,6 +9,7 @@ import { Loader2, Bot, User, Copy, Check, ThumbsUp, ThumbsDown, Bookmark, Share2
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import type { ChatMessage } from "@/lib/mock-chat"
+import { ErrorRecovery } from "@/components/ui/error-recovery"
 import { Citation } from "./citation"
 import { MessageTOC, shouldShowTOC } from "./message-toc"
 import { apiFetch } from "@/lib/api"
@@ -194,7 +195,7 @@ function MessageActions({ content }: { content: string }) {
   )
 }
 
-export function MessageList({ messages, streaming, conversationId }: { messages: ChatMessage[]; streaming?: string; conversationId?: string }) {
+export function MessageList({ messages, streaming, conversationId, onRetry }: { messages: ChatMessage[]; streaming?: string; conversationId?: string; onRetry?: (messageId: string) => void }) {
   const bottomRef = useRef<HTMLDivElement>(null)
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }) }, [messages, streaming])
   return (
@@ -227,6 +228,15 @@ export function MessageList({ messages, streaming, conversationId }: { messages:
                 {!msg.id.startsWith("a-") && <MessageRating conversationId={conversationId} messageId={msg.id} />}
                 {msg.role === "assistant" && msg.id && <MessageFeedback messageId={msg.id} />}
                 {!msg.id.startsWith("a-") && <MessageActions content={msg.content} />}
+                {msg.error && (
+                  <ErrorRecovery
+                    title="AI response failed"
+                    reason={msg.error}
+                    primaryAction={{ label: "Retry", onClick: () => onRetry?.(msg.id) }}
+                    variant="inline"
+                    className="mt-2"
+                  />
+                )}
                 {msg.createdAt && (
                   <p className="text-[10px] text-muted-foreground/50 mt-1 text-right" title={formatFullTime(msg.createdAt)}>
                     {formatTime(msg.createdAt)}
