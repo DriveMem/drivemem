@@ -30,6 +30,8 @@ import { toast } from "sonner"
 import { NetworkError, classifyError } from "@/components/ui/network-error"
 import { InlineError, ChatTimeoutError } from "@/components/ui/inline-error"
 import { showErrorToast } from "@/components/ui/error-toast"
+import { ContextUsageBar } from "@/components/chat/context-usage-bar"
+import { ContextWarning } from "@/components/chat/context-warning"
 
 type ScopeType = "all" | "folder" | "file"
 
@@ -137,6 +139,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
   }, [compareMode])
   const [scopeLabel, setScopeLabel] = useState<string | undefined>(undefined)
   const [followUpSuggestions, setFollowUpSuggestions] = useState<string[]>([])
+  const [contextUsage, setContextUsage] = useState<{used:number,total:number,percent:number}|null>(null)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isTimeout, setIsTimeout] = useState(false)
@@ -264,6 +267,8 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
               const data = JSON.parse(line.slice(6))
               if (currentEvent === "thinking") {
                 // Backend is searching knowledge base — keep thinking animation
+              } else if (currentEvent === "contextUsage") {
+                setContextUsage({ used: data.used, total: data.total, percent: data.percent })
               } else if (currentEvent === "suggestions") {
                 if (data.suggestions?.length) {
                   setFollowUpSuggestions(data.suggestions.slice(0, 3))
@@ -431,6 +436,11 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {contextUsage && contextUsage.percent > 0 && (
+          <div className="ml-auto mr-2">
+            <ContextUsageBar percent={contextUsage.percent} used={contextUsage.used} total={contextUsage.total} />
+          </div>
+        )}
         {messages.length > 0 && (
           <Button
             variant="ghost"
@@ -488,6 +498,7 @@ export function ChatView({ conversationId: initialConversationId, fileScope, fol
         <EmptyState indexedCount={indexedCount} onSend={handleSend} />
       )}
       {messages.length > 0 && <MessageList messages={messages} streaming={streaming} conversationId={conversationId} />}
+      {contextUsage && <ContextWarning percent={contextUsage.percent} />}
       {followUpSuggestions.length > 0 && !sending && (
         <div className="flex flex-wrap gap-2 px-4 py-2 border-t border-border">
           {followUpSuggestions.map((q, i) => (

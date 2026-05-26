@@ -654,6 +654,15 @@ AI: ${fullContent.substring(0, 300)}`;
         // Non-blocking
       }
 
+      // Send context usage info
+      const totalChars = llmMessages.reduce((sum, m) => sum + m.content.length, 0) + fullContent.length;
+      const estimatedTokens = Math.ceil(totalChars / 3); // rough estimate
+      const contextLimit = 128000; // DeepSeek context window
+      const percent = Math.min(100, Math.round((estimatedTokens / contextLimit) * 100));
+      reply.raw.write(
+        `event: contextUsage\ndata: ${JSON.stringify({ used: estimatedTokens, total: contextLimit, percent })}\n\n`,
+      );
+
       reply.raw.write(
         `event: done\ndata: ${JSON.stringify({ messageId: assistantMessage.id, citations })}\n\n`,
       );
