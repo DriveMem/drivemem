@@ -65,9 +65,14 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, fileCount, hasConversations])
 
+  // Auto-resize textarea on value change
   useEffect(() => {
     const el = textareaRef.current
-    if (el) { el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 200) + "px" }
+    if (!el) return
+    el.style.height = 'auto' // Reset to get correct scrollHeight
+    const maxHeight = window.innerHeight * 0.5 // 50vh
+    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`
+    el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden'
   }, [value])
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {

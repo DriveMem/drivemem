@@ -169,7 +169,7 @@ function ProductPreview() {
         <img
           src="/screenshots/dashboard.png"
           alt="DriveMem Dashboard — manage your AI knowledge base"
-          className="w-full block"
+          className="w-full block max-h-[500px] object-cover object-top"
           loading="lazy"
         />
       </div>
@@ -239,33 +239,6 @@ const FEATURES = [
       "AI answers get more accurate with citation feedback",
       "Knowledge gaps auto-detected and flagged",
     ],
-  },
-]
-
-const TESTIMONIALS = [
-  {
-    name: "Alex Chen",
-    initials: "AC",
-    role: "Solo Developer",
-    quote: "I use Cursor, Claude, and ChatGPT daily. DriveMem means I never have to re-explain my project context — every tool just knows."
-  },
-  {
-    name: "Sarah Kim",
-    initials: "SK",
-    role: "Engineering Lead @ startup",
-    quote: "Our agents used to lose context between sessions. DriveMem gave them persistent memory in under 10 minutes."
-  },
-  {
-    name: "Marcus Rivera",
-    initials: "MR",
-    role: "Open Source Maintainer",
-    quote: "I connected DriveMem to my repo workflows. Now my AI assistant remembers past decisions and PRs without me copy-pasting."
-  },
-  {
-    name: "Priya Sharma",
-    initials: "PS",
-    role: "Technical Writer",
-    quote: "I document across 5 tools. DriveMem auto-captures everything so my AI can actually help me find and reuse past work."
   },
 ]
 
@@ -645,35 +618,7 @@ export default function LandingPage() {
 
 
 
-      {/* ===== Testimonials ===== */}
-      <section className="py-20 bg-gray-50/50">
-        <div className="max-w-6xl mx-auto px-6">
-          <FadeIn>
-            <p className="text-sm font-medium text-brand-500 mb-3 text-center">What developers say</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
-              Trusted by builders who ship with AI
-            </h2>
-          </FadeIn>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {TESTIMONIALS.map((t, i) => (
-              <FadeIn key={t.name} delay={i * 100}>
-                <div className="rounded-2xl bg-white border border-gray-100 p-6 shadow-soft">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-semibold text-sm">
-                      {t.initials}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{t.name}</p>
-                      <p className="text-xs text-gray-500">{t.role}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 leading-relaxed italic">"{t.quote}"</p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Testimonials removed — replaced by Tool Compatibility section above */}
 
       {/* ===== Footer ===== */}
       <footer className="border-t border-gray-200 py-8 bg-white">

@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { eq, and, desc, sql, isNull, isNotNull } from 'drizzle-orm';
+import { eq, and, desc, sql, isNull, isNotNull, ilike } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 import { requireAuth } from '../plugins/auth.js';
@@ -43,6 +43,7 @@ const moveSchema = z.object({
 const listQuerySchema = z.object({
   folderId: z.string().uuid().optional(),
   status: z.enum(['uploading', 'parsing', 'indexed', 'failed']).optional(),
+  q: z.string().max(100).optional(),
 });
 
 // --- Helper ---
@@ -266,6 +267,9 @@ export default async function fileRoutes(fastify: FastifyInstance) {
     }
     if (query.status) {
       conditions.push(eq(schema.files.status, query.status));
+    }
+    if (query.q) {
+      conditions.push(ilike(schema.files.name, `%${query.q}%`));
     }
 
     const fileList = await db.select()
