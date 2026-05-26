@@ -1,73 +1,19 @@
-import { auth } from "@/lib/auth"
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth
-  const isAuthPage =
-    req.nextUrl.pathname.startsWith("/login") ||
-    req.nextUrl.pathname.startsWith("/signup") ||
-    req.nextUrl.pathname.startsWith("/forgot-password") ||
-    req.nextUrl.pathname.startsWith("/reset-password")
-  const isLandingPage = req.nextUrl.pathname === "/"
-  const isApiRoute = req.nextUrl.pathname.startsWith("/api")
-
-  const isSharePage = req.nextUrl.pathname.startsWith("/share")
-  const isPublicPage = req.nextUrl.pathname === "/download" ||
-    req.nextUrl.pathname.startsWith("/docs") ||
-    req.nextUrl.pathname === "/privacy" ||
-    req.nextUrl.pathname === "/terms" ||
-    req.nextUrl.pathname === "/pricing"
-
-  // API routes always pass through
-  if (isApiRoute) return
-
-  // Share pages are public
-  if (isSharePage) return
-
-  // Public pages always pass through
-  if (isPublicPage) return
-
-  // Logged-in user on landing page → redirect to /dashboard (files)
-  if (isLoggedIn && isLandingPage) {
-    return Response.redirect(new URL("/dashboard", req.nextUrl))
+export function middleware(request: NextRequest) {
+  const response = NextResponse.next()
+  
+  // 对非静态资源的响应，移除 s-maxage，防止 CDN 缓存旧 HTML
+  if (!request.nextUrl.pathname.startsWith('/_next/static')) {
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+    response.headers.delete('CDN-Cache-Control')
+    response.headers.delete('Cloudflare-CDN-Cache-Control')
   }
-
-  // Logged-in user on auth pages → redirect to /dashboard
-  if (isLoggedIn && isAuthPage) {
-    return Response.redirect(new URL("/dashboard", req.nextUrl))
-  }
-
-  // Known app routes that require auth
-  const appRoutes = ["/dashboard", "/chat", "/settings", "/timeline", "/files", "/search", "/trash"]
-
-  // /knowledge → redirect to /dashboard (knowledge lives there)
-  if (req.nextUrl.pathname.startsWith("/knowledge")) {
-    if (isLoggedIn) {
-      return Response.redirect(new URL("/dashboard", req.nextUrl))
-    }
-    const loginUrl = new URL("/login", req.nextUrl)
-    loginUrl.searchParams.set("returnUrl", "/dashboard")
-    return Response.redirect(loginUrl)
-  }
-  const isAppRoute = appRoutes.some(r => req.nextUrl.pathname.startsWith(r))
-
-  // /developers without auth → redirect to public docs
-  if (!isLoggedIn && req.nextUrl.pathname.startsWith("/developers")) {
-    return Response.redirect(new URL("/docs/quickstart", req.nextUrl))
-  }
-
-  // Landing page is public
-  if (isLandingPage || isAuthPage) return
-
-  // Only redirect to login for known app routes
-  if (!isLoggedIn && isAppRoute) {
-    const loginUrl = new URL("/login", req.nextUrl)
-    loginUrl.searchParams.set("returnUrl", req.nextUrl.pathname)
-    return Response.redirect(loginUrl)
-  }
-
-  // Unknown routes: let Next.js handle (will show 404)
-})
+  
+  return response
+}
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon|screenshots|share|privacy|terms).*)"],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }

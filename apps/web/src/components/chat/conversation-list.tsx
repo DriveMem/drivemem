@@ -19,6 +19,7 @@ interface Conversation {
   title: string
   updatedAt: string
   isPinned?: boolean
+  pinnedAt?: string | null
   previewSnippet?: string
 }
 
@@ -80,6 +81,9 @@ export function ConversationList() {
     )
   })()
 
+  const pinnedConversations = sorted.filter((c: Conversation) => c.pinnedAt || c.isPinned)
+  const unpinnedConversations = sorted.filter((c: Conversation) => !c.pinnedAt && !c.isPinned)
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b p-3">
@@ -116,6 +120,34 @@ export function ConversationList() {
         </div>
       ) : (
         <ul className="flex-1 overflow-y-auto">
+          {pinnedConversations.length > 0 && (
+            <li>
+              <p className="px-3 pt-3 pb-1 text-micro font-medium text-muted-foreground/60 uppercase tracking-wider">📌 Pinned</p>
+              {pinnedConversations.map((c: Conversation) => (
+            <li
+              key={c.id}
+              className={`group flex cursor-pointer items-center justify-between rounded-xl mx-2 px-3 py-2.5 overflow-hidden transition-colors duration-200 hover:bg-muted/50 ${
+                activeId === c.id ? "bg-primary/5 border-l-2 border-primary" : ""
+              }`}
+              onClick={() => router.push(`/chat/${c.id}`)}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-body font-medium" title={c.title || "New conversation"}>
+                  {debouncedQuery ? <HighlightText text={c.title || "New conversation"} query={debouncedQuery} /> : (c.title || "New conversation")}
+                </p>
+                <p className="text-caption text-muted-foreground/70 truncate mt-0.5">{formatTime(c.updatedAt)}</p>
+              </div>
+              <Pin className="h-3 w-3 text-blue-400 shrink-0 mr-1" />
+              <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); apiFetch(`/api/conversations/${c.id}/pin`, { method: "PATCH", body: JSON.stringify({ pinned: false }) }).then(() => queryClient.invalidateQueries({ queryKey: ["conversations"] })) }}>
+                <Pin className="h-3 w-3 text-blue-400" />
+              </Button>
+              <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); setDeleteTarget(c.id) }}>
+                ✕
+              </Button>
+            </li>
+              ))}
+            </li>
+          )}
           {(() => {
             const now = new Date()
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
@@ -133,7 +165,7 @@ export function ConversationList() {
               { label: "Earlier", items: [] },
             ]
 
-            sorted.forEach((c: Conversation) => {
+            unpinnedConversations.forEach((c: Conversation) => {
               const t = new Date(c.updatedAt).getTime()
               if (t >= today) groups[0].items.push(c)
               else if (t >= yesterday) groups[1].items.push(c)
@@ -203,7 +235,7 @@ export function ConversationList() {
                 )}
                 <p className="text-caption text-muted-foreground/70 truncate mt-0.5">{formatTime(c.updatedAt)}</p>
               </div>
-              {c.isPinned && <Pin className="h-3 w-3 text-blue-400 shrink-0" />}
+              {(c.pinnedAt || c.isPinned) && <Pin className="h-3 w-3 text-blue-400 shrink-0 mr-1" />}
               <Button
                 size="icon"
                 variant="ghost"
@@ -222,11 +254,11 @@ export function ConversationList() {
                 className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
                 onClick={(e) => {
                   e.stopPropagation()
-                  apiFetch(`/api/conversations/${c.id}`, { method: "PATCH", body: JSON.stringify({ isPinned: !c.isPinned }) })
+                  apiFetch(`/api/conversations/${c.id}/pin`, { method: "PATCH", body: JSON.stringify({ pinned: !(c.pinnedAt || c.isPinned) }) })
                     .then(() => queryClient.invalidateQueries({ queryKey: ["conversations"] }))
                 }}
               >
-                <Pin className={`h-3 w-3 ${c.isPinned ? "text-blue-400" : ""}`} />
+                <Pin className={`h-3 w-3 ${(c.pinnedAt || c.isPinned) ? "text-blue-400" : ""}`} />
               </Button>
               <Button
                 size="icon"

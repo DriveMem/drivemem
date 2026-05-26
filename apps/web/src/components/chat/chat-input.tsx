@@ -65,14 +65,14 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, fileCount, hasConversations])
 
-  // Auto-resize textarea on value change
   useEffect(() => {
     const el = textareaRef.current
     if (!el) return
-    el.style.height = 'auto' // Reset to get correct scrollHeight
-    const maxHeight = window.innerHeight * 0.5 // 50vh
-    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`
-    el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden'
+    el.style.height = "auto"
+    const maxH = window.innerHeight * 0.5
+    const next = Math.min(el.scrollHeight, maxH)
+    el.style.height = next + "px"
+    el.style.overflowY = el.scrollHeight > maxH ? "auto" : "hidden"
   }, [value])
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
@@ -117,6 +117,11 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
     }
     onSend(trimmed)
     setValue("")
+    // Reset textarea height on send
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto"
+      textareaRef.current.style.overflowY = "hidden"
+    }
   }
 
   if (dailyLimitReached) {
@@ -161,7 +166,7 @@ export function ChatInput({ onSend, disabled, dailyLimitReached, scopeHint, file
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className="flex-1 bg-transparent resize-none outline-none text-body min-h-[48px] placeholder-muted-foreground/60 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 bg-transparent resize-none transition-[height] duration-100 outline-none text-body min-h-[48px] placeholder-muted-foreground/60 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <button onClick={handleSend} disabled={disabled || !value.trim()} className="rounded-xl w-10 h-10 bg-brand-500 hover:bg-brand-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 active:scale-[0.95] transition-all duration-200 shadow-soft flex items-center justify-center">
             <Send className="h-4 w-4" />
